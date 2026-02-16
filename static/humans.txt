@@ -1,0 +1,22 @@
+/* TEAM */
+Developer: Aaron Pfutzner
+Twitter: @telaaron
+GitHub: telaaron
+Location: Germany
+
+/* SITE */
+Name: Piano Chord Trainer
+Description: Speed training tool for jazz piano voicings with MIDI recognition
+Language: German, English
+Standards: HTML5, CSS3, JavaScript/TypeScript
+Components: Svelte, Vite, SvelteKit
+Repository: https://github.com/telaaron/piano-chord-trainer
+
+/* MUSIC THEORY */
+Voicing Types: Shell, Rootless, Full
+Chord Progressions: 2-5-1, Standards
+Keys: All 12 Chromatic Keys
+MIDI Support: Full Recognition & Input
+
+/* THANKS */
+Built with SvelteKit, Vite, and love for jazz piano

@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "com.vercel.applinks",
+        "paths": ["/"]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["com.vercel.applinks"]
+  }
+}

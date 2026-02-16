@@ -1,0 +1,3 @@
+Contact: https://github.com/telaaron
+Expires: 2027-02-16T00:00:00.000Z
+Preferred-Languages: en,de
