@@ -1,9 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fly, fade, scale } from 'svelte/transition';
 	import GameSettings from '$lib/components/GameSettings.svelte';
 	import ChordCard from '$lib/components/ChordCard.svelte';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import Results from '$lib/components/Results.svelte';
+	import MidiStatus from '$lib/components/MidiStatus.svelte';
+	import ProgressDashboard from '$lib/components/ProgressDashboard.svelte';
+	import { MidiService } from '$lib/services/midi';
+	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
+	import { saveSession, loadSettings, saveSettings } from '$lib/services/progress';
+	import { playChord, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll } from '$lib/services/audio';
 	import {
 		CHORDS_BY_DIFFICULTY,
 		CHORD_NOTATIONS,
@@ -14,6 +21,8 @@
 		formatVoicing,
 		displayToQuality,
 		convertChordNotation,
+		noteToSemitone,
+		generateProgression,
 		type Difficulty,
 		type NotationStyle,
 		type VoicingType,
@@ -21,9 +30,10 @@
 		type AccidentalPreference,
 		type NotationSystem,
 		type ChordWithNotes,
+		type ProgressionMode,
 	} from '$lib/engine';
 
-	// ─── Settings (persisted later) ──────────────────────────────
+	// ─── Settings (persisted) ────────────────────────────────────
 	let difficulty: Difficulty = $state('beginner');
 	let notation: NotationStyle = $state('standard');
 	let voicing: VoicingType = $state('root');
@@ -31,13 +41,21 @@
 	let accidentals: AccidentalPreference = $state('both');
 	let notationSystem: NotationSystem = $state('international');
 	let totalChords = $state(20);
+	let progressionMode: ProgressionMode = $state('random');
+	let midiEnabled = $state(false);
+
+	// ─── Audio / Metronome settings ──────────────────────────────
+	let audioEnabled = $state(true);
+	let metronomeEnabled = $state(false);
+	let metronomeBpm = $state(80);
+	let currentBeat = $state(0);
 
 	// ─── Game state ──────────────────────────────────────────────
 	type Screen = 'setup' | 'playing' | 'finished';
 	type PlayPhase = 'playing' | 'verifying';
 
-	let screen: Screen = $state('setup');
-	let playPhase: PlayPhase = $state('playing');
+	let screen: Screen = $state<Screen>('setup');
+	let playPhase: PlayPhase = $state<PlayPhase>('playing');
 	let currentIdx = $state(0);
 	let chords: string[] = $state([]);
 	let chordsWithNotes: ChordWithNotes[] = $state([]);
@@ -46,14 +64,41 @@
 	let now = $state(0);
 	let timerHandle: ReturnType<typeof setInterval> | null = $state(null);
 
+	// ─── MIDI state ──────────────────────────────────────────────
+	const midi = new MidiService();
+	let midiState: MidiConnectionState = $state('disconnected');
+	let midiDevices: MidiDevice[] = $state([]);
+	let midiSelectedDeviceId: string | null = $state(null);
+	let midiActiveNotes: Set<number> = $state(new Set());
+	let midiMatchResult: ChordMatchResult | null = $state(null);
+	let midiCorrectCount = $state(0);
+	let midiTotalAttempts = $state(0);
+	let autoAdvanceTimeout: ReturnType<typeof setTimeout> | null = $state(null);
+
 	// ─── Derived ─────────────────────────────────────────────────
 	const currentChord = $derived(chords[currentIdx] ?? '');
 	const currentData = $derived(chordsWithNotes[currentIdx] ?? null);
 	const shouldShowVoicing = $derived(
 		displayMode === 'always' || (displayMode === 'verify' && playPhase === 'verifying'),
 	);
-	const progress = $derived(((currentIdx + 1) / totalChords) * 100);
+	const actualTotalChords = $derived(chords.length || totalChords);
+	const progress = $derived(((currentIdx + 1) / actualTotalChords) * 100);
 	const elapsedMs = $derived(screen === 'playing' ? now - startTime : endTime - startTime);
+
+	/** Pitch classes expected for the current chord (for MIDI coloring) */
+	const expectedPitchClasses = $derived.by(() => {
+		if (!currentData) return new Set<number>();
+		const set = new Set<number>();
+		for (const note of currentData.voicing) {
+			const st = noteToSemitone(note);
+			if (st !== -1) set.add(st);
+		}
+		return set;
+	});
+
+	const midiAccuracy = $derived(
+		midiTotalAttempts > 0 ? Math.round((midiCorrectCount / midiTotalAttempts) * 100) : 0,
+	);
 
 	function formatTime(ms: number): string {
 		const s = Math.floor(ms / 1000);
@@ -65,6 +110,25 @@
 
 	// ─── Game logic ──────────────────────────────────────────────
 	function generateChords() {
+		// Progression modes
+		if (progressionMode !== 'random') {
+			const result = generateProgression(progressionMode, accidentals, notation, totalChords);
+			const newChords: string[] = [];
+			const newData: ChordWithNotes[] = [];
+
+			for (const pc of result.chords) {
+				newChords.push(pc.display);
+				const notes = getChordNotes(pc.root, pc.quality, accidentals);
+				const voicingArr = getVoicingNotes(notes, voicing);
+				newData.push({ chord: pc.display, root: pc.root, type: pc.quality, notes, voicing: voicingArr });
+			}
+
+			chords = newChords;
+			chordsWithNotes = newData;
+			return;
+		}
+
+		// Random mode (original logic)
 		const available = CHORDS_BY_DIFFICULTY[difficulty];
 		const pool = getNotePool(accidentals);
 		const newChords: string[] = [];
@@ -107,24 +171,72 @@
 		screen = 'playing';
 		startTime = Date.now();
 		now = startTime;
+		midiCorrectCount = 0;
+		midiTotalAttempts = 0;
+		midiMatchResult = null;
+		midi.releaseAll();
 		if (timerHandle) clearInterval(timerHandle);
 		timerHandle = setInterval(() => {
 			if (screen === 'playing') now = Date.now();
 		}, 100);
+
+		// Init MIDI if enabled
+		if (midiEnabled && midiState === 'disconnected') {
+			midi.init();
+		}
+
+		// Play first chord audio (fire-and-forget)
+		if (audioEnabled && chordsWithNotes[0]) {
+			playChord(chordsWithNotes[0].voicing).catch(() => {});
+		}
+
+		// Start metronome
+		if (metronomeEnabled) {
+			startMetronome(metronomeBpm, 4, (beat) => {
+				currentBeat = beat;
+			});
+		}
+
+		// Persist settings
+		saveSettings({
+			difficulty,
+			notation,
+			voicing,
+			displayMode,
+			accidentals,
+			notationSystem,
+			totalChords,
+			progressionMode,
+			midiEnabled,
+		});
 	}
 
 	function nextChord() {
 		if (screen !== 'playing') return;
 
+		// Clear auto-advance timeout
+		if (autoAdvanceTimeout) {
+			clearTimeout(autoAdvanceTimeout);
+			autoAdvanceTimeout = null;
+		}
+
 		// Verify mode: first press shows voicing, second press advances
-		if (displayMode === 'verify' && playPhase === 'playing') {
+		// Skip verify phase when MIDI is doing the verification
+		if (displayMode === 'verify' && playPhase === 'playing' && !midiEnabled) {
 			playPhase = 'verifying';
 			return;
 		}
 
 		playPhase = 'playing';
-		if (currentIdx < totalChords - 1) {
+		midiMatchResult = null;
+		midi.releaseAll();
+
+		if (currentIdx < actualTotalChords - 1) {
 			currentIdx++;
+			// Play chord audio on advance
+			if (audioEnabled && chordsWithNotes[currentIdx]) {
+				playChord(chordsWithNotes[currentIdx].voicing).catch(() => {});
+			}
 		} else {
 			endGame();
 		}
@@ -135,6 +247,32 @@
 		screen = 'finished';
 		if (timerHandle) clearInterval(timerHandle);
 		timerHandle = null;
+		if (autoAdvanceTimeout) {
+			clearTimeout(autoAdvanceTimeout);
+			autoAdvanceTimeout = null;
+		}
+		stopMetronome();
+		currentBeat = 0;
+
+		// Save session to progress history
+		saveSession({
+			timestamp: Date.now(),
+			elapsedMs: endTime - startTime,
+			totalChords: actualTotalChords,
+			avgMs: (endTime - startTime) / actualTotalChords,
+			settings: {
+				difficulty,
+				notation,
+				voicing,
+				displayMode,
+				accidentals,
+				progressionMode,
+			},
+			midi: {
+				enabled: midiEnabled,
+				accuracy: midiAccuracy,
+			},
+		});
 	}
 
 	function restartGame() {
@@ -146,8 +284,82 @@
 		currentIdx = 0;
 		chords = [];
 		chordsWithNotes = [];
+		midiMatchResult = null;
 		if (timerHandle) clearInterval(timerHandle);
 		timerHandle = null;
+		if (autoAdvanceTimeout) {
+			clearTimeout(autoAdvanceTimeout);
+			autoAdvanceTimeout = null;
+		}
+		stopMetronome();
+		stopAll();
+		currentBeat = 0;
+	}
+
+	// ─── MIDI callbacks ──────────────────────────────────────────
+	function handleMidiNotes(activeNotes: Set<number>) {
+		midiActiveNotes = new Set(activeNotes);
+
+		if (screen !== 'playing' || !currentData || !midiEnabled) return;
+
+		// Check chord match
+		const result = midi.checkChordLenient(currentData.voicing);
+		midiMatchResult = result;
+
+		if (result.correct && activeNotes.size > 0) {
+			midiTotalAttempts++;
+			midiCorrectCount++;
+
+			// Auto-advance after short delay (let player hear the chord)
+			if (!autoAdvanceTimeout) {
+				autoAdvanceTimeout = setTimeout(() => {
+					autoAdvanceTimeout = null;
+					nextChord();
+				}, 400);
+			}
+		} else if (activeNotes.size > 0 && result.accuracy < 1) {
+			// Wrong attempt tracked when player has enough notes held
+			const expectedCount = currentData.voicing.length;
+			if (activeNotes.size >= expectedCount) {
+				midiTotalAttempts++;
+			}
+		}
+	}
+
+	function handleMidiConnect() {
+		midi.init();
+	}
+
+	function handleMidiSelectDevice(deviceId: string) {
+		midi.selectDevice(deviceId);
+	}
+
+	// ─── Audio helpers ───────────────────────────────────────────
+	function toggleMetronome() {
+		if (metronomeEnabled) {
+			stopMetronome();
+			metronomeEnabled = false;
+			currentBeat = 0;
+		} else {
+			metronomeEnabled = true;
+			startMetronome(metronomeBpm, 4, (beat) => {
+				currentBeat = beat;
+			});
+		}
+	}
+
+	function updateBpm(newBpm: number) {
+		metronomeBpm = Math.max(40, Math.min(240, newBpm));
+		if (isMetronomeRunning()) {
+			setMetronomeBpm(metronomeBpm);
+		}
+	}
+
+	/** Re-play current chord audio on demand */
+	function replayChord() {
+		if (currentData) {
+			playChord(currentData.voicing);
+		}
 	}
 
 	// ─── Keyboard shortcut ───────────────────────────────────────
@@ -156,13 +368,51 @@
 			e.preventDefault();
 			nextChord();
 		}
+		if (e.code === 'Escape' && screen === 'playing') {
+			e.preventDefault();
+			resetToSetup();
+		}
 	}
 
 	onMount(() => {
+		// Load persisted settings
+		const saved = loadSettings();
+		if (saved) {
+			difficulty = saved.difficulty;
+			notation = saved.notation;
+			voicing = saved.voicing;
+			displayMode = saved.displayMode;
+			accidentals = saved.accidentals;
+			notationSystem = (saved.notationSystem ?? 'international') as NotationSystem;
+			totalChords = saved.totalChords;
+			progressionMode = saved.progressionMode;
+			midiEnabled = saved.midiEnabled;
+		}
+
+		// MIDI setup
+		midi.onNotes(handleMidiNotes);
+		midi.onConnection((state) => {
+			midiState = state;
+		});
+		midi.onDevices((devices) => {
+			midiDevices = [...devices];
+			if (devices.length > 0) {
+				midiSelectedDeviceId = midi.selectedDeviceId;
+			}
+		});
+
+		// Auto-init MIDI if enabled
+		if (midiEnabled) {
+			midi.init();
+		}
+
 		window.addEventListener('keydown', handleKeydown);
 		return () => {
 			window.removeEventListener('keydown', handleKeydown);
 			if (timerHandle) clearInterval(timerHandle);
+			if (autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
+			midi.destroy();
+			disposeAll();
 		};
 	});
 </script>
@@ -185,25 +435,102 @@
 
 		<!-- ─────── Setup Screen ─────── -->
 		{#if screen === 'setup'}
-			<GameSettings
-				bind:difficulty
-				bind:notation
-				bind:voicing={voicing}
-				bind:displayMode
-				bind:accidentals
-				bind:notationSystem
-				bind:totalChords
-				onstart={startGame}
-			/>
+			<div class="space-y-6" in:fade={{ duration: 200, delay: 100 }}>
+				<GameSettings
+					bind:difficulty
+					bind:notation
+					bind:voicing={voicing}
+					bind:displayMode
+					bind:accidentals
+					bind:notationSystem
+					bind:totalChords
+					bind:progressionMode
+					bind:midiEnabled
+					onstart={startGame}
+				/>
+				<ProgressDashboard />
+			</div>
 		{/if}
 
 		<!-- ─────── Playing Screen ─────── -->
 		{#if screen === 'playing'}
-			<div class="max-w-3xl mx-auto space-y-6">
+			<div class="max-w-3xl mx-auto space-y-6" in:fly={{ y: 20, duration: 300, delay: 50 }}>
+				<!-- Cancel button -->
+				<div class="flex justify-end">
+					<button
+						class="px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer text-sm font-medium"
+						onclick={resetToSetup}
+						title="Session abbrechen und zum Menü zurück"
+					>
+						✕ Abbrechen
+					</button>
+				</div>
+
+				<!-- MIDI status bar -->
+				{#if midiEnabled}
+					<div class="flex items-center justify-between">
+						<MidiStatus
+							state={midiState}
+							devices={midiDevices}
+							selectedDeviceId={midiSelectedDeviceId}
+							activeNoteCount={midiActiveNotes.size}
+							onSelectDevice={handleMidiSelectDevice}
+							onConnect={handleMidiConnect}
+						/>
+						{#if midiTotalAttempts > 0}
+							<span class="text-xs text-[var(--text-muted)] font-mono">
+								Accuracy: {midiAccuracy}%
+							</span>
+						{/if}
+					</div>
+				{/if}
+
+				<!-- Audio / Metronome controls -->
+				<div class="flex items-center gap-4 text-sm">
+					<button
+						class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {audioEnabled ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
+						onclick={() => (audioEnabled = !audioEnabled)}
+						title={audioEnabled ? 'Audio aus' : 'Audio an'}
+					>
+						{audioEnabled ? '🔊' : '🔇'} Audio
+					</button>
+					<button
+						class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {metronomeEnabled ? 'border-[var(--accent-green)] bg-[var(--accent-green)]/10 text-[var(--accent-green)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
+						onclick={toggleMetronome}
+					>
+						{metronomeEnabled ? '⏸' : '▶'} Metronom
+					</button>
+					{#if metronomeEnabled}
+						<div class="flex items-center gap-2">
+							<button
+								class="w-7 h-7 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] cursor-pointer flex items-center justify-center"
+								onclick={() => updateBpm(metronomeBpm - 5)}
+							>−</button>
+							<span class="font-mono text-xs w-12 text-center">{metronomeBpm} BPM</span>
+							<button
+								class="w-7 h-7 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] cursor-pointer flex items-center justify-center"
+								onclick={() => updateBpm(metronomeBpm + 5)}
+							>+</button>
+						</div>
+						<!-- Beat indicator -->
+						<div class="flex items-center gap-1">
+							{#each [1, 2, 3, 4] as beat}
+								<div
+									class="w-2.5 h-2.5 rounded-full transition-all duration-100 {currentBeat === beat
+										? beat === 1
+											? 'bg-[var(--accent-green)] scale-125'
+											: 'bg-[var(--primary)] scale-110'
+										: 'bg-[var(--border)]'}"
+								></div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+
 				<!-- Progress bar -->
 				<div>
 					<div class="flex justify-between text-sm mb-2 text-[var(--text-muted)]">
-						<span>Akkord {currentIdx + 1} / {totalChords}</span>
+						<span>Akkord {currentIdx + 1} / {actualTotalChords}</span>
 						<span class="font-mono">{formatTime(elapsedMs > 0 ? elapsedMs : 0)}</span>
 					</div>
 					<div class="h-1.5 bg-[var(--bg-muted)] rounded-full overflow-hidden">
@@ -222,8 +549,38 @@
 							chordData={currentData}
 							accidentalPref={accidentals}
 							showVoicing={shouldShowVoicing}
+							midiEnabled={midiEnabled}
+							midiActiveNotes={midiActiveNotes}
+							midiExpectedPitchClasses={expectedPitchClasses}
 						/>
 					</div>
+
+					<!-- MIDI match feedback -->
+					{#if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
+						<div class="mt-4 text-center">
+							{#if midiMatchResult.correct}
+								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Richtig!</span>
+							{:else if midiMatchResult.accuracy > 0}
+								<span class="text-[var(--accent-amber)] text-sm">
+									{Math.round(midiMatchResult.accuracy * 100)}% – {midiMatchResult.missing.length} Ton{midiMatchResult.missing.length !== 1 ? 'e' : ''} fehlt
+								</span>
+							{:else}
+								<span class="text-[var(--accent-red)] text-sm">Falsche Töne</span>
+							{/if}
+						</div>
+					{/if}
+
+					<!-- Listen button -->
+					{#if audioEnabled && currentData}
+						<div class="mt-4 text-center">
+							<button
+								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+								onclick={replayChord}
+							>
+								🎵 Anhören
+							</button>
+						</div>
+					{/if}
 
 					<!-- Voicing text -->
 					{#if shouldShowVoicing && currentData}
@@ -238,22 +595,26 @@
 
 				<!-- Instruction -->
 				<div class="text-center text-sm text-[var(--text-muted)]">
-					{#if displayMode === 'verify' && playPhase === 'playing'}
+					{#if midiEnabled && midiState === 'connected' && midiDevices.length > 0}
+						<p>Spiele den Akkord auf deinem Klavier – <strong class="text-[var(--text)]">Auto-Weiter</strong> bei richtigem Griff</p>
+					{:else if displayMode === 'verify' && playPhase === 'playing'}
 						<p>Spiele den Akkord, dann <strong class="text-[var(--text)]">Leertaste</strong> zur Überprüfung</p>
 					{:else if displayMode === 'verify' && playPhase === 'verifying'}
 						<p>Überprüfe – dann <strong class="text-[var(--text)]">Leertaste</strong> für den nächsten Akkord</p>
 					{:else}
 						<p>Tippe auf die Karte oder drücke <strong class="text-[var(--text)]">Leertaste</strong></p>
 					{/if}
+					<p class="mt-2 text-xs text-[var(--text-muted)]/70">Drücke <strong>ESC</strong> zum Abbrechen</p>
 				</div>
 			</div>
 		{/if}
 
 		<!-- ─────── Results Screen ─────── -->
 		{#if screen === 'finished'}
+			<div in:scale={{ start: 0.95, duration: 300, delay: 50 }} style="transform-origin: center top">
 			<Results
 				{chordsWithNotes}
-				{totalChords}
+				totalChords={actualTotalChords}
 				elapsedMs={elapsedMs > 0 ? elapsedMs : 0}
 				{difficulty}
 				{notation}
@@ -261,9 +622,13 @@
 				{displayMode}
 				{accidentals}
 				{notationSystem}
+				{progressionMode}
+				{midiEnabled}
+				{midiAccuracy}
 				onrestart={restartGame}
 				onreset={resetToSetup}
 			/>
+			</div>
 		{/if}
 	</div>
 </main>
