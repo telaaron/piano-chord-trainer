@@ -1,0 +1,10 @@
+node_modules/
+.svelte-kit/
+build/
+.vercel/
+.env
+.env.*
+!.env.example
+*.local
+dist/
+.DS_Store
