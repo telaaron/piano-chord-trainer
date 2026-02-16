@@ -4,12 +4,14 @@
 		convertChordNotation,
 		formatVoicing,
 		VOICING_LABELS,
+		PROGRESSION_LABELS,
 		type AccidentalPreference,
 		type Difficulty,
 		type DisplayMode,
 		type NotationStyle,
 		type NotationSystem,
 		type VoicingType,
+		type ProgressionMode,
 	} from '$lib/engine';
 	import type { ChordWithNotes } from '$lib/engine';
 
@@ -23,6 +25,9 @@
 		displayMode: DisplayMode;
 		accidentals: AccidentalPreference;
 		notationSystem: NotationSystem;
+		progressionMode: ProgressionMode;
+		midiEnabled: boolean;
+		midiAccuracy: number;
 		onrestart: () => void;
 		onreset: () => void;
 	}
@@ -37,6 +42,9 @@
 		displayMode,
 		accidentals,
 		notationSystem,
+		progressionMode,
+		midiEnabled,
+		midiAccuracy,
 		onrestart,
 		onreset,
 	}: Props = $props();
@@ -75,18 +83,24 @@
 	<!-- Stats grid -->
 	<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
 		{#each [
+			{ label: 'Modus', value: PROGRESSION_LABELS[progressionMode] },
 			{ label: 'Schwierigkeit', value: difficulty },
 			{ label: 'Akkorde', value: String(totalChords) },
 			{ label: 'Notation', value: notation },
 			{ label: 'Vorzeichen', value: accidentals === 'sharps' ? 'Kreuze' : accidentals === 'flats' ? "B's" : 'Beide' },
 			{ label: 'Voicing', value: VOICING_LABELS[voicing].split(' ')[0] },
-			{ label: 'Anzeige', value: displayMode === 'off' ? 'Aus' : displayMode === 'always' ? 'Immer' : 'Überprüfen' },
 		] as stat}
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
 				<div class="text-xs text-[var(--text-muted)] mb-1">{stat.label}</div>
 				<div class="font-semibold capitalize">{stat.value}</div>
 			</div>
 		{/each}
+		{#if midiEnabled}
+			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+				<div class="text-xs text-[var(--text-muted)] mb-1">MIDI Accuracy</div>
+				<div class="font-semibold text-[var(--accent-green)]">{midiAccuracy}%</div>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Action buttons -->

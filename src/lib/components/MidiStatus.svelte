@@ -77,7 +77,7 @@
 
 	{#if state === 'unsupported'}
 		<span class="text-xs text-[var(--text-dim)]">
-			Nutze Chrome/Edge für MIDI
+			Web MIDI nur auf Desktop (Chrome/Edge) verfügbar
 		</span>
 	{/if}
 </div>

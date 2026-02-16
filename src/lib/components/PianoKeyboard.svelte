@@ -67,11 +67,10 @@
 		return !!chordData && isRootIndex(chrIdx, chordData.root);
 	}
 
-	/** Is this key currently held via MIDI? */
+	/** Is this key currently held via MIDI? Uses exact position, not pitch class */
 	function isMidiHeld(chrIdx: number): boolean {
 		if (!midiEnabled) return false;
-		const pc = chrIdx % 12;
-		return midiPitchClasses.has(pc);
+		return midiKeyIndices.has(chrIdx);
 	}
 
 	/** MIDI color: green = correct note, red = wrong note */

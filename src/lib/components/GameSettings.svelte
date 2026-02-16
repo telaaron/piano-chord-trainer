@@ -4,6 +4,8 @@
 		VOICING_LABELS,
 		PROGRESSION_LABELS,
 		PROGRESSION_DESCRIPTIONS,
+		PRACTICE_PLANS,
+		suggestPlan,
 		type Difficulty,
 		type NotationStyle,
 		type VoicingType,
@@ -11,7 +13,10 @@
 		type AccidentalPreference,
 		type NotationSystem,
 		type ProgressionMode,
+		type PracticePlan,
 	} from '$lib/engine';
+	import { loadRecentPlanIds, type StreakData } from '$lib/services/progress';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		difficulty: Difficulty;
@@ -23,7 +28,9 @@
 		totalChords: number;
 		progressionMode: ProgressionMode;
 		midiEnabled: boolean;
+		streak: StreakData;
 		onstart: () => void;
+		onstartplan: (plan: PracticePlan) => void;
 	}
 
 	let {
@@ -36,8 +43,18 @@
 		totalChords = $bindable(),
 		progressionMode = $bindable(),
 		midiEnabled = $bindable(),
+		streak,
 		onstart,
+		onstartplan,
 	}: Props = $props();
+
+	let suggested: PracticePlan = $state(PRACTICE_PLANS[0]);
+
+	onMount(() => {
+		const recent = loadRecentPlanIds();
+		// We need totalSessions but don't have it as prop — use recent length as proxy
+		suggested = suggestPlan(recent, recent.length);
+	});
 
 	/** Helper: quick 2-col option grid item */
 	function sel<T>(current: T, value: T): string {
@@ -45,47 +62,99 @@
 			? 'border-[var(--primary)] bg-[var(--primary-muted)]'
 			: 'border-[var(--border)] hover:border-[var(--border-hover)]';
 	}
+
+	function greetingText(): string {
+		const h = new Date().getHours();
+		if (h < 12) return 'Guten Morgen';
+		if (h < 18) return 'Guten Tag';
+		return 'Guten Abend';
+	}
 </script>
 
-<div class="card p-6 sm:p-8 max-w-2xl mx-auto space-y-8">
-	<!-- Quick start -->
-	<div class="text-center space-y-4">
-		<h2 class="text-3xl font-bold">Bereit zum Üben?</h2>
-		<p class="text-[var(--text-muted)]">
-			{totalChords} zufällige Akkorde spielen und deine Zeit tracken.
-		</p>
-
-		<!-- Current settings tags -->
-		<div class="flex flex-wrap gap-2 justify-center text-sm">
-			<span class="bg-[var(--bg-muted)] px-3 py-1 rounded-full">
-				{progressionMode === 'random' ? `${totalChords} Akkorde` : PROGRESSION_LABELS[progressionMode]}
-			</span>
-			<span class="bg-[var(--bg-muted)] px-3 py-1 rounded-full capitalize">{difficulty}</span>
-			<span class="bg-[var(--bg-muted)] px-3 py-1 rounded-full">{VOICING_LABELS[voicing]}</span>
-			<span class="bg-[var(--bg-muted)] px-3 py-1 rounded-full">
-				{displayMode === 'off' ? 'Noten: Aus' : displayMode === 'always' ? 'Noten: Immer' : 'Noten: Überprüfen'}
-			</span>
-			{#if midiEnabled}
-				<span class="bg-[var(--accent-green)]/20 text-[var(--accent-green)] px-3 py-1 rounded-full">MIDI</span>
+<div class="max-w-2xl mx-auto space-y-6">
+	<!-- Greeting + Streak -->
+	<div class="text-center space-y-2">
+		<h2 class="text-3xl font-bold">
+			{greetingText()}!
+			{#if streak.current > 0}
+				<span class="ml-2" title="{streak.current} Tage in Folge">🔥 {streak.current}</span>
 			{/if}
-		</div>
-
-		<!-- Start button -->
-		<button
-			class="w-full h-14 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-lg font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
-			onclick={onstart}
-		>
-			▶ Jetzt spielen!
-		</button>
+		</h2>
+		{#if streak.current >= 3}
+			<p class="text-sm text-[var(--accent-amber)]">
+				{streak.current} Tage in Folge — weiter so!
+				{#if streak.best > streak.current}
+					<span class="text-[var(--text-dim)]">· Rekord: {streak.best}</span>
+				{/if}
+			</p>
+		{:else if streak.current === 0 && streak.best > 0}
+			<p class="text-sm text-[var(--text-muted)]">Starte einen neuen Streak!</p>
+		{/if}
 	</div>
 
-	<!-- Collapsible settings -->
-	<details class="group">
-		<summary class="cursor-pointer text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] flex items-center gap-2">
-			⚙️ Einstellungen anpassen
+	<!-- ── Empfohlen ── -->
+	<button
+		class="card w-full p-5 sm:p-6 text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors group"
+		onclick={() => onstartplan(suggested)}
+	>
+		<div class="flex items-start gap-4">
+			<div class="text-3xl">{suggested.icon}</div>
+			<div class="flex-1 min-w-0">
+				<div class="text-xs text-[var(--text-dim)] font-medium mb-1">Empfohlen</div>
+				<div class="text-xl font-bold group-hover:text-[var(--primary)] transition-colors">{suggested.name}</div>
+				<div class="text-sm text-[var(--text-muted)] mt-1">{suggested.tagline}</div>
+				<p class="text-xs text-[var(--text-dim)] mt-2">{suggested.description}</p>
+			</div>
+			<div class="text-[var(--primary)] text-2xl opacity-60 group-hover:opacity-100 transition-opacity self-center">▶</div>
+		</div>
+	</button>
+
+	<!-- ── Übungspläne Grid ── -->
+	<div>
+		<h3 class="text-sm font-medium text-[var(--text-muted)] mb-3">Übungspläne</h3>
+		<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+			{#each PRACTICE_PLANS.filter((p) => p.id !== suggested.id) as plan}
+				<button
+					class="card p-4 text-left cursor-pointer hover:border-[var(--border-hover)] transition-all group"
+					onclick={() => onstartplan(plan)}
+				>
+					<div class="text-2xl mb-2">{plan.icon}</div>
+					<div class="font-semibold text-sm group-hover:text-[var(--primary)] transition-colors">{plan.name}</div>
+					<div class="text-xs text-[var(--text-dim)] mt-1 line-clamp-2">{plan.tagline}</div>
+				</button>
+			{/each}
+		</div>
+	</div>
+
+	<!-- ── Eigene Übung ── -->
+	<details class="card group">
+		<summary class="cursor-pointer p-5 sm:p-6 flex items-center justify-between">
+			<div>
+				<div class="text-sm font-medium">⚙️ Eigene Übung konfigurieren</div>
+				<div class="text-xs text-[var(--text-dim)] mt-1 flex flex-wrap gap-2">
+					<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">
+						{progressionMode === 'random' ? `${totalChords} Akkorde` : PROGRESSION_LABELS[progressionMode]}
+					</span>
+					<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full capitalize">{difficulty}</span>
+					<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">{VOICING_LABELS[voicing]}</span>
+					{#if midiEnabled}
+						<span class="bg-[var(--accent-green)]/20 text-[var(--accent-green)] px-2 py-0.5 rounded-full">MIDI</span>
+					{/if}
+				</div>
+			</div>
+			<svg class="w-5 h-5 text-[var(--text-dim)] transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+			</svg>
 		</summary>
 
-		<div class="mt-6 pt-6 border-t border-[var(--border)] space-y-6">
+		<div class="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 border-t border-[var(--border)] space-y-6">
+			<!-- Start custom -->
+			<button
+				class="w-full h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer mt-4"
+				onclick={onstart}
+			>
+				▶ Mit diesen Einstellungen starten
+			</button>
 			<!-- Progression Mode -->
 			<fieldset>
 				<legend class="text-sm font-medium mb-3">Übungsmodus</legend>
@@ -124,6 +193,9 @@
 						</button>
 					{/each}
 				</div>
+				<p class="mt-2 text-xs text-[var(--text-dim)]">
+					Web MIDI benötigt Desktop-Browser (Chrome/Edge). Auf iPad/iPhone nicht verfügbar.
+				</p>
 			</fieldset>
 
 			<!-- Difficulty -->
@@ -265,11 +337,4 @@
 			{/if}
 		</div>
 	</details>
-
-	<!-- Quick instruction -->
-	<div class="p-4 bg-[var(--bg-muted)] rounded-[var(--radius)] text-center">
-		<p class="text-sm text-[var(--text-muted)]">
-			Spiele die Akkorde und drücke <strong class="text-[var(--text)]">Leertaste</strong> oder tippe zum Fortfahren
-		</p>
-	</div>
 </div>

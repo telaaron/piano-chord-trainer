@@ -92,7 +92,7 @@ chord-trainer/
 │       ├── +layout.svelte   ← CSS Import + min-h-dvh Wrapper
 │       └── +page.svelte     ← Game Loop (270 Zeilen), State Management
 ├── static/
-│   └── favicon.svg          ← Lila ♪ Icon
+│   └── favicon.ico          ← Lila ♪ Icon
 ├── package.json
 ├── svelte.config.js         ← adapter-vercel + vitePreprocess
 ├── vite.config.ts           ← tailwindcss() + sveltekit()

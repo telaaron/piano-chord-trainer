@@ -9,7 +9,7 @@
 	import ProgressDashboard from '$lib/components/ProgressDashboard.svelte';
 	import { MidiService } from '$lib/services/midi';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
-	import { saveSession, loadSettings, saveSettings } from '$lib/services/progress';
+	import { saveSession, loadSettings, saveSettings, loadStreak, type StreakData } from '$lib/services/progress';
 	import { playChord, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll } from '$lib/services/audio';
 	import {
 		CHORDS_BY_DIFFICULTY,
@@ -31,6 +31,7 @@
 		type NotationSystem,
 		type ChordWithNotes,
 		type ProgressionMode,
+		type PracticePlan,
 	} from '$lib/engine';
 
 	// ─── Settings (persisted) ────────────────────────────────────
@@ -43,6 +44,7 @@
 	let totalChords = $state(20);
 	let progressionMode: ProgressionMode = $state('random');
 	let midiEnabled = $state(false);
+	let streak: StreakData = $state({ current: 0, best: 0, lastDate: '' });
 
 	// ─── Audio / Metronome settings ──────────────────────────────
 	let audioEnabled = $state(true);
@@ -209,6 +211,20 @@
 			progressionMode,
 			midiEnabled,
 		});
+	}
+
+	function startPlan(plan: PracticePlan) {
+		// Apply plan settings
+		difficulty = plan.settings.difficulty;
+		notation = plan.settings.notation;
+		voicing = plan.settings.voicing;
+		displayMode = plan.settings.displayMode;
+		accidentals = plan.settings.accidentals;
+		progressionMode = plan.settings.progressionMode;
+		totalChords = plan.settings.totalChords;
+		
+		// Start the game with plan settings
+		startGame();
 	}
 
 	function nextChord() {
@@ -389,6 +405,12 @@
 			midiEnabled = saved.midiEnabled;
 		}
 
+		// Load streak data
+		const savedStreak = loadStreak();
+		if (savedStreak) {
+			streak = savedStreak;
+		}
+
 		// MIDI setup
 		midi.onNotes(handleMidiNotes);
 		midi.onConnection((state) => {
@@ -446,7 +468,9 @@
 					bind:totalChords
 					bind:progressionMode
 					bind:midiEnabled
+					{streak}
 					onstart={startGame}
+					onstartplan={startPlan}
 				/>
 				<ProgressDashboard />
 			</div>

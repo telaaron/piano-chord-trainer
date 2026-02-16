@@ -11,3 +11,6 @@ export { WHITE_KEY_COUNT, CHROMATIC_COUNT, BLACK_KEYS, WHITE_KEY_CHROMATIC, whit
 
 export { PROGRESSION_LABELS, PROGRESSION_DESCRIPTIONS, generateProgression } from './progressions';
 export type { ProgressionMode, GeneratedProgression } from './progressions';
+
+export { PRACTICE_PLANS, suggestPlan } from './plans';
+export type { PracticePlan } from './plans';
