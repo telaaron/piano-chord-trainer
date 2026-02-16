@@ -2,12 +2,15 @@
 	import {
 		CHORDS_BY_DIFFICULTY,
 		VOICING_LABELS,
+		PROGRESSION_LABELS,
+		PROGRESSION_DESCRIPTIONS,
 		type Difficulty,
 		type NotationStyle,
 		type VoicingType,
 		type DisplayMode,
 		type AccidentalPreference,
 		type NotationSystem,
+		type ProgressionMode,
 	} from '$lib/engine';
 
 	interface Props {
@@ -18,6 +21,8 @@
 		accidentals: AccidentalPreference;
 		notationSystem: NotationSystem;
 		totalChords: number;
+		progressionMode: ProgressionMode;
+		midiEnabled: boolean;
 		onstart: () => void;
 	}
 
@@ -29,6 +34,8 @@
 		accidentals = $bindable(),
 		notationSystem = $bindable(),
 		totalChords = $bindable(),
+		progressionMode = $bindable(),
+		midiEnabled = $bindable(),
 		onstart,
 	}: Props = $props();
 
@@ -50,12 +57,17 @@
 
 		<!-- Current settings tags -->
 		<div class="flex flex-wrap gap-2 justify-center text-sm">
-			<span class="bg-[var(--bg-muted)] px-3 py-1 rounded-full">{totalChords} Akkorde</span>
+			<span class="bg-[var(--bg-muted)] px-3 py-1 rounded-full">
+				{progressionMode === 'random' ? `${totalChords} Akkorde` : PROGRESSION_LABELS[progressionMode]}
+			</span>
 			<span class="bg-[var(--bg-muted)] px-3 py-1 rounded-full capitalize">{difficulty}</span>
 			<span class="bg-[var(--bg-muted)] px-3 py-1 rounded-full">{VOICING_LABELS[voicing]}</span>
 			<span class="bg-[var(--bg-muted)] px-3 py-1 rounded-full">
 				{displayMode === 'off' ? 'Noten: Aus' : displayMode === 'always' ? 'Noten: Immer' : 'Noten: Überprüfen'}
 			</span>
+			{#if midiEnabled}
+				<span class="bg-[var(--accent-green)]/20 text-[var(--accent-green)] px-3 py-1 rounded-full">MIDI</span>
+			{/if}
 		</div>
 
 		<!-- Start button -->
@@ -74,6 +86,46 @@
 		</summary>
 
 		<div class="mt-6 pt-6 border-t border-[var(--border)] space-y-6">
+			<!-- Progression Mode -->
+			<fieldset>
+				<legend class="text-sm font-medium mb-3">Übungsmodus</legend>
+				<div class="grid grid-cols-2 gap-3">
+					{#each [
+						{ val: 'random' as ProgressionMode, label: 'Zufällig', sub: 'Zufällige Akkorde' },
+						{ val: '2-5-1' as ProgressionMode, label: 'ii – V – I', sub: 'Dm7 → G7 → CMaj7' },
+						{ val: 'cycle-of-4ths' as ProgressionMode, label: 'Quartenzirkel', sub: 'C → F → Bb → Eb → …' },
+						{ val: '1-6-2-5' as ProgressionMode, label: 'I – vi – ii – V', sub: 'Turnaround in allen Keys' },
+					] as opt}
+						<button
+							class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(progressionMode, opt.val)}"
+							onclick={() => (progressionMode = opt.val)}
+						>
+							<div class="font-semibold text-sm">{opt.label}</div>
+							<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+						</button>
+					{/each}
+				</div>
+			</fieldset>
+
+			<!-- MIDI Toggle -->
+			<fieldset>
+				<legend class="text-sm font-medium mb-3">MIDI-Erkennung</legend>
+				<div class="grid grid-cols-2 gap-3">
+					{#each [
+						{ val: false, label: 'Aus', sub: 'Leertaste zum Weiter' },
+						{ val: true, label: 'An', sub: 'Auto-Weiter bei richtigem Akkord' },
+					] as opt}
+						<button
+							class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(midiEnabled, opt.val)}"
+							onclick={() => (midiEnabled = opt.val)}
+						>
+							<div class="font-semibold text-sm">{opt.label}</div>
+							<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+						</button>
+					{/each}
+				</div>
+			</fieldset>
+
 			<!-- Difficulty -->
 			<fieldset>
 				<legend class="text-sm font-medium mb-3">Schwierigkeitsgrad</legend>
@@ -194,17 +246,23 @@
 				</div>
 			</fieldset>
 
-			<!-- Chord count -->
-			<fieldset>
-				<legend class="text-sm font-medium mb-3">Anzahl Akkorde</legend>
-				<input
-					type="number"
-					min="5"
-					max="50"
-					bind:value={totalChords}
-					class="w-full px-4 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-				/>
-			</fieldset>
+			<!-- Chord count (only for random mode) -->
+			{#if progressionMode === 'random'}
+				<fieldset>
+					<legend class="text-sm font-medium mb-3">Anzahl Akkorde</legend>
+					<input
+						type="number"
+						min="5"
+						max="50"
+						bind:value={totalChords}
+						class="w-full px-4 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+					/>
+				</fieldset>
+			{:else}
+				<div class="p-3 bg-[var(--bg)] rounded-[var(--radius)] border border-[var(--border)] text-sm text-[var(--text-muted)]">
+					{PROGRESSION_DESCRIPTIONS[progressionMode]}
+				</div>
+			{/if}
 		</div>
 	</details>
 
