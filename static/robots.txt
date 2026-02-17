@@ -1,15 +1,10 @@
-# Chord Trainer - Robots.txt
+# Chord Trainer – jazzchords.com
 User-agent: *
 Allow: /
 Disallow: /.git/
 
-# Sitemaps
 Sitemap: https://jazzchords.app/sitemap.xml
 
-# Crawl delay to be respectful
-Crawl-delay: 1
-
-# Specific rules for popular crawlers
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 0

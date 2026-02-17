@@ -1,13 +1,13 @@
 {
-  "name": "Piano Chord Trainer",
+  "name": "Chord Trainer – Jazz Piano Voicings",
   "short_name": "Chord Trainer",
-  "description": "Speed training tool for jazz piano voicings (Shell, Rootless, Full) with MIDI recognition. Practice chord changes through all 12 keys with precision timing.",
-  "start_url": "/",
+  "description": "Speed training for jazz piano voicings. MIDI recognition, ii-V-I progressions, progress tracking. Free.",
+  "start_url": "/train",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#1f2937",
-  "background_color": "#ffffff",
+  "theme_color": "#7c5cfc",
+  "background_color": "#0a0a0b",
   "categories": ["music", "education"],
   "screenshots": [
     {
@@ -53,7 +53,7 @@
     {
       "name": "Start Training",
       "short_name": "Train",
-      "url": "/?mode=training",
+      "url": "/train",
       "icons": [
         {
           "src": "/android-chrome-192x192.png",

@@ -1,13 +1,90 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="description" content="Jazz Piano Chord Trainer – Voicings üben, MIDI-Support, 2-5-1 Progressionen" />
+		<meta name="description" content="Master jazz piano voicings in all 12 keys. Speed training with MIDI recognition, ii-V-I progressions, and progress tracking. Free, no signup." />
+
+		<!-- SEO -->
+		<meta name="author" content="Aaron Technologies OÜ" />
+		<meta name="theme-color" content="#7c5cfc" />
+		<meta name="application-name" content="Chord Trainer" />
+		<link rel="canonical" href="https://jazzchords.app" />
+
+		<!-- Open Graph (fallback, pages override) -->
+		<meta property="og:site_name" content="Chord Trainer" />
+		<meta property="og:locale" content="en_US" />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://jazzchords.app" />
+
+		<!-- Twitter Card -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
+		<meta name="twitter:description" content="Master jazz piano voicings in all 12 keys. MIDI recognition, ii-V-I progressions, progress tracking." />
+
+		<!-- Structured Data: SoftwareApplication -->
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "WebApplication",
+				"name": "Chord Trainer",
+				"url": "https://jazzchords.app",
+				"description": "Speed training tool for jazz piano voicings. Practice chord changes in all 12 keys with MIDI recognition, ii-V-I progressions, and progress tracking.",
+				"applicationCategory": "MusicApplication",
+				"operatingSystem": "Web",
+				"browserRequirements": "Requires Chrome or Edge for MIDI support",
+				"offers": {
+					"@type": "Offer",
+					"price": "0",
+					"priceCurrency": "USD"
+				},
+				"creator": {
+					"@type": "Organization",
+					"name": "Aaron Technologies OÜ",
+					"url": "https://jazzchords.app",
+					"sameAs": [
+						"https://must-seen.com",
+						"https://www.linkedin.com/in/aaronpfuetzner/?locale=de_DE",
+						"https://github.com/telaaron"
+					],
+					"legalName": "Aaron Technologies OÜ",
+					"address": {
+						"@type": "PostalAddress",
+						"streetAddress": "Sepapaja tn 6",
+						"addressLocality": "Tallinn",
+						"postalCode": "15551",
+						"addressCountry": "EE"
+					},
+					"contactPoint": {
+						"@type": "ContactPoint",
+						"contactType": "Customer Support",
+						"email": "info@jazzchords.app"
+					}
+				},
+				"featureList": [
+					"MIDI keyboard recognition",
+					"ii-V-I progressions in all 12 keys",
+					"4+ voicing types (Root, Shell, Rootless, Inversions)",
+					"Audio playback and metronome",
+					"Weakness analysis and progress tracking",
+					"Guided practice plans"
+				],
+				"screenshot": "https://jazzchords.app/android-chrome-512x512.png"
+			}
+		</script>
+
+		<!-- Fonts -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+		<!-- Icons -->
 		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+		<link rel="icon" type="image/png" sizes="32x32" href="%sveltekit.assets%/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="%sveltekit.assets%/favicon-16x16.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="%sveltekit.assets%/apple-touch-icon.png" />
+		<link rel="manifest" href="%sveltekit.assets%/site.webmanifest" />
+
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

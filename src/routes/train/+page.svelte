@@ -520,6 +520,11 @@
 <svelte:head>
 	<title>Practice – Chord Trainer</title>
 	<meta name="description" content="Practice jazz piano voicings with speed drills. MIDI recognition, ii-V-I progressions, progress tracking. Choose a plan and start training." />
+	<link rel="canonical" href="https://jazzchords.app/train" />
+	<meta property="og:title" content="Practice – Chord Trainer" />
+	<meta property="og:description" content="Practice jazz piano voicings with speed drills. MIDI recognition, ii-V-I progressions, progress tracking." />
+	<meta property="og:url" content="https://jazzchords.com/train" />
+	<meta name="robots" content="noindex" />
 </svelte:head>
 
 <main class="flex-1 py-8 sm:py-12 px-4">
