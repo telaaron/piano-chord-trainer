@@ -73,6 +73,7 @@ Maj7#11       [0, 4, 7, 11, 18]      C  E  G  B  F#'
 m11           [0, 3, 7, 10, 14, 17]  C  Eb G  Bb D' F'
 13            [0, 4, 7, 10, 14, 21]  C  E  G  Bb D' A'
 m7b5 (ø7)    [0, 3, 6, 10]          C  Eb Gb Bb
+dim7 (°7)    [0, 3, 6, 9]           C  Eb Gb A     (vollvermindert)
 ```
 
 ---

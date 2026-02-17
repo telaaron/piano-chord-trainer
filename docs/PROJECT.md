@@ -1,9 +1,9 @@
 # Chord Trainer – Projekt-Übersicht & Roadmap
 
 **Projekt:** Chord Trainer  
-**Status:** Funktionsfähig (P1–P6 + Guided Practice + Analyse fertig)  
-**Erstellt:** 16. Februar 2026  
-**Autor:** Agent 1 + Agent 2  
+**Status:** v0.5.0 — Theming + Bug Fixes + Audio/Keyboard Overhaul  
+**Zuletzt aktualisiert:** 17. Februar 2026  
+**Autoren:** Agent 1 + Agent 2 + Agent 3  
 
 ---
 
@@ -30,12 +30,47 @@ Ein Jazz-Piano-Student setzt sich ans Klavier und denkt:
 
 ---
 
-## ✅ Aktuell Gebaut (v0.3)
+## ✅ Aktuell Gebaut (v0.5.0)
 
-### Core Game Loop
+### Audio- & Keyboard-Überhaul ✅
+- ✅ **Keyboard-Display-Fix**: Nur Voicing-Noten werden highlighted, nie automatisch der Root bei Rootless-Voicings
+- ✅ **Musik-Register-Spread**: Voicings spielen ab Oktave 3 mit natürlicher Spreizung, nicht mehr crammed
+- ✅ **Root-Indikator-Fix**: Weißer Punkt erscheint nur wenn Root tatsächlich im Voicing ist
+- ✅ **6 neue Voicing-Typen**: Rootless A (Bill Evans), Rootless B, Umkehrung 1–3
+- ✅ **Custom Progressions**: Editor, Player mit Metronom, Evaluator, 7 Jazz-Presets
+
+### Bug Fixes & Quality (v0.5.0) ✅
+- ✅ **BUG-2**: `CM7` nicht mehr falsch als `Cm7` geparst (exakter Match first, dann case-insensitive)
+- ✅ **BUG-3**: Sharp/Flat-Konsistenz behoben für `'both'` Akzidentalien
+- ✅ **BUG-4**: Normale Bindestriche `-` jetzt als Progressions-Separator erkannt
+- ✅ **BUG-1**: MIDI-Handler nach Custom Progressions korrekt wiederhergestellt
+- ✅ **IMP-5**: `dim7 ≠ m7b5` — beide nun korrekt definiert
+- ✅ **A11y**: ChordCard mit Tastatur-Support (`role="button"`, `tabindex="0"`)
+- ✅ **DRY**: `formatTime()` aus 3 Dateien extrahiert → [src/lib/utils/format.ts](../src/lib/utils/format.ts)
+
+### Open Studio Theme & Branding ✅
+- ✅ **Theme-System**: Switcher in Nav (Palette-Icon), localStorage-Persistiert
+- ✅ **Open Studio Theme**: Navy (#0c1821) + Gold (#c9a54e), warmere Piano-Keys, glowing hover-states
+- ✅ **Conditional Branding**: Logo & Footer passen sich zum aktiven Theme an
+- ✅ **Für Pitch zu Open Studio**: "Open Studio" im Logo, gold accent, Navy-Hintergrund
+
+### Voicing-Typen: Vollständige Liste ✅
+
+| Label | Englisch | Setting-Key | Was es macht |
+|-------|----------|------------|---------------|
+| Root Position | Root | `root` | Alle Noten, Root unten (C-E-G-Bb) |
+| Shell Voicing | Shell | `shell` | 1st-3rd-7th nur (C-E-Bb) |
+| Half Shell | Half-Shell | `half-shell` | 3rd-Root-7th geordnet (E-C-Bb) |
+| Full Voicing | Full | `full` | Root-7th-3rd-5th (C-B-E-G) |
+| Rootless A | Rootless A | `rootless-a` | 3-5-7-9 (Bill Evans; Bb-D-F-A) |
+| Rootless B | Rootless B | `rootless-b` | 7-9-3-5 (komplementär; F-A-Bb-D) |
+| 1. Umkehrung | 1st Inversion | `inversion-1` | 3rd auf dem Boden (rotiert um 1) |
+| 2. Umkehrung | 2nd Inversion | `inversion-2` | 5th auf dem Boden (rotiert um 2) |
+| 3. Umkehrung | 3rd Inversion | `inversion-3` | 7th auf dem Boden (rotiert um 3) |
+
+### Core Game Loop (Basis v0.1–0.4) ✅
 - ✅ Akkord-Generation (zufällig + 4 Progressions-Modi)
 - ✅ Visuelle Klaviatur (2 Oktaven, responsive, Root-Markierung)
-- ✅ 4 Voicing-Typen (Root, Shell, Half-Shell, Full)
 - ✅ Timer mit Millisekunden-Genauigkeit
 - ✅ 3 Notations-Systeme (International, German, Symbole)
 - ✅ 3 Schwierigkeitsgrade (Beginner, Intermediate, Advanced)
@@ -78,6 +113,7 @@ Ein Jazz-Piano-Student setzt sich ans Klavier und denkt:
 ### Design (P6) ✅
 - ✅ Svelte Transitions (fade/fly/scale) zwischen Screens
 - ✅ Dark Theme mit CSS Custom Properties
+- ✅ **Multi-Theme-System** (Default + Open Studio)
 - ✅ Responsive (Mobile → Desktop)
 
 ---
@@ -146,19 +182,26 @@ src/
 │   ├── chords.ts             (14 Akkord-Typen, Difficulty-Pools)
 │   ├── voicings.ts           (4 Voicing-Berechnungen)
 │   ├── keyboard.ts           (Keyboard-Geometrie, 2 Oktaven)
-│   ├── progressions.ts       (ii-V-I, Quartenzirkel, I-vi-ii-V)
-│   └── plans.ts              (7 Übungspläne, suggestPlan-Logik)
-├── lib/components/           ← Svelte 5 Components
-│   ├── PianoKeyboard.svelte  (2-Oktaven-Keyboard + MIDI-Overlay)
-│   ├── ChordCard.svelte      (Akkord-Display mit Snippet-Children)
-│   ├── GameSettings.svelte   (Übungspläne + Eigene Übung, erklärt)
-│   ├── Results.svelte        (Ergebnis-Screen + Mini-Keyboards)
-│   ├── MidiStatus.svelte     (MIDI-Connection + Device-Picker)
-│   └── ProgressDashboard.svelte (Stats, Weak Chords, Trends, Bestzeiten)
+│   └── progressions.ts       (ii-V-I, Quarterzirkel, I-vi-ii-V)
+│   ├── plans.ts              (7 Übungspläne, suggestPlan-Logik)
+│   └── custom-progressions.ts (Parser, Evaluator, Presets)
+├── lib/utils/                ← Shared Utilities
+│   └── format.ts             (formatTime für alle Screens)
 ├── lib/services/             ← Seiteneffekte, externe APIs
 │   ├── midi.ts               (Web MIDI API Wrapper, Chord Matching)
 │   ├── audio.ts              (Tone.js: Synth, Metronom, Playback)
-│   └── progress.ts           (localStorage: History, Streak, Weak-Chord-Analyse)
+│   ├── progress.ts           (localStorage: History, Streak)
+│   └── theme.ts              (Theme-System, Switching)
+├── lib/components/           ← Svelte 5 Components
+│   ├── PianoKeyboard.svelte  (2-Oktaven, MIDI-Overlay, Voicing-Highlight)
+│   ├── ChordCard.svelte      (Akkord-Display, keyboard-accessible)
+│   ├── GameSettings.svelte   (Übungspläne, custom settings)
+│   ├── Results.svelte        (Ergebnis-Screen + Mini-Keyboards)
+│   ├── MidiStatus.svelte     (MIDI-Connection + Device-Picker)
+│   ├── ProgressDashboard.svelte (Stats, Weak Chords, Trends)
+│   ├── ProgressionEditor.svelte (Custom progression input)
+│   ├── ProgressionPlayer.svelte (Loop player mit Evaluator)
+│   └── ProgressionResults.svelte (Results für Custom Progressions)
 ├── routes/
 │   ├── +layout.svelte        (CSS Import, min-h-dvh Wrapper)
 │   └── +page.svelte          (Game Loop, ~620 Zeilen State Machine)
@@ -215,7 +258,7 @@ src/
 - Svelte Transitions (fade/fly/scale)
 - Bug fixes: $effect infinite loop, async audio fire-and-forget
 
-### [v0.4.0] – 16. Feb 2026 – Guided Practice + Analyse
+### [v0.4.0] – 16. Feb 2026 – Guided Practice + Custom Progressions (Agent 2)
 - Übungspläne: 7 kuratierte One-Tap-Presets (Warm-Up bis Voicing Drill)
 - Streak-System (tägliche Motivation, Best-Streak)
 - MIDI Auto-Detection (automatisch erkennen, Banner, Hot-Plug)
@@ -223,4 +266,14 @@ src/
 - Schwachstellen-Analyse (langsamste Akkorde pro Root)
 - Verbesserungs-Trends ("Du wirst besser bei X")
 - UX-Redesign: Empfehlung statt Settings-Overload
-- Klare Erklärungen: Jede Option sagt was sie tut (Shell Voicing etc.)
+- Klare Erklärungen: Jede Option sagt was sie tut
+- **Custom Progressions**: Editor, Player, Evaluator, 7 Jazz-Presets
+
+### [v0.5.0] – 17. Feb 2026 – Keyboard Fix + Theme System + Quality (Agent 3)
+- **Audio/Keyboard Overhaul**: Nur Voicing-Noten highlighted, natürliche Register-Spreizung
+- **6 neue Voicing-Typen**: Rootless A/B + Umkehrungen 1–3
+- **Theme-System**: Default + Open Studio branding, Theme-Switcher in Nav
+- **Bug Fixes**: CM7-Parsing, Sharp/Flat-Konsistenz, Hyphen-Support, MIDI re-registration, dim7-Handling
+- **ChordCard A11y**: Tastatur-Navigation (role="button", keydown-Handler)
+- **Code Quality**: `formatTime()` extrahiert → shared utility
+- **Voicing-Label-Updates**: Deutsch für inversions

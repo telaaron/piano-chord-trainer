@@ -99,7 +99,7 @@
 <section class="hero">
 	<div class="hero-content">
 		<!-- Badge -->
-		<div class="badge">
+		<div class="badge hide-mobile">
 			<span class="dot"></span>
 			MIDI · Audio · Progress Tracking
 		</div>
@@ -110,9 +110,13 @@
 			<span class="white-text">Voicings in All 12 Keys</span>
 		</h1>
 
-		<p class="subtitle">
+		<p class="subtitle hide-mobile">
 			Speed training that builds muscle memory. See a chord, play it, get faster.
 			Shell voicings, rootless, ii-V-I — through every key.
+		</p>
+
+		<p class="subtitle show-mobile-only">
+			See a chord, play it, get faster — through all 12 keys.
 		</p>
 
 		<!-- CTAs -->
@@ -121,12 +125,13 @@
 				Start Training
 				<span class="arrow">→</span>
 			</a>
-			<a href="/for-educators" class="btn btn-secondary">
+			<a href="/for-educators" class="btn btn-secondary hide-mobile">
 				For Music Schools
 			</a>
 		</div>
 
-		<p class="footnote">Free. No signup. Works in Chrome &amp; Edge.</p>
+		<p class="footnote hide-mobile">Free. No signup. Works in Chrome &amp; Edge.</p>
+		<p class="footnote show-mobile-only">Free · MIDI · No signup</p>
 	</div>
 
 	<!-- Piano Animation (Scroll-controlled) -->
@@ -205,6 +210,9 @@
 	.hero {
 		position: relative;
 		min-height: 90vh;
+		@media (max-width: 968px) {
+			min-height: 100vh;
+		}
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		align-items: center;
@@ -226,6 +234,7 @@
 		font-size: 0.85rem;
 		color: var(--accent-amber);
 		margin-bottom: 2rem;
+		width: fit-content;
 	}
 
 	.dot {
@@ -316,6 +325,15 @@
 		color: var(--text-dim);
 	}
 
+	/* Mobile-specific visibility */
+	.show-mobile-only {
+		display: none;
+	}
+
+	.hide-mobile {
+		display: block;
+	}
+
 	/* Piano Video */
 	.piano-container {
 		position: relative;
@@ -357,6 +375,14 @@
 
 	/* Mobile: video becomes subtle background behind hero */
 	@media (max-width: 968px) {
+		.hide-mobile {
+			display: none !important;
+		}
+
+		.show-mobile-only {
+			display: block !important;
+		}
+
 		.hero {
 			grid-template-columns: 1fr;
 			text-align: center;

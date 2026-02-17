@@ -1,5 +1,15 @@
 # Chord Trainer – Agent Handoff
 
+> **⚠️ ARCHIVIERT — Dieses Dokument beschreibt den Stand von v0.1.0 (16. Feb 2026).**  
+> **Für aktuelle Informationen siehe:**  
+> - [PROJECT.md](PROJECT.md) — Roadmap & Changelog  
+> - [ARCHITECTURE.md](ARCHITECTURE.md) — Technische Architektur  
+> - [CONTRIBUTING.md](CONTRIBUTING.md) — Konventionen & Setup  
+> - [FEATURES.md](FEATURES.md) — Aktuelles Feature-Inventar  
+> - [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) — Offene Fragen & Tech Debt
+
+---
+
 > **Letzte Bearbeitung:** 16. Februar 2026  
 > **Commit:** `24ab02f` (initial commit)  
 > **Repo:** `/Users/aaronpfutzner/Dateien - Local/chord-trainer/`  
