@@ -12,37 +12,72 @@
 
 	let videoElement: HTMLVideoElement;
 	let scrollProgress = $state(0);
+	let useStaticFallback = $state(false);
+	let isMobile = $state(false);
 
 	onMount(() => {
-		let rafId: number;
+		isMobile = window.matchMedia('(max-width: 968px)').matches;
+		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		// Static fallback for reduced motion preference
+		if (prefersReducedMotion) {
+			useStaticFallback = true;
+		}
+
+		// On mobile: show first frame only, no scroll animation
+		if (isMobile) {
+			useStaticFallback = true;
+			if (videoElement) {
+				videoElement.load();
+				videoElement.addEventListener('loadeddata', () => {
+					videoElement.currentTime = 0;
+				}, { once: true });
+			}
+			return;
+		}
+
+		let targetTime = 0;
+		let isUpdating = false;
 
 		const handleScroll = () => {
-			if (rafId) cancelAnimationFrame(rafId);
-			
-			rafId = requestAnimationFrame(() => {
-				const scrollTop = window.scrollY;
-				const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-				const scrollPercent = scrollTop / docHeight;
+			if (!videoElement || !videoElement.duration) return;
 
-				// Map scroll to video time (first 50% of scroll)
-				scrollProgress = Math.min(scrollPercent * 2, 1);
+			const scrollTop = window.scrollY;
+			const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+			const scrollPercent = scrollTop / docHeight;
+			scrollProgress = Math.min(scrollPercent * 0.5, 1);
+			targetTime = videoElement.duration * scrollProgress;
 
-				if (videoElement && videoElement.duration) {
-					videoElement.currentTime = videoElement.duration * scrollProgress;
-				}
-			});
+			if (!isUpdating && !useStaticFallback) {
+				isUpdating = true;
+				videoElement.currentTime = targetTime;
+			}
 		};
 
-		window.addEventListener('scroll', handleScroll);
+		// When the browser has actually decoded a frame after seeking,
+		// seek to the latest target — this avoids queueing seeks faster than decode.
+		const onSeeked = () => {
+			if (!videoElement || useStaticFallback) return;
+			isUpdating = false;
+
+			// If scroll moved since our last seek, catch up
+			if (Math.abs(videoElement.currentTime - targetTime) > 0.05) {
+				isUpdating = true;
+				videoElement.currentTime = targetTime;
+			}
+		};
+
+		window.addEventListener('scroll', handleScroll, { passive: true });
 
 		// Preload video
 		if (videoElement) {
+			videoElement.addEventListener('seeked', onSeeked);
 			videoElement.load();
 		}
 
 		return () => {
 			window.removeEventListener('scroll', handleScroll);
-			if (rafId) cancelAnimationFrame(rafId);
+			videoElement?.removeEventListener('seeked', onSeeked);
 		};
 	});
 </script>
@@ -108,139 +143,68 @@
 	</div>
 </section>
 
-<!-- Features -->
-<section class="px-4 py-20">
-	<div class="max-w-5xl mx-auto">
-		<div class="text-center mb-12">
-			<h2 class="text-2xl sm:text-3xl font-bold">Everything you need</h2>
+<!-- What's inside -->
+<section class="features-section">
+	<div class="max-w-4xl mx-auto px-4">
+		<h2 class="text-2xl sm:text-3xl font-bold text-center mb-10 text-[var(--text)]">Plug in. Play. Get faster.</h2>
+
+		<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
+			<div class="card p-5 card-hover">
+				<Piano size={24} class="mx-auto mb-2 text-[var(--primary)]" />
+				<p class="font-semibold text-sm">MIDI auto-detect</p>
+			</div>
+			<div class="card p-5 card-hover">
+				<Target size={24} class="mx-auto mb-2 text-[var(--accent-amber)]" />
+				<p class="font-semibold text-sm">ii-V-I all 12 keys</p>
+			</div>
+			<div class="card p-5 card-hover">
+				<Keyboard size={24} class="mx-auto mb-2 text-[var(--accent-gold)]" />
+				<p class="font-semibold text-sm">4+ voicing types</p>
+			</div>
+			<div class="card p-5 card-hover">
+				<Volume2 size={24} class="mx-auto mb-2 text-[var(--primary)]" />
+				<p class="font-semibold text-sm">Audio &amp; metronome</p>
+			</div>
+			<div class="card p-5 card-hover">
+				<BarChart3 size={24} class="mx-auto mb-2 text-[var(--accent-amber)]" />
+				<p class="font-semibold text-sm">Weakness tracking</p>
+			</div>
+			<div class="card p-5 card-hover">
+				<BookOpen size={24} class="mx-auto mb-2 text-[var(--accent-gold)]" />
+				<p class="font-semibold text-sm">Practice plans</p>
+			</div>
 		</div>
 
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-			<!-- MIDI -->
-			<div class="card p-6 card-hover transition-all">
-				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--primary-muted)] flex items-center justify-center mb-4">
-					<Piano size={20} class="text-[var(--primary)]" />
-				</div>
-				<h3 class="font-semibold text-lg mb-2">MIDI Recognition</h3>
-				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-					Auto-detects when you nail the chord. No typing, no clicking.
-				</p>
-			</div>
-
-			<!-- Progressions -->
-			<div class="card p-6 card-hover transition-all">
-				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--accent-purple)]/15 flex items-center justify-center mb-4">
-					<Target size={20} class="text-[var(--accent-purple)]" />
-				</div>
-				<h3 class="font-semibold text-lg mb-2">ii-V-I in All Keys</h3>
-				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-					The most important progression, drilled through all 12 keys.
-				</p>
-			</div>
-
-			<!-- Voicings -->
-			<div class="card p-6 card-hover transition-all">
-				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--accent-green)]/15 flex items-center justify-center mb-4">
-					<Keyboard size={20} class="text-[var(--accent-green)]" />
-				</div>
-				<h3 class="font-semibold text-lg mb-2">4+ Voicing Types</h3>
-				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-					Shell, rootless A, inversions—shown on a visual keyboard.
-				</p>
-			</div>
-
-			<!-- Audio -->
-			<div class="card p-6 card-hover transition-all">
-				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--accent-amber)]/15 flex items-center justify-center mb-4">
-					<Volume2 size={20} class="text-[var(--accent-amber)]" />
-				</div>
-				<h3 class="font-semibold text-lg mb-2">Audio &amp; Metronome</h3>
-				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-					Hear every chord. Built-in metronome with BPM control.
-				</p>
-			</div>
-
-			<!-- Progress -->
-			<div class="card p-6 card-hover transition-all">
-				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--accent-red)]/15 flex items-center justify-center mb-4">
-					<BarChart3 size={20} class="text-[var(--accent-red)]" />
-				</div>
-				<h3 class="font-semibold text-lg mb-2">Weakness Analysis</h3>
-				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-					Tracks time per chord. Shows your slowest keys.
-				</p>
-			</div>
-
-			<!-- Plans -->
-			<div class="card p-6 card-hover transition-all">
-				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--primary-muted)] flex items-center justify-center mb-4">
-					<BookOpen size={20} class="text-[var(--primary)]" />
-				</div>
-				<h3 class="font-semibold text-lg mb-2">Practice Plans</h3>
-				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-					One-tap presets: Warm-Up, Speed Run, Challenge.
-				</p>
-			</div>
-		</div>
-	</div>
-</section>
-
-<!-- How it works -->
-<section class="px-4 pb-20">
-	<div class="max-w-3xl mx-auto">
-		<div class="text-center mb-12">
-			<h2 class="text-2xl sm:text-3xl font-bold">How it works</h2>
-		</div>
-
-		<div class="space-y-6">
-			<div class="flex items-start gap-4">
-				<div class="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-bold text-sm">1</div>
-				<div>
-					<h3 class="font-semibold text-lg">Choose your drill</h3>
-					<p class="text-[var(--text-muted)] mt-1">Pick a practice plan or customize.</p>
-				</div>
-			</div>
-			<div class="flex items-start gap-4">
-				<div class="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-bold text-sm">2</div>
-				<div>
-					<h3 class="font-semibold text-lg">Play each chord</h3>
-					<p class="text-[var(--text-muted)] mt-1">MIDI auto-advances, or press Space.</p>
-				</div>
-			</div>
-			<div class="flex items-start gap-4">
-				<div class="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-bold text-sm">3</div>
-				<div>
-					<h3 class="font-semibold text-lg">Review &amp; improve</h3>
-					<p class="text-[var(--text-muted)] mt-1">See results, track progress, build streaks.</p>
-				</div>
-			</div>
+		<!-- How it works — inline -->
+		<div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-center text-[var(--text-muted)] mt-12">
+			<span class="inline-flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[var(--primary)] text-white text-xs font-bold flex items-center justify-center">1</span> Pick a drill</span>
+			<span class="hidden sm:inline text-[var(--text-dim)]">→</span>
+			<span class="inline-flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[var(--primary)] text-white text-xs font-bold flex items-center justify-center">2</span> Play the chords</span>
+			<span class="hidden sm:inline text-[var(--text-dim)]">→</span>
+			<span class="inline-flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[var(--primary)] text-white text-xs font-bold flex items-center justify-center">3</span> See your progress</span>
 		</div>
 	</div>
 </section>
 
 <!-- Bottom CTA -->
-<section class="px-4 pb-24">
-	<div class="max-w-2xl mx-auto text-center">
-		<div class="card p-10 sm:p-14 border-[var(--primary)]/20">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-4">Ready to get faster?</h2>
-			<p class="text-[var(--text-muted)] mb-8 max-w-md mx-auto">
-				No account needed. No install. Just open and play.
-			</p>
-			<a
-				href="/train"
-				class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-lg transition-colors"
-			>
-				Start Training Now
-				<ArrowRight size={20} />
-			</a>
-		</div>
+<section class="cta-section">
+	<div class="max-w-xl mx-auto text-center px-4">
+		<h2 class="text-2xl sm:text-3xl font-bold mb-3">Ready?</h2>
+		<p class="text-[var(--text-muted)] mb-6">No account. No install. Just play.</p>
+		<a
+			href="/train"
+			class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-lg transition-colors"
+		>
+			Start Training
+			<ArrowRight size={20} />
+		</a>
 	</div>
 </section>
 
 <style>
 	.hero {
 		position: relative;
-		min-height: 100vh;
+		min-height: 90vh;
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		align-items: center;
@@ -379,47 +343,58 @@
 	.piano-video {
 		position: relative;
 		z-index: 1;
-		width: 130%;
 		max-width: 1200px;
-		height: 550px;
-		object-fit: cover;
+		height: 500px;
+		object-fit: fill;
+		/* Shift video left so right 8% (watermark) is pushed out of the overflow:hidden container */
 		object-position: 60% center;
-		
+
 		/* Make black background transparent */
 		mix-blend-mode: screen;
 		
-		/* Enhance brightness */
-		filter: 
-			brightness(1.1) 
-			contrast(1.1);
-		
-		transition: transform 0.3s ease;
+		filter: brightness(1.1) contrast(1.1);
 	}
 
-	.piano-video:hover {
-		transform: scale(1.02);
-	}
-
-	/* Mobile */
+	/* Mobile: video becomes subtle background behind hero */
 	@media (max-width: 968px) {
 		.hero {
 			grid-template-columns: 1fr;
 			text-align: center;
 			padding: 3rem 5%;
+			position: relative;
 		}
 
 		.hero-content {
-			order: 2;
+			order: 1;
+			position: relative;
+			z-index: 2;
 		}
 
 		.piano-container {
-			order: 1;
-			margin-bottom: 2rem;
+			/* Absolute position behind content */
+			position: absolute;
+			inset: 0;
+			padding: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		.piano-container::before {
+			display: none;
 		}
 
 		.piano-video {
-			height: auto;
-			max-width: 100%;
+			width: 100%;
+			height: 100%;
+			max-width: none;
+			object-fit: cover;
+			object-position: center 30%;
+			clip-path: none;
+			opacity: 0.15;
+			filter: brightness(0.8) contrast(1.2) blur(1px);
 		}
 
 		.subtitle {
@@ -430,11 +405,22 @@
 		.cta-buttons {
 			justify-content: center;
 			flex-direction: column;
+			align-items: center;
 		}
 
 		.btn {
 			width: 100%;
 			max-width: 300px;
 		}
+	}
+
+	/* Sections below hero */
+	.features-section {
+		padding: 5rem 0;
+		background: linear-gradient(180deg, var(--bg) 0%, #12100c 40%, #12100c 60%, var(--bg) 100%);
+	}
+
+	.cta-section {
+		padding: 2rem 0 6rem;
 	}
 </style>
