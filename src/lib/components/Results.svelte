@@ -14,6 +14,7 @@
 		type ProgressionMode,
 	} from '$lib/engine';
 	import type { ChordWithNotes } from '$lib/engine';
+	import { formatTime as fmt } from '$lib/utils/format';
 
 	interface Props {
 		chordsWithNotes: ChordWithNotes[];
@@ -48,14 +49,6 @@
 		onrestart,
 		onreset,
 	}: Props = $props();
-
-	function fmt(ms: number): string {
-		const s = Math.floor(ms / 1000);
-		const m = Math.floor(s / 60);
-		const sec = s % 60;
-		const cs = Math.floor((ms % 1000) / 10);
-		return `${m}:${sec.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
-	}
 </script>
 
 <div class="card p-6 sm:p-8 max-w-2xl mx-auto text-center space-y-6">

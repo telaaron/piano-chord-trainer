@@ -75,3 +75,64 @@ body {
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
 }
+
+/* ─── Open Studio Theme ──────────────────────────────────── */
+[data-theme="openstudio"] {
+	/* Deep navy/teal background — inspired by openstudiojazz.com */
+	--bg: #0c1821;
+	--bg-card: #132030;
+	--bg-card-hover: #1a2d42;
+	--bg-muted: #17273a;
+	--border: #1f3550;
+	--border-hover: #2a4a6b;
+
+	--text: #f2f0eb;
+	--text-muted: #8a9ab0;
+	--text-dim: #5a6e85;
+
+	/* Warm gold as primary — Open Studio's signature accent */
+	--primary: #c9a54e;
+	--primary-hover: #d4b35e;
+	--primary-muted: rgba(201, 165, 78, 0.15);
+	--primary-text: #0c1821;
+
+	--accent-purple: #8b7ec8;
+	--accent-green: #3fb573;
+	--accent-red: #e05252;
+	--accent-amber: #d4a843;
+
+	/* Piano — slightly warmer whites */
+	--key-white: #f5f3ee;
+	--key-white-active: var(--primary);
+	--key-white-border: #c8c4ba;
+	--key-black: #0c1821;
+	--key-black-active: var(--accent-purple);
+	--key-root-dot: #0c1821;
+
+	--radius: 0.5rem;
+	--radius-sm: 0.25rem;
+	--radius-lg: 0.75rem;
+
+	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+[data-theme="openstudio"] .text-gradient {
+	background: linear-gradient(135deg, #c9a54e, #e6c96e);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+/* Open Studio cards: slightly more defined look */
+[data-theme="openstudio"] .card {
+	background: var(--bg-card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="openstudio"] .card-hover:hover {
+	border-color: var(--primary);
+	background: var(--bg-card-hover);
+	box-shadow: 0 2px 8px rgba(201, 165, 78, 0.1);
+}

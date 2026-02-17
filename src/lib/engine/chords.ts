@@ -2,7 +2,16 @@
 
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 export type NotationStyle = 'standard' | 'symbols' | 'short';
-export type VoicingType = 'root' | 'shell' | 'half-shell' | 'full';
+export type VoicingType =
+	| 'root'
+	| 'shell'
+	| 'half-shell'
+	| 'full'
+	| 'rootless-a'
+	| 'rootless-b'
+	| 'inversion-1'
+	| 'inversion-2'
+	| 'inversion-3';
 export type DisplayMode = 'off' | 'always' | 'verify';
 
 export interface ChordType {
@@ -67,6 +76,7 @@ export const CHORD_INTERVALS: Record<string, number[]> = {
 	m11: [0, 3, 7, 10, 14, 17],
 	'13': [0, 4, 7, 10, 14, 21],
 	m7b5: [0, 3, 6, 10],
+	dim7: [0, 3, 6, 9],
 };
 
 /** Maps internal chord key → display string for each notation style */
@@ -97,4 +107,9 @@ export const VOICING_LABELS: Record<VoicingType, string> = {
 	shell: 'Shell Voicing',
 	'half-shell': 'Half Shell',
 	full: 'Full Voicing',
+	'rootless-a': 'Rootless A',
+	'rootless-b': 'Rootless B',
+	'inversion-1': '1. Umkehrung',
+	'inversion-2': '2. Umkehrung',
+	'inversion-3': '3. Umkehrung',
 };

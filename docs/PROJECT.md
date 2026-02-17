@@ -1,7 +1,7 @@
 # Chord Trainer – Projekt-Übersicht & Roadmap
 
 **Projekt:** Chord Trainer  
-**Status:** Funktionsfähig (P1–P6 fertig), UX-Redesign Phase  
+**Status:** Funktionsfähig (P1–P6 + Guided Practice + Analyse fertig)  
 **Erstellt:** 16. Februar 2026  
 **Autor:** Agent 1 + Agent 2  
 
@@ -82,64 +82,44 @@ Ein Jazz-Piano-Student setzt sich ans Klavier und denkt:
 
 ---
 
-## 🎯 Nächste Phase: "Guided Practice"
+## 🎯 Guided Practice (v0.4) ✅
 
-### Problem mit dem aktuellen Setup
-Der Setup-Screen hat **10 Einstellungs-Dimensionen** (Difficulty, Notation, Voicing, Display, Accidentals, Notation System, Chord Notation, Progression, MIDI, Count). Das überfordert. Ein Spieler will nicht konfigurieren — er will *üben*.
+### Problem & Lösung
+Der Setup-Screen hatte 10 Einstellungs-Dimensionen → Überforderung. Lösung: **Übungspläne** (One-Tap-to-Play) + Settings als Experten-Modus versteckt.
 
-### Lösung: Übungspläne (Practice Plans)
-
-Statt "konfiguriere alles selbst" → **vorkonfigurierte Sessions**, die der Spieler mit einem Tap startet. Die Settings bleiben als "Experten-Modus" versteckt.
-
-#### Eingebaute Übungspläne:
+### Eingebaute Übungspläne ✅
 
 | Name | Was es trainiert | Settings |
 |------|-----------------|----------|
-| **Warm-Up** | Einspielen, Grundlagen festigen | Shell Voicings, ii-V-I, Beginner, 12 Keys |
-| **Voicing Drill** | Voicing-Muscle-Memory | Alle Voicings nacheinander, Random, 20 Akkorde |
-| **Speed Run** | Geschwindigkeit | Root Position, Random, Intermediate, 20 Akkorde, Timer |
-| **ii-V-I Deep Dive** | Jazz-Standard-Progression meistern | ii-V-I, alle 12 Keys, Full Voicing, Noten immer an |
-| **Random Challenge** | Unvorhersehbarkeit, Reaktion | Random, Advanced, 30 Akkorde, Noten aus |
-| **Turnaround Master** | I-vi-ii-V Turnarounds | I-vi-ii-V, alle 12 Keys, Shell Voicing |
+| **Warm-Up** | Einspielen, Grundlagen | Shell Voicings, ii-V-I, 12 Keys |
+| **Speed Run** | Tempo | Root Position, Zufällig, Auf Zeit |
+| **ii-V-I Deep Dive** | Jazz-Standard-Progression | Full Voicings, alle 12 Keys, Noten an |
+| **Turnaround** | I-vi-ii-V | Shell Voicings, alle 12 Keys |
+| **Challenge** | Erweitertes Vokabular | Advanced, Symbol-Notation, Noten aus |
+| **Quartenzirkel** | Tonarten-Flüssigkeit | Half-Shell, ♭-Keys |
+| **Voicing Drill** | Muscle Memory pro Griff-Typ | Root Position + ii-V-I, alle Keys |
 
-#### UX-Flow:
+### Streak-System ✅
+- Tägliche Praxis-Streak (🔥 Tag X)
+- Best-Streak Tracking
+- Motivation: "7 Tage in Folge!" / "Starte neu!"
 
-```
-┌─────────────────────────────────┐
-│  🎹 Chord Trainer               │
-│                                  │
-│  Guten Morgen! Tag 5 🔥         │ ← Streak  
-│                                  │
-│  ┌─ Empfohlen ──────────────┐   │
-│  │ 🎯 Warm-Up               │   │ ← Basierend auf History
-│  │ Shell Voicings · ii-V-I  │   │
-│  │ [▶ Jetzt üben]           │   │
-│  └───────────────────────────┘   │
-│                                  │
-│  Übungspläne                     │
-│  ┌──────┐ ┌──────┐ ┌──────┐    │
-│  │Speed │ │ii-V-I│ │Turn- │    │
-│  │Run   │ │Deep  │ │around│    │
-│  └──────┘ └──────┘ └──────┘    │
-│                                  │
-│  📊 Dein Fortschritt             │ ← Dashboard (bestehend)
-│  12 Sessions · 240 Akkorde      │
-│                                  │
-│  ⚙️ Eigene Übung konfigurieren  │ ← Bisherige Settings, collapsed
-└─────────────────────────────────┘
-```
+### MIDI Auto-Detection ✅
+- MIDI wird beim App-Start automatisch geprüft
+- Grüner Banner bei erkanntem Gerät: "🎹 [Gerätename] erkannt — MIDI ist aktiv"
+- Dezenter Hinweis wenn kein Gerät da
+- Hot-Plug: Klavier jederzeit anstecken → sofort erkannt
 
-### Streak-System
-- Tägliche Praxis-Streak (mindestens 1 Session pro Tag)
-- Visuelles "🔥 Tag X" Badge
-- Streak wird im localStorage getrackt
-- Motivation: "Schon 7 Tage in Folge!" / "Du warst gestern nicht da — starte neu!"
+### Per-Chord Analyse ✅
+- SessionResult speichert Millisekunden pro Akkord (ChordTiming[])
+- Schwächste Akkorde identifiziert (langsamste Reaktionszeit pro Root)
+- Verbesserungs-Trends: "Du wirst besser bei Db-Akkorden ↓ 25% schneller"
+- Heatmap-Balken im Dashboard: größter Balken = langsamster Akkord
 
-### Per-Chord Analyse (nächste Iteration)
-- SessionResult speichert Zeitstempel pro Akkord (nicht nur Gesamt-Zeit)
-- Schwächste Akkorde identifizieren (langsamste Reaktionszeit)
-- "Fokus-Übung: Deine schwächsten 5 Akkorde" als Plan generieren
-- Weak-Chord-Heatmap im Dashboard
+### Klare UX-Erklärungen ✅
+- **Jede Setting-Option erklärt**, was sie macht (kein Fachjargon ohne Kontext)
+- **Voicing-Arten** kurz & klar: "Shell = nur die wichtigsten 2-3 Töne (wie Jazz-Pianisten in Combos)"
+- **Plan-Beschreibungen** sagen wer & warum, nicht nur was
 
 ---
 
@@ -166,18 +146,19 @@ src/
 │   ├── chords.ts             (14 Akkord-Typen, Difficulty-Pools)
 │   ├── voicings.ts           (4 Voicing-Berechnungen)
 │   ├── keyboard.ts           (Keyboard-Geometrie, 2 Oktaven)
-│   └── progressions.ts       (ii-V-I, Quartenzirkel, I-vi-ii-V)
+│   ├── progressions.ts       (ii-V-I, Quartenzirkel, I-vi-ii-V)
+│   └── plans.ts              (7 Übungspläne, suggestPlan-Logik)
 ├── lib/components/           ← Svelte 5 Components
 │   ├── PianoKeyboard.svelte  (2-Oktaven-Keyboard + MIDI-Overlay)
 │   ├── ChordCard.svelte      (Akkord-Display mit Snippet-Children)
-│   ├── GameSettings.svelte   (Settings-Panel, 10 Dimensionen)
+│   ├── GameSettings.svelte   (Übungspläne + Eigene Übung, erklärt)
 │   ├── Results.svelte        (Ergebnis-Screen + Mini-Keyboards)
 │   ├── MidiStatus.svelte     (MIDI-Connection + Device-Picker)
-│   └── ProgressDashboard.svelte (Stats, Sparkline, Bestzeiten)
+│   └── ProgressDashboard.svelte (Stats, Weak Chords, Trends, Bestzeiten)
 ├── lib/services/             ← Seiteneffekte, externe APIs
 │   ├── midi.ts               (Web MIDI API Wrapper, Chord Matching)
 │   ├── audio.ts              (Tone.js: Synth, Metronom, Playback)
-│   └── progress.ts           (localStorage: History, Stats, Settings)
+│   └── progress.ts           (localStorage: History, Streak, Weak-Chord-Analyse)
 ├── routes/
 │   ├── +layout.svelte        (CSS Import, min-h-dvh Wrapper)
 │   └── +page.svelte          (Game Loop, ~620 Zeilen State Machine)
@@ -234,8 +215,12 @@ src/
 - Svelte Transitions (fade/fly/scale)
 - Bug fixes: $effect infinite loop, async audio fire-and-forget
 
-### [v0.4.0] – WIP – Guided Practice
-- Übungspläne (Practice Plans / Quick-Start-Presets)
-- Streak-System (tägliche Motivation)
+### [v0.4.0] – 16. Feb 2026 – Guided Practice + Analyse
+- Übungspläne: 7 kuratierte One-Tap-Presets (Warm-Up bis Voicing Drill)
+- Streak-System (tägliche Motivation, Best-Streak)
+- MIDI Auto-Detection (automatisch erkennen, Banner, Hot-Plug)
+- Per-Chord Timing (ms pro Akkord in SessionResult)
+- Schwachstellen-Analyse (langsamste Akkorde pro Root)
+- Verbesserungs-Trends ("Du wirst besser bei X")
 - UX-Redesign: Empfehlung statt Settings-Overload
-- Per-Chord-Timing (Schwachstellen-Analyse vorbereiten)
+- Klare Erklärungen: Jede Option sagt was sie tut (Shell Voicing etc.)

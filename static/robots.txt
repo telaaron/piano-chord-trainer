@@ -1,11 +1,10 @@
-# Piano Chord Trainer - Robots.txt
+# Chord Trainer - Robots.txt
 User-agent: *
 Allow: /
-Disallow: /static/
 Disallow: /.git/
 
 # Sitemaps
-Sitemap: https://piano-chord-trainer.vercel.app/sitemap.xml
+Sitemap: https://jazzchords.app/sitemap.xml
 
 # Crawl delay to be respectful
 Crawl-delay: 1

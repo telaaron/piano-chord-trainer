@@ -31,11 +31,10 @@ function getSynth(): Tone.PolySynth {
 
 /**
  * Map note names (e.g. "C", "Db", "F#") to Tone.js-friendly names with octave.
- * Assumes voicing notes are in ascending order starting around middle C (C4).
+ * Notes are placed ascending from octave 3 (typical jazz left-hand voicing range).
+ * Each note is placed above the previous one for a musical spread.
  */
 function notesToToneNames(notes: string[]): string[] {
-	const noteOrder = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'Fb', 'E#', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B', 'Cb', 'B#'];
-
 	function semitone(note: string): number {
 		const map: Record<string, number> = {
 			'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
@@ -47,7 +46,7 @@ function notesToToneNames(notes: string[]): string[] {
 	}
 
 	const result: string[] = [];
-	let octave = 4;
+	let octave = 3;
 	let prevSemi = -1;
 
 	for (const note of notes) {

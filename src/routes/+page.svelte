@@ -1,658 +1,189 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { fly, fade, scale } from 'svelte/transition';
-	import GameSettings from '$lib/components/GameSettings.svelte';
-	import ChordCard from '$lib/components/ChordCard.svelte';
-	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
-	import Results from '$lib/components/Results.svelte';
-	import MidiStatus from '$lib/components/MidiStatus.svelte';
-	import ProgressDashboard from '$lib/components/ProgressDashboard.svelte';
-	import { MidiService } from '$lib/services/midi';
-	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
-	import { saveSession, loadSettings, saveSettings, loadStreak, type StreakData } from '$lib/services/progress';
-	import { playChord, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll } from '$lib/services/audio';
 	import {
-		CHORDS_BY_DIFFICULTY,
-		CHORD_NOTATIONS,
-		VOICING_LABELS,
-		getNotePool,
-		getChordNotes,
-		getVoicingNotes,
-		formatVoicing,
-		displayToQuality,
-		convertChordNotation,
-		noteToSemitone,
-		generateProgression,
-		type Difficulty,
-		type NotationStyle,
-		type VoicingType,
-		type DisplayMode,
-		type AccidentalPreference,
-		type NotationSystem,
-		type ChordWithNotes,
-		type ProgressionMode,
-		type PracticePlan,
-	} from '$lib/engine';
-
-	// ─── Settings (persisted) ────────────────────────────────────
-	let difficulty: Difficulty = $state('beginner');
-	let notation: NotationStyle = $state('standard');
-	let voicing: VoicingType = $state('root');
-	let displayMode: DisplayMode = $state('always');
-	let accidentals: AccidentalPreference = $state('both');
-	let notationSystem: NotationSystem = $state('international');
-	let totalChords = $state(20);
-	let progressionMode: ProgressionMode = $state('random');
-	let midiEnabled = $state(false);
-	let streak: StreakData = $state({ current: 0, best: 0, lastDate: '' });
-
-	// ─── Audio / Metronome settings ──────────────────────────────
-	let audioEnabled = $state(true);
-	let metronomeEnabled = $state(false);
-	let metronomeBpm = $state(80);
-	let currentBeat = $state(0);
-
-	// ─── Game state ──────────────────────────────────────────────
-	type Screen = 'setup' | 'playing' | 'finished';
-	type PlayPhase = 'playing' | 'verifying';
-
-	let screen: Screen = $state<Screen>('setup');
-	let playPhase: PlayPhase = $state<PlayPhase>('playing');
-	let currentIdx = $state(0);
-	let chords: string[] = $state([]);
-	let chordsWithNotes: ChordWithNotes[] = $state([]);
-	let startTime = $state(0);
-	let endTime = $state(0);
-	let now = $state(0);
-	let timerHandle: ReturnType<typeof setInterval> | null = $state(null);
-
-	// ─── MIDI state ──────────────────────────────────────────────
-	const midi = new MidiService();
-	let midiState: MidiConnectionState = $state('disconnected');
-	let midiDevices: MidiDevice[] = $state([]);
-	let midiSelectedDeviceId: string | null = $state(null);
-	let midiActiveNotes: Set<number> = $state(new Set());
-	let midiMatchResult: ChordMatchResult | null = $state(null);
-	let midiCorrectCount = $state(0);
-	let midiTotalAttempts = $state(0);
-	let autoAdvanceTimeout: ReturnType<typeof setTimeout> | null = $state(null);
-
-	// ─── Derived ─────────────────────────────────────────────────
-	const currentChord = $derived(chords[currentIdx] ?? '');
-	const currentData = $derived(chordsWithNotes[currentIdx] ?? null);
-	const shouldShowVoicing = $derived(
-		displayMode === 'always' || (displayMode === 'verify' && playPhase === 'verifying'),
-	);
-	const actualTotalChords = $derived(chords.length || totalChords);
-	const progress = $derived(((currentIdx + 1) / actualTotalChords) * 100);
-	const elapsedMs = $derived(screen === 'playing' ? now - startTime : endTime - startTime);
-
-	/** Pitch classes expected for the current chord (for MIDI coloring) */
-	const expectedPitchClasses = $derived.by(() => {
-		if (!currentData) return new Set<number>();
-		const set = new Set<number>();
-		for (const note of currentData.voicing) {
-			const st = noteToSemitone(note);
-			if (st !== -1) set.add(st);
-		}
-		return set;
-	});
-
-	const midiAccuracy = $derived(
-		midiTotalAttempts > 0 ? Math.round((midiCorrectCount / midiTotalAttempts) * 100) : 0,
-	);
-
-	function formatTime(ms: number): string {
-		const s = Math.floor(ms / 1000);
-		const m = Math.floor(s / 60);
-		const sec = s % 60;
-		const cs = Math.floor((ms % 1000) / 10);
-		return `${m}:${sec.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
-	}
-
-	// ─── Game logic ──────────────────────────────────────────────
-	function generateChords() {
-		// Progression modes
-		if (progressionMode !== 'random') {
-			const result = generateProgression(progressionMode, accidentals, notation, totalChords);
-			const newChords: string[] = [];
-			const newData: ChordWithNotes[] = [];
-
-			for (const pc of result.chords) {
-				newChords.push(pc.display);
-				const notes = getChordNotes(pc.root, pc.quality, accidentals);
-				const voicingArr = getVoicingNotes(notes, voicing);
-				newData.push({ chord: pc.display, root: pc.root, type: pc.quality, notes, voicing: voicingArr });
-			}
-
-			chords = newChords;
-			chordsWithNotes = newData;
-			return;
-		}
-
-		// Random mode (original logic)
-		const available = CHORDS_BY_DIFFICULTY[difficulty];
-		const pool = getNotePool(accidentals);
-		const newChords: string[] = [];
-		const newData: ChordWithNotes[] = [];
-		let last = '';
-
-		for (let i = 0; i < totalChords; i++) {
-			let name = '';
-			let attempts = 0;
-			do {
-				const note = pool[Math.floor(Math.random() * pool.length)];
-				const ct = available[Math.floor(Math.random() * available.length)];
-				const display = CHORD_NOTATIONS[notation][ct.display] || ct.display;
-				name = `${note}${display}`;
-				attempts++;
-			} while (name === last && attempts < 50);
-
-			last = name;
-			newChords.push(name);
-
-			const match = name.match(/^([A-G][#b]?)(.+)$/);
-			if (match) {
-				const root = match[1];
-				const displayType = match[2];
-				const quality = displayToQuality(displayType, notation);
-				const notes = getChordNotes(root, quality, accidentals);
-				const voicingArr = getVoicingNotes(notes, voicing);
-				newData.push({ chord: name, root, type: quality, notes, voicing: voicingArr });
-			}
-		}
-
-		chords = newChords;
-		chordsWithNotes = newData;
-	}
-
-	function startGame() {
-		generateChords();
-		currentIdx = 0;
-		playPhase = 'playing';
-		screen = 'playing';
-		startTime = Date.now();
-		now = startTime;
-		midiCorrectCount = 0;
-		midiTotalAttempts = 0;
-		midiMatchResult = null;
-		midi.releaseAll();
-		if (timerHandle) clearInterval(timerHandle);
-		timerHandle = setInterval(() => {
-			if (screen === 'playing') now = Date.now();
-		}, 100);
-
-		// Init MIDI if enabled
-		if (midiEnabled && midiState === 'disconnected') {
-			midi.init();
-		}
-
-		// Play first chord audio (fire-and-forget)
-		if (audioEnabled && chordsWithNotes[0]) {
-			playChord(chordsWithNotes[0].voicing).catch(() => {});
-		}
-
-		// Start metronome
-		if (metronomeEnabled) {
-			startMetronome(metronomeBpm, 4, (beat) => {
-				currentBeat = beat;
-			});
-		}
-
-		// Persist settings
-		saveSettings({
-			difficulty,
-			notation,
-			voicing,
-			displayMode,
-			accidentals,
-			notationSystem,
-			totalChords,
-			progressionMode,
-			midiEnabled,
-		});
-	}
-
-	function startPlan(plan: PracticePlan) {
-		// Apply plan settings
-		difficulty = plan.settings.difficulty;
-		notation = plan.settings.notation;
-		voicing = plan.settings.voicing;
-		displayMode = plan.settings.displayMode;
-		accidentals = plan.settings.accidentals;
-		progressionMode = plan.settings.progressionMode;
-		totalChords = plan.settings.totalChords;
-		
-		// Start the game with plan settings
-		startGame();
-	}
-
-	function nextChord() {
-		if (screen !== 'playing') return;
-
-		// Clear auto-advance timeout
-		if (autoAdvanceTimeout) {
-			clearTimeout(autoAdvanceTimeout);
-			autoAdvanceTimeout = null;
-		}
-
-		// Verify mode: first press shows voicing, second press advances
-		// Skip verify phase when MIDI is doing the verification
-		if (displayMode === 'verify' && playPhase === 'playing' && !midiEnabled) {
-			playPhase = 'verifying';
-			return;
-		}
-
-		playPhase = 'playing';
-		midiMatchResult = null;
-		midi.releaseAll();
-
-		if (currentIdx < actualTotalChords - 1) {
-			currentIdx++;
-			// Play chord audio on advance
-			if (audioEnabled && chordsWithNotes[currentIdx]) {
-				playChord(chordsWithNotes[currentIdx].voicing).catch(() => {});
-			}
-		} else {
-			endGame();
-		}
-	}
-
-	function endGame() {
-		endTime = Date.now();
-		screen = 'finished';
-		if (timerHandle) clearInterval(timerHandle);
-		timerHandle = null;
-		if (autoAdvanceTimeout) {
-			clearTimeout(autoAdvanceTimeout);
-			autoAdvanceTimeout = null;
-		}
-		stopMetronome();
-		currentBeat = 0;
-
-		// Save session to progress history
-		saveSession({
-			timestamp: Date.now(),
-			elapsedMs: endTime - startTime,
-			totalChords: actualTotalChords,
-			avgMs: (endTime - startTime) / actualTotalChords,
-			settings: {
-				difficulty,
-				notation,
-				voicing,
-				displayMode,
-				accidentals,
-				progressionMode,
-			},
-			midi: {
-				enabled: midiEnabled,
-				accuracy: midiAccuracy,
-			},
-		});
-	}
-
-	function restartGame() {
-		startGame();
-	}
-
-	function resetToSetup() {
-		screen = 'setup';
-		currentIdx = 0;
-		chords = [];
-		chordsWithNotes = [];
-		midiMatchResult = null;
-		if (timerHandle) clearInterval(timerHandle);
-		timerHandle = null;
-		if (autoAdvanceTimeout) {
-			clearTimeout(autoAdvanceTimeout);
-			autoAdvanceTimeout = null;
-		}
-		stopMetronome();
-		stopAll();
-		currentBeat = 0;
-	}
-
-	// ─── MIDI callbacks ──────────────────────────────────────────
-	function handleMidiNotes(activeNotes: Set<number>) {
-		midiActiveNotes = new Set(activeNotes);
-
-		if (screen !== 'playing' || !currentData || !midiEnabled) return;
-
-		// Check chord match
-		const result = midi.checkChordLenient(currentData.voicing);
-		midiMatchResult = result;
-
-		if (result.correct && activeNotes.size > 0) {
-			midiTotalAttempts++;
-			midiCorrectCount++;
-
-			// Auto-advance after short delay (let player hear the chord)
-			if (!autoAdvanceTimeout) {
-				autoAdvanceTimeout = setTimeout(() => {
-					autoAdvanceTimeout = null;
-					nextChord();
-				}, 400);
-			}
-		} else if (activeNotes.size > 0 && result.accuracy < 1) {
-			// Wrong attempt tracked when player has enough notes held
-			const expectedCount = currentData.voicing.length;
-			if (activeNotes.size >= expectedCount) {
-				midiTotalAttempts++;
-			}
-		}
-	}
-
-	function handleMidiConnect() {
-		midi.init();
-	}
-
-	function handleMidiSelectDevice(deviceId: string) {
-		midi.selectDevice(deviceId);
-	}
-
-	// ─── Audio helpers ───────────────────────────────────────────
-	function toggleMetronome() {
-		if (metronomeEnabled) {
-			stopMetronome();
-			metronomeEnabled = false;
-			currentBeat = 0;
-		} else {
-			metronomeEnabled = true;
-			startMetronome(metronomeBpm, 4, (beat) => {
-				currentBeat = beat;
-			});
-		}
-	}
-
-	function updateBpm(newBpm: number) {
-		metronomeBpm = Math.max(40, Math.min(240, newBpm));
-		if (isMetronomeRunning()) {
-			setMetronomeBpm(metronomeBpm);
-		}
-	}
-
-	/** Re-play current chord audio on demand */
-	function replayChord() {
-		if (currentData) {
-			playChord(currentData.voicing);
-		}
-	}
-
-	// ─── Keyboard shortcut ───────────────────────────────────────
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.code === 'Space' && screen === 'playing') {
-			e.preventDefault();
-			nextChord();
-		}
-		if (e.code === 'Escape' && screen === 'playing') {
-			e.preventDefault();
-			resetToSetup();
-		}
-	}
-
-	onMount(() => {
-		// Load persisted settings
-		const saved = loadSettings();
-		if (saved) {
-			difficulty = saved.difficulty;
-			notation = saved.notation;
-			voicing = saved.voicing;
-			displayMode = saved.displayMode;
-			accidentals = saved.accidentals;
-			notationSystem = (saved.notationSystem ?? 'international') as NotationSystem;
-			totalChords = saved.totalChords;
-			progressionMode = saved.progressionMode;
-			midiEnabled = saved.midiEnabled;
-		}
-
-		// Load streak data
-		const savedStreak = loadStreak();
-		if (savedStreak) {
-			streak = savedStreak;
-		}
-
-		// MIDI setup
-		midi.onNotes(handleMidiNotes);
-		midi.onConnection((state) => {
-			midiState = state;
-		});
-		midi.onDevices((devices) => {
-			midiDevices = [...devices];
-			if (devices.length > 0) {
-				midiSelectedDeviceId = midi.selectedDeviceId;
-			}
-		});
-
-		// Auto-init MIDI if enabled
-		if (midiEnabled) {
-			midi.init();
-		}
-
-		window.addEventListener('keydown', handleKeydown);
-		return () => {
-			window.removeEventListener('keydown', handleKeydown);
-			if (timerHandle) clearInterval(timerHandle);
-			if (autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
-			midi.destroy();
-			disposeAll();
-		};
-	});
+		Piano,
+		Volume2,
+		BarChart3,
+		BookOpen,
+		ArrowRight,
+		Keyboard,
+		Target,
+	} from 'lucide-svelte';
 </script>
 
 <svelte:head>
-	<title>Chord Trainer – Jazz Piano Voicing Practice</title>
+	<title>Chord Trainer – Jazz Piano Voicing Speed Training</title>
+	<meta name="description" content="Master jazz piano voicings in all 12 keys. Speed training with MIDI recognition, ii-V-I progressions, 4 voicing types, and progress tracking. Free, no signup." />
+	<meta property="og:title" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
+	<meta property="og:description" content="Master jazz piano voicings in all 12 keys. Speed training with MIDI recognition and ii-V-I progressions." />
+	<meta property="og:type" content="website" />
 </svelte:head>
 
-<main class="flex-1 py-8 sm:py-12 px-4">
-	<div class="max-w-4xl mx-auto">
-		<!-- Header -->
-		<div class="text-center mb-10">
-			<h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-gradient pb-1">
-				Chord Trainer
-			</h1>
-			<p class="mt-3 text-[var(--text-muted)]">
-				Verbessere deine Akkord-Umstellungen und Geschwindigkeit
-			</p>
+<!-- Hero -->
+<section class="flex-1 flex flex-col items-center justify-center px-4 pt-16 sm:pt-24 pb-12">
+	<div class="max-w-3xl mx-auto text-center">
+		<div class="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-xs text-[var(--text-muted)]">
+			<span class="inline-block w-2 h-2 rounded-full bg-[var(--accent-green)] animate-pulse"></span>
+			MIDI · Audio · Progress Tracking
 		</div>
 
-		<!-- ─────── Setup Screen ─────── -->
-		{#if screen === 'setup'}
-			<div class="space-y-6" in:fade={{ duration: 200, delay: 100 }}>
-				<GameSettings
-					bind:difficulty
-					bind:notation
-					bind:voicing={voicing}
-					bind:displayMode
-					bind:accidentals
-					bind:notationSystem
-					bind:totalChords
-					bind:progressionMode
-					bind:midiEnabled
-					{streak}
-					onstart={startGame}
-					onstartplan={startPlan}
-				/>
-				<ProgressDashboard />
-			</div>
-		{/if}
+		<h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]">
+			<span class="text-gradient">Master Jazz Piano</span><br />
+			<span class="text-[var(--text)]">Voicings in All 12 Keys</span>
+		</h1>
 
-		<!-- ─────── Playing Screen ─────── -->
-		{#if screen === 'playing'}
-			<div class="max-w-3xl mx-auto space-y-6" in:fly={{ y: 20, duration: 300, delay: 50 }}>
-				<!-- Cancel button -->
-				<div class="flex justify-end">
-					<button
-						class="px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer text-sm font-medium"
-						onclick={resetToSetup}
-						title="Session abbrechen und zum Menü zurück"
-					>
-						✕ Abbrechen
-					</button>
-				</div>
+		<p class="mt-6 text-lg sm:text-xl text-[var(--text-muted)] max-w-xl mx-auto leading-relaxed">
+			Speed training that builds muscle memory. See a chord, play it, get faster.
+			Shell voicings, rootless, ii-V-I — through every key.
+		</p>
 
-				<!-- MIDI status bar -->
-				{#if midiEnabled}
-					<div class="flex items-center justify-between">
-						<MidiStatus
-							state={midiState}
-							devices={midiDevices}
-							selectedDeviceId={midiSelectedDeviceId}
-							activeNoteCount={midiActiveNotes.size}
-							onSelectDevice={handleMidiSelectDevice}
-							onConnect={handleMidiConnect}
-						/>
-						{#if midiTotalAttempts > 0}
-							<span class="text-xs text-[var(--text-muted)] font-mono">
-								Accuracy: {midiAccuracy}%
-							</span>
-						{/if}
-					</div>
-				{/if}
+		<div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+			<a
+				href="/train"
+				class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-lg transition-colors"
+			>
+				Start Training
+				<ArrowRight size={20} />
+			</a>
+			<a
+				href="/for-educators"
+				class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
+			>
+				For Music Schools
+			</a>
+		</div>
 
-				<!-- Audio / Metronome controls -->
-				<div class="flex items-center gap-4 text-sm">
-					<button
-						class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {audioEnabled ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
-						onclick={() => (audioEnabled = !audioEnabled)}
-						title={audioEnabled ? 'Audio aus' : 'Audio an'}
-					>
-						{audioEnabled ? '🔊' : '🔇'} Audio
-					</button>
-					<button
-						class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {metronomeEnabled ? 'border-[var(--accent-green)] bg-[var(--accent-green)]/10 text-[var(--accent-green)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
-						onclick={toggleMetronome}
-					>
-						{metronomeEnabled ? '⏸' : '▶'} Metronom
-					</button>
-					{#if metronomeEnabled}
-						<div class="flex items-center gap-2">
-							<button
-								class="w-7 h-7 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] cursor-pointer flex items-center justify-center"
-								onclick={() => updateBpm(metronomeBpm - 5)}
-							>−</button>
-							<span class="font-mono text-xs w-12 text-center">{metronomeBpm} BPM</span>
-							<button
-								class="w-7 h-7 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] cursor-pointer flex items-center justify-center"
-								onclick={() => updateBpm(metronomeBpm + 5)}
-							>+</button>
-						</div>
-						<!-- Beat indicator -->
-						<div class="flex items-center gap-1">
-							{#each [1, 2, 3, 4] as beat}
-								<div
-									class="w-2.5 h-2.5 rounded-full transition-all duration-100 {currentBeat === beat
-										? beat === 1
-											? 'bg-[var(--accent-green)] scale-125'
-											: 'bg-[var(--primary)] scale-110'
-										: 'bg-[var(--border)]'}"
-								></div>
-							{/each}
-						</div>
-					{/if}
-				</div>
-
-				<!-- Progress bar -->
-				<div>
-					<div class="flex justify-between text-sm mb-2 text-[var(--text-muted)]">
-						<span>Akkord {currentIdx + 1} / {actualTotalChords}</span>
-						<span class="font-mono">{formatTime(elapsedMs > 0 ? elapsedMs : 0)}</span>
-					</div>
-					<div class="h-1.5 bg-[var(--bg-muted)] rounded-full overflow-hidden">
-						<div
-							class="h-full bg-[var(--primary)] transition-all duration-300 rounded-full"
-							style="width: {progress}%"
-						></div>
-					</div>
-				</div>
-
-				<!-- Chord card + keyboard -->
-				<ChordCard chord={currentChord} system={notationSystem} onclick={nextChord}>
-					<!-- Piano keyboard inside card -->
-					<div class="mt-8">
-						<PianoKeyboard
-							chordData={currentData}
-							accidentalPref={accidentals}
-							showVoicing={shouldShowVoicing}
-							midiEnabled={midiEnabled}
-							midiActiveNotes={midiActiveNotes}
-							midiExpectedPitchClasses={expectedPitchClasses}
-						/>
-					</div>
-
-					<!-- MIDI match feedback -->
-					{#if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
-						<div class="mt-4 text-center">
-							{#if midiMatchResult.correct}
-								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Richtig!</span>
-							{:else if midiMatchResult.accuracy > 0}
-								<span class="text-[var(--accent-amber)] text-sm">
-									{Math.round(midiMatchResult.accuracy * 100)}% – {midiMatchResult.missing.length} Ton{midiMatchResult.missing.length !== 1 ? 'e' : ''} fehlt
-								</span>
-							{:else}
-								<span class="text-[var(--accent-red)] text-sm">Falsche Töne</span>
-							{/if}
-						</div>
-					{/if}
-
-					<!-- Listen button -->
-					{#if audioEnabled && currentData}
-						<div class="mt-4 text-center">
-							<button
-								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
-								onclick={replayChord}
-							>
-								🎵 Anhören
-							</button>
-						</div>
-					{/if}
-
-					<!-- Voicing text -->
-					{#if shouldShowVoicing && currentData}
-						<div class="mt-6 space-y-1">
-							<div class="text-sm text-[var(--text-muted)]">{VOICING_LABELS[voicing]}</div>
-							<div class="text-xl font-mono font-semibold">
-								{formatVoicing(currentData, voicing, notationSystem)}
-							</div>
-						</div>
-					{/if}
-				</ChordCard>
-
-				<!-- Instruction -->
-				<div class="text-center text-sm text-[var(--text-muted)]">
-					{#if midiEnabled && midiState === 'connected' && midiDevices.length > 0}
-						<p>Spiele den Akkord auf deinem Klavier – <strong class="text-[var(--text)]">Auto-Weiter</strong> bei richtigem Griff</p>
-					{:else if displayMode === 'verify' && playPhase === 'playing'}
-						<p>Spiele den Akkord, dann <strong class="text-[var(--text)]">Leertaste</strong> zur Überprüfung</p>
-					{:else if displayMode === 'verify' && playPhase === 'verifying'}
-						<p>Überprüfe – dann <strong class="text-[var(--text)]">Leertaste</strong> für den nächsten Akkord</p>
-					{:else}
-						<p>Tippe auf die Karte oder drücke <strong class="text-[var(--text)]">Leertaste</strong></p>
-					{/if}
-					<p class="mt-2 text-xs text-[var(--text-muted)]/70">Drücke <strong>ESC</strong> zum Abbrechen</p>
-				</div>
-			</div>
-		{/if}
-
-		<!-- ─────── Results Screen ─────── -->
-		{#if screen === 'finished'}
-			<div in:scale={{ start: 0.95, duration: 300, delay: 50 }} style="transform-origin: center top">
-			<Results
-				{chordsWithNotes}
-				totalChords={actualTotalChords}
-				elapsedMs={elapsedMs > 0 ? elapsedMs : 0}
-				{difficulty}
-				{notation}
-				{voicing}
-				{displayMode}
-				{accidentals}
-				{notationSystem}
-				{progressionMode}
-				{midiEnabled}
-				{midiAccuracy}
-				onrestart={restartGame}
-				onreset={resetToSetup}
-			/>
-			</div>
-		{/if}
+		<p class="mt-4 text-sm text-[var(--text-dim)]">
+			Free. No signup. Works in Chrome &amp; Edge.
+		</p>
 	</div>
-</main>
+</section>
+
+<!-- Features -->
+<section class="px-4 pb-20">
+	<div class="max-w-5xl mx-auto">
+		<div class="text-center mb-12">
+			<h2 class="text-2xl sm:text-3xl font-bold">Everything you need to drill chord changes</h2>
+			<p class="mt-3 text-[var(--text-muted)]">Built by jazz pianists, for jazz pianists.</p>
+		</div>
+
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+			<!-- MIDI -->
+			<div class="card p-6 card-hover transition-all">
+				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--primary-muted)] flex items-center justify-center mb-4">
+					<Piano size={20} class="text-[var(--primary)]" />
+				</div>
+				<h3 class="font-semibold text-lg mb-2">MIDI Recognition</h3>
+				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
+					Plug in your keyboard. The app listens to what you play and auto-advances when you nail the chord.
+				</p>
+			</div>
+
+			<!-- Progressions -->
+			<div class="card p-6 card-hover transition-all">
+				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--accent-purple)]/15 flex items-center justify-center mb-4">
+					<Target size={20} class="text-[var(--accent-purple)]" />
+				</div>
+				<h3 class="font-semibold text-lg mb-2">ii-V-I in All Keys</h3>
+				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
+					The most important jazz progression, drilled through all 12 keys. Plus turnarounds and circle of fourths.
+				</p>
+			</div>
+
+			<!-- Voicings -->
+			<div class="card p-6 card-hover transition-all">
+				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--accent-green)]/15 flex items-center justify-center mb-4">
+					<Keyboard size={20} class="text-[var(--accent-green)]" />
+				</div>
+				<h3 class="font-semibold text-lg mb-2">4+ Voicing Types</h3>
+				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
+					Root position, shell, rootless A, inversions — each shown on a visual 2-octave keyboard.
+				</p>
+			</div>
+
+			<!-- Audio -->
+			<div class="card p-6 card-hover transition-all">
+				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--accent-amber)]/15 flex items-center justify-center mb-4">
+					<Volume2 size={20} class="text-[var(--accent-amber)]" />
+				</div>
+				<h3 class="font-semibold text-lg mb-2">Audio &amp; Metronome</h3>
+				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
+					Hear every chord. Auto-plays on each new chord, or tap to listen again. Built-in metronome with BPM control.
+				</p>
+			</div>
+
+			<!-- Progress -->
+			<div class="card p-6 card-hover transition-all">
+				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--accent-red)]/15 flex items-center justify-center mb-4">
+					<BarChart3 size={20} class="text-[var(--accent-red)]" />
+				</div>
+				<h3 class="font-semibold text-lg mb-2">Weakness Analysis</h3>
+				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
+					Tracks time per chord. Shows your slowest keys, improvement trends, and personal records.
+				</p>
+			</div>
+
+			<!-- Plans -->
+			<div class="card p-6 card-hover transition-all">
+				<div class="w-10 h-10 rounded-[var(--radius)] bg-[var(--primary-muted)] flex items-center justify-center mb-4">
+					<BookOpen size={20} class="text-[var(--primary)]" />
+				</div>
+				<h3 class="font-semibold text-lg mb-2">Guided Practice Plans</h3>
+				<p class="text-sm text-[var(--text-muted)] leading-relaxed">
+					One-tap presets: Warm-Up, Speed Run, Challenge, Left-Hand Comping. Start training in 2 seconds.
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- How it works -->
+<section class="px-4 pb-20">
+	<div class="max-w-3xl mx-auto">
+		<div class="text-center mb-12">
+			<h2 class="text-2xl sm:text-3xl font-bold">How it works</h2>
+		</div>
+
+		<div class="space-y-8">
+			<div class="flex items-start gap-5">
+				<div class="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-bold text-sm">1</div>
+				<div>
+					<h3 class="font-semibold text-lg">Choose your drill</h3>
+					<p class="text-[var(--text-muted)] mt-1">Pick a practice plan or customize: voicing type, difficulty, progression mode, number of chords.</p>
+				</div>
+			</div>
+			<div class="flex items-start gap-5">
+				<div class="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-bold text-sm">2</div>
+				<div>
+					<h3 class="font-semibold text-lg">Play each chord</h3>
+					<p class="text-[var(--text-muted)] mt-1">A chord appears on screen. Play it on your MIDI keyboard — or press Space to advance manually. The timer tracks your speed per chord.</p>
+				</div>
+			</div>
+			<div class="flex items-start gap-5">
+				<div class="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-bold text-sm">3</div>
+				<div>
+					<h3 class="font-semibold text-lg">Review &amp; improve</h3>
+					<p class="text-[var(--text-muted)] mt-1">See your results: total time, accuracy, slowest chords. Track progress over sessions and build daily practice streaks.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Bottom CTA -->
+<section class="px-4 pb-24">
+	<div class="max-w-2xl mx-auto text-center">
+		<div class="card p-10 sm:p-14 border-[var(--primary)]/20">
+			<h2 class="text-2xl sm:text-3xl font-bold mb-4">Ready to get faster?</h2>
+			<p class="text-[var(--text-muted)] mb-8 max-w-md mx-auto">
+				No account needed. No install. Just open and play.
+			</p>
+			<a
+				href="/train"
+				class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-lg transition-colors"
+			>
+				Start Training Now
+				<ArrowRight size={20} />
+			</a>
+		</div>
+	</div>
+</section>

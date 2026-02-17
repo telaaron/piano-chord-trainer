@@ -15,11 +15,12 @@
 	const display = $derived(convertChordNotation(chord, system));
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="card p-8 sm:p-12 text-center cursor-pointer active:scale-[0.98] transition-transform"
+	role="button"
+	tabindex="0"
 	{onclick}
+	onkeydown={(e) => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); onclick?.(); } }}
 >
 	<div class="text-6xl sm:text-8xl font-bold text-gradient animate-pulse-slow">
 		{display}

@@ -2,6 +2,15 @@
 
 import type { Difficulty, NotationStyle, VoicingType, DisplayMode, AccidentalPreference, ProgressionMode } from '$lib/engine';
 
+export interface ChordTiming {
+	/** The displayed chord name */
+	chord: string;
+	/** Root note (C, Db, F#, etc.) */
+	root: string;
+	/** Duration in ms for this specific chord */
+	durationMs: number;
+}
+
 export interface SessionResult {
 	id: string;
 	timestamp: number;
@@ -10,6 +19,8 @@ export interface SessionResult {
 	totalChords: number;
 	/** Average ms per chord */
 	avgMs: number;
+	/** Per-chord timing data (may be absent in older sessions) */
+	chordTimings?: ChordTiming[];
 	settings: {
 		difficulty: Difficulty;
 		notation: NotationStyle;
@@ -250,4 +261,110 @@ export function recordPlanUsed(planId: string): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.setItem(PLAN_HISTORY_KEY, JSON.stringify(filtered));
 	}
+}
+
+// ─── Weak-chord analysis ────────────────────────────────────
+
+export interface WeakChord {
+	/** Root note, e.g. "Db" */
+	root: string;
+	/** Full chord name, e.g. "DbMaj7" */
+	chord: string;
+	/** Average ms across all appearances */
+	avgMs: number;
+	/** Number of times this chord appeared */
+	count: number;
+}
+
+export interface ChordTrend {
+	/** Root note */
+	root: string;
+	/** Old avg (older sessions) */
+	oldAvgMs: number;
+	/** Recent avg (newer sessions) */
+	recentAvgMs: number;
+	/** Percentage change (negative = improved) */
+	changePercent: number;
+}
+
+/**
+ * Analyze weak chords from session history.
+ * Groups all chord timings by root note, computes averages, returns sorted slowest-first.
+ */
+export function analyzeWeakChords(history: SessionResult[], limit = 5): WeakChord[] {
+	const byRoot = new Map<string, { totalMs: number; count: number; chord: string }>();
+
+	for (const session of history) {
+		if (!session.chordTimings) continue;
+		for (const ct of session.chordTimings) {
+			const existing = byRoot.get(ct.root);
+			if (existing) {
+				existing.totalMs += ct.durationMs;
+				existing.count++;
+			} else {
+				byRoot.set(ct.root, { totalMs: ct.durationMs, count: 1, chord: ct.chord });
+			}
+		}
+	}
+
+	const result: WeakChord[] = [];
+	for (const [root, data] of byRoot) {
+		if (data.count < 2) continue; // Need at least 2 data points
+		result.push({
+			root,
+			chord: data.chord,
+			avgMs: data.totalMs / data.count,
+			count: data.count,
+		});
+	}
+
+	result.sort((a, b) => b.avgMs - a.avgMs);
+	return result.slice(0, limit);
+}
+
+/**
+ * Compute improvement trends per root note.
+ * Compares recent sessions (last 5) vs older sessions (5-15).
+ */
+export function analyzeChordTrends(history: SessionResult[]): ChordTrend[] {
+	const recent = history.slice(0, 5);
+	const older = history.slice(5, 15);
+
+	if (recent.length < 2 || older.length < 2) return [];
+
+	function avgByRoot(sessions: SessionResult[]): Map<string, { totalMs: number; count: number }> {
+		const map = new Map<string, { totalMs: number; count: number }>();
+		for (const s of sessions) {
+			if (!s.chordTimings) continue;
+			for (const ct of s.chordTimings) {
+				const existing = map.get(ct.root);
+				if (existing) {
+					existing.totalMs += ct.durationMs;
+					existing.count++;
+				} else {
+					map.set(ct.root, { totalMs: ct.durationMs, count: 1 });
+				}
+			}
+		}
+		return map;
+	}
+
+	const recentAvgs = avgByRoot(recent);
+	const olderAvgs = avgByRoot(older);
+
+	const trends: ChordTrend[] = [];
+	for (const [root, recentData] of recentAvgs) {
+		const olderData = olderAvgs.get(root);
+		if (!olderData || olderData.count < 2) continue;
+
+		const recentAvg = recentData.totalMs / recentData.count;
+		const olderAvg = olderData.totalMs / olderData.count;
+		const change = ((recentAvg - olderAvg) / olderAvg) * 100;
+
+		trends.push({ root, oldAvgMs: olderAvg, recentAvgMs: recentAvg, changePercent: change });
+	}
+
+	// Sort by most improved (largest negative change first)
+	trends.sort((a, b) => a.changePercent - b.changePercent);
+	return trends;
 }

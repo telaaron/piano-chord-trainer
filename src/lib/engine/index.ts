@@ -14,3 +14,6 @@ export type { ProgressionMode, GeneratedProgression } from './progressions';
 
 export { PRACTICE_PLANS, suggestPlan } from './plans';
 export type { PracticePlan } from './plans';
+
+export { parseChordSymbol, parseProgression, formatProgression, PROGRESSION_PRESETS, loadCustomProgressions, saveCustomProgression, deleteCustomProgression, evaluateSession } from './custom-progressions';
+export type { CustomChord, CustomProgression, ProgressionPreset, LoopEvaluation, ChordEval, SessionEvaluation } from './custom-progressions';

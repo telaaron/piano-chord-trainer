@@ -64,7 +64,7 @@
 	}
 
 	function isRoot(chrIdx: number): boolean {
-		return !!chordData && isRootIndex(chrIdx, chordData.root);
+		return !!chordData && isRootIndex(chrIdx, chordData.root, chordData.voicing);
 	}
 
 	/** Is this key currently held via MIDI? Uses exact position, not pitch class */

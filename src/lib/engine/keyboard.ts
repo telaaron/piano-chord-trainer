@@ -32,53 +32,87 @@ export function whiteKeyChromaticIndex(i: number): number {
 }
 
 /**
+ * Find the pitch-class (0–11) for a note name, checking enharmonics.
+ */
+function noteToPitchClass(note: string, baseNotes: readonly string[]): number {
+	let idx = baseNotes.indexOf(note as any);
+	if (idx !== -1) return idx;
+	const enh = ENHARMONIC_MAP[note];
+	if (enh) idx = baseNotes.indexOf(enh as any);
+	return idx;
+}
+
+/**
  * Build the set of chromatic indices that should be highlighted on the keyboard.
- * Root is placed in the first octave; other voicing notes are stacked above it.
+ *
+ * ONLY highlights notes present in chordData.voicing — NOT the full chord.
+ * E.g. rootless voicings won't highlight the root.
+ *
+ * Notes are placed on the 2-octave keyboard (0–23) using a smart layout:
+ * - The lowest voicing note is placed in the first octave (0–11) if possible
+ * - Subsequent notes go upward from there, wrapping to octave 2 when needed
+ * - This creates a spread voicing rather than stacking everything tightly
  */
 export function getActiveKeyIndices(chordData: ChordWithNotes, pref: AccidentalPreference): Set<number> {
 	const baseNotes = pref === 'flats' ? NOTES_FLATS : NOTES_SHARPS;
-	const root = chordData.root;
+	const voicingNotes = chordData.voicing;
 
-	// Find root in first octave (0-11)
-	let rootIndex = baseNotes.findIndex((n) => n === root || ENHARMONIC_MAP[n] === root);
-	if (rootIndex === -1 && ENHARMONIC_MAP[root]) {
-		rootIndex = baseNotes.findIndex((n) => n === ENHARMONIC_MAP[root]);
-	}
-	if (rootIndex === -1) return new Set();
+	if (voicingNotes.length === 0) return new Set();
 
 	const result = new Set<number>();
-	const usedNames = new Set<string>();
 
-	// Root always in first octave
-	result.add(rootIndex);
-	usedNames.add(baseNotes[rootIndex]);
-	if (ENHARMONIC_MAP[baseNotes[rootIndex]]) usedNames.add(ENHARMONIC_MAP[baseNotes[rootIndex]]);
+	// Convert voicing notes to pitch classes (0–11)
+	const pitchClasses: number[] = [];
+	for (const note of voicingNotes) {
+		const pc = noteToPitchClass(note, baseNotes);
+		if (pc !== -1) pitchClasses.push(pc);
+	}
 
-	for (const note of chordData.voicing) {
-		if (usedNames.has(note)) continue;
-		if (ENHARMONIC_MAP[note] && usedNames.has(ENHARMONIC_MAP[note])) continue;
+	if (pitchClasses.length === 0) return new Set();
 
-		let ni = baseNotes.findIndex((n) => n === note);
-		if (ni === -1 && ENHARMONIC_MAP[note]) {
-			ni = baseNotes.findIndex((n) => n === ENHARMONIC_MAP[note]);
+	// Place notes in ascending order on the keyboard, starting from
+	// the first note in the lowest reasonable position.
+	// The voicing order determines the bottom-up layout.
+	let prevIdx = -1;
+
+	for (const pc of pitchClasses) {
+		let kbIdx: number;
+
+		if (prevIdx === -1) {
+			// First note: place in first octave
+			kbIdx = pc;
+		} else {
+			// Subsequent notes: go upward from previous position
+			kbIdx = pc;
+			// Ensure this note is above the previous
+			while (kbIdx <= prevIdx) {
+				kbIdx += 12;
+			}
 		}
-		if (ni === -1) continue;
 
-		// Stack above root
-		const kbIdx = ni <= rootIndex ? ni + 12 : ni;
+		// Keep within keyboard range (0–23)
 		if (kbIdx < CHROMATIC_COUNT) {
 			result.add(kbIdx);
-			usedNames.add(note);
-			if (ENHARMONIC_MAP[note]) usedNames.add(ENHARMONIC_MAP[note]);
+			prevIdx = kbIdx;
 		}
 	}
 
 	return result;
 }
 
-/** Check if a chromatic index matches the root note */
-export function isRootIndex(chromaticIndex: number, root: string): boolean {
+/**
+ * Check if a chromatic index matches the root note
+ * AND the root is part of the active voicing.
+ */
+export function isRootIndex(chromaticIndex: number, root: string, voicing: string[]): boolean {
 	const rootSemi = noteToSemitone(root);
 	if (rootSemi === -1) return false;
-	return (chromaticIndex % 12) === rootSemi;
+	if ((chromaticIndex % 12) !== rootSemi) return false;
+
+	// Only mark as root if root is actually in the voicing
+	const rootInVoicing = voicing.some((n) => {
+		const s = noteToSemitone(n);
+		return s === rootSemi;
+	});
+	return rootInVoicing;
 }

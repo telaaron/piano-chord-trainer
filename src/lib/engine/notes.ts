@@ -53,7 +53,7 @@ export function noteToSemitone(note: string): number {
 /** Get note name at a given semitone offset from root */
 export function getNoteName(rootSemitone: number, interval: number, pref: AccidentalPreference): string {
 	const index = (rootSemitone + interval) % 12;
-	const base = pref === 'flats' ? NOTES_FLATS : NOTES_SHARPS;
+	const base = pref === 'sharps' ? NOTES_SHARPS : NOTES_FLATS;
 	return base[index];
 }
 
