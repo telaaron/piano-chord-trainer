@@ -66,14 +66,20 @@ body {
 
 /* Utility classes */
 .card {
-	background: var(--bg-card);
-	border: 1px solid var(--border);
+	background: rgba(26, 20, 16, 0.6);
+	border: 1px solid rgba(109, 76, 65, 0.25);
 	border-radius: var(--radius-lg);
+	backdrop-filter: blur(8px);
 }
 
 .card-hover:hover {
-	border-color: var(--border-hover);
-	background: var(--bg-card-hover);
+	border-color: rgba(232, 118, 59, 0.3);
+	background: rgba(34, 26, 21, 0.8);
+}
+
+/* Warm ambient background for sections */
+.warm-section {
+	background: linear-gradient(180deg, var(--bg) 0%, #110e0a 50%, var(--bg) 100%);
 }
 
 .text-gradient {

@@ -527,7 +527,7 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<main class="flex-1 py-8 sm:py-12 px-4">
+<main class="flex-1 py-8 sm:py-12 px-4" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #12100c 70%, var(--bg) 100%);">
 	<div class="max-w-4xl mx-auto">
 		<!-- Header -->
 		<div class="text-center mb-10">
@@ -535,7 +535,7 @@
 				Chord Trainer
 			</h1>
 			<p class="mt-3 text-[var(--text-muted)]">
-				Verbessere deine Akkord-Umstellungen und Geschwindigkeit
+				Build speed and fluency across all 12 keys
 			</p>
 		</div>
 
@@ -611,9 +611,9 @@
 					<button
 						class="px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer text-sm font-medium"
 						onclick={resetToSetup}
-						title="Session abbrechen und zum Menü zurück"
+						title="Cancel session and return to menu"
 					>
-						✕ Abbrechen
+						✕ Cancel
 					</button>
 				</div>
 
@@ -641,7 +641,7 @@
 					<button
 						class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {audioEnabled ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
 						onclick={() => (audioEnabled = !audioEnabled)}
-						title={audioEnabled ? 'Audio aus' : 'Audio an'}
+						title={audioEnabled ? 'Mute audio' : 'Enable audio'}
 					>
 						{audioEnabled ? '🔊' : '🔇'} Audio
 					</button>
@@ -649,7 +649,7 @@
 						class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {metronomeEnabled ? 'border-[var(--accent-green)] bg-[var(--accent-green)]/10 text-[var(--accent-green)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
 						onclick={toggleMetronome}
 					>
-						{metronomeEnabled ? '⏸' : '▶'} Metronom
+						{metronomeEnabled ? '⏸' : '▶'} Metronome
 					</button>
 					{#if metronomeEnabled}
 						<div class="flex items-center gap-2">
@@ -681,7 +681,7 @@
 				<!-- Progress bar -->
 				<div>
 					<div class="flex justify-between text-sm mb-2 text-[var(--text-muted)]">
-						<span>Akkord {currentIdx + 1} / {actualTotalChords}</span>
+						<span>Chord {currentIdx + 1} / {actualTotalChords}</span>
 						<span class="font-mono">{formatTime(elapsedMs > 0 ? elapsedMs : 0)}</span>
 					</div>
 					<div class="h-1.5 bg-[var(--bg-muted)] rounded-full overflow-hidden">
@@ -710,13 +710,13 @@
 					{#if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
 						<div class="mt-4 text-center">
 							{#if midiMatchResult.correct}
-								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Richtig!</span>
+								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Correct!</span>
 							{:else if midiMatchResult.accuracy > 0}
 								<span class="text-[var(--accent-amber)] text-sm">
-									{Math.round(midiMatchResult.accuracy * 100)}% – {midiMatchResult.missing.length} Ton{midiMatchResult.missing.length !== 1 ? 'e' : ''} fehlt
+									{Math.round(midiMatchResult.accuracy * 100)}% – {midiMatchResult.missing.length} note{midiMatchResult.missing.length !== 1 ? 's' : ''} missing
 								</span>
 							{:else}
-								<span class="text-[var(--accent-red)] text-sm">Falsche Töne</span>
+								<span class="text-[var(--accent-red)] text-sm">Wrong notes</span>
 							{/if}
 						</div>
 					{/if}
@@ -728,7 +728,7 @@
 								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
 								onclick={replayChord}
 							>
-								🎵 Anhören
+								🎵 Listen
 							</button>
 						</div>
 					{/if}
@@ -747,15 +747,15 @@
 				<!-- Instruction -->
 				<div class="text-center text-sm text-[var(--text-muted)]">
 					{#if midiEnabled && midiState === 'connected' && midiDevices.length > 0}
-						<p>Spiele den Akkord auf deinem Klavier – <strong class="text-[var(--text)]">Auto-Weiter</strong> bei richtigem Griff</p>
+						<p>Play the chord on your piano — <strong class="text-[var(--text)]">auto-advance</strong> on correct voicing</p>
 					{:else if displayMode === 'verify' && playPhase === 'playing'}
-						<p>Spiele den Akkord, dann <strong class="text-[var(--text)]">Leertaste</strong> zur Überprüfung</p>
+						<p>Play the chord, then press <strong class="text-[var(--text)]">Space</strong> to verify</p>
 					{:else if displayMode === 'verify' && playPhase === 'verifying'}
-						<p>Überprüfe – dann <strong class="text-[var(--text)]">Leertaste</strong> für den nächsten Akkord</p>
+						<p>Check your voicing — then <strong class="text-[var(--text)]">Space</strong> for next chord</p>
 					{:else}
-						<p>Tippe auf die Karte oder drücke <strong class="text-[var(--text)]">Leertaste</strong></p>
+						<p>Tap the card or press <strong class="text-[var(--text)]">Space</strong></p>
 					{/if}
-					<p class="mt-2 text-xs text-[var(--text-muted)]/70">Drücke <strong>ESC</strong> zum Abbrechen</p>
+					<p class="mt-2 text-xs text-[var(--text-muted)]/70">Press <strong>ESC</strong> to cancel</p>
 				</div>
 			</div>
 		{/if}

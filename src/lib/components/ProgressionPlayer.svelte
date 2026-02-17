@@ -276,14 +276,14 @@
 			<h2 class="text-xl font-bold">{name}</h2>
 			<p class="text-sm text-[var(--text-muted)]">
 				{bpm} BPM
-				{#if loops > 0}· Durchgang {currentLoop + 1}/{loops}{:else}· Durchgang {currentLoop + 1}{/if}
+				{#if loops > 0}· Loop {currentLoop + 1}/{loops}{:else}· Loop {currentLoop + 1}{/if}
 			</p>
 		</div>
 		<button
 			class="px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer text-sm font-medium"
 			onclick={handleStop}
 		>
-			✕ Stopp
+			✕ Stop
 		</button>
 	</div>
 
@@ -293,7 +293,7 @@
 			<div class="text-8xl font-bold text-[var(--primary)] tabular-nums">
 				{countInBeats === 0 ? '–' : countInBeats}
 			</div>
-			<p class="text-[var(--text-muted)] mt-4">Zähle mit…</p>
+			<p class="text-[var(--text-muted)] mt-4">Count in…</p>
 		</div>
 	{:else}
 		<!-- Progression bar (visual overview of chord positions) -->
@@ -350,13 +350,13 @@
 			{#if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
 				<div class="mt-4">
 					{#if midiMatchResult.correct}
-						<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Richtig!</span>
+						<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Correct!</span>
 					{:else if midiMatchResult.accuracy > 0}
 						<span class="text-[var(--accent-amber)] text-sm">
-							{Math.round(midiMatchResult.accuracy * 100)}% – {midiMatchResult.missing.length} Ton{midiMatchResult.missing.length !== 1 ? 'e' : ''} fehlt
+							{Math.round(midiMatchResult.accuracy * 100)}% – {midiMatchResult.missing.length} note{midiMatchResult.missing.length !== 1 ? 's' : ''} missing
 						</span>
 					{:else if midiActiveNotes.size > 0}
-						<span class="text-[var(--accent-red)] text-sm">Andere Töne</span>
+						<span class="text-[var(--accent-red)] text-sm">Wrong notes</span>
 					{/if}
 				</div>
 			{/if}
@@ -386,9 +386,9 @@
 
 	<!-- Footer hint -->
 	<div class="text-center text-xs text-[var(--text-dim)]">
-		<strong>ESC</strong> zum Stoppen
+		<strong>ESC</strong> to stop
 		{#if !midiEnabled}
-			· Spiele die Akkorde auf deinem Klavier mit
+			· Play the chords along on your piano
 		{/if}
 	</div>
 </div>

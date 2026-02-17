@@ -14,11 +14,11 @@
 	let { evaluation, name, bpm, onback, onreplay }: Props = $props();
 
 	function gradeLabel(accuracy: number): { text: string; color: string; emoji: string } {
-		if (accuracy >= 0.95) return { text: 'Perfekt', color: 'var(--accent-green)', emoji: '🌟' };
-		if (accuracy >= 0.8) return { text: 'Sehr gut', color: 'var(--accent-green)', emoji: '🎯' };
-		if (accuracy >= 0.6) return { text: 'Gut', color: 'var(--accent-amber)', emoji: '👍' };
-		if (accuracy >= 0.4) return { text: 'Ausbaufähig', color: 'var(--accent-amber)', emoji: '💪' };
-		return { text: 'Weiter üben', color: 'var(--accent-red)', emoji: '🎹' };
+		if (accuracy >= 0.95) return { text: 'Perfect', color: 'var(--accent-green)', emoji: '🌟' };
+		if (accuracy >= 0.8) return { text: 'Excellent', color: 'var(--accent-green)', emoji: '🎯' };
+		if (accuracy >= 0.6) return { text: 'Good', color: 'var(--accent-amber)', emoji: '👍' };
+		if (accuracy >= 0.4) return { text: 'Room to grow', color: 'var(--accent-amber)', emoji: '💪' };
+		return { text: 'Keep practicing', color: 'var(--accent-red)', emoji: '🎹' };
 	}
 
 	const grade = $derived(gradeLabel(evaluation.overallAccuracy));
@@ -37,7 +37,7 @@
 	<div class="grid grid-cols-3 gap-3">
 		<div class="card p-4 text-center">
 			<div class="text-2xl font-bold">{accuracyPercent}%</div>
-			<div class="text-xs text-[var(--text-muted)] mt-1">Akkord-Treffer</div>
+			<div class="text-xs text-[var(--text-muted)] mt-1">Chord Accuracy</div>
 		</div>
 		<div class="card p-4 text-center">
 			<div class="text-2xl font-bold">{evaluation.avgTimingMs}<span class="text-sm font-normal">ms</span></div>
@@ -45,14 +45,14 @@
 		</div>
 		<div class="card p-4 text-center">
 			<div class="text-2xl font-bold">{formatTime(evaluation.totalMs)}</div>
-			<div class="text-xs text-[var(--text-muted)] mt-1">Gesamtzeit</div>
+			<div class="text-xs text-[var(--text-muted)] mt-1">Total Time</div>
 		</div>
 	</div>
 
 	<!-- Per-Loop Breakdown -->
 	{#if evaluation.loops.length > 1}
 		<div class="card p-5">
-			<h3 class="text-sm font-medium mb-3">Durchgänge</h3>
+			<h3 class="text-sm font-medium mb-3">Loops</h3>
 			<div class="space-y-2">
 				{#each evaluation.loops as loop, i}
 					<div class="flex items-center gap-3">
@@ -73,8 +73,8 @@
 	<!-- Weak Chords -->
 	{#if evaluation.weakChords.length > 0}
 		<div class="card p-5">
-			<h3 class="text-sm font-medium mb-2">Schwächste Akkorde</h3>
-			<p class="text-xs text-[var(--text-dim)] mb-3">Diese Akkorde wurden häufig verfehlt — gezielt üben!</p>
+			<h3 class="text-sm font-medium mb-2">Weakest Chords</h3>
+			<p class="text-xs text-[var(--text-dim)] mb-3">These chords were often missed — focus on them!</p>
 			<div class="flex flex-wrap gap-2">
 				{#each evaluation.weakChords as chord}
 					<span class="bg-[var(--accent-red)]/10 text-[var(--accent-red)] px-3 py-1 rounded-full text-sm font-mono font-semibold">
@@ -89,7 +89,7 @@
 	{#if evaluation.loops.length > 0}
 		{@const lastLoop = evaluation.loops[evaluation.loops.length - 1]}
 		<div class="card p-5">
-			<h3 class="text-sm font-medium mb-3">Detail (letzter Durchgang)</h3>
+			<h3 class="text-sm font-medium mb-3">Detail (last loop)</h3>
 			<div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
 				{#each lastLoop.chords as ce}
 					<div
@@ -111,13 +111,13 @@
 			class="flex-1 h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
 			onclick={onreplay}
 		>
-			🔄 Nochmal
+			🔄 Again
 		</button>
 		<button
 			class="flex-1 h-12 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] transition-colors cursor-pointer"
 			onclick={onback}
 		>
-			← Zurück
+			← Back
 		</button>
 	</div>
 </div>

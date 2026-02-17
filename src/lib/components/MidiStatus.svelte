@@ -22,13 +22,13 @@
 	const stateLabel = $derived(
 		state === 'connected'
 			? devices.length > 0
-				? 'Verbunden'
-				: 'Kein Gerät'
+				? 'Connected'
+				: 'No Device'
 			: state === 'connecting'
-				? 'Verbinde…'
+				? 'Connecting…'
 				: state === 'unsupported'
-					? 'Nicht unterstützt'
-					: 'Getrennt',
+					? 'Not Supported'
+					: 'Disconnected',
 	);
 
 	const stateColor = $derived(
@@ -52,7 +52,7 @@
 			class="px-3 py-1 rounded-[var(--radius-sm)] border border-[var(--border)] text-xs hover:border-[var(--border-hover)] transition-colors cursor-pointer"
 			onclick={onConnect}
 		>
-			Verbinden
+			Connect
 		</button>
 	{/if}
 
@@ -77,7 +77,7 @@
 
 	{#if state === 'unsupported'}
 		<span class="text-xs text-[var(--text-dim)]">
-			Web MIDI nur auf Desktop (Chrome/Edge) verfügbar
+			Web MIDI only available on desktop (Chrome/Edge)
 		</span>
 	{/if}
 </div>

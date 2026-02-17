@@ -45,7 +45,7 @@
 			const scrollTop = window.scrollY;
 			const docHeight = document.documentElement.scrollHeight - window.innerHeight;
 			const scrollPercent = scrollTop / docHeight;
-			scrollProgress = Math.min(scrollPercent * 0.5, 1);
+			scrollProgress = Math.min(scrollPercent * 0.7, 1);
 			targetTime = videoElement.duration * scrollProgress;
 
 			if (!isUpdating && !useStaticFallback) {

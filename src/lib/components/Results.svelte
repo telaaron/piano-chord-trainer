@@ -60,27 +60,27 @@
 					d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
 			</svg>
 		</div>
-		<h2 class="text-3xl font-bold">Glückwunsch!</h2>
-		<p class="text-[var(--text-muted)]">Du hast alle {totalChords} Akkorde gemeistert</p>
+		<h2 class="text-3xl font-bold">Congratulations!</h2>
+		<p class="text-[var(--text-muted)]">You mastered all {totalChords} chords</p>
 	</div>
 
 	<!-- Time -->
 	<div class="bg-[var(--bg-muted)] rounded-[var(--radius-lg)] p-6">
-		<div class="text-sm text-[var(--text-muted)] mb-1">Deine Zeit</div>
+		<div class="text-sm text-[var(--text-muted)] mb-1">Your Time</div>
 		<div class="text-5xl font-bold text-[var(--primary)]">{fmt(elapsedMs)}</div>
 		<div class="text-sm text-[var(--text-muted)] mt-2">
-			⌀ {(elapsedMs / totalChords / 1000).toFixed(2)}s pro Akkord
+			⌀ {(elapsedMs / totalChords / 1000).toFixed(2)}s per chord
 		</div>
 	</div>
 
 	<!-- Stats grid -->
 	<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
 		{#each [
-			{ label: 'Modus', value: PROGRESSION_LABELS[progressionMode] },
-			{ label: 'Schwierigkeit', value: difficulty },
-			{ label: 'Akkorde', value: String(totalChords) },
+			{ label: 'Mode', value: PROGRESSION_LABELS[progressionMode] },
+			{ label: 'Difficulty', value: difficulty },
+			{ label: 'Chords', value: String(totalChords) },
 			{ label: 'Notation', value: notation },
-			{ label: 'Vorzeichen', value: accidentals === 'sharps' ? 'Kreuze' : accidentals === 'flats' ? "B's" : 'Beide' },
+			{ label: 'Accidentals', value: accidentals === 'sharps' ? 'Sharps' : accidentals === 'flats' ? 'Flats' : 'Both' },
 			{ label: 'Voicing', value: VOICING_LABELS[voicing].split(' ')[0] },
 		] as stat}
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
@@ -102,13 +102,13 @@
 			class="flex-1 h-11 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text)] font-medium hover:bg-[var(--bg-muted)] transition-colors cursor-pointer"
 			onclick={onreset}
 		>
-			⚙️ Einstellungen
+			⚙️ Settings
 		</button>
 		<button
 			class="flex-1 h-11 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-medium hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
 			onclick={onrestart}
 		>
-			🔄 Nochmal
+			🔄 Again
 		</button>
 	</div>
 
@@ -116,7 +116,7 @@
 	{#if chordsWithNotes.length > 0}
 		<details class="text-left" open>
 			<summary class="cursor-pointer text-sm font-semibold hover:text-[var(--primary)] mb-4">
-				Alle Akkorde mit Voicings
+				All Chords with Voicings
 			</summary>
 			<div class="mt-4 space-y-3 max-h-[28rem] overflow-y-auto pr-1">
 				{#each chordsWithNotes as cd, i}

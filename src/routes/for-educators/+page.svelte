@@ -23,7 +23,7 @@
 	<meta name="twitter:description" content="Professional chord voicing trainer for jazz education. MIDI recognition, progress tracking, white-label ready." />
 </svelte:head>
 
-<main class="flex-1 px-4 py-16 sm:py-24">
+<main class="flex-1 px-4 py-16 sm:py-24" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">
 	<div class="max-w-4xl mx-auto">
 		<!-- Hero -->
 		<div class="text-center mb-20">

@@ -35,7 +35,7 @@
 	$effect(() => {
 		const result = parseProgression(rawInput);
 		if (rawInput.trim() && result.length === 0) {
-			parseError = 'Keine gültigen Akkorde erkannt. Nutze z.B. "Dm7 | G7 | CMaj7"';
+			parseError = 'No valid chords recognized. Use e.g. "Dm7 | G7 | CMaj7"';
 			parsedChords = [];
 		} else {
 			parseError = '';
@@ -100,13 +100,13 @@
 		<button
 			class="p-2 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] transition-colors cursor-pointer"
 			onclick={onback}
-			title="Zurück"
+			title="Back"
 		>
 			←
 		</button>
 		<div>
 			<h2 class="text-2xl font-bold">Custom Progression</h2>
-			<p class="text-sm text-[var(--text-muted)]">Eigene Akkord-Abfolge mit Metronom üben</p>
+			<p class="text-sm text-[var(--text-muted)]">Practice your own chord sequence with metronome</p>
 		</div>
 	</div>
 
@@ -116,7 +116,7 @@
 			class="text-sm text-[var(--primary)] hover:underline cursor-pointer"
 			onclick={() => (showPresets = !showPresets)}
 		>
-			{showPresets ? '▾ Vorlagen ausblenden' : '▸ Jazz-Standards als Vorlage laden'}
+			{showPresets ? '▾ Hide templates' : '▸ Load jazz standard templates'}
 		</button>
 
 		{#if showPresets}
@@ -145,16 +145,16 @@
 				id="prog-name"
 				type="text"
 				bind:value={progressionName}
-				placeholder="z.B. Autumn Leaves A-Teil"
+				placeholder="e.g. Autumn Leaves A section"
 				class="w-full px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-sm"
 			/>
 		</div>
 
 		<div>
-			<label class="text-sm font-medium block mb-1" for="prog-input">Akkord-Folge</label>
+			<label class="text-sm font-medium block mb-1" for="prog-input">Chord Sequence</label>
 			<p class="text-xs text-[var(--text-dim)] mb-2">
-				Trenne Akkorde mit <strong>|</strong> oder Leerzeichen. Beispiel: <code class="bg-[var(--bg-muted)] px-1 rounded">Dm7 | G7 | CMaj7</code>
-				<br />Beat-Angabe mit Klammern: <code class="bg-[var(--bg-muted)] px-1 rounded">Dm7(2) | G7(2) | CMaj7(4)</code> — Standard ist 4 Beats.
+				Separate chords with <strong>|</strong> or spaces. Example: <code class="bg-[var(--bg-muted)] px-1 rounded">Dm7 | G7 | CMaj7</code>
+				<br />Beat count in parentheses: <code class="bg-[var(--bg-muted)] px-1 rounded">Dm7(2) | G7(2) | CMaj7(4)</code> — Default is 4 beats.
 			</p>
 			<textarea
 				id="prog-input"
@@ -172,7 +172,7 @@
 		<!-- Live Preview -->
 		{#if parsedChords.length > 0}
 			<div class="bg-[var(--bg-muted)] rounded-[var(--radius)] p-3 space-y-2" in:fade={{ duration: 100 }}>
-				<div class="text-xs font-medium text-[var(--text-muted)]">Vorschau ({parsedChords.length} Akkorde · {totalBeats} Beats · ~{Math.round(passDuration)}s pro Durchgang)</div>
+				<div class="text-xs font-medium text-[var(--text-muted)]">Preview ({parsedChords.length} chords · {totalBeats} beats · ~{Math.round(passDuration)}s per pass)</div>
 				<div class="flex flex-wrap gap-2">
 					{#each parsedChords as chord, i}
 						<div class="bg-[var(--bg)] px-2.5 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-sm font-mono">
@@ -207,7 +207,7 @@
 				</div>
 			</div>
 			<div>
-				<label class="text-sm font-medium block mb-1" for="prog-loops">Durchgänge</label>
+				<label class="text-sm font-medium block mb-1" for="prog-loops">Loops</label>
 				<div class="flex items-center gap-2">
 					{#each [1, 2, 3, 4, 0] as l}
 						<button
@@ -228,15 +228,15 @@
 				onclick={handlePlay}
 				disabled={parsedChords.length === 0}
 			>
-				▶ Spielen
+				▶ Play
 			</button>
 			<button
 				class="h-12 px-5 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 				onclick={handleSave}
 				disabled={parsedChords.length === 0}
-				title="Progression speichern"
+				title="Save progression"
 			>
-				💾 Speichern
+				💾 Save
 			</button>
 		</div>
 	</div>
@@ -244,7 +244,7 @@
 	<!-- Saved Progressions -->
 	{#if savedProgressions.length > 0}
 		<div>
-			<h3 class="text-sm font-medium text-[var(--text-muted)] mb-3">Gespeicherte Progressionen</h3>
+			<h3 class="text-sm font-medium text-[var(--text-muted)] mb-3">Saved Progressions</h3>
 			<div class="space-y-2">
 				{#each savedProgressions as prog}
 					<div class="card p-4 flex items-center gap-3 group">
@@ -254,18 +254,18 @@
 						>
 							<div class="font-semibold text-sm group-hover:text-[var(--primary)] transition-colors">{prog.name}</div>
 							<div class="text-xs text-[var(--text-dim)] font-mono mt-1 truncate">{prog.raw}</div>
-							<div class="text-xs text-[var(--text-dim)] mt-1">{prog.bpm} BPM · {prog.loops === 0 ? '∞' : `${prog.loops}×`} · {prog.chords.length} Akkorde</div>
+							<div class="text-xs text-[var(--text-dim)] mt-1">{prog.bpm} BPM · {prog.loops === 0 ? '∞' : `${prog.loops}×`} · {prog.chords.length} chords</div>
 						</button>
 						<button
 							class="flex-1 max-w-[80px] text-center px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--primary)] text-[var(--primary-text)] text-xs font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
 							onclick={() => onplay(prog.chords, prog.bpm, prog.loops, prog.name)}
 						>
-							▶ Los
+							▶ Go
 						</button>
 						<button
 							class="p-2 text-[var(--text-dim)] hover:text-[var(--accent-red)] transition-colors cursor-pointer"
 							onclick={() => handleDelete(prog.id)}
-							title="Löschen"
+							title="Delete"
 						>
 							🗑
 						</button>

@@ -4,7 +4,7 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<main class="flex-1 px-4 py-16 sm:py-20">
+<main class="flex-1 px-4 py-16 sm:py-20" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">
 	<div class="max-w-3xl mx-auto prose-custom">
 		<h1>Privacy Policy</h1>
 		<p class="meta">Last updated: February 17, 2026</p>
