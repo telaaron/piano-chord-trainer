@@ -6,17 +6,17 @@ import { CHORD_NOTATIONS, type NotationStyle } from './chords';
 export type ProgressionMode = 'random' | '2-5-1' | 'cycle-of-4ths' | '1-6-2-5';
 
 export const PROGRESSION_LABELS: Record<ProgressionMode, string> = {
-	'random': 'Zufällig',
+	'random': 'Random',
 	'2-5-1': 'ii – V – I',
-	'cycle-of-4ths': 'Quartenzirkel',
+	'cycle-of-4ths': 'Cycle of 4ths',
 	'1-6-2-5': 'I – vi – ii – V',
 };
 
 export const PROGRESSION_DESCRIPTIONS: Record<ProgressionMode, string> = {
-	'random': 'Zufällige Akkorde',
-	'2-5-1': 'Dm7 → G7 → CMaj7 in allen Tonarten',
-	'cycle-of-4ths': 'C → F → Bb → Eb → … durch alle 12',
-	'1-6-2-5': 'CMaj7 → Am7 → Dm7 → G7 in allen Tonarten',
+	'random': 'Random chords',
+	'2-5-1': 'Dm7 → G7 → CMaj7 through all keys',
+	'cycle-of-4ths': 'C → F → Bb → Eb → … through all 12',
+	'1-6-2-5': 'CMaj7 → Am7 → Dm7 → G7 through all keys',
 };
 
 /** Semitone offsets from root for each scale degree (major scale) */
@@ -123,7 +123,7 @@ export function generateProgression(
 		}
 		return {
 			chords: allChords,
-			label: `ii – V – I durch alle 12 Tonarten (${allChords.length} Akkorde)`,
+			label: `ii – V – I through all 12 keys (${allChords.length} chords)`,
 		};
 	}
 
@@ -139,7 +139,7 @@ export function generateProgression(
 		}
 		return {
 			chords: allChords,
-			label: `I – vi – ii – V durch alle 12 Tonarten (${allChords.length} Akkorde)`,
+			label: `I – vi – ii – V through all 12 keys (${allChords.length} chords)`,
 		};
 	}
 
@@ -147,10 +147,10 @@ export function generateProgression(
 		const chords = generateCycleOf4ths(pref, notation);
 		return {
 			chords,
-			label: `Quartenzirkel (${chords.length} Akkorde)`,
+			label: `Cycle of 4ths (${chords.length} chords)`,
 		};
 	}
 
 	// 'random' — handled by the existing generateChords() in +page.svelte
-	return { chords: [], label: `${totalChords} zufällige Akkorde` };
+	return { chords: [], label: `${totalChords} random chords` };
 }

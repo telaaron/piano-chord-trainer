@@ -100,15 +100,15 @@
 	<div class="flex gap-3">
 		<button
 			class="flex-1 h-11 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text)] font-medium hover:bg-[var(--bg-muted)] transition-colors cursor-pointer"
-			onclick={onreset}
+			onclick={onrestart}
 		>
-			⚙️ Settings
+			🔄 Play Again
 		</button>
 		<button
 			class="flex-1 h-11 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-medium hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
-			onclick={onrestart}
+			onclick={onreset}
 		>
-			🔄 Again
+			← Back to Setup
 		</button>
 	</div>
 

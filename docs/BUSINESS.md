@@ -50,7 +50,7 @@ Kein anderer Anbieter hat:
 | **Revenue-Upside** | Bei Plattformen >5.000 Membern: Revenue-Share 5–10% auf Attributable-Conversions |
 | **Vertrag** | 12-Monat-Minimum, 30-day trial |
 
-**Warum das funktioniert:** Open Studio hat ~56K Mitglieder bei $33/Monat. Unser Tool steigert deren Retention. Selbst wenn 5% der Mitglieder es aktiv nutzen = 2.800 aktive User. Das ist €8.50/Monat pro aktivem User bei €500/Monat – Bargain.
+**Warum das funktioniert:** OS Pro kostet $47/Monat (Jahrestarif) bzw. $97/Monat (monatlich). Keine öffentlichen Mitgliederzahlen verfügbar — aber mit 18 Teammitgliedern (Stand 2024), 27 Instruktoren, 86 Kursen und 100K+ YouTube-Abonnenten ist Open Studio die führende Jazz-Piano-Online-Plattform. Selbst eine konservative Schätzung von einigen Tausend aktiven Pro-Mitgliedern rechtfertigt eine Platform-Lizenz.
 
 ### Modell B: WordPress Plugin / Embed (B2B2C) — PRIORITÄT 2
 | | |

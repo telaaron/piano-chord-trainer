@@ -414,11 +414,12 @@
 					{#each [
 						{ val: 'off' as DisplayMode, label: 'Off', sub: 'Play blind — no help' },
 						{ val: 'always' as DisplayMode, label: 'Always', sub: 'Notes visible on keyboard' },
-						{ val: 'verify' as DisplayMode, label: 'Verify', sub: 'Play first, then reveal' },
+						{ val: 'verify' as DisplayMode, label: 'Verify', sub: midiEnabled ? 'N/A with MIDI' : 'Play first, then reveal' },
 					] as opt}
 						<button
-							class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(displayMode, opt.val)}"
-							onclick={() => (displayMode = opt.val)}
+							class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(displayMode, opt.val)} {opt.val === 'verify' && midiEnabled ? 'opacity-40 cursor-not-allowed' : ''}"
+							onclick={() => { if (!(opt.val === 'verify' && midiEnabled)) displayMode = opt.val; }}
+							disabled={opt.val === 'verify' && midiEnabled}
 						>
 							<div class="font-semibold text-sm">{opt.label}</div>
 							<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>

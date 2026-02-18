@@ -263,7 +263,7 @@
 					{ title: 'I-vi-ii-V Turnarounds', desc: 'Full rhythm changes turnaround' },
 					{ title: 'Custom Progressions', desc: 'Autumn Leaves, All The Things, any standard' },
 					{ title: 'Inversions (1st – 3rd)', desc: 'Drop-2, spread voicings, all positions' },
-					{ title: '14 Chord Qualities', desc: 'Maj7, m7, dom7, m7b5, dim7, alt, sus, and more' },
+					{ title: '16 Chord Qualities', desc: 'Maj7, m7, dom7, m7b5, dim7, alt, sus, and more' },
 				] as item}
 					<div class="card p-5 flex items-start gap-3">
 						<CheckCircle size={18} class="text-[var(--primary)] flex-shrink-0 mt-0.5" />

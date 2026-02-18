@@ -1,4 +1,4 @@
-# Chord Trainer – jazzchords.com
+# Chord Trainer – jazzchords.app
 User-agent: *
 Allow: /
 Disallow: /.git/

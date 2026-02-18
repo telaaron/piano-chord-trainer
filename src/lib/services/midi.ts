@@ -181,6 +181,36 @@ export class MidiService {
 		};
 	}
 
+	/**
+	 * Inversion-aware match: like lenient, but also checks that the lowest
+	 * played MIDI note matches the expected bass pitch class.
+	 * `expectedBassNote` is the note name that should be on the bottom (e.g. "E" for 1st inversion of C).
+	 */
+	checkChordWithBass(expectedNotes: string[], expectedBassNote: string): ChordMatchResult {
+		const result = this.checkChordLenient(expectedNotes);
+
+		if (!result.correct || this._activeNotes.size === 0) return result;
+
+		// Find the lowest MIDI note currently held
+		let lowestMidi = Infinity;
+		for (const mn of this._activeNotes) {
+			if (mn < lowestMidi) lowestMidi = mn;
+		}
+
+		const lowestPitchClass = lowestMidi % 12;
+		const expectedBassPc = noteToSemitone(expectedBassNote);
+
+		if (expectedBassPc === -1 || lowestPitchClass === expectedBassPc) {
+			return result; // Bass matches
+		}
+
+		// Correct pitch classes but wrong bass note
+		return {
+			...result,
+			correct: false,
+		};
+	}
+
 	// ─── Private ────────────────────────────────────────────────
 
 	private handleMessage(event: MIDIMessageEvent): void {

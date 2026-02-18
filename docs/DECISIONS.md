@@ -96,7 +96,7 @@ interface ChordWithNotes {
 ## Was bewusst NICHT gebaut wurde
 
 ### Kein Server-State
-**Bewusst:** Kein Supabase, kein API. Alles client-side. Progress Tracking kommt via localStorage. Supabase-Sync erst wenn Multi-Device nötig.
+**Bewusst:** Kein Supabase, kein API. Alles client-side. Cloud-Sync nur wenn B2C-System gebaut wird (Stripe, Accounts) — kein Prio solange Open Studio B2B der Fokus ist.
 
 ### Kein Router / Multi-Page
 **Bewusst:** Eine Seite. Kein `/settings`, kein `/history`. Alles in `+page.svelte` via Screen-State (`setup` / `playing` / `finished`). SvelteKit-Routing steht bereit wenn nötig.

@@ -35,8 +35,8 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 	{
 		id: 'warmup',
 		name: 'Warm-Up',
-		tagline: 'Shell Voicings · ii-V-I · Alle Keys',
-		description: 'Lockeres Einspielen: Die 3 wichtigsten Töne jedes Akkords (Shell) durch alle 12 Tonarten.',
+		tagline: 'Shell Voicings · ii-V-I · All Keys',
+		description: 'Easy warm-up: The 3 essential notes of each chord (Shell) through all 12 keys.',
 		icon: '☀️',
 		accent: 'var(--accent-amber)',
 		settings: {
@@ -52,8 +52,8 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 	{
 		id: 'speed',
 		name: 'Speed Run',
-		tagline: 'Grundstellung · Zufällig · Auf Zeit',
-		description: 'Tempo-Training: 20 zufällige Akkorde so schnell wie möglich. Keine Noten-Hilfe — nur du und die Uhr.',
+		tagline: 'Root Position · Random · Timed',
+		description: 'Speed training: 20 random chords as fast as possible. No note hints — just you and the clock.',
 		icon: '⚡',
 		accent: 'var(--accent-red)',
 		settings: {
@@ -69,8 +69,8 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 	{
 		id: 'deepdive',
 		name: 'ii-V-I Deep Dive',
-		tagline: 'Komplette Voicings · Alle 12 Keys',
-		description: 'Die wichtigste Jazz-Progression (ii-V-I) mit allen 4 Tönen. Noten sind sichtbar — ideal zum Lernen.',
+		tagline: 'Full Voicings · All 12 Keys',
+		description: 'The most important jazz progression (ii-V-I) with all 4 notes. Notes visible — ideal for learning.',
 		icon: '🎯',
 		accent: 'var(--primary)',
 		settings: {
@@ -86,8 +86,8 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 	{
 		id: 'turnaround',
 		name: 'Turnaround',
-		tagline: 'I-vi-ii-V · Alle Keys · Shell',
-		description: 'Die Akkordfolge aus "I Got Rhythm" und hunderten Jazz-Standards. 4 Akkorde × 12 Tonarten.',
+		tagline: 'I-vi-ii-V · All Keys · Shell',
+		description: 'The chord sequence from "I Got Rhythm" and hundreds of jazz standards. 4 chords × 12 keys.',
 		icon: '🔄',
 		accent: 'var(--accent-purple)',
 		settings: {
@@ -103,8 +103,8 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 	{
 		id: 'challenge',
 		name: 'Challenge',
-		tagline: 'Erweiterte Akkorde · Ohne Hilfe',
-		description: 'Für Fortgeschrittene: 30 schwierige Akkorde (9th, 13th, Alt) mit Symbol-Notation, ohne Noten-Anzeige.',
+		tagline: 'Extended Chords · No Hints',
+		description: 'For advanced players: 30 complex chords (9th, 13th, Alt) with symbol notation, no note display.',
 		icon: '🏆',
 		accent: 'var(--accent-green)',
 		settings: {
@@ -119,9 +119,9 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 	},
 	{
 		id: 'quartenzirkel',
-		name: 'Quartenzirkel',
-		tagline: '12 Tonarten · ♭-Vorzeichen · Half-Shell',
-		description: 'Einmal rund durch alle Tonarten im Quartabstand (C→F→B♭→E♭→…). Trainiert flüssiges Wechseln.',
+		name: 'Cycle of 4ths',
+		tagline: '12 Keys · ♭ Accidentals · Half-Shell',
+		description: 'Once around all keys in intervals of a fourth (C→F→B♭→E♭→…). Trains smooth key changes.',
 		icon: '🌀',
 		accent: 'var(--accent-amber)',
 		settings: {
@@ -138,7 +138,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		id: 'voicing-drill',
 		name: 'Voicing Drill',
 		tagline: 'Root → Shell → Half → Full',
-		description: 'Trainiere alle 4 Voicing-Arten nacheinander mit ii-V-I. Baut Muscle Memory für jeden Griff-Typ auf.',
+		description: 'Practice all 4 voicing types in sequence with ii-V-I. Builds muscle memory for each voicing style.',
 		icon: '🖐️',
 		accent: 'var(--primary)',
 		settings: {
@@ -154,8 +154,8 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 	{
 		id: 'left-hand-comping',
 		name: 'Left-Hand Comping',
-		tagline: 'Rootless A · ii-V-I · Ohne Grundton',
-		description: 'Linke-Hand-Voicings für Combo-Spiel: 3-5-7-9 ohne Grundton (den spielt der Bassist). Bill Evans-Stil.',
+		tagline: 'Rootless A · ii-V-I · No Root',
+		description: 'Left-hand voicings for combo playing: 3-5-7-9 without root (played by the bassist). Bill Evans style.',
 		icon: '🤚',
 		accent: 'var(--accent-amber)',
 		settings: {
@@ -170,9 +170,9 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 	},
 	{
 		id: 'inversions-drill',
-		name: 'Umkehrungen',
-		tagline: '1./2./3. Umkehrung · Alle Keys',
-		description: 'Spiele jeden Akkord in verschiedenen Umkehrungen. Trainiert fließende Stimmführung und Lagenwechsel.',
+		name: 'Inversions',
+		tagline: '1st/2nd/3rd Inversion · All Keys',
+		description: 'Play each chord in different inversions. Trains smooth voice leading and position changes.',
 		icon: '🔃',
 		accent: 'var(--accent-purple)',
 		settings: {

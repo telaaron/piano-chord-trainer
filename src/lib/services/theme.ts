@@ -1,7 +1,7 @@
-// Theme system — allows switching between default (personal) and Open Studio branded theme
-// Themes are CSS custom property overrides applied via data-theme attribute on <html>
+// Theme system — single default theme
+// Kept minimal; Open Studio branding is handled via inline CSS on /open-studio pitch page
 
-export type ThemeId = 'default' | 'openstudio';
+export type ThemeId = 'default';
 
 export interface ThemeInfo {
 	id: ThemeId;
@@ -13,12 +13,7 @@ export const THEMES: ThemeInfo[] = [
 	{
 		id: 'default',
 		name: 'Chord Trainer',
-		description: 'Persönliches Design',
-	},
-	{
-		id: 'openstudio',
-		name: 'Open Studio',
-		description: 'Open Studio Jazz Branding',
+		description: 'Default Theme',
 	},
 ];
 

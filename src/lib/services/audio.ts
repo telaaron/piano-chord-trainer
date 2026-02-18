@@ -1,7 +1,51 @@
-// Audio playback using Tone.js – plays chord voicings with a piano sampler
+// Audio playback using Tone.js – plays chord voicings with configurable sound
 import * as Tone from 'tone';
 
+// ─── Sound Presets ──────────────────────────────────────────
+
+export type SoundPreset = 'electric-piano' | 'warm-keys' | 'bell' | 'soft-pad' | 'bright-piano';
+
+export const SOUND_PRESETS: Record<SoundPreset, { label: string; description: string }> = {
+	'electric-piano': { label: 'Electric Piano', description: 'Classic Rhodes-style EP' },
+	'warm-keys': { label: 'Warm Keys', description: 'Soft, mellow tone' },
+	'bell': { label: 'Bell', description: 'Clean bell-like attack' },
+	'soft-pad': { label: 'Soft Pad', description: 'Sustained, ambient' },
+	'bright-piano': { label: 'Bright Piano', description: 'Crisp, articulated' },
+};
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const PRESET_CONFIGS: Record<SoundPreset, Record<string, any>> = {
+	'electric-piano': {
+		oscillator: { type: 'fmsine', modulationType: 'sine', modulationIndex: 2, harmonicity: 3.01 },
+		envelope: { attack: 0.005, decay: 1.0, sustain: 0.2, release: 1.5 },
+		volume: -8,
+	},
+	'warm-keys': {
+		oscillator: { type: 'sine' },
+		envelope: { attack: 0.01, decay: 0.8, sustain: 0.3, release: 2.0 },
+		volume: -6,
+	},
+	'bell': {
+		oscillator: { type: 'fmsine', modulationType: 'square', modulationIndex: 8, harmonicity: 6 },
+		envelope: { attack: 0.001, decay: 1.5, sustain: 0.05, release: 2.0 },
+		volume: -10,
+	},
+	'soft-pad': {
+		oscillator: { type: 'fatsawtooth', spread: 20, count: 3 },
+		envelope: { attack: 0.15, decay: 0.5, sustain: 0.6, release: 2.5 },
+		volume: -12,
+	},
+	'bright-piano': {
+		oscillator: { type: 'fmsine', modulationType: 'sine', modulationIndex: 4, harmonicity: 2 },
+		envelope: { attack: 0.002, decay: 0.6, sustain: 0.1, release: 1.0 },
+		volume: -7,
+	},
+};
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 let synth: Tone.PolySynth | null = null;
+let currentPreset: SoundPreset = 'electric-piano';
+let reverb: Tone.Reverb | null = null;
 let started = false;
 
 /** Ensure AudioContext is started (must be called from user gesture) */
@@ -14,19 +58,27 @@ async function ensureStarted(): Promise<void> {
 
 function getSynth(): Tone.PolySynth {
 	if (!synth) {
-		synth = new Tone.PolySynth(Tone.Synth, {
-			oscillator: { type: 'triangle8' },
-			envelope: {
-				attack: 0.02,
-				decay: 0.3,
-				sustain: 0.4,
-				release: 1.2,
-			},
-			volume: -8,
-		}).toDestination();
+		const config = PRESET_CONFIGS[currentPreset];
+		synth = new Tone.PolySynth(Tone.Synth, config).toDestination();
 		synth.maxPolyphony = 8;
+
+		// Add subtle reverb for ambience
+		reverb = new Tone.Reverb({ decay: 2.0, wet: 0.2 }).toDestination();
+		synth.connect(reverb);
 	}
 	return synth;
+}
+
+/** Switch sound preset. Disposes old synth so next play uses new config. */
+export function setSoundPreset(preset: SoundPreset): void {
+	if (preset === currentPreset && synth) return;
+	currentPreset = preset;
+	disposeAudio();
+}
+
+/** Get current sound preset */
+export function getSoundPreset(): SoundPreset {
+	return currentPreset;
 }
 
 /**
@@ -69,8 +121,12 @@ function notesToToneNames(notes: string[]): string[] {
 export async function playChord(notes: string[], duration: string = '2n'): Promise<void> {
 	await ensureStarted();
 	const s = getSynth();
+	// Stop any currently playing notes immediately before starting new ones
+	s.releaseAll(Tone.now());
 	const toneNotes = notesToToneNames(notes);
-	s.triggerAttackRelease(toneNotes, duration);
+	// Schedule slightly in the future to ensure releaseAll completes
+	const t = Tone.now() + 0.02;
+	s.triggerAttackRelease(toneNotes, duration, t);
 }
 
 /**
@@ -93,8 +149,13 @@ export function stopAll(): void {
 /** Clean up synth */
 export function disposeAudio(): void {
 	if (synth) {
+		synth.releaseAll();
 		synth.dispose();
 		synth = null;
+	}
+	if (reverb) {
+		reverb.dispose();
+		reverb = null;
 	}
 }
 

@@ -11,7 +11,7 @@
 	<nav class="sticky top-0 z-10 px-4 sm:px-6 py-3 flex items-center justify-between border-b border-[var(--wood-dark)]/60 bg-[var(--bg)]/75 backdrop-blur-md">
 		<a href="/" class="flex items-center gap-2 group">
 			<img src="/jazzchords-logo.png" alt="Chord Trainer" class="h-8 w-8 object-contain" />
-			<span class="font-bold text-lg text-gradient">Chord Trainer</span>
+			<span class="font-bold text-lg text-gradient">jazzchords.app</span>
 		</a>
 
 		<div class="flex items-center gap-1 text-sm">

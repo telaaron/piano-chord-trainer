@@ -6,8 +6,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#7c5cfc",
-  "background_color": "#0a0a0b",
+  "theme_color": "#e8763b",
+  "background_color": "#0a0908",
   "categories": ["music", "education"],
   "screenshots": [
     {
