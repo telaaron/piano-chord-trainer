@@ -140,21 +140,21 @@
 	<!-- Input area -->
 	<div class="card p-5 space-y-4">
 		<div>
-			<label class="text-sm font-medium block mb-1" for="prog-name">Name (optional)</label>
+			<label class="text-sm font-medium block mb-1" for="prog-name">Name <span class="text-[var(--text-dim)] font-normal">(optional)</span></label>
 			<input
 				id="prog-name"
 				type="text"
 				bind:value={progressionName}
-				placeholder="e.g. Autumn Leaves A section"
+				placeholder="Autumn Leaves A"
 				class="w-full px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-sm"
 			/>
 		</div>
 
 		<div>
-			<label class="text-sm font-medium block mb-1" for="prog-input">Chord Sequence</label>
+			<label class="text-sm font-medium block mb-1" for="prog-input">Chords <span class="text-[var(--text-dim)] font-normal text-xs">— separate with | or space</span></label>
 			<p class="text-xs text-[var(--text-dim)] mb-2">
-				Separate chords with <strong>|</strong> or spaces. Example: <code class="bg-[var(--bg-muted)] px-1 rounded">Dm7 | G7 | CMaj7</code>
-				<br />Beat count in parentheses: <code class="bg-[var(--bg-muted)] px-1 rounded">Dm7(2) | G7(2) | CMaj7(4)</code> — Default is 4 beats.
+				Example: <code class="bg-[var(--bg-muted)] px-1.5 py-0.5 rounded">Dm7 | G7 | CMaj7</code>
+				<span class="hidden sm:inline"><br />Beats: <code class="bg-[var(--bg-muted)] px-1.5 py-0.5 rounded">Dm7(2)</code> — default 4</span>
 			</p>
 			<textarea
 				id="prog-input"
@@ -190,28 +190,28 @@
 		{/if}
 
 		<!-- BPM + Loops -->
-		<div class="grid grid-cols-2 gap-4">
+		<div class="space-y-4">
 			<div>
-				<label class="text-sm font-medium block mb-1" for="prog-bpm">Tempo</label>
-				<div class="flex items-center gap-2">
-					<input
-						id="prog-bpm"
-						type="range"
-						min="40"
-						max="240"
-						step="5"
-						bind:value={bpm}
-						class="flex-1 accent-[var(--primary)]"
-					/>
-					<span class="font-mono text-sm w-16 text-right">{bpm} BPM</span>
+				<div class="flex items-center justify-between mb-2">
+					<label class="text-sm font-medium" for="prog-bpm">Tempo</label>
+					<span class="font-mono text-sm text-[var(--primary)]">{bpm} BPM</span>
 				</div>
+				<input
+					id="prog-bpm"
+					type="range"
+					min="40"
+					max="240"
+					step="5"
+					bind:value={bpm}
+					class="w-full accent-[var(--primary)]"
+				/>
 			</div>
 			<div>
-				<label class="text-sm font-medium block mb-1" for="prog-loops">Loops</label>
-				<div class="flex items-center gap-2">
+				<label class="text-sm font-medium block mb-2">Loops</label>
+				<div class="flex gap-2">
 					{#each [1, 2, 3, 4, 0] as l}
 						<button
-							class="px-3 py-1.5 rounded-[var(--radius-sm)] border-2 text-sm font-medium transition-all cursor-pointer {loops === l ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
+							class="flex-1 py-2 rounded-[var(--radius-sm)] border-2 text-sm font-semibold transition-all cursor-pointer {loops === l ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
 							onclick={() => (loops = l)}
 						>
 							{l === 0 ? '∞' : `${l}×`}

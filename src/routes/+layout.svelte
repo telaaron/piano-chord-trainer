@@ -23,7 +23,7 @@
 			</a>
 			<a
 				href="/for-educators"
-				class="px-3 py-1.5 rounded-sm transition-colors {page.url.pathname === '/for-educators' ? 'bg-[var(--primary-muted)] text-[var(--primary)] font-medium' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
+				class="hidden sm:inline-block px-3 py-1.5 rounded-sm transition-colors {page.url.pathname === '/for-educators' ? 'bg-[var(--primary-muted)] text-[var(--primary)] font-medium' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
 			>
 				For Educators
 			</a>

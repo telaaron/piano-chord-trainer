@@ -113,93 +113,79 @@
 			</div>
 		</div>
 
-		<!-- Improvements — "Du wirst besser bei..." -->
-		{#if improvements.length > 0}
-			<div class="bg-[var(--accent-green)]/5 border border-[var(--accent-green)]/20 rounded-[var(--radius)] p-4">
-				<div class="text-sm font-medium text-[var(--accent-green)] mb-2">📈 You're improving!</div>
-				<div class="space-y-1.5">
-					{#each improvements as imp}
-						<div class="flex items-center justify-between text-sm">
-							<span class="text-[var(--text)]">
-								<strong>{imp.root}</strong> chords
-							</span>
-							<span class="text-[var(--accent-green)] font-mono font-semibold">
-								↓ {Math.abs(imp.changePercent).toFixed(0)}% faster
-							</span>
+		<!-- Improvements -->
+		{#if improvements.length > 0 && improvements[0].changePercent < -15}
+			<div class="bg-[var(--accent-green)]/5 border border-[var(--accent-green)]/20 rounded-[var(--radius)] p-3">
+				<div class="text-sm font-medium text-[var(--accent-green)] mb-2">📈 Getting faster!</div>
+				<div class="flex gap-3 flex-wrap">
+					{#each improvements.slice(0, 3) as imp}
+						<div class="text-sm">
+							<strong class="text-[var(--text)]">{imp.root}</strong>
+							<span class="text-[var(--accent-green)] font-mono ml-1">↓{Math.abs(imp.changePercent).toFixed(0)}%</span>
 						</div>
 					{/each}
 				</div>
-				<p class="text-xs text-[var(--text-dim)] mt-2">Comparing last 5 sessions vs. previous 10</p>
 			</div>
 		{/if}
 
-		<!-- Weak chords — "Hier kannst du noch üben" -->
+		<!-- Weak chords -->
 		{#if weakChords.length > 0}
 			<div>
-				<div class="flex items-center justify-between mb-2">
-					<span class="text-xs text-[var(--text-muted)] font-medium">🎯 Your slowest chords</span>
-				</div>
-				<div class="space-y-1.5">
-					{#each weakChords as wc}
+				<div class="text-sm font-medium text-[var(--text-muted)] mb-2">🎯 Focus on</div>
+				<div class="space-y-2">
+					{#each weakChords.slice(0, 3) as wc}
 						{@const barWidth = Math.min(100, (wc.avgMs / (weakChords[0]?.avgMs || 1)) * 100)}
 						<div class="relative bg-[var(--bg)] rounded-[var(--radius-sm)] border border-[var(--border)] overflow-hidden">
 							<div
 								class="absolute inset-y-0 left-0 bg-[var(--accent-amber)]/10"
 								style="width: {barWidth}%"
 							></div>
-							<div class="relative flex items-center justify-between px-3 py-2 text-sm">
-								<span class="font-mono font-semibold">{wc.root}</span>
-								<div class="flex items-center gap-3">
-									<span class="text-xs text-[var(--text-dim)]">{wc.count}× practiced</span>
-									<span class="font-mono text-[var(--accent-amber)]">
-										{(wc.avgMs / 1000).toFixed(2)}s
-									</span>
-								</div>
+							<div class="relative flex items-center justify-between px-3 py-2">
+								<span class="font-mono font-semibold text-sm">{wc.root}</span>
+								<span class="font-mono text-[var(--accent-amber)] text-sm">
+									{(wc.avgMs / 1000).toFixed(1)}s
+								</span>
 							</div>
 						</div>
 					{/each}
 				</div>
-				<p class="text-xs text-[var(--text-dim)] mt-2">
-					Average response time per root note. Focus on these keys!
-				</p>
 			</div>
 		{/if}
 
 		<!-- Trend sparkline -->
-		{#if sparkData}
-			<div class="bg-[var(--bg-muted)] rounded-[var(--radius)] p-4">
-				<div class="flex items-center justify-between mb-3">
-					<span class="text-xs text-[var(--text-muted)]">Last 10 sessions — seconds per chord</span>
-					{#if trend !== null}
-						<span class="text-xs font-medium {trend < 0 ? 'text-[var(--accent-green)]' : trend > 0 ? 'text-[var(--accent-red)]' : 'text-[var(--text-muted)]'}">
-							{trend < 0 ? '↓ Faster' : trend > 0 ? '↑ Slower' : '→ Same'} ({Math.abs(trend).toFixed(0)}%)
-						</span>
-					{/if}
-				</div>
-				<div class="flex items-end gap-1 h-12">
-					{#each sparkData as bar, i}
-						<div
-							class="flex-1 rounded-t-sm transition-all {i === sparkData.length - 1 ? 'bg-[var(--primary)]' : 'bg-[var(--border)]'}"
-							style="height: {bar.height}%"
-							title="{(bar.value / 1000).toFixed(2)}s per chord"
-						></div>
-					{/each}
-				</div>
-				<div class="flex justify-between text-[10px] text-[var(--text-dim)] mt-1">
+		{#if sparkData && stats.totalSessions >= 5}
+		<div class="bg-[var(--bg-muted)] rounded-[var(--radius)] p-4">
+			<div class="flex items-center justify-between mb-3">
+				<span class="text-xs text-[var(--text-muted)]">Last 10 sessions — seconds per chord</span>
+				{#if trend !== null}
+					<span class="text-xs font-medium {trend < 0 ? 'text-[var(--accent-green)]' : trend > 0 ? 'text-[var(--accent-red)]' : 'text-[var(--text-muted)]'}">
+						{trend < 0 ? '↓ Faster' : trend > 0 ? '↑ Slower' : '→ Same'} ({Math.abs(trend).toFixed(0)}%)
+					</span>
+				{/if}
+			</div>
+			<div class="flex items-end gap-1 h-12">
+				{#each sparkData as bar, i}
+					<div
+						class="flex-1 rounded-t-sm transition-all {i === sparkData.length - 1 ? 'bg-[var(--primary)]' : 'bg-[var(--border)]'}"
+						style="height: {bar.height}%"
+						title="{(bar.value / 1000).toFixed(2)}s per chord"
+					></div>
+				{/each}
+			</div>
+			<div class="flex justify-between text-[10px] text-[var(--text-dim)] mt-1">
 				<span>Oldest</span>
 				<span>Newest</span>
-				</div>
-			</div>
-		{/if}
-
-		<!-- Personal bests -->
-		{#if Object.keys(stats.personalBests).length > 0}
-			<div>
-				<div class="text-xs text-[var(--text-muted)] mb-2 font-medium">🏅 Personal Bests (⌀ per chord)</div>
-				<div class="space-y-1.5">
-					{#each Object.entries(stats.personalBests).slice(0, 5) as [key, best]}
-						{@const parts = key.split('-')}
-						{@const diff = parts[0]}
+		</div>
+	</div>
+{/if}
+<!-- Personal bests -->
+	{#if Object.keys(stats.personalBests).length > 3}
+		<details>
+			<summary class="text-sm font-medium text-[var(--text-muted)] cursor-pointer hover:text-[var(--text)] mb-2">🏅 Personal Bests ({Object.keys(stats.personalBests).length})</summary>
+			<div class="space-y-1.5 mt-2">
+				{#each Object.entries(stats.personalBests).slice(0, 8) as [key, best]}
+					{@const parts = key.split('-')}
+					{@const diff = parts[0]}
 						{@const voicingKey = parts.length >= 3 ? parts.slice(1, -1).join('-') : parts[1]}
 						{@const mode = parts[parts.length - 1]}
 						<div class="flex items-center justify-between text-sm bg-[var(--bg)] rounded-[var(--radius-sm)] px-3 py-2 border border-[var(--border)]">
@@ -216,7 +202,7 @@
 						</div>
 					{/each}
 				</div>
-			</div>
+			</details>
 		{/if}
 
 		<!-- Session history (collapsible) -->
@@ -245,6 +231,5 @@
 					{/each}
 				</div>
 			</details>
-		{/if}
-	</div>
+		{/if}</div>
 {/if}

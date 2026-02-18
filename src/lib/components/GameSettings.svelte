@@ -227,10 +227,10 @@
 				<p class="text-xs text-[var(--text-dim)] mb-3">How chords are sequenced. Progressions train real jazz patterns.</p>
 				<div class="grid grid-cols-2 gap-3">
 					{#each [
-						{ val: 'random' as ProgressionMode, label: 'Random', sub: 'Random chords, no pattern' },
-						{ val: '2-5-1' as ProgressionMode, label: 'ii – V – I', sub: 'The jazz standard progression, e.g. Dm7 → G7 → CMaj7' },
-						{ val: 'cycle-of-4ths' as ProgressionMode, label: 'Circle of 4ths', sub: 'Through all 12 keys by fourths' },
-						{ val: '1-6-2-5' as ProgressionMode, label: 'I – vi – ii – V', sub: 'Turnaround: the progression behind thousands of songs' },
+					{ val: 'random' as ProgressionMode, label: 'Random', sub: 'No pattern' },
+					{ val: '2-5-1' as ProgressionMode, label: 'ii – V – I', sub: 'Jazz standard' },
+					{ val: 'cycle-of-4ths' as ProgressionMode, label: 'Circle of 4ths', sub: 'All 12 keys' },
+					{ val: '1-6-2-5' as ProgressionMode, label: 'I – vi – ii – V', sub: 'Turnaround' },
 					] as opt}
 						<button
 							class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(progressionMode, opt.val)}"
@@ -246,11 +246,11 @@
 			<!-- MIDI Toggle -->
 			<fieldset>
 				<legend class="text-sm font-medium mb-1">MIDI Recognition</legend>
-				<p class="text-xs text-[var(--text-dim)] mb-3">When on: the app listens to what you play and auto-advances on correct chord.</p>
+				<p class="text-xs text-[var(--text-dim)] mb-3">Auto-advance when you play the correct chord</p>
 				<div class="grid grid-cols-2 gap-3">
 					{#each [
-						{ val: false, label: 'Off', sub: 'Press Space to advance' },
-						{ val: true, label: 'On', sub: 'Auto-advance on correct chord' },
+					{ val: false, label: 'Off', sub: 'Space to advance' },
+					{ val: true, label: 'On', sub: 'Auto-advance' },
 					] as opt}
 						<button
 							class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(midiEnabled, opt.val)}"
@@ -269,12 +269,12 @@
 			<!-- Difficulty -->
 			<fieldset>
 				<legend class="text-sm font-medium mb-1">Difficulty</legend>
-				<p class="text-xs text-[var(--text-dim)] mb-3">Which chord types appear. Beginner = standard jazz. Advanced = extended voicings.</p>
+				<p class="text-xs text-[var(--text-dim)] mb-3">Chord types: Beginner = 5 basic, Advanced = 14+ extended</p>
 				<div class="grid grid-cols-3 gap-3">
 					{#each [
-						{ val: 'beginner' as Difficulty, label: 'Beginner', sub: 'Maj7, 7, m7, 6, m6' },
-						{ val: 'intermediate' as Difficulty, label: 'Intermediate', sub: '+ 9th, 6/9, dim' },
-						{ val: 'advanced' as Difficulty, label: 'Advanced', sub: '+ 11th, 13th, Alt, ø' },
+					{ val: 'beginner' as Difficulty, label: 'Beginner', sub: '5 types' },
+					{ val: 'intermediate' as Difficulty, label: 'Inter.', sub: '9 types' },
+					{ val: 'advanced' as Difficulty, label: 'Advanced', sub: '14+ types' },
 					] as opt}
 						<button
 							class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(difficulty, opt.val)}"
