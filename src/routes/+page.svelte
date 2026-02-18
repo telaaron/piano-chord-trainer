@@ -155,6 +155,11 @@
 			<source src="/videos/piano-rotation-4.webm" type="video/webm" />
 		</video>
 	</div>
+
+	<!-- Static image for mobile/touch (no video) -->
+	<div class="piano-static">
+		<img src="/bilder/piano.webp" alt="Jazz piano" class="piano-static-img" />
+	</div>
 </section>
 
 <!-- Plug in. Play. Get faster. — cinematic rows -->
@@ -231,10 +236,8 @@
 <style>
 	.hero {
 		position: relative;
-		min-height: 90vh;
-		@media (max-width: 968px) {
-			min-height: 100vh;
-		}
+		height: calc(100dvh - 3.5rem);
+		min-height: 480px;
 		display: flex;
 		align-items: center;
 		padding: 4rem 5%;
@@ -357,6 +360,11 @@
 		color: var(--text-dim);
 	}
 
+	/* Static piano image — hidden on desktop, shown on mobile/touch */
+	.piano-static {
+		display: none;
+	}
+
 	/* Mobile-specific visibility */
 	.show-mobile-only {
 		display: none;
@@ -400,7 +408,7 @@
 
 		.hero {
 			text-align: center;
-			padding: 3rem 5%;
+			padding: 2rem 5%;
 		}
 
 		.hero-content {
@@ -410,28 +418,22 @@
 		}
 
 		.piano-container {
-			/* Absolute position behind content */
+			display: none;
+		}
+
+		.piano-static {
 			position: absolute;
 			inset: 0;
-			padding: 0;
-			display: flex;
-			align-items: center;
-			justify-content: center;
+			display: block;
 			pointer-events: none;
 			z-index: 0;
 		}
 
-		.piano-container::before {
-			display: none;
-		}
-
-		.piano-video {
+		.piano-static-img {
 			width: 100%;
 			height: 100%;
-			max-width: none;
 			object-fit: cover;
-			object-position: center 30%;
-			clip-path: none;
+			object-position: center center;
 			opacity: 0.15;
 			filter: brightness(0.8) contrast(1.2) blur(1px);
 		}
@@ -453,34 +455,27 @@
 		}
 	}
 
-	/* Touch devices (iPad etc) above mobile breakpoint:
-	   Safari doesn't support mix-blend-mode on video, so use full-bleed cover */
+	/* Touch devices (iPad etc) above mobile breakpoint: use static image */
 	@media (hover: none) and (pointer: coarse) and (min-width: 969px) {
 		.piano-container {
+			display: none;
+		}
+
+		.piano-static {
 			position: absolute;
 			inset: 0;
-			width: 100%;
-			height: 100%;
 			display: block;
 			pointer-events: none;
 			z-index: 0;
 		}
 
-		.piano-container::after {
-			display: none;
-		}
-
-		.piano-video {
-			position: absolute;
-			inset: 0;
+		.piano-static-img {
 			width: 100%;
 			height: 100%;
-			max-width: none;
 			object-fit: cover;
 			object-position: center center;
-			mix-blend-mode: normal;
-			opacity: 0.4;
-			filter: brightness(0.9) contrast(1.1);
+			opacity: 0.15;
+			filter: brightness(0.8) contrast(1.2) blur(1px);
 		}
 	}
 
