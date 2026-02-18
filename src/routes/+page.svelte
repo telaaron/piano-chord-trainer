@@ -16,6 +16,7 @@
 	let isMobile = $state(false);
 
 	onMount(() => {
+		const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 		isMobile = window.matchMedia('(max-width: 968px)').matches;
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -24,8 +25,9 @@
 			useStaticFallback = true;
 		}
 
-		// On mobile: show first frame only, no scroll animation
-		if (isMobile) {
+		// On mobile OR any touch device (iPad etc): show first frame only, no scroll animation
+		// iOS Safari throttles video.currentTime seeks, making scroll animation unusable
+		if (isMobile || isTouchDevice) {
 			useStaticFallback = true;
 			if (videoElement) {
 				videoElement.load();
@@ -150,52 +152,65 @@
 			preload="auto"
 			class="piano-video"
 		>
-			<source src="/videos/piano-rotation-3.webm" type="video/webm" />
+			<source src="/videos/piano-rotation-4.webm" type="video/webm" />
 		</video>
 	</div>
 </section>
 
-<!-- What's inside -->
-<section class="features-section">
-	<div class="max-w-4xl mx-auto px-4">
-		<h2 class="text-2xl sm:text-3xl font-bold text-center mb-10 text-[var(--text)]">Plug in. Play. Get faster.</h2>
+<!-- Plug in. Play. Get faster. — cinematic rows -->
+<section class="story-section">
 
-		<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
-			<div class="card p-5 card-hover">
-				<Piano size={24} class="mx-auto mb-2 text-[var(--primary)]" />
-				<p class="font-semibold text-sm">MIDI auto-detect</p>
-			</div>
-			<div class="card p-5 card-hover">
-				<Target size={24} class="mx-auto mb-2 text-[var(--accent-amber)]" />
-				<p class="font-semibold text-sm">ii-V-I all 12 keys</p>
-			</div>
-			<div class="card p-5 card-hover">
-				<Keyboard size={24} class="mx-auto mb-2 text-[var(--accent-gold)]" />
-				<p class="font-semibold text-sm">4+ voicing types</p>
-			</div>
-			<div class="card p-5 card-hover">
-				<Volume2 size={24} class="mx-auto mb-2 text-[var(--primary)]" />
-				<p class="font-semibold text-sm">Audio &amp; metronome</p>
-			</div>
-			<div class="card p-5 card-hover">
-				<BarChart3 size={24} class="mx-auto mb-2 text-[var(--accent-amber)]" />
-				<p class="font-semibold text-sm">Weakness tracking</p>
-			</div>
-			<div class="card p-5 card-hover">
-				<BookOpen size={24} class="mx-auto mb-2 text-[var(--accent-gold)]" />
-				<p class="font-semibold text-sm">Practice plans</p>
-			</div>
+	<!-- Step 1: Plug In -->
+	<div class="story-row">
+		<div class="story-image-wrap story-image-left">
+			<div class="story-glow story-glow-1"></div>
+			<img src="/bilder/pluged-in-piano.webp" alt="Connect MIDI keyboard via USB" class="story-image story-image-1" />
 		</div>
-
-		<!-- How it works — inline -->
-		<div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-center text-[var(--text-muted)] mt-12">
-			<span class="inline-flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[var(--primary)] text-white text-xs font-bold flex items-center justify-center">1</span> Pick a drill</span>
-			<span class="hidden sm:inline text-[var(--text-dim)]">→</span>
-			<span class="inline-flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[var(--primary)] text-white text-xs font-bold flex items-center justify-center">2</span> Play the chords</span>
-			<span class="hidden sm:inline text-[var(--text-dim)]">→</span>
-			<span class="inline-flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-[var(--primary)] text-white text-xs font-bold flex items-center justify-center">3</span> See your progress</span>
+		<div class="story-text">
+			<span class="story-num">01</span>
+			<h2 class="story-title">Plug In</h2>
+			<p class="story-desc">Connect your MIDI keyboard via USB. The app detects it instantly — no drivers, no setup.</p>
+			<div class="story-chips">
+				<span class="story-chip"><Piano size={14} />MIDI auto-detect</span>
+				<span class="story-chip"><Volume2 size={14} />Audio &amp; metronome</span>
+			</div>
 		</div>
 	</div>
+
+	<!-- Step 2: Play -->
+	<div class="story-row story-row-reverse">
+		<div class="story-image-wrap story-image-right">
+			<div class="story-glow story-glow-2"></div>
+		<img src="/bilder/hands-on-piano.webp" alt="Play chords on the keyboard" class="story-image" />
+		</div>
+		<div class="story-text">
+			<span class="story-num">02</span>
+			<h2 class="story-title">Play</h2>
+			<p class="story-desc">See a chord on screen, play it on your keyboard. Instant feedback every time.</p>
+			<div class="story-chips">
+				<span class="story-chip"><Target size={14} />ii-V-I all 12 keys</span>
+				<span class="story-chip"><Keyboard size={14} />4+ voicing types</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- Step 3: Get Faster -->
+	<div class="story-row">
+		<div class="story-image-wrap story-image-left">
+			<div class="story-glow story-glow-3"></div>
+		<img src="/bilder/lvl-up-piano.webp" alt="Level up and get faster" class="story-image" />
+		</div>
+		<div class="story-text">
+			<span class="story-num">03</span>
+			<h2 class="story-title">Get Faster</h2>
+			<p class="story-desc">Track your response times, pinpoint weak spots, watch yourself improve session by session.</p>
+			<div class="story-chips">
+				<span class="story-chip"><BarChart3 size={14} />Weakness tracking</span>
+				<span class="story-chip"><BookOpen size={14} />Practice plans</span>
+			</div>
+		</div>
+	</div>
+
 </section>
 
 <!-- Bottom CTA -->
@@ -220,13 +235,23 @@
 		@media (max-width: 968px) {
 			min-height: 100vh;
 		}
-		display: grid;
-		grid-template-columns: 1fr 1fr;
+		display: flex;
 		align-items: center;
-		gap: 4rem;
 		padding: 4rem 5%;
 		background: linear-gradient(135deg, #0a0908 0%, #1a1410 30%, #3e2723 50%, #1a1410 70%, #0a0908 100%);
-		overflow: hidden;
+	}
+
+	@media (min-width: 1280px) {
+		.hero { padding: 4rem 8%; }
+	}
+	@media (min-width: 1536px) {
+		.hero { padding: 4rem 12%; }
+	}
+
+	.hero-content {
+		position: relative;
+		z-index: 2;
+		max-width: 600px;
 	}
 
 	/* Badge */
@@ -343,40 +368,23 @@
 
 	/* Piano Video */
 	.piano-container {
-		position: relative;
+		position: absolute;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		width: 60%;
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		padding: 2rem;
-		overflow: hidden;
-	}
-
-	.piano-container::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: radial-gradient(
-			ellipse 50% 50% at 50% 50%,
-			var(--glow-warm) 0%,
-			transparent 70%
-		);
-		opacity: 0.6;
+		justify-content: flex-end;
 		pointer-events: none;
-		z-index: 0;
 	}
 
 	.piano-video {
-		position: relative;
-		z-index: 1;
-		max-width: 1200px;
-		height: 500px;
-		object-fit: fill;
-		/* Shift video left so right 8% (watermark) is pushed out of the overflow:hidden container */
-		object-position: 60% center;
-
-		/* Make black background transparent */
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		object-position: right center;
 		mix-blend-mode: screen;
-		
 		filter: brightness(1.1) contrast(1.1);
 	}
 
@@ -391,16 +399,14 @@
 		}
 
 		.hero {
-			grid-template-columns: 1fr;
 			text-align: center;
 			padding: 3rem 5%;
-			position: relative;
 		}
 
 		.hero-content {
-			order: 1;
 			position: relative;
 			z-index: 2;
+			max-width: none;
 		}
 
 		.piano-container {
@@ -447,10 +453,198 @@
 		}
 	}
 
-	/* Sections below hero */
-	.features-section {
-		padding: 5rem 0;
-		background: linear-gradient(180deg, var(--bg) 0%, #12100c 40%, #12100c 60%, var(--bg) 100%);
+	/* Touch devices (iPad etc) above mobile breakpoint:
+	   Safari doesn't support mix-blend-mode on video, so use full-bleed cover */
+	@media (hover: none) and (pointer: coarse) and (min-width: 969px) {
+		.piano-container {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			display: block;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		.piano-container::after {
+			display: none;
+		}
+
+		.piano-video {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			max-width: none;
+			object-fit: cover;
+			object-position: center center;
+			mix-blend-mode: normal;
+			opacity: 0.4;
+			filter: brightness(0.9) contrast(1.1);
+		}
+	}
+
+	/* Cinematic story rows */
+	.story-section {
+		background: linear-gradient(180deg, var(--bg) 0%, #0e0c09 20%, #0e0c09 80%, var(--bg) 100%);
+		overflow-x: hidden;
+	}
+
+	.story-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		align-items: center;
+		min-height: 55vh;
+		border-bottom: 1px solid rgba(255,255,255,0.04);
+		max-width: 1600px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.story-row-reverse {
+		direction: rtl;
+	}
+
+	.story-row-reverse > * {
+		direction: ltr;
+	}
+
+	.story-image-wrap {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		min-height: 55vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.story-glow {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	.story-glow-1 {
+		background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(232, 118, 59, 0.12) 0%, transparent 65%);
+	}
+	.story-glow-2 {
+		background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(232, 118, 59, 0.1) 0%, transparent 65%);
+	}
+	.story-glow-3 {
+		background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(255, 170, 50, 0.15) 0%, transparent 65%);
+	}
+
+	.story-image {
+		position: relative;
+		z-index: 1;
+		width: 85%;
+		height: auto;
+		object-fit: contain;
+		transition: transform 0.6s ease;
+	}
+
+	.story-image-wrap:hover .story-image {
+		transform: scale(1.04);
+	}
+
+	.story-text {
+		padding: 3rem 5% 3rem 6%;
+	}
+
+	.story-row-reverse .story-text {
+		padding: 3rem 6% 3rem 5%;
+	}
+
+	.story-num {
+		display: block;
+		font-size: 5rem;
+		font-weight: 900;
+		line-height: 1;
+		margin-bottom: 0.5rem;
+		background: linear-gradient(135deg, var(--primary) 0%, var(--accent-amber) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		opacity: 0.35;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.story-title {
+		font-size: clamp(2.5rem, 3.5vw, 4rem);
+		font-weight: 800;
+		line-height: 1.1;
+		color: var(--text);
+		margin-bottom: 1rem;
+	}
+
+	.story-desc {
+		font-size: 1.15rem;
+		line-height: 1.7;
+		color: var(--text-muted);
+		margin-bottom: 2rem;
+		max-width: 420px;
+	}
+
+	.story-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+	}
+
+	.story-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.4rem 0.9rem;
+		border-radius: 16px;
+		border: 1px solid rgba(232, 118, 59, 0.3);
+		background: rgba(232, 118, 59, 0.06);
+		font-size: 0.85rem;
+		color: var(--text-muted);
+	}
+
+	:global(.story-chip svg) {
+		color: var(--primary);
+		flex-shrink: 0;
+	}
+
+	@media (max-width: 968px) {
+		.story-row,
+		.story-row-reverse {
+			grid-template-columns: 1fr;
+			direction: ltr;
+			min-height: auto;
+		}
+
+		.story-image-wrap {
+			min-height: 72vw;
+			padding-top: 2.5rem;
+			overflow: visible;
+		}
+
+		.story-image {
+			width: 115%;
+			max-width: none;
+		}
+
+		.story-text,
+		.story-row-reverse .story-text {
+			padding: 1.5rem 1.5rem 3rem;
+		}
+
+		.story-num {
+			font-size: 3.5rem;
+		}
+
+		.story-title {
+			font-size: 2rem;
+		}
+
+		.story-desc {
+			font-size: 1rem;
+		}
 	}
 
 	.cta-section {
