@@ -90,9 +90,16 @@
 	<meta property="og:description" content="Master jazz piano voicings in all 12 keys. Speed training with MIDI recognition and ii-V-I progressions." />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/" />
+	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta property="og:image:type" content="image/webp" />
+	<meta property="og:image:width" content="966" />
+	<meta property="og:image:height" content="507" />
+	<meta property="og:image:alt" content="Chord Trainer hero with piano and jazz voicing practice" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
 	<meta name="twitter:description" content="Master jazz piano voicings in all 12 keys. MIDI recognition, ii-V-I progressions, progress tracking." />
+	<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta name="twitter:image:alt" content="Chord Trainer hero with piano and jazz voicing practice" />
 </svelte:head>
 
 <!-- Hero with Scroll-Controlled 3D Piano -->
