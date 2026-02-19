@@ -407,7 +407,7 @@
 		}
 
 		.hero {
-			text-align: center;
+			text-align: left;
 			padding: 2rem 5%;
 		}
 
@@ -439,19 +439,18 @@
 		}
 
 		.subtitle {
-			margin-left: auto;
-			margin-right: auto;
+			margin-left: 0;
+			margin-right: 0;
 		}
 
 		.cta-buttons {
-			justify-content: center;
-			flex-direction: column;
+			justify-content: flex-start;
+			flex-direction: row;
 			align-items: center;
 		}
 
 		.btn {
-			width: 100%;
-			max-width: 300px;
+			width: auto;
 		}
 	}
 
