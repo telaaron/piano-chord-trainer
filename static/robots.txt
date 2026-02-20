@@ -2,6 +2,9 @@
 User-agent: *
 Allow: /
 Disallow: /.git/
+Disallow: /train
+Disallow: /privacy
+Disallow: /impressum
 
 Sitemap: https://jazzchords.app/sitemap.xml
 

@@ -15,13 +15,41 @@
 </script>
 
 <svelte:head>
-	<title>Chord Trainer for Open Studio — Jazz Voicing Practice, Embedded</title>
-	<meta name="description" content="A dedicated chord voicing speed-drill trainer built for Open Studio Jazz. White-label integration, MIDI recognition, progress tracking — inside your platform." />
+	<title>Jazz Voicing Practice Tool for Open Studio | Chord Trainer Integration</title>
+	<meta name="description" content="Embed a MIDI chord voicing speed-drill trainer inside Open Studio. Pre-loaded with lesson voicings, white-label branding, weakness analysis. 30-day free trial." />
 	<link rel="canonical" href="https://jazzchords.app/open-studio" />
-	<meta property="og:title" content="Chord Trainer for Open Studio" />
-	<meta property="og:description" content="Jazz voicing speed-drill trainer built for the Open Studio learning environment. MIDI, progress tracking, white-label." />
+	<meta property="og:title" content="Chord Trainer for Open Studio – Jazz Voicing Practice, Embedded" />
+	<meta property="og:description" content="A dedicated chord voicing speed-drill trainer built for Open Studio Jazz. White-label integration, MIDI recognition, progress tracking — inside your platform." />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/open-studio" />
+	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta property="og:image:alt" content="Chord Trainer embedded inside Open Studio Jazz platform" />
+	<meta property="og:site_name" content="Chord Trainer" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Chord Trainer for Open Studio – Jazz Voicing Practice" />
+	<meta name="twitter:description" content="Jazz voicing speed-drill trainer built for the Open Studio learning environment. MIDI, progress tracking, white-label." />
+	<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta name="twitter:image:alt" content="Chord Trainer embedded inside Open Studio Jazz platform" />
+
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "Service",
+		"name": "Chord Trainer – Open Studio Integration",
+		"description": "White-label jazz piano voicing speed-drill trainer for embedding in music education platforms.",
+		"provider": {
+			"@type": "Organization",
+			"name": "Aaron Technologies OÜ",
+			"url": "https://jazzchords.app"
+		},
+		"serviceType": "Music Education Software",
+		"areaServed": "Worldwide",
+		"offers": {
+			"@type": "Offer",
+			"price": "0",
+			"priceCurrency": "USD",
+			"description": "30-day free trial, then flat monthly license fee"
+		}
+	})}</script>`}
 </svelte:head>
 
 <main class="flex-1" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">
@@ -135,7 +163,8 @@
 
 				<!-- OS Top Nav -->
 				<div class="os-topnav">
-					<img src="/mock-content/open-studio-logo.png" alt="Open Studio" class="os-logo-img" />
+					<img src="/mock-content/open-studio-logo.png" alt="Open Studio" class="os-logo-img"
+						width="160" height="32" loading="lazy" />
 					<div class="os-nav-links">
 						<span class="os-nav-link">
 							<span class="os-nav-icon">◎</span> Courses
@@ -163,7 +192,8 @@
 
 					<!-- Video Thumbnail -->
 					<div class="os-video">
-						<img src="/mock-content/thumbnail.png" alt="ii-V-I Progression — Jazz fundamentals drill" class="os-video-img" />
+						<img src="/mock-content/thumbnail.png" alt="ii-V-I Progression — Jazz fundamentals drill" class="os-video-img"
+							width="960" height="540" loading="lazy" />
 						<!-- Video Controls Bar -->
 						<div class="os-video-controls">
 							<div class="os-play-btn">▶</div>

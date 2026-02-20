@@ -11,7 +11,8 @@
 	<nav class="sticky top-0 z-10 border-b border-[var(--wood-dark)]/60 bg-[var(--bg)]/75 backdrop-blur-md">
 		<div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
 		<a href="/" class="flex items-center gap-2 group">
-			<img src="/jazzchords-logo.png" alt="Chord Trainer" class="h-8 w-8 object-contain" />
+			<img src="/jazzchords-logo.png" alt="Chord Trainer" class="h-8 w-8 object-contain"
+				width="32" height="32" loading="eager" fetchpriority="high" />
 			<span class="font-bold text-lg text-gradient">jazzchords.app</span>
 		</a>
 
@@ -43,7 +44,8 @@
 			<div class="max-w-5xl mx-auto space-y-6">
 				<!-- Logo + Brand -->
 				<div class="flex items-center gap-3">
-					<img src="/jazzchords-logo.png" alt="Chord Trainer" class="h-12 w-12 object-contain" />
+					<img src="/jazzchords-logo.png" alt="Chord Trainer" class="h-12 w-12 object-contain"
+						width="48" height="48" loading="lazy" />
 					<div>
 						<p class="font-bold text-[var(--text)]">Chord Trainer</p>
 						<p class="text-xs text-[var(--text-dim)]">Jazz Piano Speed Training</p>

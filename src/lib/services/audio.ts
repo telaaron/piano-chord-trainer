@@ -1,5 +1,18 @@
 // Audio playback using Tone.js – plays chord voicings with configurable sound
-import * as Tone from 'tone';
+//
+// Tone.js (~200 kB) is imported lazily on first use so it never ends up in
+// the homepage bundle and does not block Time-to-Interactive on /train.
+import type * as ToneType from 'tone';
+
+// ─── Lazy Tone singleton ─────────────────────────────────────────────────────
+let _tone: typeof ToneType | null = null;
+
+async function getTone(): Promise<typeof ToneType> {
+	if (!_tone) {
+		_tone = await import('tone');
+	}
+	return _tone;
+}
 
 // ─── Sound Presets ──────────────────────────────────────────
 
@@ -43,27 +56,35 @@ const PRESET_CONFIGS: Record<SoundPreset, Record<string, any>> = {
 };
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-let synth: Tone.PolySynth | null = null;
+let synth: ToneType.PolySynth | null = null;
 let currentPreset: SoundPreset = 'electric-piano';
-let reverb: Tone.Reverb | null = null;
+let reverb: ToneType.Reverb | null = null;
 let started = false;
 
-/** Ensure AudioContext is started (must be called from user gesture) */
+/**
+ * Ensure AudioContext is running (must be called from a user-interaction handler).
+ * Calls Tone.start() which internally invokes AudioContext.resume(), then explicitly
+ * resumes the raw context as a belt-and-braces measure for strict autoplay policies.
+ */
 async function ensureStarted(): Promise<void> {
-	if (!started) {
-		await Tone.start();
-		started = true;
+	const T = await getTone();
+	await T.start();
+	const ctx = T.getContext().rawContext as AudioContext;
+	if (ctx.state === 'suspended') {
+		await ctx.resume();
 	}
+	started = true;
 }
 
-function getSynth(): Tone.PolySynth {
+function getSynth(): ToneType.PolySynth {
 	if (!synth) {
+		const T = _tone!;
 		const config = PRESET_CONFIGS[currentPreset];
-		synth = new Tone.PolySynth(Tone.Synth, config).toDestination();
+		synth = new T.PolySynth(T.Synth, config).toDestination();
 		synth.maxPolyphony = 8;
 
 		// Add subtle reverb for ambience
-		reverb = new Tone.Reverb({ decay: 2.0, wet: 0.2 }).toDestination();
+		reverb = new T.Reverb({ decay: 2.0, wet: 0.2 }).toDestination();
 		synth.connect(reverb);
 	}
 	return synth;
@@ -119,13 +140,14 @@ function notesToToneNames(notes: string[]): string[] {
  * @param duration - Duration string (e.g. "2n" = half note, "1n" = whole note)
  */
 export async function playChord(notes: string[], duration: string = '2n'): Promise<void> {
+	const T = await getTone();
 	await ensureStarted();
 	const s = getSynth();
 	// Stop any currently playing notes immediately before starting new ones
-	s.releaseAll(Tone.now());
+	s.releaseAll(T.now());
 	const toneNotes = notesToToneNames(notes);
 	// Schedule slightly in the future to ensure releaseAll completes
-	const t = Tone.now() + 0.02;
+	const t = T.now() + 0.02;
 	s.triggerAttackRelease(toneNotes, duration, t);
 }
 
@@ -161,15 +183,15 @@ export function disposeAudio(): void {
 
 // ─── Metronome ──────────────────────────────────────────────
 
-let metronomeLoop: Tone.Loop | null = null;
-let metronomeSynth: Tone.MembraneSynth | null = null;
+let metronomeLoop: ToneType.Loop | null = null;
+let metronomeSynth: ToneType.MembraneSynth | null = null;
 let metronomeRunning = false;
 let beatCount = 0;
 let onBeatCallback: ((beat: number) => void) | null = null;
 
-function getMetronomeSynth(): Tone.MembraneSynth {
+function getMetronomeSynth(): ToneType.MembraneSynth {
 	if (!metronomeSynth) {
-		metronomeSynth = new Tone.MembraneSynth({
+		metronomeSynth = new _tone!.MembraneSynth({
 			pitchDecay: 0.008,
 			octaves: 2,
 			envelope: {
@@ -195,16 +217,17 @@ export async function startMetronome(
 	beatsPerBar: number = 4,
 	onBeat?: (beat: number) => void,
 ): Promise<void> {
+	const T = await getTone();
 	await ensureStarted();
 	stopMetronome();
 
-	Tone.getTransport().bpm.value = bpm;
+	T.getTransport().bpm.value = bpm;
 	beatCount = 0;
 	onBeatCallback = onBeat ?? null;
 
 	const click = getMetronomeSynth();
 
-	metronomeLoop = new Tone.Loop((time) => {
+	metronomeLoop = new T.Loop((time) => {
 		beatCount++;
 		const currentBeat = ((beatCount - 1) % beatsPerBar) + 1;
 
@@ -217,14 +240,14 @@ export async function startMetronome(
 
 		if (onBeatCallback) {
 			// Schedule callback slightly after audio for visual sync
-			Tone.getDraw().schedule(() => {
+			T.getDraw().schedule(() => {
 				onBeatCallback!(currentBeat);
 			}, time);
 		}
 	}, '4n');
 
 	metronomeLoop.start(0);
-	Tone.getTransport().start();
+	T.getTransport().start();
 	metronomeRunning = true;
 }
 
@@ -235,7 +258,9 @@ export function stopMetronome(): void {
 		metronomeLoop.dispose();
 		metronomeLoop = null;
 	}
-	Tone.getTransport().stop();
+	// _tone is guaranteed non-null here: stopMetronome is only reachable after
+	// startMetronome has awaited getTone(), or on cleanup where nothing is running.
+	_tone?.getTransport().stop();
 	beatCount = 0;
 	metronomeRunning = false;
 	onBeatCallback = null;
@@ -248,7 +273,7 @@ export function isMetronomeRunning(): boolean {
 
 /** Update metronome BPM live */
 export function setMetronomeBpm(bpm: number): void {
-	Tone.getTransport().bpm.value = bpm;
+	if (_tone) _tone.getTransport().bpm.value = bpm;
 }
 
 /** Dispose all audio resources */

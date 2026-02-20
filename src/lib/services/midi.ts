@@ -2,7 +2,7 @@
 
 import { noteToSemitone } from '$lib/engine';
 
-export type MidiConnectionState = 'disconnected' | 'connecting' | 'connected' | 'unsupported';
+export type MidiConnectionState = 'disconnected' | 'connecting' | 'connected' | 'unsupported' | 'denied';
 
 export interface MidiDevice {
 	id: string;
@@ -23,6 +23,7 @@ export interface ChordMatchResult {
 type NoteCallback = (activeNotes: Set<number>) => void;
 type ConnectionCallback = (state: MidiConnectionState) => void;
 type DeviceListCallback = (devices: MidiDevice[]) => void;
+type DisconnectToastCallback = (deviceName: string) => void;
 
 export class MidiService {
 	private access: MIDIAccess | null = null;
@@ -32,10 +33,15 @@ export class MidiService {
 	private _devices: MidiDevice[] = [];
 	private _selectedDeviceId: string | null = null;
 
+	// Debounce note-off events to avoid accidental double-triggers
+	private _debounceMs = 30;
+	private _noteTimers = new Map<number, ReturnType<typeof setTimeout>>();
+
 	// Callbacks
 	private onNoteChange: NoteCallback | null = null;
 	private onConnectionChange: ConnectionCallback | null = null;
 	private onDeviceListChange: DeviceListCallback | null = null;
+	private onDisconnectToast: DisconnectToastCallback | null = null;
 
 	/** Currently held MIDI note numbers */
 	get activeNotes(): ReadonlySet<number> {
@@ -67,6 +73,11 @@ export class MidiService {
 		this.onDeviceListChange = cb;
 	}
 
+	/** Called when a connected device disconnects mid-session */
+	onDisconnect(cb: DisconnectToastCallback): void {
+		this.onDisconnectToast = cb;
+	}
+
 	// ─── Lifecycle ──────────────────────────────────────────────
 
 	/** Request MIDI access. Returns true if API is available. */
@@ -81,8 +92,7 @@ export class MidiService {
 		try {
 			this.access = await navigator.requestMIDIAccess({ sysex: false });
 			this.refreshDeviceList();
-			this.access.onstatechange = () => this.refreshDeviceList();
-
+				this.access.onstatechange = (e) => this.handleStateChange(e as MIDIConnectionEvent);
 			// Auto-select first device if available
 			if (this._devices.length > 0 && !this._selectedDeviceId) {
 				this.selectDevice(this._devices[0].id);
@@ -92,8 +102,13 @@ export class MidiService {
 
 			return true;
 		} catch (err) {
-			console.warn('MIDI access denied:', err);
-			this.setState('disconnected');
+			// DOMException with name 'SecurityError' means the user denied the permission prompt
+			if (err instanceof DOMException && err.name === 'SecurityError') {
+				this.setState('denied');
+			} else {
+				console.warn('MIDI access error:', err);
+				this.setState('disconnected');
+			}
 			return false;
 		}
 	}
@@ -117,6 +132,8 @@ export class MidiService {
 	destroy(): void {
 		this.detachListeners();
 		this._activeNotes.clear();
+		this._noteTimers.forEach((t) => clearTimeout(t));
+		this._noteTimers.clear();
 		this.access = null;
 		this.setState('disconnected');
 	}
@@ -215,21 +232,50 @@ export class MidiService {
 
 	private handleMessage(event: MIDIMessageEvent): void {
 		const data = event.data;
-		if (!data || data.length < 3) return;
+		if (!data || data.length < 2) return;
 
 		const status = data[0] & 0xf0;
 		const note = data[1];
-		const velocity = data[2];
+		const velocity = data.length > 2 ? data[2] : 0;
 
 		if (status === 0x90 && velocity > 0) {
-			// Note On
+			// Note On — cancel any pending note-off debounce for this pitch
+			const existing = this._noteTimers.get(note);
+			if (existing) {
+				clearTimeout(existing);
+				this._noteTimers.delete(note);
+			}
 			this._activeNotes.add(note);
 			this.onNoteChange?.(this._activeNotes);
 		} else if (status === 0x80 || (status === 0x90 && velocity === 0)) {
-			// Note Off
-			this._activeNotes.delete(note);
-			this.onNoteChange?.(this._activeNotes);
+			// Note Off — debounce to avoid rapid re-trigger artifacts
+			const existing = this._noteTimers.get(note);
+			if (existing) clearTimeout(existing);
+
+			const timer = setTimeout(() => {
+				this._activeNotes.delete(note);
+				this._noteTimers.delete(note);
+				this.onNoteChange?.(this._activeNotes);
+			}, this._debounceMs);
+
+			this._noteTimers.set(note, timer);
 		}
+	}
+
+	private handleStateChange(event: MIDIConnectionEvent): void {
+		const port = event.port;
+
+		if (port?.type === 'input' && port.state === 'disconnected') {
+			const disconnectedDevice = this._devices.find((d) => d.id === port.id);
+			const deviceName = disconnectedDevice?.name ?? 'MIDI device';
+
+			if (this._selectedDeviceId === port.id) {
+				this.onDisconnectToast?.(deviceName);
+				this._selectedDeviceId = null;
+			}
+		}
+
+		this.refreshDeviceList();
 	}
 
 	private refreshDeviceList(): void {
@@ -270,6 +316,8 @@ export class MidiService {
 
 	/** Release all held notes (e.g. on chord change) */
 	releaseAll(): void {
+		this._noteTimers.forEach((t) => clearTimeout(t));
+		this._noteTimers.clear();
 		this._activeNotes.clear();
 		this.onNoteChange?.(this._activeNotes);
 	}

@@ -145,20 +145,23 @@
 
 	<!-- Piano Animation (Scroll-controlled) -->
 	<div class="piano-container">
-		<video 
+		<video
 			bind:this={videoElement}
 			muted
 			playsinline
 			preload="auto"
 			class="piano-video"
+			width="1920"
+			height="1080"
 		>
 			<source src="/videos/piano-rotation-4.webm" type="video/webm" />
 		</video>
 	</div>
 
-	<!-- Static image for mobile/touch (no video) -->
+	<!-- Static image for mobile/touch (no video) — eager + high priority: LCP on mobile -->
 	<div class="piano-static">
-		<img src="/bilder/piano.webp" alt="Jazz piano" class="piano-static-img" />
+		<img src="/bilder/piano.webp" alt="Jazz piano" class="piano-static-img"
+			width="1200" height="800" loading="eager" fetchpriority="high" />
 	</div>
 </section>
 
@@ -169,7 +172,8 @@
 	<div class="story-row">
 		<div class="story-image-wrap story-image-left">
 			<div class="story-glow story-glow-1"></div>
-			<img src="/bilder/pluged-in-piano.webp" alt="Connect MIDI keyboard via USB" class="story-image story-image-1" />
+			<img src="/bilder/pluged-in-piano.webp" alt="Connect MIDI keyboard via USB" class="story-image story-image-1"
+				width="800" height="600" loading="lazy" />
 		</div>
 		<div class="story-text">
 			<span class="story-num">01</span>
@@ -186,7 +190,8 @@
 	<div class="story-row story-row-reverse">
 		<div class="story-image-wrap story-image-right">
 			<div class="story-glow story-glow-2"></div>
-		<img src="/bilder/hands-on-piano.webp" alt="Play chords on the keyboard" class="story-image" />
+			<img src="/bilder/hands-on-piano.webp" alt="Play chords on the keyboard" class="story-image"
+				width="800" height="600" loading="lazy" />
 		</div>
 		<div class="story-text">
 			<span class="story-num">02</span>
@@ -203,7 +208,8 @@
 	<div class="story-row">
 		<div class="story-image-wrap story-image-left">
 			<div class="story-glow story-glow-3"></div>
-		<img src="/bilder/lvl-up-piano.webp" alt="Level up and get faster" class="story-image" />
+			<img src="/bilder/lvl-up-piano.webp" alt="Level up and get faster" class="story-image"
+				width="800" height="600" loading="lazy" />
 		</div>
 		<div class="story-text">
 			<span class="story-num">03</span>
@@ -511,6 +517,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		/* CLS guard: child images cannot expand the wrapper unexpectedly */
+		contain: layout;
 	}
 
 	.story-glow {
@@ -537,6 +545,8 @@
 		height: auto;
 		object-fit: contain;
 		transition: transform 0.6s ease;
+		/* Aspect-ratio from explicit width/height attrs — second CLS guard */
+		aspect-ratio: auto 800 / 600;
 	}
 
 	.story-image-wrap:hover .story-image {

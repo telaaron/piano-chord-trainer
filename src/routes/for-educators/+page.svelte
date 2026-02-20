@@ -11,16 +11,21 @@
 </script>
 
 <svelte:head>
-	<title>Chord Trainer for Music Schools &amp; Jazz Education</title>
-	<meta name="description" content="Integrate a professional chord voicing trainer into your jazz education platform. MIDI recognition, progress tracking, white-label ready." />
+	<title>Jazz Piano Voicing Trainer for Music Schools & Educators | Chord Trainer</title>
+	<meta name="description" content="Embed a professional MIDI voicing trainer into your jazz education platform. White-label ready, progress tracking, ii-V-I in all 12 keys. 30-day free trial." />
 	<link rel="canonical" href="https://jazzchords.app/for-educators" />
-	<meta property="og:title" content="Chord Trainer for Music Schools & Jazz Education" />
-	<meta property="og:description" content="Integrate a professional chord voicing trainer into your jazz education platform. MIDI recognition, progress tracking, white-label ready." />
+	<meta property="og:title" content="Jazz Voicing Trainer for Music Schools &amp; Educators" />
+	<meta property="og:description" content="Embed a professional MIDI voicing trainer into your jazz education platform. White-label ready, progress tracking. 30-day free trial." />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/for-educators" />
+	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta property="og:image:alt" content="Chord Trainer for Jazz Education Platforms" />
+	<meta property="og:site_name" content="Chord Trainer" />
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="Chord Trainer for Music Schools & Jazz Education" />
+	<meta name="twitter:title" content="Jazz Voicing Trainer for Music Schools &amp; Educators" />
 	<meta name="twitter:description" content="Professional chord voicing trainer for jazz education. MIDI recognition, progress tracking, white-label ready." />
+	<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta name="twitter:image:alt" content="Chord Trainer for Jazz Education Platforms" />
 </svelte:head>
 
 <main class="flex-1 px-4 py-16 sm:py-24" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">

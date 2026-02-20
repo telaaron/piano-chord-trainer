@@ -22,16 +22,28 @@
 		<meta name="twitter:title" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
 		<meta name="twitter:description" content="Master jazz piano voicings in all 12 keys. MIDI recognition, ii-V-I progressions, progress tracking." />
 
+		<!-- Preconnect to external origins — established before any render-blocking resource -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+
+		<!-- Preload LCP assets -->
+		<!-- Mobile hero (static piano image, shown as full-bleed bg on ≤968 px) -->
+		<link rel="preload" as="image" href="%sveltekit.assets%/bilder/piano.webp" media="(max-width: 968px)" />
+		<!-- Logo used in sticky nav — above the fold on every page -->
+		<link rel="preload" as="image" href="%sveltekit.assets%/jazzchords-logo.png" />
+
 		<!-- Structured Data: SoftwareApplication -->
 		<script type="application/ld+json">
 			{
 				"@context": "https://schema.org",
-				"@type": "WebApplication",
-				"name": "Chord Trainer",
-				"url": "https://jazzchords.app",
-				"description": "Speed training tool for jazz piano voicings. Practice chord changes in all 12 keys with MIDI recognition, ii-V-I progressions, and progress tracking.",
-				"applicationCategory": "MusicApplication",
-				"operatingSystem": "Web",
+			"@type": "SoftwareApplication",
+			"name": "Chord Trainer",
+			"alternateName": "Jazz Piano Chord Trainer",
+			"url": "https://jazzchords.app",
+			"description": "Speed training tool for jazz piano voicings. Practice chord changes in all 12 keys with MIDI recognition, ii-V-I progressions, and progress tracking.",
+			"applicationCategory": "MusicApplication",
+			"applicationSubCategory": "Music Education",
+			"operatingSystem": "Web, Chrome, Edge",
 				"browserRequirements": "Requires Chrome or Edge for MIDI support",
 				"offers": {
 					"@type": "Offer",
@@ -74,9 +86,7 @@
 			}
 		</script>
 
-		<!-- Fonts -->
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+		<!-- Fonts — preconnect already established above; &display=swap prevents FOIT -->
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
 		<!-- Icons -->

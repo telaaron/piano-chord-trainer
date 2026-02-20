@@ -82,10 +82,11 @@
 </script>
 
 {#if stats.totalSessions > 0}
-	<div class="card p-5 sm:p-6 max-w-2xl mx-auto space-y-5">
+	<div class="card p-5 sm:p-6 max-w-2xl mx-auto space-y-5" style="border-left: 3px solid #fb923c; box-shadow: 0 0 24px rgba(251,146,60,0.08);">
 		<div class="flex items-center justify-between">
 			<h3 class="text-lg font-bold flex items-center gap-2">
-				📊 Your Progress
+				<img src="/elements/icons/icon-progress.webp" alt="Your Progress" width="36" height="36" loading="lazy" style="width:36px;height:36px;mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle; filter: drop-shadow(0 0 10px rgba(251,146,60,0.55));" />
+				Your Progress
 			</h3>
 			<button
 				class="text-xs text-[var(--text-dim)] hover:text-[var(--accent-red)] transition-colors cursor-pointer"
@@ -97,19 +98,19 @@
 
 		<!-- Overview stats -->
 		<div class="grid grid-cols-3 gap-3">
-			<div class="bg-[var(--bg-muted)] rounded-[var(--radius)] p-3 text-center">
-				<div class="text-2xl font-bold text-[var(--primary)]">{stats.totalSessions}</div>
+			<div class="rounded-[var(--radius)] p-3 text-center" style="background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.18);">
+				<div class="text-3xl font-bold" style="color:#fb923c; filter: drop-shadow(0 0 8px rgba(251,146,60,0.4));">{stats.totalSessions}</div>
 				<div class="text-xs text-[var(--text-muted)] mt-1">Sessions</div>
 			</div>
-			<div class="bg-[var(--bg-muted)] rounded-[var(--radius)] p-3 text-center">
-				<div class="text-2xl font-bold text-[var(--primary)]">{stats.totalChords}</div>
+			<div class="rounded-[var(--radius)] p-3 text-center" style="background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.18);">
+				<div class="text-3xl font-bold" style="color:#fb923c; filter: drop-shadow(0 0 8px rgba(251,146,60,0.4));">{stats.totalChords}</div>
 				<div class="text-xs text-[var(--text-muted)] mt-1">Chords practiced</div>
 			</div>
-			<div class="bg-[var(--bg-muted)] rounded-[var(--radius)] p-3 text-center">
-				<div class="text-2xl font-bold text-[var(--primary)]">
+			<div class="rounded-[var(--radius)] p-3 text-center" style="background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.18);">
+				<div class="text-3xl font-bold" style="color:#fb923c; filter: drop-shadow(0 0 8px rgba(251,146,60,0.4));">
 					{(stats.overallAvgMs / 1000).toFixed(1)}s
 				</div>
-				<div class="text-xs text-[var(--text-muted)] mt-1">⌀ per chord</div>
+				<div class="text-xs text-[var(--text-muted)] mt-1">Ø per chord</div>
 			</div>
 		</div>
 
@@ -131,7 +132,10 @@
 		<!-- Weak chords -->
 		{#if weakChords.length > 0}
 			<div>
-				<div class="text-sm font-medium text-[var(--text-muted)] mb-2">🎯 Focus on</div>
+				<div class="text-sm font-medium text-[var(--text-muted)] mb-2 flex items-center gap-1.5">
+					<img src="/elements/icons/icon-focus.webp" alt="Focus on" width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle;" />
+					Focus on
+				</div>
 				<div class="space-y-2">
 					{#each weakChords.slice(0, 3) as wc}
 						{@const barWidth = Math.min(100, (wc.avgMs / (weakChords[0]?.avgMs || 1)) * 100)}
@@ -154,7 +158,7 @@
 
 		<!-- Trend sparkline -->
 		{#if sparkData && stats.totalSessions >= 5}
-		<div class="bg-[var(--bg-muted)] rounded-[var(--radius)] p-4">
+		<div class="rounded-[var(--radius)] p-4" style="background: rgba(251,146,60,0.05); border: 1px solid rgba(251,146,60,0.12);">
 			<div class="flex items-center justify-between mb-3">
 				<span class="text-xs text-[var(--text-muted)]">Last 10 sessions — seconds per chord</span>
 				{#if trend !== null}
@@ -163,11 +167,11 @@
 					</span>
 				{/if}
 			</div>
-			<div class="flex items-end gap-1 h-12">
+			<div class="flex items-end gap-1 h-14">
 				{#each sparkData as bar, i}
 					<div
-						class="flex-1 rounded-t-sm transition-all {i === sparkData.length - 1 ? 'bg-[var(--primary)]' : 'bg-[var(--border)]'}"
-						style="height: {bar.height}%"
+						class="flex-1 rounded-t-sm transition-all"
+						style="height: {bar.height}%; background: {i === sparkData.length - 1 ? '#fb923c' : 'rgba(251,146,60,0.25)'}; {i === sparkData.length - 1 ? 'filter: drop-shadow(0 0 6px rgba(251,146,60,0.7));' : ''}"
 						title="{(bar.value / 1000).toFixed(2)}s per chord"
 					></div>
 				{/each}
@@ -181,7 +185,10 @@
 <!-- Personal bests -->
 	{#if Object.keys(stats.personalBests).length > 3}
 		<details>
-			<summary class="text-sm font-medium text-[var(--text-muted)] cursor-pointer hover:text-[var(--text)] mb-2">🏅 Personal Bests ({Object.keys(stats.personalBests).length})</summary>
+			<summary class="text-sm font-medium text-[var(--text-muted)] cursor-pointer hover:text-[var(--text)] mb-2 flex items-center gap-1.5">
+				<img src="/elements/icons/icon-personal-best.webp" alt="Personal Bests" width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle;" />
+				Personal Bests ({Object.keys(stats.personalBests).length})
+			</summary>
 			<div class="space-y-1.5 mt-2">
 				{#each Object.entries(stats.personalBests).slice(0, 8) as [key, best]}
 					{@const parts = key.split('-')}

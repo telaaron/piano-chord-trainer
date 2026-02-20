@@ -6,6 +6,7 @@
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import Results from '$lib/components/Results.svelte';
 	import MidiStatus from '$lib/components/MidiStatus.svelte';
+	import MidiToast from '$lib/components/MidiToast.svelte';
 	import ProgressDashboard from '$lib/components/ProgressDashboard.svelte';
 	import ProgressionEditor from '$lib/components/ProgressionEditor.svelte';
 	import ProgressionPlayer from '$lib/components/ProgressionPlayer.svelte';
@@ -101,6 +102,9 @@
 	let customLoops = $state(2);
 	let customName = $state('');
 	let customEvaluation: SessionEvaluation | null = $state(null);
+
+	// ─── MIDI disconnect toast ───────────────────────────────────
+	let midiDisconnectToast: string | null = $state(null);
 
 	// ─── MIDI state ──────────────────────────────────────────────
 	const midi = new MidiService();
@@ -601,6 +605,10 @@
 			}
 		});
 
+		midi.onDisconnect((deviceName) => {
+			midiDisconnectToast = `${deviceName} disconnected — reconnect to continue`;
+		});
+
 		// Always init MIDI to detect devices (even if not yet enabled)
 		midi.init();
 
@@ -616,12 +624,20 @@
 </script>
 
 <svelte:head>
-	<title>Practice – Chord Trainer</title>
-	<meta name="description" content="Practice jazz piano voicings with speed drills. MIDI recognition, ii-V-I progressions, progress tracking. Choose a plan and start training." />
+	<title>Practice Jazz Piano Voicings – Chord Trainer Speed Drill</title>
+	<meta name="description" content="Speed-drill jazz piano chord voicings in all 12 keys. MIDI auto-validation, ii-V-I progressions, shell & rootless voicings. Choose a plan and start now." />
 	<link rel="canonical" href="https://jazzchords.app/train" />
-	<meta property="og:title" content="Practice – Chord Trainer" />
-	<meta property="og:description" content="Practice jazz piano voicings with speed drills. MIDI recognition, ii-V-I progressions, progress tracking." />
-	<meta property="og:url" content="https://jazzchords.com/train" />
+	<meta property="og:title" content="Practice Jazz Piano Voicings – Chord Trainer" />
+	<meta property="og:description" content="Speed-drill chord voicings in all 12 keys. MIDI recognition, ii-V-I progressions, guided practice plans." />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://jazzchords.app/train" />
+	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta property="og:image:alt" content="Chord Trainer practice interface with piano keyboard" />
+	<meta property="og:site_name" content="Chord Trainer" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Practice Jazz Piano Voicings – Chord Trainer" />
+	<meta name="twitter:description" content="Speed-drill chord voicings in all 12 keys. MIDI recognition, ii-V-I progressions, guided practice plans." />
+	<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -989,3 +1005,11 @@
 		{/if}
 	</div>
 </main>
+
+{#if midiDisconnectToast}
+	<MidiToast
+		message={midiDisconnectToast}
+		onDismiss={() => (midiDisconnectToast = null)}
+		onReconnect={() => { midiDisconnectToast = null; midi.init(); }}
+	/>
+{/if}

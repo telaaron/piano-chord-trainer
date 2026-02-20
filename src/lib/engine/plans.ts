@@ -20,6 +20,8 @@ export interface PracticePlan {
 	icon: string;
 	/** Color accent class */
 	accent: string;
+	/** Overall plan difficulty / user level */
+	level: 'beginner' | 'intermediate' | 'advanced';
 	settings: {
 		difficulty: Difficulty;
 		notation: NotationStyle;
@@ -39,6 +41,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		description: 'Easy warm-up: The 3 essential notes of each chord (Shell) through all 12 keys.',
 		icon: '☀️',
 		accent: 'var(--accent-amber)',
+		level: 'beginner',
 		settings: {
 			difficulty: 'beginner',
 			notation: 'standard',
@@ -56,6 +59,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		description: 'Speed training: 20 random chords as fast as possible. No note hints — just you and the clock.',
 		icon: '⚡',
 		accent: 'var(--accent-red)',
+		level: 'beginner',
 		settings: {
 			difficulty: 'intermediate',
 			notation: 'standard',
@@ -73,6 +77,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		description: 'The most important jazz progression (ii-V-I) with all 4 notes. Notes visible — ideal for learning.',
 		icon: '🎯',
 		accent: 'var(--primary)',
+		level: 'intermediate',
 		settings: {
 			difficulty: 'beginner',
 			notation: 'standard',
@@ -90,6 +95,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		description: 'The chord sequence from "I Got Rhythm" and hundreds of jazz standards. 4 chords × 12 keys.',
 		icon: '🔄',
 		accent: 'var(--accent-purple)',
+		level: 'intermediate',
 		settings: {
 			difficulty: 'beginner',
 			notation: 'standard',
@@ -107,6 +113,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		description: 'For advanced players: 30 complex chords (9th, 13th, Alt) with symbol notation, no note display.',
 		icon: '🏆',
 		accent: 'var(--accent-green)',
+		level: 'advanced',
 		settings: {
 			difficulty: 'advanced',
 			notation: 'symbols',
@@ -124,6 +131,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		description: 'Once around all keys in intervals of a fourth (C→F→B♭→E♭→…). Trains smooth key changes.',
 		icon: '🌀',
 		accent: 'var(--accent-amber)',
+		level: 'intermediate',
 		settings: {
 			difficulty: 'beginner',
 			notation: 'standard',
@@ -141,6 +149,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		description: 'Practice all 4 voicing types in sequence with ii-V-I. Builds muscle memory for each voicing style.',
 		icon: '🖐️',
 		accent: 'var(--primary)',
+		level: 'intermediate',
 		settings: {
 			difficulty: 'beginner',
 			notation: 'standard',
@@ -158,6 +167,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		description: 'Left-hand voicings for combo playing: 3-5-7-9 without root (played by the bassist). Bill Evans style.',
 		icon: '🤚',
 		accent: 'var(--accent-amber)',
+		level: 'advanced',
 		settings: {
 			difficulty: 'beginner',
 			notation: 'standard',
@@ -175,6 +185,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		description: 'Play each chord in different inversions. Trains smooth voice leading and position changes.',
 		icon: '🔃',
 		accent: 'var(--accent-purple)',
+		level: 'advanced',
 		settings: {
 			difficulty: 'beginner',
 			notation: 'standard',
