@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
+	import { t } from '$lib/i18n';
 	import {
 		parseProgression,
 		formatProgression,
@@ -35,7 +36,7 @@
 	$effect(() => {
 		const result = parseProgression(rawInput);
 		if (rawInput.trim() && result.length === 0) {
-			parseError = 'No valid chords recognized. Use e.g. "Dm7 | G7 | CMaj7"';
+			parseError = t('ui.no_valid_chords');
 			parsedChords = [];
 		} else {
 			parseError = '';
@@ -54,13 +55,13 @@
 
 	function handlePlay() {
 		if (parsedChords.length === 0) return;
-		onplay(parsedChords, bpm, loops, progressionName || 'Custom');
+		onplay(parsedChords, bpm, loops, progressionName || t('ui.custom_progression'));
 	}
 
 	function handleSave() {
 		if (parsedChords.length === 0) return;
 		saveCustomProgression({
-			name: progressionName || `Progression ${savedProgressions.length + 1}`,
+			name: progressionName || `${t('ui.custom_progression')} ${savedProgressions.length + 1}`,
 			raw: rawInput,
 			chords: parsedChords,
 			bpm,
@@ -100,13 +101,13 @@
 		<button
 			class="p-2 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] transition-colors cursor-pointer"
 			onclick={onback}
-			title="Back"
+			title={t('ui.back_editor')}
 		>
 			←
 		</button>
 		<div>
-			<h2 class="text-2xl font-bold">Custom Progression</h2>
-			<p class="text-sm text-[var(--text-muted)]">Practice your own chord sequence with metronome</p>
+			<h2 class="text-2xl font-bold">{t('ui.custom_progression')}</h2>
+			<p class="text-sm text-[var(--text-muted)]">{t('ui.custom_progression_desc')}</p>
 		</div>
 	</div>
 
@@ -116,7 +117,11 @@
 			class="text-sm text-[var(--primary)] hover:underline cursor-pointer"
 			onclick={() => (showPresets = !showPresets)}
 		>
-			{showPresets ? '▾ Hide templates' : '▸ Load jazz standard templates'}
+			{#if showPresets}
+				▾ {t('ui.hide_templates')}
+			{:else}
+				▸ {t('ui.load_templates')}
+			{/if}
 		</button>
 
 		{#if showPresets}
@@ -140,12 +145,12 @@
 	<!-- Input area -->
 	<div class="card p-5 space-y-4">
 		<div>
-			<label class="text-sm font-medium block mb-1" for="prog-name">Name <span class="text-[var(--text-dim)] font-normal">(optional)</span></label>
+			<label class="text-sm font-medium block mb-1" for="prog-name">{t('ui.progression_name_label')} <span class="text-[var(--text-dim)] font-normal">({t('ui.name_optional', { default: 'optional' })})</span></label>
 			<input
 				id="prog-name"
 				type="text"
 				bind:value={progressionName}
-				placeholder="Autumn Leaves A"
+				placeholder={t('ui.progression_name_placeholder')}
 				class="w-full px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-sm"
 			/>
 		</div>
@@ -159,7 +164,7 @@
 			<textarea
 				id="prog-input"
 				bind:value={rawInput}
-				placeholder="Dm7 | G7 | CMaj7 | CMaj7"
+				placeholder={t('ui.progression_input_placeholder')}
 				rows="3"
 				class="w-full px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] font-mono text-sm resize-none"
 			></textarea>
@@ -207,7 +212,7 @@
 				/>
 			</div>
 			<div>
-				<label class="text-sm font-medium block mb-2">Loops</label>
+				<label class="text-sm font-medium block mb-2">{t('ui.progression_loops')}</label>
 				<div class="flex gap-2">
 					{#each [1, 2, 3, 4, 0] as l}
 						<button
@@ -228,15 +233,15 @@
 				onclick={handlePlay}
 				disabled={parsedChords.length === 0}
 			>
-				▶ Play
+				▶ {t('ui.progression_play')}
 			</button>
 			<button
 				class="h-12 px-5 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 				onclick={handleSave}
 				disabled={parsedChords.length === 0}
-				title="Save progression"
+				title={t('ui.progression_save')}
 			>
-				💾 Save
+				💾 {t('ui.progression_save')}
 			</button>
 		</div>
 	</div>
@@ -244,7 +249,7 @@
 	<!-- Saved Progressions -->
 	{#if savedProgressions.length > 0}
 		<div>
-			<h3 class="text-sm font-medium text-[var(--text-muted)] mb-3">Saved Progressions</h3>
+			<h3 class="text-sm font-medium text-[var(--text-muted)] mb-3">{t('ui.saved_progressions')}</h3>
 			<div class="space-y-2">
 				{#each savedProgressions as prog}
 					<div class="card p-4 flex items-center gap-3 group">
@@ -265,7 +270,7 @@
 						<button
 							class="p-2 text-[var(--text-dim)] hover:text-[var(--accent-red)] transition-colors cursor-pointer"
 							onclick={() => handleDelete(prog.id)}
-							title="Delete"
+							title={t('ui.progression_delete')}
 						>
 							🗑
 						</button>

@@ -18,3 +18,9 @@ export type { PracticePlan } from './plans';
 
 export { parseChordSymbol, parseProgression, formatProgression, PROGRESSION_PRESETS, loadCustomProgressions, saveCustomProgression, deleteCustomProgression, evaluateSession } from './custom-progressions';
 export type { CustomChord, CustomProgression, ProgressionPreset, LoopEvaluation, ChordEval, SessionEvaluation } from './custom-progressions';
+
+export { analyzeVoiceLeading, formatVoiceLeading, computeVoiceLeadVoicing } from './voice-leading';
+export type { VoiceLeadingInfo, VoiceMovement } from './voice-leading';
+
+export { analyzePerformance, getWeightedChordPool, pickWeightedChord, getPerformanceSummary } from './adaptive';
+export type { ChordPerformance, WeightedChord } from './adaptive';

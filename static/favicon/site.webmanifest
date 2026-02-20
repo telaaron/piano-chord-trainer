@@ -9,30 +9,30 @@
   "theme_color": "#e8763b",
   "background_color": "#0a0908",
   "categories": ["music", "education"],
-  "screenshots": [
-    {
-      "src": "/seo/OG-image.webp",
-      "sizes": "966x507",
-      "type": "image/webp"
-    }
-  ],
   "icons": [
     {
-      "src": "/android-chrome-192x192.png",
+      "src": "/favicon/web-app-manifest-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
-      "src": "/android-chrome-512x512.png",
+      "src": "/favicon/web-app-manifest-512x512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon/favicon-96x96.png",
+      "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "src": "/favicon/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
@@ -42,7 +42,7 @@
       "url": "/train",
       "icons": [
         {
-          "src": "/android-chrome-192x192.png",
+          "src": "/favicon/web-app-manifest-192x192.png",
           "sizes": "192x192"
         }
       ]

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fly, fade, scale } from 'svelte/transition';
+	import { t } from '$lib/i18n';
 	import GameSettings from '$lib/components/GameSettings.svelte';
 	import ChordCard from '$lib/components/ChordCard.svelte';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
@@ -13,7 +14,7 @@
 	import ProgressionResults from '$lib/components/ProgressionResults.svelte';
 	import { MidiService } from '$lib/services/midi';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
-	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, type StreakData, type ChordTiming } from '$lib/services/progress';
+	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadHistory, computeStats, type ProgressStats, type StreakData, type ChordTiming } from '$lib/services/progress';
 	import { playChord, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll, setSoundPreset, getSoundPreset, SOUND_PRESETS, type SoundPreset } from '$lib/services/audio';
 	import {
 		CHORDS_BY_DIFFICULTY,
@@ -28,6 +29,10 @@
 		convertChordNotation,
 		noteToSemitone,
 		generateProgression,
+		analyzeVoiceLeading,
+		computeVoiceLeadVoicing,
+		getWeightedChordPool,
+		pickWeightedChord,
 		type Difficulty,
 		type NotationStyle,
 		type VoicingType,
@@ -39,21 +44,22 @@
 		type PracticePlan,
 		type CustomChord,
 		type SessionEvaluation,
+		type VoiceLeadingInfo,
 	} from '$lib/engine';
 
 	import { formatTime } from '$lib/utils/format';
 
 	// ─── Exercise descriptions ───────────────────────────────────
-	const VOICING_DESCRIPTIONS: Record<VoicingType, { example: string; tip: string }> = {
-		root: { example: 'CMaj7 → C E G B', tip: 'All notes stacked from the root up. The foundation of all voicings.' },
-		shell: { example: 'CMaj7 → C E B', tip: 'Root + 3rd + 7th. The essential chord tones that define the sound.' },
-		'half-shell': { example: 'CMaj7 → E C B', tip: '3rd on bottom, then root + 7th. Common jazz left-hand voicing.' },
-		full: { example: 'CMaj7 → C B E G', tip: 'Root + 7th + 3rd + 5th. Spread voicing for a fuller sound.' },
-		'rootless-a': { example: 'CMaj7 → E G B D', tip: 'No root — let the bass player cover it. Type A: starts from the 3rd.' },
-		'rootless-b': { example: 'CMaj7 → B D E G', tip: 'No root — Type B: starts from the 7th. Used with the other hand.' },
-		'inversion-1': { example: 'CMaj7 → E G B C', tip: '3rd on bottom. Same notes, different bass note changes the color.' },
-		'inversion-2': { example: 'CMaj7 → G B C E', tip: '5th on bottom. Creates a more open, spread sound.' },
-		'inversion-3': { example: 'CMaj7 → B C E G', tip: '7th on bottom. The most tension — resolves beautifully.' },
+	const VOICING_EXAMPLES: Record<VoicingType, string> = {
+		root: 'CMaj7 → C E G B',
+		shell: 'CMaj7 → C E B',
+		'half-shell': 'CMaj7 → E C B',
+		full: 'CMaj7 → C B E G',
+		'rootless-a': 'CMaj7 → E G B D',
+		'rootless-b': 'CMaj7 → B D E G',
+		'inversion-1': 'CMaj7 → E G B C',
+		'inversion-2': 'CMaj7 → G B C E',
+		'inversion-3': 'CMaj7 → B C E G',
 	};
 
 	// ─── Settings (persisted) ────────────────────────────────────
@@ -67,6 +73,7 @@
 	let progressionMode: ProgressionMode = $state('random');
 	let midiEnabled = $state(false);
 	let streak: StreakData = $state({ current: 0, best: 0, lastDate: '' });
+	let dashStats: ProgressStats = $state(computeStats([]));
 
 	// ─── Audio / Metronome settings ──────────────────────────────
 	let audioEnabled = $state(true);
@@ -76,8 +83,29 @@
 	let soundPreset: SoundPreset = $state(getSoundPreset());
 
 	// ─── Game state ──────────────────────────────────────────────
-	type Screen = 'setup' | 'playing' | 'finished' | 'custom-editor' | 'custom-playing' | 'custom-results';
+	type Screen = 'setup' | 'playing' | 'finished' | 'custom-editor' | 'custom-playing' | 'custom-results' | 'ear-training';
 	type PlayPhase = 'playing' | 'verifying';
+
+	// ─── New mode settings ───────────────────────────────────────
+	let inTimeMode = $state(false);
+	let inTimeBars = $state(2);
+	let adaptiveEnabled = $state(false);
+	let voiceLeadingEnabled = $state(false);
+
+	// ─── In-Time mode state ──────────────────────────────────────
+	let inTimeBeatCount = $state(0);
+	let inTimeBarCount = $state(0);
+	let inTimeTimingOffsets: number[] = $state([]);
+	let inTimeChordPlayedAt: number | null = $state(null);
+	let inTimeBeatOneTime = $state(0);
+
+	// ─── Ear Training state ──────────────────────────────────────
+	let earTrainingRevealed = $state(false);
+	let earTrainingCorrect = $state(0);
+	let earTrainingTotal = $state(0);
+
+	// ─── Voice Leading state ─────────────────────────────────────
+	let voiceLeadingInfo: VoiceLeadingInfo | null = $state(null);
 
 	let screen: Screen = $state<Screen>('setup');
 	let playPhase: PlayPhase = $state<PlayPhase>('playing');
@@ -146,6 +174,41 @@
 		midiTotalAttempts > 0 ? Math.round((midiCorrectCount / midiTotalAttempts) * 100) : 0,
 	);
 
+	// ─── Status bar helpers ──────────────────────────────────────
+	function greetingText(): string {
+		const h = new Date().getHours();
+		if (h < 12) return t('settings.greeting_morning');
+		if (h < 18) return t('settings.greeting_afternoon');
+		return t('settings.greeting_evening');
+	}
+
+	function getStatusbarWeekDots(s: StreakData): boolean[] {
+		const dots: boolean[] = Array(7).fill(false);
+		if (s.current === 0 || !s.lastDate) return dots;
+		const practiceDates = new Set<string>();
+		const lastDate = new Date(s.lastDate + 'T00:00:00');
+		for (let i = 0; i < s.current; i++) {
+			const d = new Date(lastDate);
+			d.setDate(lastDate.getDate() - i);
+			practiceDates.add(d.toISOString().slice(0, 10));
+		}
+		const today = new Date();
+		const jsDay = today.getDay();
+		const daysFromMonday = jsDay === 0 ? 6 : jsDay - 1;
+		const monday = new Date(today);
+		monday.setDate(today.getDate() - daysFromMonday);
+		for (let i = 0; i < 7; i++) {
+			const d = new Date(monday);
+			d.setDate(monday.getDate() + i);
+			dots[i] = practiceDates.has(d.toISOString().slice(0, 10));
+		}
+		return dots;
+	}
+
+	const sbWeekDots = $derived(getStatusbarWeekDots(streak));
+	const weeklyGoalPct = $derived(Math.min(100, Math.round((sbWeekDots.filter(Boolean).length / 5) * 100)));
+	const greeting = greetingText();
+
 	// (formatTime imported from $lib/utils/format)
 
 	// ─── Game logic ──────────────────────────────────────────────
@@ -159,7 +222,11 @@
 			for (const pc of result.chords) {
 				newChords.push(pc.display);
 				const notes = getChordNotes(pc.root, pc.quality, accidentals);
-				const voicingArr = getVoicingNotes(notes, voicing, pc.root, accidentals);
+				let voicingArr = getVoicingNotes(notes, voicing, pc.root, accidentals);
+				// Voice-led rearrangement: minimise movement from previous chord
+				if (voiceLeadingEnabled && newData.length > 0) {
+					voicingArr = computeVoiceLeadVoicing(newData[newData.length - 1].voicing, voicingArr, accidentals);
+				}
 				newData.push({ chord: pc.display, root: pc.root, type: pc.quality, notes, voicing: voicingArr });
 			}
 
@@ -168,12 +235,40 @@
 			return;
 		}
 
-		// Random mode (original logic)
+		// Random mode (original logic, with optional adaptive weighting)
 		const available = CHORDS_BY_DIFFICULTY[difficulty];
 		const pool = getNotePool(accidentals);
 		const newChords: string[] = [];
 		const newData: ChordWithNotes[] = [];
 		let last = '';
+
+		// Adaptive mode: use weighted selection
+		if (adaptiveEnabled && progressionMode === 'random') {
+			const history = loadHistory().flatMap(s => s.chordTimings ?? []);
+			const weighted = getWeightedChordPool(history, available, pool);
+			let lastRoot = '';
+			let lastDisplay = '';
+
+			for (let i = 0; i < totalChords; i++) {
+				const pick = pickWeightedChord(weighted, lastRoot, lastDisplay);
+				const displayQuality = CHORD_NOTATIONS[notation][pick.display] || pick.display;
+				const name = `${pick.root}${displayQuality}`;
+				lastRoot = pick.root;
+				lastDisplay = pick.display;
+
+				newChords.push(name);
+				const notes = getChordNotes(pick.root, pick.display, accidentals);
+				let voicingArr = getVoicingNotes(notes, voicing, pick.root, accidentals);
+				if (voiceLeadingEnabled && newData.length > 0) {
+					voicingArr = computeVoiceLeadVoicing(newData[newData.length - 1].voicing, voicingArr, accidentals);
+				}
+				newData.push({ chord: name, root: pick.root, type: pick.display, notes, voicing: voicingArr });
+			}
+
+			chords = newChords;
+			chordsWithNotes = newData;
+			return;
+		}
 
 		for (let i = 0; i < totalChords; i++) {
 			let name = '';
@@ -195,7 +290,10 @@
 				const displayType = match[2];
 				const quality = displayToQuality(displayType, notation);
 				const notes = getChordNotes(root, quality, accidentals);
-				const voicingArr = getVoicingNotes(notes, voicing, root, accidentals);
+				let voicingArr = getVoicingNotes(notes, voicing, root, accidentals);
+				if (voiceLeadingEnabled && newData.length > 0) {
+					voicingArr = computeVoiceLeadVoicing(newData[newData.length - 1].voicing, voicingArr, accidentals);
+				}
 				newData.push({ chord: name, root, type: quality, notes, voicing: voicingArr });
 			}
 		}
@@ -221,6 +319,17 @@
 		midiTotalAttempts = 0;
 		midiMatchResult = null;
 		midi.releaseAll();
+
+		// Reset new mode state
+		inTimeBeatCount = 0;
+		inTimeBarCount = 0;
+		inTimeTimingOffsets = [];
+		inTimeChordPlayedAt = null;
+		inTimeBeatOneTime = 0;
+		earTrainingRevealed = false;
+		earTrainingCorrect = 0;
+		earTrainingTotal = 0;
+		voiceLeadingInfo = null;
 
 		// Re-register MIDI handler (ProgressionPlayer may have overwritten it)
 		midi.onNotes(handleMidiNotes);
@@ -262,8 +371,18 @@
 			playChord(chordsWithNotes[0].voicing).catch(() => {});
 		}
 
-		// Start metronome
-		if (metronomeEnabled) {
+		// In-Time mode: always start metronome & use beat callback for chord changes
+		if (inTimeMode) {
+			inTimeBeatCount = 0;
+			inTimeBarCount = 0;
+			inTimeBeatOneTime = Date.now();
+			metronomeEnabled = true;
+			startMetronome(metronomeBpm, 4, (beat) => {
+				currentBeat = beat;
+				handleInTimeBeat(beat);
+			});
+		} else if (metronomeEnabled) {
+			// Standard metronome
 			startMetronome(metronomeBpm, 4, (beat) => {
 				currentBeat = beat;
 			});
@@ -299,6 +418,34 @@
 		accidentals = plan.settings.accidentals;
 		progressionMode = plan.settings.progressionMode;
 		totalChords = plan.settings.totalChords;
+
+		// Apply special mode settings based on plan ID
+		if (plan.id === 'in-time-comping') {
+			inTimeMode = true;
+			inTimeBars = 2;
+			metronomeBpm = 100;
+		} else {
+			inTimeMode = false;
+		}
+
+		if (plan.id === 'adaptive-drill') {
+			adaptiveEnabled = true;
+		} else {
+			adaptiveEnabled = false;
+		}
+
+		if (plan.id === 'voice-leading-flow') {
+			voiceLeadingEnabled = true;
+		} else {
+			voiceLeadingEnabled = false;
+		}
+
+		if (plan.id === 'ear-check') {
+			// Track plan usage for suggestions
+			recordPlanUsed(plan.id);
+			startEarTraining();
+			return;
+		}
 
 		// Track plan usage for suggestions
 		recordPlanUsed(plan.id);
@@ -350,6 +497,8 @@
 
 		if (currentIdx < actualTotalChords - 1) {
 			currentIdx++;
+			// Compute voice leading for the new chord
+			updateVoiceLeading();
 			// Play chord audio on advance
 			if (audioEnabled && chordsWithNotes[currentIdx]) {
 				playChord(chordsWithNotes[currentIdx].voicing).catch(() => {});
@@ -420,6 +569,8 @@
 		paused = false;
 		pauseAccumulated = 0;
 		showExerciseInfo = false;
+		voiceLeadingInfo = null;
+		earTrainingRevealed = false;
 		if (timerHandle) clearInterval(timerHandle);
 		timerHandle = null;
 		if (autoAdvanceTimeout) {
@@ -429,6 +580,8 @@
 		stopMetronome();
 		stopAll();
 		currentBeat = 0;
+		// Re-register main MIDI handler (ear training may have overridden it)
+		midi.onNotes(handleMidiNotes);
 	}
 
 	// ─── Custom Progression handlers ─────────────────────────────
@@ -484,8 +637,15 @@
 			midiTotalAttempts++;
 			midiCorrectCount++;
 
+			// In-Time mode: record when the chord was played (timing relative to beat 1)
+			if (inTimeMode && inTimeChordPlayedAt === null) {
+				const timeSinceBeatOne = Date.now() - inTimeBeatOneTime;
+				inTimeChordPlayedAt = timeSinceBeatOne;
+			}
+
 			// Auto-advance after short delay (let player hear the chord)
-			if (!autoAdvanceTimeout) {
+			// In In-Time mode, don't auto-advance on correct — wait for beat
+			if (!inTimeMode && !autoAdvanceTimeout) {
 				autoAdvanceTimeout = setTimeout(() => {
 					autoAdvanceTimeout = null;
 					nextChord();
@@ -536,6 +696,206 @@
 		}
 	}
 
+	// ─── In-Time Mode Logic ──────────────────────────────────────
+
+	/** Called on each metronome beat in In-Time mode */
+	function handleInTimeBeat(beat: number) {
+		if (!inTimeMode || screen !== 'playing' || paused || !timerStarted) return;
+
+		if (beat === 1) {
+			inTimeBeatOneTime = Date.now();
+			inTimeBarCount++;
+
+			// Check if it's time to change chords
+			if (inTimeBarCount > inTimeBars) {
+				inTimeBarCount = 1;
+
+				// Record timing accuracy for the chord we're leaving
+				if (inTimeChordPlayedAt !== null) {
+					// How close to beat 1 was the player? (lower = better)
+					inTimeTimingOffsets.push(inTimeChordPlayedAt);
+				} else {
+					// Player didn't play — record a miss (max offset)
+					inTimeTimingOffsets.push(999);
+				}
+				inTimeChordPlayedAt = null;
+
+				// Compute voice leading before advancing
+				if (voiceLeadingEnabled && currentData && currentIdx < actualTotalChords - 1) {
+					const nextData = chordsWithNotes[currentIdx + 1];
+					if (nextData) {
+						voiceLeadingInfo = analyzeVoiceLeading(currentData.voicing, nextData.voicing);
+					}
+				} else {
+					voiceLeadingInfo = null;
+				}
+
+				// Advance to next chord
+				const nowMs = Date.now();
+				if (currentData) {
+					chordTimings.push({
+						chord: currentData.chord,
+						root: currentData.root,
+						durationMs: nowMs - chordStartTime,
+					});
+				}
+				chordStartTime = nowMs;
+
+				if (currentIdx < actualTotalChords - 1) {
+					currentIdx++;
+					midiMatchResult = null;
+					inTimeChordPlayedAt = null;
+					if (audioEnabled && chordsWithNotes[currentIdx]) {
+						playChord(chordsWithNotes[currentIdx].voicing).catch(() => {});
+					}
+					// Re-check currently held MIDI notes against the new chord
+					if (midiEnabled && midiActiveNotes.size > 0) {
+						handleMidiNotes(midi.activeNotes as Set<number>);
+					}
+				} else {
+					endGame();
+				}
+			}
+		}
+	}
+
+	// ─── Ear Training Mode Logic ─────────────────────────────────
+
+	function startEarTraining() {
+		generateChords();
+		currentIdx = 0;
+		playPhase = 'playing';
+		screen = 'ear-training';
+		timerStarted = false;
+		paused = false;
+		pauseAccumulated = 0;
+		pauseStart = 0;
+		startTime = 0;
+		now = 0;
+		chordTimings = [];
+		chordStartTime = 0;
+		midiCorrectCount = 0;
+		midiTotalAttempts = 0;
+		midiMatchResult = null;
+		earTrainingRevealed = false;
+		earTrainingCorrect = 0;
+		earTrainingTotal = 0;
+		voiceLeadingInfo = null;
+		midi.releaseAll();
+		midi.onNotes(handleEarTrainingMidi);
+
+		if (midiEnabled && midiState === 'disconnected') {
+			midi.init();
+		}
+	}
+
+	function beginEarTraining() {
+		timerStarted = true;
+		startTime = Date.now();
+		now = startTime;
+		chordStartTime = startTime;
+
+		timerHandle = setInterval(() => {
+			if (screen === 'ear-training' && !paused) now = Date.now();
+		}, 100);
+
+		// Play the first chord audio (player must identify it)
+		if (chordsWithNotes[0]) {
+			playChord(chordsWithNotes[0].voicing).catch(() => {});
+		}
+	}
+
+	function earTrainingReveal() {
+		earTrainingRevealed = true;
+		earTrainingTotal++;
+	}
+
+	function earTrainingNext() {
+		// Record timing
+		const nowMs = Date.now();
+		if (currentData) {
+			chordTimings.push({
+				chord: currentData.chord,
+				root: currentData.root,
+				durationMs: nowMs - chordStartTime,
+			});
+		}
+		chordStartTime = nowMs;
+
+		earTrainingRevealed = false;
+		midiMatchResult = null;
+		midi.releaseAll();
+
+		if (currentIdx < actualTotalChords - 1) {
+			currentIdx++;
+			// Play next chord
+			if (chordsWithNotes[currentIdx]) {
+				playChord(chordsWithNotes[currentIdx].voicing).catch(() => {});
+			}
+		} else {
+			endTime = Date.now();
+			screen = 'finished';
+			if (currentData) {
+				chordTimings.push({
+					chord: currentData.chord,
+					root: currentData.root,
+					durationMs: endTime - chordStartTime,
+				});
+			}
+			if (timerHandle) clearInterval(timerHandle);
+			timerHandle = null;
+			saveSession({
+				timestamp: Date.now(),
+				elapsedMs: endTime - startTime,
+				totalChords: actualTotalChords,
+				avgMs: (endTime - startTime) / actualTotalChords,
+				chordTimings: [...chordTimings],
+				settings: { difficulty, notation, voicing, displayMode, accidentals, progressionMode },
+				midi: { enabled: midiEnabled, accuracy: earTrainingTotal > 0 ? Math.round((earTrainingCorrect / earTrainingTotal) * 100) : 0 },
+			});
+			streak = recordPracticeDay();
+		}
+	}
+
+	function handleEarTrainingMidi(activeNotes: Set<number>) {
+		midiActiveNotes = new Set(activeNotes);
+		if (screen !== 'ear-training' || !currentData || !midiEnabled) return;
+
+		const result = midi.checkChordLenient(currentData.voicing);
+		midiMatchResult = result;
+
+		if (result.correct && activeNotes.size > 0) {
+			earTrainingCorrect++;
+			earTrainingTotal++;
+			earTrainingRevealed = true;
+
+			// Auto-advance after a delay
+			if (!autoAdvanceTimeout) {
+				autoAdvanceTimeout = setTimeout(() => {
+					autoAdvanceTimeout = null;
+					earTrainingNext();
+				}, 1200);
+			}
+		}
+	}
+
+	// ─── Voice Leading computation on chord change ───────────────
+
+	/** Update voice leading info when chord index changes (standard mode) */
+	function updateVoiceLeading() {
+		if (!voiceLeadingEnabled || currentIdx === 0) {
+			voiceLeadingInfo = null;
+			return;
+		}
+		const prevData = chordsWithNotes[currentIdx - 1];
+		const currData = chordsWithNotes[currentIdx];
+		if (prevData && currData) {
+			voiceLeadingInfo = analyzeVoiceLeading(prevData.voicing, currData.voicing);
+		} else {
+			voiceLeadingInfo = null;
+		}
+	}
+
 	/** Change sound preset */
 	function changeSoundPreset(preset: SoundPreset) {
 		soundPreset = preset;
@@ -558,11 +918,21 @@
 				nextChord();
 			}
 		}
+		if (e.code === 'Space' && screen === 'ear-training') {
+			e.preventDefault();
+			if (!timerStarted) {
+				beginEarTraining();
+			} else if (earTrainingRevealed) {
+				earTrainingNext();
+			} else {
+				earTrainingReveal();
+			}
+		}
 		if (e.code === 'KeyP' && screen === 'playing' && timerStarted) {
 			e.preventDefault();
 			togglePause();
 		}
-		if (e.code === 'Escape' && screen === 'playing') {
+		if (e.code === 'Escape' && (screen === 'playing' || screen === 'ear-training')) {
 			e.preventDefault();
 			resetToSetup();
 		}
@@ -589,6 +959,9 @@
 			streak = savedStreak;
 		}
 
+		// Load dashboard stats
+		dashStats = computeStats(loadHistory());
+
 		// MIDI setup — always probe for devices so we can show auto-detection
 		midi.onNotes(handleMidiNotes);
 		midi.onConnection((state) => {
@@ -606,7 +979,7 @@
 		});
 
 		midi.onDisconnect((deviceName) => {
-			midiDisconnectToast = `${deviceName} disconnected — reconnect to continue`;
+			midiDisconnectToast = t('ui.disconnected_reconnect', { device: deviceName });
 		});
 
 		// Always init MIDI to detect devices (even if not yet enabled)
@@ -632,6 +1005,9 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/train" />
 	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta property="og:image:type" content="image/webp" />
+	<meta property="og:image:width" content="966" />
+	<meta property="og:image:height" content="507" />
 	<meta property="og:image:alt" content="Chord Trainer practice interface with piano keyboard" />
 	<meta property="og:site_name" content="Chord Trainer" />
 	<meta name="twitter:card" content="summary_large_image" />
@@ -641,21 +1017,56 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<main class="flex-1 py-8 sm:py-12 px-4" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #12100c 70%, var(--bg) 100%);">
+<main class="flex-1 py-8 sm:py-12 px-4" style="background: radial-gradient(
+  ellipse 80% 40% at 50% 0%,
+  rgba(251, 146, 60, 0.04) 0%,
+  transparent 70%
+), linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #12100c 70%, var(--bg) 100%);">
 	<div class="max-w-4xl mx-auto">
-		<!-- Header -->
-		<div class="text-center mb-10">
-			<h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-gradient pb-1">
-				Chord Trainer
-			</h1>
-			<p class="mt-3 text-[var(--text-muted)]">
-				Build speed and fluency across all 12 keys
-			</p>
-		</div>
-
 		<!-- ─────── Setup Screen ─────── -->
 		{#if screen === 'setup'}
 			<div class="space-y-6" in:fade={{ duration: 200, delay: 100 }}>
+				<!-- Dashboard header -->
+				<div class="dashboard-header">
+					<!-- Row 1: Greeting + MIDI pill -->
+					<div class="dashboard-top">
+						<span class="dashboard-greeting">{greeting}!</span>
+						<div class="midi-pill" class:connected={midiState === 'connected' && midiDevices.length > 0}>
+							<img src="/elements/images/midi-connect.webp" width="16" height="16" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
+							<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : 'No MIDI'}</span>
+						</div>
+					</div>
+					<!-- Row 2: Stat tiles -->
+					<div class="dashboard-stats">
+						<div class="stat-tile">
+							<div class="stat-value">
+								<img src="/elements/images/streak-flame.webp" width="22" height="22" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
+								{streak.current}
+							</div>
+							<div class="stat-label">Streak</div>
+						</div>
+						<div class="stat-tile">
+							<div class="stat-value">{dashStats.totalSessions}</div>
+							<div class="stat-label">Sessions</div>
+						</div>
+						<div class="stat-tile">
+							<div class="stat-value">{dashStats.totalChords}</div>
+							<div class="stat-label">Chords</div>
+						</div>
+						<div class="stat-tile">
+							<div class="stat-value">{dashStats.totalSessions > 0 ? (dashStats.overallAvgMs / 1000).toFixed(1) : '–'}s</div>
+							<div class="stat-label">Ø / Chord</div>
+						</div>
+					</div>
+					<!-- Weekly goal bar -->
+					<div class="weekly-goal-row">
+						<span class="goal-label">Weekly Goal</span>
+						<div class="goal-bar">
+							<div class="goal-fill" style="width: {weeklyGoalPct}%"></div>
+						</div>
+						<span class="goal-pct">{weeklyGoalPct}%</span>
+					</div>
+				</div>
 				<GameSettings
 					bind:difficulty
 					bind:notation
@@ -666,12 +1077,17 @@
 					bind:totalChords
 					bind:progressionMode
 					bind:midiEnabled
+					bind:inTimeMode
+					bind:inTimeBars
+					bind:adaptiveEnabled
+					bind:voiceLeadingEnabled
 					{streak}
 					{midiState}
 					{midiDevices}
 					onstart={startGame}
 					onstartplan={startPlan}
 					oncustomprogression={openCustomEditor}
+					onstarteartraining={startEarTraining}
 				/>
 				<ProgressDashboard />
 			</div>
@@ -725,17 +1141,17 @@
 				<button
 					class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
 					onclick={resetToSetup}
-					title="Back to setup (ESC)"
+					title={t('ui.back_setup')}
 				>
-					← Back
+					← {t('ui.back')}
 				</button>
 				<div class="flex items-center gap-3">
 					<div class="text-sm text-[var(--text-muted)] text-right">
-						<span class="font-semibold text-[var(--text)]">{VOICING_LABELS[voicing]}</span>
+						<span class="font-semibold text-[var(--text)]">{t('settings.voicing_' + voicing.replace(/-/g, '_'))}</span>
 						<span class="mx-1">·</span>
-						<span class="capitalize">{difficulty}</span>
+						<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
 						<span class="mx-1">·</span>
-						<span>{PROGRESSION_LABELS[progressionMode]}</span>
+						<span>{t('settings.progression_' + (progressionMode === 'cycle-of-4ths' ? 'cycle' : progressionMode === '1-6-2-5' ? 'turnaround' : progressionMode))}</span>
 					</div>
 					<button
 						class="w-7 h-7 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer flex items-center justify-center text-sm"
@@ -750,9 +1166,9 @@
 				<div class="max-w-3xl mx-auto mb-6 p-4 rounded-[var(--radius)] border border-[var(--primary)]/30 bg-[var(--primary-muted)]/50" transition:fly={{ y: -10, duration: 200 }}>
 					<div class="flex items-start justify-between gap-4">
 						<div class="space-y-2">
-							<h3 class="font-semibold text-[var(--primary)]">{VOICING_LABELS[voicing]}</h3>
-							<p class="text-sm text-[var(--text-muted)]">{VOICING_DESCRIPTIONS[voicing].tip}</p>
-							<p class="text-xs font-mono text-[var(--text-dim)]">Example: {VOICING_DESCRIPTIONS[voicing].example}</p>
+							<h3 class="font-semibold text-[var(--primary)]">{t('settings.voicing_' + voicing.replace(/-/g, '_'))}</h3>
+							<p class="text-sm text-[var(--text-muted)]">{t('voicing_info.' + voicing.replace(/-/g, '_') + '_tip')}</p>
+							<p class="text-xs font-mono text-[var(--text-dim)]">{t('ui.example')}: {VOICING_EXAMPLES[voicing]}</p>
 						</div>
 						<button
 							class="text-[var(--text-muted)] hover:text-[var(--text)] cursor-pointer text-sm shrink-0"
@@ -779,6 +1195,9 @@
 								Accuracy: {midiAccuracy}%
 							</span>
 						{/if}
+						<a href="/midi-test" class="text-xs text-[var(--text-dim)] hover:text-[var(--text-muted)] transition-colors underline underline-offset-2" title="Test your MIDI connection">
+							MIDI Test →
+						</a>
 					</div>
 				{/if}
 
@@ -789,7 +1208,7 @@
 						onclick={() => (audioEnabled = !audioEnabled)}
 						title={audioEnabled ? 'Mute audio' : 'Enable audio'}
 					>
-						{audioEnabled ? '🔊' : '🔇'} Audio
+						{audioEnabled ? '🔊' : '🔇'} {t('ui.audio')}
 					</button>
 					{#if audioEnabled}
 						<select
@@ -806,7 +1225,7 @@
 						class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {metronomeEnabled ? 'border-[var(--accent-green)] bg-[var(--accent-green)]/10 text-[var(--accent-green)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
 						onclick={toggleMetronome}
 					>
-						{metronomeEnabled ? '⏸' : '▶'} Metronome
+						{metronomeEnabled ? '⏸' : '▶'} {t('ui.metronome')}
 					</button>
 					{#if metronomeEnabled}
 						<div class="flex items-center gap-2">
@@ -814,7 +1233,7 @@
 								class="w-7 h-7 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] cursor-pointer flex items-center justify-center"
 								onclick={() => updateBpm(metronomeBpm - 5)}
 							>−</button>
-							<span class="font-mono text-xs w-12 text-center">{metronomeBpm} BPM</span>
+							<span class="font-mono text-xs w-12 text-center">{metronomeBpm} {t('ui.bpm')}</span>
 							<button
 								class="w-7 h-7 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] cursor-pointer flex items-center justify-center"
 								onclick={() => updateBpm(metronomeBpm + 5)}
@@ -831,26 +1250,31 @@
 								></div>
 							{/each}
 						</div>
+						{#if inTimeMode}
+							<span class="text-xs text-[var(--accent-amber)] font-mono">
+								Bar {Math.min(inTimeBarCount, inTimeBars)}/{inTimeBars}
+							</span>
+						{/if}
 					{/if}
 				</div>
 
 				<!-- Progress bar + timer -->
 				<div>
 					<div class="flex justify-between text-sm mb-2 text-[var(--text-muted)]">
-						<span>Chord {currentIdx + 1} / {actualTotalChords}</span>
+						<span>{t('ui.chord_progress', { current: currentIdx + 1, total: actualTotalChords })}</span>
 						<div class="flex items-center gap-3">
 							<span class="font-mono">{timerStarted ? formatTime(elapsedMs > 0 ? elapsedMs : 0) : '0:00.00'}</span>
 							{#if timerStarted}
 								<button
-									class="text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
+									class="flex items-center gap-1 text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
 									onclick={togglePause}
-									title="Pause (P)"
-								>{paused ? '▶ Resume' : '⏸ Pause'}</button>
+									title={`${t('ui.pause')} (P)`}
+								>{paused ? `▶ ${t('ui.resume')}` : `⏸ ${t('ui.pause')}`}</button>
 								<button
-									class="text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+									class="flex items-center gap-1 text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
 									onclick={restartGame}
-									title="Restart exercise"
-								>↺ Restart</button>
+									title={t('ui.restart')}
+								>↺ {t('ui.restart')}</button>
 							{/if}
 						</div>
 					</div>
@@ -891,7 +1315,7 @@
 
 				<!-- Chord card + keyboard (dimmed when paused or not started) -->
 				<div class="{paused ? 'opacity-30 pointer-events-none' : ''}">
-				<ChordCard chord={currentChord} system={notationSystem} onclick={nextChord}>
+				<ChordCard chord={currentChord} system={notationSystem} onclick={nextChord} voiceLeading={voiceLeadingInfo} showVoiceLeading={voiceLeadingEnabled}>
 					<!-- Piano keyboard inside card -->
 					<div class="mt-8">
 						<PianoKeyboard
@@ -901,6 +1325,8 @@
 							midiEnabled={midiEnabled}
 							midiActiveNotes={midiActiveNotes}
 							midiExpectedPitchClasses={expectedPitchClasses}
+							voiceLeading={voiceLeadingInfo}
+							showVoiceLeading={voiceLeadingEnabled}
 						/>
 					</div>
 
@@ -939,7 +1365,7 @@
 					<!-- Voicing text -->
 					{#if shouldShowVoicing && currentData}
 						<div class="mt-6 space-y-1">
-							<div class="text-sm text-[var(--text-muted)]">{VOICING_LABELS[voicing]}</div>
+							<div class="text-sm text-[var(--text-muted)]">{t('settings.voicing_' + voicing.replace(/-/g, '_'))}</div>
 							<div class="text-xl font-mono font-semibold">
 								{formatVoicing(currentData, voicing, notationSystem)}
 							</div>
@@ -956,19 +1382,155 @@
 				<!-- Instruction -->
 				<div class="text-center text-sm text-[var(--text-muted)]">
 					{#if !timerStarted}
-						<p>Get ready — press <strong class="text-[var(--text)]">Start</strong> when you're ready</p>
+						<p>{t('ui.get_ready')}</p>
 					{:else if paused}
 						<!-- hidden during pause -->
+					{:else if inTimeMode}
+						<p>{t('ui.play_beat_1')}</p>
 					{:else if midiEnabled && midiState === 'connected' && midiDevices.length > 0}
-						<p>Play the chord on your piano — <strong class="text-[var(--text)]">auto-advance</strong> on correct voicing</p>
+						<p>{t('ui.play_auto')}</p>
 					{:else if displayMode === 'verify' && playPhase === 'playing'}
-						<p>Play the chord, then press <strong class="text-[var(--text)]">Space</strong> to verify</p>
+						<p>{t('ui.play_verify')}</p>
 					{:else if displayMode === 'verify' && playPhase === 'verifying'}
-						<p>Check your voicing — then <strong class="text-[var(--text)]">Space</strong> for next chord</p>
+						<p>{t('ui.check_verify')}</p>
 					{:else}
-						<p>Tap the card or press <strong class="text-[var(--text)]">Space</strong></p>
+						<p>{t('ui.tap_space')}</p>
 					{/if}
 				</div>
+			</div>
+			</div>
+		{/if}
+
+		<!-- ─────── Ear Training Screen ─────── -->
+		{#if screen === 'ear-training'}
+			<div in:fly={{ y: 20, duration: 300, delay: 50 }}>
+			<div class="flex items-center justify-between mb-6">
+				<button
+					class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
+					onclick={resetToSetup}
+					title={`${t('ui.back_setup')} (ESC)`}
+				>
+					← {t('ui.back')}
+				</button>
+				<div class="text-sm text-[var(--text-muted)]">
+					<span class="font-semibold text-[var(--accent-amber)]">{t('ui.ear_training')}</span>
+					<span class="mx-1">·</span>
+					<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
+				</div>
+			</div>
+
+			<div class="max-w-3xl mx-auto space-y-6">
+				<!-- MIDI status -->
+				{#if midiEnabled}
+					<MidiStatus
+						state={midiState}
+						devices={midiDevices}
+						selectedDeviceId={midiSelectedDeviceId}
+						activeNoteCount={midiActiveNotes.size}
+						onSelectDevice={handleMidiSelectDevice}
+						onConnect={handleMidiConnect}
+					/>
+				{/if}
+
+				<!-- Progress -->
+				<div>
+					<div class="flex justify-between text-sm mb-2 text-[var(--text-muted)]">
+						<span>{t('ui.chord_progress', { current: currentIdx + 1, total: actualTotalChords })}</span>
+						<span>
+							{earTrainingTotal > 0 ? `${t('ui.accuracy')}: ${Math.round((earTrainingCorrect / earTrainingTotal) * 100)}%` : ''}
+						</span>
+					</div>
+					<div class="h-1.5 bg-[var(--bg-muted)] rounded-full overflow-hidden">
+						<div
+							class="h-full bg-[var(--accent-amber)] transition-all duration-300 rounded-full"
+							style="width: {progress}%"
+						></div>
+					</div>
+				</div>
+
+				<!-- Start overlay -->
+				{#if !timerStarted}
+					<div class="text-center py-4">
+						<button
+							class="px-8 py-3 rounded-[var(--radius)] bg-[var(--accent-amber)] text-black font-semibold text-lg hover:brightness-110 transition-all cursor-pointer shadow-lg"
+							onclick={beginEarTraining}
+						>
+							👂 {t('ui.ear_training_start')}
+						</button>
+						<p class="mt-3 text-xs text-[var(--text-muted)]">{t('ui.ear_training_desc')}</p>
+					</div>
+				{/if}
+
+				<!-- Chord card (hidden or revealed) -->
+				{#if timerStarted}
+					<ChordCard
+						chord={currentChord}
+						system={notationSystem}
+						onclick={() => earTrainingRevealed ? earTrainingNext() : earTrainingReveal()}
+						hideChordName={!earTrainingRevealed}
+					>
+						<!-- Piano keyboard (hidden until revealed) -->
+						{#if earTrainingRevealed}
+							<div class="mt-8">
+								<PianoKeyboard
+									chordData={currentData}
+									accidentalPref={accidentals}
+									showVoicing={true}
+									midiEnabled={midiEnabled}
+									midiActiveNotes={midiActiveNotes}
+									midiExpectedPitchClasses={expectedPitchClasses}
+								/>
+							</div>
+						{:else}
+							<div class="mt-8">
+								<PianoKeyboard
+									chordData={null}
+									accidentalPref={accidentals}
+									showVoicing={false}
+									midiEnabled={midiEnabled}
+									midiActiveNotes={midiActiveNotes}
+									midiExpectedPitchClasses={expectedPitchClasses}
+								/>
+							</div>
+						{/if}
+
+						<!-- MIDI feedback -->
+						{#if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
+							<div class="mt-4 text-center">
+								{#if midiMatchResult.correct}
+									<span class="text-[var(--accent-green)] font-semibold text-lg">✓ {t('ui.correct')}</span>
+								{:else if midiMatchResult.accuracy > 0}
+									<span class="text-[var(--accent-amber)] text-sm">
+										{t('ui.keep_trying', { percent: Math.round(midiMatchResult.accuracy * 100) })}
+									</span>
+								{:else}
+									<span class="text-[var(--accent-red)] text-sm">{t('ui.wrong_notes')}</span>
+								{/if}
+							</div>
+						{/if}
+
+						<!-- Listen again button -->
+						<div class="mt-4 text-center">
+							<button
+								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-amber)] hover:text-[var(--accent-amber)] transition-colors cursor-pointer"
+								onclick={(e) => { e.stopPropagation(); replayChord(); }}
+							>
+								🎵 {t('ui.listen_again')}
+							</button>
+						</div>
+					</ChordCard>
+
+					<!-- Instruction -->
+					<div class="text-center text-sm text-[var(--text-muted)]">
+						{#if earTrainingRevealed}
+							<p>{t('ui.ear_training_revealed')}</p>
+						{:else if midiEnabled}
+							<p>{t('ui.ear_training_listen')}</p>
+						{:else}
+							<p>{t('ui.ear_training_hidden')}</p>
+						{/if}
+					</div>
+				{/if}
 			</div>
 			</div>
 		{/if}
@@ -982,7 +1544,7 @@
 					class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
 					onclick={resetToSetup}
 				>
-					← Back to Setup
+					← {t('ui.back_setup')}
 				</button>
 			</div>
 			<Results
@@ -998,6 +1560,12 @@
 				{progressionMode}
 				{midiEnabled}
 				{midiAccuracy}
+				inTimeModeActive={inTimeMode}
+				avgTimingMs={inTimeTimingOffsets.length > 0
+					? Math.round(inTimeTimingOffsets.filter(t => t < 900).reduce((a,b) => a+b, 0) / Math.max(1, inTimeTimingOffsets.filter(t => t < 900).length))
+					: 0}
+				{earTrainingCorrect}
+				{earTrainingTotal}
 				onrestart={restartGame}
 				onreset={resetToSetup}
 			/>
@@ -1013,3 +1581,116 @@
 		onReconnect={() => { midiDisconnectToast = null; midi.init(); }}
 	/>
 {/if}
+
+<style>
+	.dashboard-header {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: 16px;
+		background: rgba(255,255,255,0.03);
+		border: 1px solid rgba(255,255,255,0.07);
+		border-radius: 16px;
+		margin-bottom: 24px;
+	}
+
+	.dashboard-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.dashboard-greeting {
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: #fff;
+	}
+
+	.midi-pill {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 12px;
+		border-radius: 999px;
+		font-size: 0.72rem;
+		background: rgba(255,255,255,0.05);
+		color: #555;
+	}
+	.midi-pill.connected {
+		background: rgba(74,222,128,0.1);
+		color: #4ade80;
+	}
+
+	.dashboard-stats {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 10px;
+	}
+
+	.stat-tile {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 12px 8px;
+		background: rgba(255,255,255,0.04);
+		border: 1px solid rgba(255,255,255,0.06);
+		border-radius: 12px;
+		gap: 4px;
+	}
+
+	.stat-value {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 1.4rem;
+		font-weight: 700;
+		color: #fb923c;
+	}
+
+	.stat-label {
+		font-size: 0.7rem;
+		color: #666;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.weekly-goal-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.goal-label {
+		font-size: 0.72rem;
+		color: #666;
+		white-space: nowrap;
+	}
+
+	.goal-bar {
+		flex: 1;
+		height: 4px;
+		background: #1a1a1a;
+		border-radius: 999px;
+		overflow: hidden;
+	}
+
+	.goal-fill {
+		height: 100%;
+		background: #fb923c;
+		border-radius: 999px;
+		transition: width 0.8s ease-out;
+	}
+
+	.goal-pct {
+		font-size: 0.72rem;
+		color: #fb923c;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	@media (max-width: 640px) {
+		.dashboard-stats {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+</style>

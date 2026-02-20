@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="static/jazzchords-logo.png" alt="Chord Trainer Logo" width="200">
+  <img src="static/favicon/logo-full.webp" alt="Chord Trainer" width="320">
 </div>
 
 # 🎹 Chord Trainer
@@ -142,4 +142,8 @@ src/
 
 ---
 
-<sub>Built by [Aaron Technologies OÜ](https://jazzchords.app/about) · © 2026</sub>
+<div align="center">
+  <img src="static/favicon/logo-full.webp" alt="Chord Trainer" width="200">
+  <br>
+  <sub>Built by <a href="https://jazzchords.app/about">Aaron Technologies OÜ</a> · © 2026</sub>
+</div>

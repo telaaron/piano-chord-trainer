@@ -12,6 +12,7 @@
 		type ChordTrend,
 	} from '$lib/services/progress';
 	import { PROGRESSION_LABELS, VOICING_LABELS } from '$lib/engine';
+	import { t, getLocale } from '$lib/i18n';
 
 	let history: SessionResult[] = $state([]);
 	let stats: ProgressStats = $state(computeStats([]));
@@ -27,7 +28,7 @@
 	});
 
 	function handleClear() {
-		if (confirm('Delete all training data? Your progress will be lost.')) {
+		if (confirm(t('ui.confirm_delete'))) {
 			clearHistory();
 			history = [];
 			stats = computeStats([]);
@@ -45,7 +46,7 @@
 	}
 
 	function fmtDate(ts: number): string {
-		return new Date(ts).toLocaleDateString('en-US', {
+		return new Date(ts).toLocaleDateString(getLocale(), {
 			day: '2-digit',
 			month: '2-digit',
 			hour: '2-digit',
@@ -86,13 +87,13 @@
 		<div class="flex items-center justify-between">
 			<h3 class="text-lg font-bold flex items-center gap-2">
 				<img src="/elements/icons/icon-progress.webp" alt="Your Progress" width="36" height="36" loading="lazy" style="width:36px;height:36px;mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle; filter: drop-shadow(0 0 10px rgba(251,146,60,0.55));" />
-				Your Progress
+				{t('ui.your_progress')}
 			</h3>
 			<button
 				class="text-xs text-[var(--text-dim)] hover:text-[var(--accent-red)] transition-colors cursor-pointer"
 				onclick={handleClear}
 			>
-				Reset
+				{t('ui.reset')}
 			</button>
 		</div>
 
@@ -100,24 +101,24 @@
 		<div class="grid grid-cols-3 gap-3">
 			<div class="rounded-[var(--radius)] p-3 text-center" style="background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.18);">
 				<div class="text-3xl font-bold" style="color:#fb923c; filter: drop-shadow(0 0 8px rgba(251,146,60,0.4));">{stats.totalSessions}</div>
-				<div class="text-xs text-[var(--text-muted)] mt-1">Sessions</div>
+				<div class="text-xs text-[var(--text-muted)] mt-1">{t('ui.sessions')}</div>
 			</div>
 			<div class="rounded-[var(--radius)] p-3 text-center" style="background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.18);">
 				<div class="text-3xl font-bold" style="color:#fb923c; filter: drop-shadow(0 0 8px rgba(251,146,60,0.4));">{stats.totalChords}</div>
-				<div class="text-xs text-[var(--text-muted)] mt-1">Chords practiced</div>
+				<div class="text-xs text-[var(--text-muted)] mt-1">{t('ui.chords_practiced')}</div>
 			</div>
 			<div class="rounded-[var(--radius)] p-3 text-center" style="background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.18);">
 				<div class="text-3xl font-bold" style="color:#fb923c; filter: drop-shadow(0 0 8px rgba(251,146,60,0.4));">
 					{(stats.overallAvgMs / 1000).toFixed(1)}s
 				</div>
-				<div class="text-xs text-[var(--text-muted)] mt-1">Ø per chord</div>
+				<div class="text-xs text-[var(--text-muted)] mt-1">{t('ui.avg_per_chord')}</div>
 			</div>
 		</div>
 
 		<!-- Improvements -->
 		{#if improvements.length > 0 && improvements[0].changePercent < -15}
 			<div class="bg-[var(--accent-green)]/5 border border-[var(--accent-green)]/20 rounded-[var(--radius)] p-3">
-				<div class="text-sm font-medium text-[var(--accent-green)] mb-2">📈 Getting faster!</div>
+				<div class="text-sm font-medium text-[var(--accent-green)] mb-2">📈 {t('ui.getting_faster')}</div>
 				<div class="flex gap-3 flex-wrap">
 					{#each improvements.slice(0, 3) as imp}
 						<div class="text-sm">
@@ -133,8 +134,8 @@
 		{#if weakChords.length > 0}
 			<div>
 				<div class="text-sm font-medium text-[var(--text-muted)] mb-2 flex items-center gap-1.5">
-					<img src="/elements/icons/icon-focus.webp" alt="Focus on" width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle;" />
-					Focus on
+					<img src="/elements/icons/icon-focus.webp" alt={t('ui.focus_on')} width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle;" />
+					{t('ui.focus_on')}
 				</div>
 				<div class="space-y-2">
 					{#each weakChords.slice(0, 3) as wc}
@@ -160,10 +161,10 @@
 		{#if sparkData && stats.totalSessions >= 5}
 		<div class="rounded-[var(--radius)] p-4" style="background: rgba(251,146,60,0.05); border: 1px solid rgba(251,146,60,0.12);">
 			<div class="flex items-center justify-between mb-3">
-				<span class="text-xs text-[var(--text-muted)]">Last 10 sessions — seconds per chord</span>
+				<span class="text-xs text-[var(--text-muted)]">{t('ui.last_10_sessions')}</span>
 				{#if trend !== null}
 					<span class="text-xs font-medium {trend < 0 ? 'text-[var(--accent-green)]' : trend > 0 ? 'text-[var(--accent-red)]' : 'text-[var(--text-muted)]'}">
-						{trend < 0 ? '↓ Faster' : trend > 0 ? '↑ Slower' : '→ Same'} ({Math.abs(trend).toFixed(0)}%)
+						{trend < 0 ? `↓ ${t('ui.faster')}` : trend > 0 ? `↑ ${t('ui.slower')}` : `→ ${t('ui.same')}`} ({Math.abs(trend).toFixed(0)}%)
 					</span>
 				{/if}
 			</div>
@@ -177,8 +178,8 @@
 				{/each}
 			</div>
 			<div class="flex justify-between text-[10px] text-[var(--text-dim)] mt-1">
-				<span>Oldest</span>
-				<span>Newest</span>
+				<span>{t('ui.oldest')}</span>
+				<span>{t('ui.newest')}</span>
 		</div>
 	</div>
 {/if}
@@ -186,8 +187,8 @@
 	{#if Object.keys(stats.personalBests).length > 3}
 		<details>
 			<summary class="text-sm font-medium text-[var(--text-muted)] cursor-pointer hover:text-[var(--text)] mb-2 flex items-center gap-1.5">
-				<img src="/elements/icons/icon-personal-best.webp" alt="Personal Bests" width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle;" />
-				Personal Bests ({Object.keys(stats.personalBests).length})
+				<img src="/elements/icons/icon-personal-best.webp" alt={t('ui.personal_bests')} width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle;" />
+				{t('ui.personal_bests')} ({Object.keys(stats.personalBests).length})
 			</summary>
 			<div class="space-y-1.5 mt-2">
 				{#each Object.entries(stats.personalBests).slice(0, 8) as [key, best]}
@@ -197,11 +198,11 @@
 						{@const mode = parts[parts.length - 1]}
 						<div class="flex items-center justify-between text-sm bg-[var(--bg)] rounded-[var(--radius-sm)] px-3 py-2 border border-[var(--border)]">
 							<div class="flex items-center gap-2 text-[var(--text-muted)]">
-								<span class="capitalize">{diff}</span>
+								<span class="capitalize">{t('settings.difficulty_' + diff)}</span>
 								<span class="text-[var(--text-dim)]">·</span>
-								<span>{VOICING_LABELS[voicingKey as keyof typeof VOICING_LABELS] ?? voicingKey}</span>
+								<span>{t('settings.voicing_' + voicingKey.toLowerCase().replace(/-/g, '_'))}</span>
 								<span class="text-[var(--text-dim)]">·</span>
-								<span>{PROGRESSION_LABELS[mode as keyof typeof PROGRESSION_LABELS] ?? mode}</span>
+								<span>{t('plans.' + mode + '_name')}</span>
 							</div>
 							<span class="font-mono font-semibold text-[var(--accent-green)]">
 								{(best.avgMs / 1000).toFixed(2)}s
@@ -216,7 +217,7 @@
 		{#if history.length > 1}
 			<details bind:open={showHistory}>
 				<summary class="cursor-pointer text-xs text-[var(--text-muted)] hover:text-[var(--text)] font-medium">
-					Recent Sessions ({Math.min(history.length, 20)})
+					{t('ui.recent_sessions')} ({Math.min(history.length, 20)})
 				</summary>
 				<div class="mt-3 space-y-1.5 max-h-48 overflow-y-auto">
 					{#each history.slice(0, 20) as session}
@@ -224,9 +225,9 @@
 							<div class="flex items-center gap-2 text-[var(--text-muted)]">
 								<span>{fmtDate(session.timestamp)}</span>
 								<span class="text-[var(--text-dim)]">·</span>
-								<span>{session.totalChords} chords</span>
+								<span>{session.totalChords} {t('ui.chords')}</span>
 								<span class="text-[var(--text-dim)]">·</span>
-								<span class="capitalize">{session.settings.difficulty}</span>
+								<span class="capitalize">{t('settings.difficulty_' + session.settings.difficulty)}</span>
 							</div>
 							<div class="flex items-center gap-2">
 								{#if session.midi.enabled}

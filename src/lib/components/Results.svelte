@@ -15,6 +15,7 @@
 	} from '$lib/engine';
 	import type { ChordWithNotes } from '$lib/engine';
 	import { formatTime as fmt } from '$lib/utils/format';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		chordsWithNotes: ChordWithNotes[];
@@ -29,6 +30,14 @@
 		progressionMode: ProgressionMode;
 		midiEnabled: boolean;
 		midiAccuracy: number;
+		/** Average timing offset in ms for In-Time mode (optional) */
+		avgTimingMs?: number;
+		/** Whether In-Time mode was active */
+		inTimeModeActive?: boolean;
+		/** Ear Training correct count */
+		earTrainingCorrect?: number;
+		/** Ear Training total attempts */
+		earTrainingTotal?: number;
 		onrestart: () => void;
 		onreset: () => void;
 	}
@@ -46,6 +55,10 @@
 		progressionMode,
 		midiEnabled,
 		midiAccuracy,
+		avgTimingMs = 0,
+		inTimeModeActive = false,
+		earTrainingCorrect = 0,
+		earTrainingTotal = 0,
 		onrestart,
 		onreset,
 	}: Props = $props();
@@ -60,28 +73,28 @@
 					d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
 			</svg>
 		</div>
-		<h2 class="text-3xl font-bold">Congratulations!</h2>
-		<p class="text-[var(--text-muted)]">You mastered all {totalChords} chords</p>
+		<h2 class="text-3xl font-bold">{t('results.congratulations')}</h2>
+		<p class="text-[var(--text-muted)]">{t('results.mastered', { total: totalChords })}</p>
 	</div>
 
 	<!-- Time -->
 	<div class="bg-[var(--bg-muted)] rounded-[var(--radius-lg)] p-6">
-		<div class="text-sm text-[var(--text-muted)] mb-1">Your Time</div>
+		<div class="text-sm text-[var(--text-muted)] mb-1">{t('results.time')}</div>
 		<div class="text-5xl font-bold text-[var(--primary)]">{fmt(elapsedMs)}</div>
 		<div class="text-sm text-[var(--text-muted)] mt-2">
-			⌀ {(elapsedMs / totalChords / 1000).toFixed(2)}s per chord
+			{t('results.time_per_chord', { seconds: (elapsedMs / totalChords / 1000).toFixed(2) })}
 		</div>
 	</div>
 
 	<!-- Stats grid -->
 	<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
 		{#each [
-			{ label: 'Mode', value: PROGRESSION_LABELS[progressionMode] },
-			{ label: 'Difficulty', value: difficulty },
-			{ label: 'Chords', value: String(totalChords) },
-			{ label: 'Notation', value: notation },
-			{ label: 'Accidentals', value: accidentals === 'sharps' ? 'Sharps' : accidentals === 'flats' ? 'Flats' : 'Both' },
-			{ label: 'Voicing', value: VOICING_LABELS[voicing].split(' ')[0] },
+			{ label: t('results.mode'), value: t('settings.progression_' + (progressionMode === 'cycle-of-4ths' ? 'cycle' : progressionMode === '1-6-2-5' ? 'turnaround' : progressionMode)) },
+			{ label: t('results.difficulty'), value: t('settings.difficulty_' + difficulty) },
+			{ label: t('results.chords'), value: String(totalChords) },
+			{ label: t('results.notation'), value: t('settings.notation_' + notation) },
+			{ label: t('results.accidentals'), value: t('settings.accidentals_' + accidentals) },
+			{ label: t('results.voicing'), value: t('settings.voicing_' + voicing.replace(/-/g, '_')) }, // Voicing keys use underscores
 		] as stat}
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
 				<div class="text-xs text-[var(--text-muted)] mb-1">{stat.label}</div>
@@ -92,6 +105,18 @@
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
 				<div class="text-xs text-[var(--text-muted)] mb-1">MIDI Accuracy</div>
 				<div class="font-semibold text-[var(--accent-green)]">{midiAccuracy}%</div>
+			</div>
+		{/if}
+		{#if inTimeModeActive}
+			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+				<div class="text-xs text-[var(--text-muted)] mb-1">Avg. Timing</div>
+				<div class="font-semibold text-[var(--accent-amber)]">{avgTimingMs > 0 ? avgTimingMs + 'ms' : 'N/A'}</div>
+			</div>
+		{/if}
+		{#if earTrainingTotal > 0}
+			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+				<div class="text-xs text-[var(--text-muted)] mb-1">Ear Score</div>
+				<div class="font-semibold text-[var(--accent-amber)]">{earTrainingTotal > 0 ? Math.round((earTrainingCorrect / earTrainingTotal) * 100) : 0}%</div>
 			</div>
 		{/if}
 	</div>

@@ -1,12 +1,15 @@
-// Theme system — single default theme
-// Kept minimal; Open Studio branding is handled via inline CSS on /open-studio pitch page
+// Theme system — supports default and partner white-label themes
 
-export type ThemeId = 'default';
+export type ThemeId = 'default' | 'openstudio';
 
 export interface ThemeInfo {
 	id: ThemeId;
 	name: string;
 	description: string;
+	/** CSS data-theme attribute value */
+	dataTheme: string;
+	/** Primary brand color (for UI hints) */
+	accentColor?: string;
 }
 
 export const THEMES: ThemeInfo[] = [
@@ -14,6 +17,14 @@ export const THEMES: ThemeInfo[] = [
 		id: 'default',
 		name: 'Chord Trainer',
 		description: 'Default Theme',
+		dataTheme: 'default',
+	},
+	{
+		id: 'openstudio',
+		name: 'Open Studio',
+		description: 'Navy & Orange — Open Studio Jazz',
+		dataTheme: 'openstudio',
+		accentColor: '#ff6d42',
 	},
 ];
 

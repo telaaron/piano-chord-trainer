@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { t } from '$lib/i18n';
 	import PianoKeyboard from './PianoKeyboard.svelte';
 	import {
 		getChordNotes,
@@ -276,14 +277,14 @@
 			<h2 class="text-xl font-bold">{name}</h2>
 			<p class="text-sm text-[var(--text-muted)]">
 				{bpm} BPM
-				{#if loops > 0}· Loop {currentLoop + 1}/{loops}{:else}· Loop {currentLoop + 1}{/if}
+				{#if loops > 0}· {t('ui.loop_counter', { current: currentLoop + 1, total: loops })}{:else}· {t('ui.loop_counter', { current: currentLoop + 1, total: '∞' })}{/if}
 			</p>
 		</div>
 		<button
 			class="px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer text-sm font-medium"
 			onclick={handleStop}
 		>
-			✕ Stop
+			✕ {t('ui.stop')}
 		</button>
 	</div>
 
@@ -293,7 +294,7 @@
 			<div class="text-8xl font-bold text-[var(--primary)] tabular-nums">
 				{countInBeats === 0 ? '–' : countInBeats}
 			</div>
-			<p class="text-[var(--text-muted)] mt-4">Count in…</p>
+			<p class="text-[var(--text-muted)] mt-4">{t('ui.count_in')}</p>
 		</div>
 	{:else}
 		<!-- Progression bar (visual overview of chord positions) -->
@@ -350,13 +351,13 @@
 			{#if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
 				<div class="mt-4">
 					{#if midiMatchResult.correct}
-						<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Correct!</span>
+						<span class="text-[var(--accent-green)] font-semibold text-lg">✓ {t('ui.correct')}</span>
 					{:else if midiMatchResult.accuracy > 0}
 						<span class="text-[var(--accent-amber)] text-sm">
-							{Math.round(midiMatchResult.accuracy * 100)}% – {midiMatchResult.missing.length} note{midiMatchResult.missing.length !== 1 ? 's' : ''} missing
+							{Math.round(midiMatchResult.accuracy * 100)}% – {t('ui.notes_missing', { count: midiMatchResult.missing.length })}
 						</span>
 					{:else if midiActiveNotes.size > 0}
-						<span class="text-[var(--accent-red)] text-sm">Wrong notes</span>
+						<span class="text-[var(--accent-red)] text-sm">{t('ui.wrong_notes')}</span>
 					{/if}
 				</div>
 			{/if}
@@ -386,9 +387,9 @@
 
 	<!-- Footer hint -->
 	<div class="text-center text-xs text-[var(--text-dim)]">
-		<strong>ESC</strong> to stop
+		<strong>ESC</strong> {t('ui.stop').toLowerCase()}
 		{#if !midiEnabled}
-			· Play the chords along on your piano
+			· {t('ui.play_along_tip')}
 		{/if}
 	</div>
 </div>

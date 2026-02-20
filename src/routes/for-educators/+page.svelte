@@ -11,41 +11,156 @@
 </script>
 
 <svelte:head>
-	<title>Jazz Piano Voicing Trainer for Music Schools & Educators | Chord Trainer</title>
-	<meta name="description" content="Embed a professional MIDI voicing trainer into your jazz education platform. White-label ready, progress tracking, ii-V-I in all 12 keys. 30-day free trial." />
+	<title>Jazz Piano Voicing Trainer for Music Schools & Online Platforms | Chord Trainer</title>
+	<meta name="description" content="Embed a professional MIDI voicing trainer into your jazz education platform — Open Studio, Jazz-Academy, Pianote, Learn Jazz Standards, or your own teaching site. White-label, MIDI, progress tracking." />
 	<link rel="canonical" href="https://jazzchords.app/for-educators" />
-	<meta property="og:title" content="Jazz Voicing Trainer for Music Schools &amp; Educators" />
-	<meta property="og:description" content="Embed a professional MIDI voicing trainer into your jazz education platform. White-label ready, progress tracking. 30-day free trial." />
+	<meta property="og:title" content="Jazz Voicing Trainer for Music Schools &amp; Online Jazz Platforms" />
+	<meta property="og:description" content="Embed a professional MIDI voicing trainer into any jazz education platform. White-label ready, progress tracking. 30-day free trial." />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/for-educators" />
 	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta property="og:image:type" content="image/webp" />
+	<meta property="og:image:width" content="966" />
+	<meta property="og:image:height" content="507" />
 	<meta property="og:image:alt" content="Chord Trainer for Jazz Education Platforms" />
 	<meta property="og:site_name" content="Chord Trainer" />
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="Jazz Voicing Trainer for Music Schools &amp; Educators" />
+	<meta name="twitter:title" content="Jazz Voicing Trainer for Music Schools &amp; Online Jazz Platforms" />
 	<meta name="twitter:description" content="Professional chord voicing trainer for jazz education. MIDI recognition, progress tracking, white-label ready." />
 	<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
 	<meta name="twitter:image:alt" content="Chord Trainer for Jazz Education Platforms" />
+
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "FAQPage",
+		"mainEntity": [
+			{
+				"@type": "Question",
+				"name": "How does the Chord Trainer integrate into my music education platform?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Integration is a single embed code — an iframe with URL parameters for preset, branding, and voicing type. White-label colors and logo are configurable. Students never leave your platform."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Does the Chord Trainer require a MIDI keyboard?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "No. MIDI is optional and unlocks automatic chord validation. Without MIDI, students can still practice using the on-screen keyboard. The tool works in Chrome and Edge."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "What jazz voicing types does the trainer cover?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "The trainer covers root-position chords, shell voicings (3-7), rootless A and B voicings (Bill Evans style), and all inversions — across 14 chord qualities in all 12 keys."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "How much does a platform license cost?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Pricing is a flat monthly license fee, typically starting at €200/month depending on platform size, with a 30-day free trial. Contact us for a demo and custom quote."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Can the trainer be linked to specific lessons in my curriculum?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Yes. URL parameters pre-set the voicing type, progression, and difficulty for each embed. A shell voicings lesson links to a shell voicings drill; a ii-V-I lesson links to ii-V-I in all 12 keys — no extra setup needed."
+				}
+			}
+		]
+	})}</script>`}
 </svelte:head>
 
-<main class="flex-1 px-4 py-16 sm:py-24" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">
-	<div class="max-w-4xl mx-auto">
-		<!-- Hero -->
-		<div class="text-center mb-20">
-			<div class="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-xs text-[var(--text-muted)]">
-				For Jazz Education Platforms &amp; Music Schools
+<main class="flex-1" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">
+	<!-- Hero -->
+	<section style="position: relative; overflow: hidden;">
+		<!-- Background image -->
+		<img
+			src="/elements/for-educators/hero-studio-classroom.webp"
+			alt=""
+			aria-hidden="true"
+			loading="eager"
+			fetchpriority="high"
+			class="educators-hero-bg-image"
+			style="
+				position: absolute;
+				inset: 0;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				object-position: center 20%;
+				z-index: 0;
+				opacity: 0.5;
+			"
+		/>
+
+		<!-- Gradient overlay -->
+		<div style="
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			background: linear-gradient(
+				to bottom,
+				rgba(0,0,0,0.2) 0%,
+				rgba(0,0,0,0.5) 50%,
+				rgba(0,0,0,0.95) 100%
+			);
+		"></div>
+
+		<!-- Content -->
+		<div class="text-center px-4 py-16 sm:py-24" style="position: relative; z-index: 2;">
+			<div class="max-w-4xl mx-auto">
+				<div class="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-xs text-[var(--text-muted)]">
+					For Jazz Education Platforms, Music Schools &amp; Private Teachers
+				</div>
+
+				<h1 class="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-6">
+					<span class="text-gradient">"Take it through all 12 keys"</span><br />
+					<span class="text-[var(--text-muted)] text-3xl sm:text-4xl">Now there's a tool for that.</span>
+				</h1>
+
+				<p class="text-lg text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed">
+					Speed-drill training that systematically builds chord voicing fluency.
+					MIDI recognition validates technique. Progress tracking shows improvement.
+					Embeds into any platform — or links directly from your lessons.
+				</p>
 			</div>
-
-			<h1 class="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-6">
-				<span class="text-gradient">"Take it through all 12 keys"</span><br />
-				<span class="text-[var(--text-muted)] text-3xl sm:text-4xl">Now there's a tool for that.</span>
-			</h1>
-
-			<p class="text-lg text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed">
-				Speed-drill training that systematically builds chord voicing fluency.
-				MIDI recognition validates technique. Progress tracking shows improvement.
-			</p>
 		</div>
+	</section>
+
+	<div class="max-w-4xl mx-auto px-4 py-16 sm:py-24">
+
+		<!-- Platforms we speak to -->
+		<section class="mb-20">
+			<h2 class="text-xl sm:text-2xl font-bold mb-8 text-center">Built for platforms like yours</h2>
+			<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+				{#each [
+					{ name: 'Open Studio Jazz', desc: 'Async drill companion to live sessions &amp; Harmony Games', href: '/open-studio' },
+					{ name: 'Jazz-Academy', desc: 'Complement video theory lessons with hands-on drill', href: '' },
+					{ name: 'Learn Jazz Standards', desc: 'Practice the standards your students are learning', href: '' },
+					{ name: 'Private Teachers', desc: 'Assign drills as homework — track student results', href: '' },
+				] as platform}
+					{#if platform.href}
+						<a href={platform.href} class="card card-hover p-5 text-center block no-underline">
+							<p class="font-semibold text-sm text-[var(--text)] mb-1">{@html platform.name}</p>
+							<p class="text-xs text-[var(--text-muted)] leading-relaxed">{@html platform.desc}</p>
+						</a>
+					{:else}
+						<div class="card p-5 text-center">
+							<p class="font-semibold text-sm text-[var(--text)] mb-1">{@html platform.name}</p>
+							<p class="text-xs text-[var(--text-muted)] leading-relaxed">{@html platform.desc}</p>
+						</div>
+					{/if}
+				{/each}
+			</div>
+		</section>
 
 		<!-- Problem -->
 		<section class="mb-20">
@@ -212,10 +327,10 @@
 
 			<div class="mt-8 text-center">
 				<a
-					href="/open-studio"
+					href="/embed?mode=2-5-1&voicing=shell&chords=12"
 					class="inline-flex items-center gap-2 text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
 				>
-					See a live integration example with Open Studio
+					See the embed widget live
 					<ArrowRight size={14} />
 				</a>
 			</div>
@@ -232,10 +347,10 @@
 
 				<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
 					<a
-						href="/train"
+						href="/embed?mode=2-5-1&voicing=shell&chords=12"
 						class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold transition-colors"
 					>
-						Try the Live Demo
+						Try the Embed Demo
 						<ArrowRight size={18} />
 					</a>
 					<a
@@ -252,5 +367,10 @@
 </main>
 
 <style>
-	/* Clean styles for generic B2B page — no OS-specific mock needed */
+	/* Hero background image mobile adjustment */
+	@media (max-width: 768px) {
+		.educators-hero-bg-image {
+			object-position: center center !important;
+		}
+	}
 </style>

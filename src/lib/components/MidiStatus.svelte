@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { MidiConnectionState, MidiDevice } from '$lib/services/midi';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		state: MidiConnectionState;
@@ -22,15 +23,15 @@
 	const stateLabel = $derived(
 		state === 'connected'
 			? devices.length > 0
-				? 'Connected'
-				: 'No Device'
+				? t('midi.connected')
+				: t('midi.no_device')
 			: state === 'connecting'
-				? 'Connecting…'
+				? t('midi.connecting')
 				: state === 'unsupported'
-					? 'Not Supported'
+					? t('midi.unsupported')
 					: state === 'denied'
-						? 'Permission Denied'
-						: 'Disconnected',
+						? t('midi.permission_denied')
+						: t('midi.disconnected'),
 	);
 
 	const stateColor = $derived(
@@ -56,7 +57,7 @@
 			class="px-3 py-1 rounded-[var(--radius-sm)] border border-[var(--border)] text-xs hover:border-[var(--border-hover)] transition-colors cursor-pointer"
 			onclick={onConnect}
 		>
-			Connect
+			{t('midi.connect')}
 		</button>
 	{/if}
 
@@ -67,27 +68,13 @@
 			rel="noopener noreferrer"
 			class="text-xs text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors"
 		>
-			How to allow MIDI →
+			{t('midi.how_to_allow')}
 		</a>
 	{/if}
 
 	{#if state === 'unsupported'}
 		<span class="text-xs text-[var(--text-dim)]">
-			Use
-			<a
-				href="https://www.google.com/chrome/"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors"
-			>Chrome</a>
-			or
-			<a
-				href="https://www.microsoft.com/edge"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors"
-			>Edge</a>
-			for MIDI
+			{@html t('midi.use_chrome_edge').replace('Chrome', '<a href="https://www.google.com/chrome/" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors">Chrome</a>').replace('Edge', '<a href="https://www.microsoft.com/edge" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors">Edge</a>')}
 		</span>
 	{/if}
 

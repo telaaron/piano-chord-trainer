@@ -149,6 +149,72 @@ body {
 	padding: 0.125rem 0.375rem;
 	border-radius: var(--radius-sm);
 }
+
+/* ─── Open Studio Theme ──────────────────────────────────────────
+   Navy background, Open Studio orange — matches openstudiojazz.com brand.
+   Applied via data-theme="openstudio" on <html> or a container.
+──────────────────────────────────────────────────────────────── */
+[data-theme="openstudio"] {
+	/* Backgrounds — Open Studio navy */
+	--bg: #0c1821;
+	--bg-card: #132233;
+	--bg-card-hover: #1a2e43;
+	--bg-muted: #1e3347;
+	--border: #2a4a66;
+	--border-hover: #3d6080;
+
+	/* Text — warm off-white */
+	--text: #f0e8d8;
+	--text-muted: #b8a98a;
+	--text-dim: #6e7f8f;
+
+	/* Primary — Open Studio orange */
+	--primary: #ff6d42;
+	--primary-hover: #ff8555;
+	--primary-muted: rgba(255, 109, 66, 0.15);
+	--primary-text: #ffffff;
+
+	/* Accents */
+	--accent-gold: #ff6d42;
+	--accent-amber: #ff8555;
+	--accent-red: #cf3d1d;
+	--accent-green: #3aaa6a;
+
+	/* Wood/velvet — navy palette */
+	--wood-dark: #1e3347;
+	--wood-light: #2a4a66;
+	--velvet-red: #cf3d1d;
+
+	/* Glow & shadow */
+	--glow-warm: rgba(255, 109, 66, 0.18);
+	--shadow-deep: rgba(0, 0, 0, 0.85);
+
+	/* Piano keys — Open Studio aesthetic */
+	--key-white: #f5f0e8;
+	--key-white-active: #ff6d42;
+	--key-white-border: #c8bfa8;
+	--key-black: #0d1a24;
+	--key-black-active: #ff8555;
+	--key-root-dot: #ff6d42;
+}
+
+/* Card override for openstudio */
+[data-theme="openstudio"] .card {
+	background: rgba(19, 34, 51, 0.7);
+	border-color: rgba(42, 74, 102, 0.35);
+}
+
+[data-theme="openstudio"] .card-hover:hover {
+	border-color: rgba(255, 109, 66, 0.3);
+	background: rgba(26, 46, 67, 0.85);
+}
+
+[data-theme="openstudio"] .text-gradient {
+	background: linear-gradient(135deg, #ff6d42, #ff8555);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
 .prose-custom table {
 	width: 100%;
 	border-collapse: collapse;

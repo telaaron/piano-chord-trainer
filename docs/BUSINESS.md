@@ -50,7 +50,7 @@ Kein anderer Anbieter hat:
 | **Revenue-Upside** | Bei Plattformen >5.000 Membern: Revenue-Share 5–10% auf Attributable-Conversions |
 | **Vertrag** | 12-Monat-Minimum, 30-day trial |
 
-**Warum das funktioniert:** OS Pro kostet $47/Monat (Jahrestarif) bzw. $97/Monat (monatlich). Keine öffentlichen Mitgliederzahlen verfügbar — aber mit 18 Teammitgliedern (Stand 2024), 27 Instruktoren, 86 Kursen und 100K+ YouTube-Abonnenten ist Open Studio die führende Jazz-Piano-Online-Plattform. Selbst eine konservative Schätzung von einigen Tausend aktiven Pro-Mitgliedern rechtfertigt eine Platform-Lizenz.
+**Warum das funktioniert:** Open Studio hat **56K+ Spieler**, **2500+ Lektionen**, 20+ LIVE Classes/Woche (Pro). Standard-Plan: $33/mo (Jahrestarif). OS Pro: $47/mo (Jahrestarif), $97/mo (monatlich) — mit 12-Wochen-Journeys (Pro Seasons, aktuell: Duke Ellington). Mit diesem Mitglieder-Volumen rechtfertigt selbst eine konservative Adoptionsrate eine Platform-Lizenz. Chord Trainer ist das einzige Drill-Tool das 24/7 üben ermöglicht — auch wenn keine Live-Session läuft.
 
 ### Modell B: WordPress Plugin / Embed (B2B2C) — PRIORITÄT 2
 | | |

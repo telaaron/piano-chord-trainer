@@ -23,6 +23,9 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/open-studio" />
 	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta property="og:image:type" content="image/webp" />
+	<meta property="og:image:width" content="966" />
+	<meta property="og:image:height" content="507" />
 	<meta property="og:image:alt" content="Chord Trainer embedded inside Open Studio Jazz platform" />
 	<meta property="og:site_name" content="Chord Trainer" />
 	<meta name="twitter:card" content="summary_large_image" />
@@ -54,35 +57,71 @@
 
 <main class="flex-1" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">
 	<!-- Hero -->
-	<section class="max-w-4xl mx-auto px-4 py-20 sm:py-28 text-center">
-		<div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-xs text-[var(--text-muted)] tracking-wide uppercase">
-			Built for Open Studio
-		</div>
+	<section style="position: relative; overflow: hidden;">
+		<!-- Background image -->
+		<img
+			src="/elements/open-studio/hero-2am-piano.webp"
+			alt=""
+			aria-hidden="true"
+			loading="eager"
+			fetchpriority="high"
+			class="hero-bg-image"
+			style="
+				position: absolute;
+				inset: 0;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				object-position: center 30%;
+				z-index: 0;
+				opacity: 0.45;
+			"
+		/>
 
-		<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] mb-6">
-			<span class="text-gradient">From Concept to Muscle Memory</span><br />
-			<span class="text-[var(--text-muted)] text-2xl sm:text-3xl lg:text-4xl font-medium mt-2 block">The practice tool your lessons are missing.</span>
-		</h1>
+		<!-- Gradient overlay -->
+		<div style="
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			background: linear-gradient(
+				to bottom,
+				rgba(0,0,0,0.15) 0%,
+				rgba(0,0,0,0.55) 50%,
+				rgba(0,0,0,0.92) 100%
+			);
+		"></div>
 
-		<p class="text-lg sm:text-xl text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-10">
-			Adam explains <em>"The Family"</em>. The student clicks <strong class="text-[var(--text)]">Practice</strong> and drills those voicings through all 12 keys — with MIDI validation, a timer, and weakness analysis. Right inside Open Studio.
-		</p>
+		<!-- Content -->
+		<div class="max-w-4xl mx-auto px-4 py-20 sm:py-28 text-center" style="position: relative; z-index: 2;">
+			<div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-xs text-[var(--text-muted)] tracking-wide uppercase">
+				Built for Open Studio
+			</div>
 
-		<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-			<a
-				href="/train"
-				class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold transition-colors"
-			>
-				Try the Live Demo
-				<Play size={18} />
-			</a>
-			<a
-				href="mailto:info@jazzchords.app?subject=Open%20Studio%20Integration"
-				class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
-			>
-				<Mail size={18} />
-				Schedule a Demo
-			</a>
+			<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] mb-6">
+				<span class="text-gradient">Your 2 AM Practice Partner.</span><br />
+				<span class="text-[var(--text-muted)] text-2xl sm:text-3xl lg:text-4xl font-medium mt-2 block">Async drill companion for Open Studio students.</span>
+			</h1>
+
+			<p class="text-lg sm:text-xl text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-10">
+				Open Studio has the live sessions. Adam and Peter have the concepts. Chord Trainer is what happens <strong class="text-[var(--text)]">at 2 AM when no live class is running</strong> — MIDI-validated, timed speed drills that turn voicing knowledge into muscle memory.
+			</p>
+
+			<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+				<a
+					href="/embed?theme=openstudio&mode=2-5-1&voicing=shell"
+					class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold transition-colors"
+				>
+					Try the Live Demo
+					<Play size={18} />
+				</a>
+				<a
+					href="mailto:info@jazzchords.app?subject=Open%20Studio%20Integration"
+					class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
+				>
+					<Mail size={18} />
+					Schedule a Demo
+				</a>
+			</div>
 		</div>
 	</section>
 
@@ -90,12 +129,12 @@
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
 			<div class="card p-8 sm:p-10 border-[var(--accent-amber)]/20">
-				<h2 class="text-xl font-bold mb-4 text-[var(--accent-amber)]">The Gap</h2>
+				<h2 class="text-xl font-bold mb-4 text-[var(--accent-amber)]">The Opportunity</h2>
 				<p class="text-[var(--text-muted)] leading-relaxed text-lg">
-					Open Studio has the best jazz piano instruction online. Peter &amp; Adam teach voicing concepts beautifully. But after the lesson ends, there's <strong class="text-[var(--text)]">no tool to drill what was just learned</strong>. Students understand the theory — they just can't play it fluently in all 12 keys yet.
+					Open Studio already has the best jazz piano instruction online — 56K+ players, 2500+ lessons, live sessions every week, Guided Practice, Harmony Games. You've built an incredible ecosystem.
 				</p>
 				<p class="text-[var(--text-muted)] leading-relaxed text-lg mt-4">
-					That's the difference between <em>knowing</em> a voicing and <em>owning</em> it. <strong class="text-[var(--text)]">Chord Trainer closes that gap.</strong>
+					One piece that's still missing: <strong class="text-[var(--text)]">async, MIDI-validated drill practice</strong> for the hours between live sessions. Students understand shell voicings after the class — they just can't play them in all 12 keys yet. That transformation happens through repetition, not re-watching. <strong class="text-[var(--text)]">Chord Trainer is that repetition tool.</strong>
 				</p>
 			</div>
 		</div>
@@ -104,9 +143,9 @@
 	<!-- How It Works Inside OS -->
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">How It Works Inside Open Studio</h2>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">How It Works Alongside Open Studio</h2>
 			<p class="text-center text-[var(--text-muted)] mb-12 max-w-2xl mx-auto">
-				Students never leave your platform. The trainer appears as a tab within each lesson.
+				Students use it between sessions — or open the demo right after a lesson to drill the same voicings.
 			</p>
 
 			<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
@@ -131,9 +170,7 @@
 				</div>
 
 				<div class="card p-6 text-center">
-					<div class="w-12 h-12 rounded-xl bg-[var(--primary-muted)] flex items-center justify-center mx-auto mb-4">
-						<BarChart3 size={24} class="text-[var(--primary)]" />
-					</div>
+					<img src="/elements/open-studio/step-track-progress.webp" alt="Track Progress" width="72" height="72" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />
 					<h3 class="font-bold mb-2">3. Track Progress</h3>
 					<p class="text-sm text-[var(--text-muted)]">
 						MIDI validates every chord. Weakness analysis shows which keys need work. Speed improves session by session.
@@ -149,6 +186,7 @@
 			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">Inside Your Platform</h2>
 			<p class="text-center text-[var(--text-muted)] mb-10 max-w-2xl mx-auto">
 				A new <strong class="text-[var(--text)]">"Practice"</strong> tab — right next to Overview, Materials, and Shortcuts.
+				<span class="block mt-1 text-sm text-[var(--text-dim)]">Preview — embed integration ready for pilot</span>
 			</p>
 
 			<div class="os-mock">
@@ -219,7 +257,7 @@
 
 					<!-- Chord Trainer Embedded -->
 					<div class="os-trainer-embed">
-						<div class="os-trainer-badge">Chord Trainer · Embedded</div>
+						<div class="os-trainer-badge">Preview · Chord Trainer Integration</div>
 
 						<div class="os-trainer-top">
 							<span class="os-trainer-status">🎹 MIDI Connected</span>
@@ -293,7 +331,7 @@
 					{ title: 'I-vi-ii-V Turnarounds', desc: 'Full rhythm changes turnaround' },
 					{ title: 'Custom Progressions', desc: 'Autumn Leaves, All The Things, any standard' },
 					{ title: 'Inversions (1st – 3rd)', desc: 'Drop-2, spread voicings, all positions' },
-					{ title: '16 Chord Qualities', desc: 'Maj7, m7, dom7, m7b5, dim7, alt, sus, and more' },
+					{ title: '15 Chord Qualities', desc: 'Maj7, m7, dom7, m7b5, dim7, alt, sus, and more' },
 				] as item}
 					<div class="card p-5 flex items-start gap-3">
 						<CheckCircle size={18} class="text-[var(--primary)] flex-shrink-0 mt-0.5" />
@@ -357,31 +395,31 @@
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
 			<div class="card p-8 sm:p-10">
-				<h2 class="text-xl font-bold mb-6">Harmony Games Unlimited shows concepts.<br /><span class="text-gradient">Chord Trainer makes them muscle memory.</span></h2>
+				<h2 class="text-xl font-bold mb-6">Harmony Games trains the <em>ear</em>.<br /><span class="text-gradient">Chord Trainer trains the <em>hands</em>.</span></h2>
 
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-					<div>
-						<h3 class="font-semibold text-[var(--text-muted)] mb-3 uppercase tracking-wider text-xs">Harmony Games</h3>
+					<div>					<img src="/elements/open-studio/compare-ear.webp" alt="Harmony Games Unlimited" width="80" height="80" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />						<h3 class="font-semibold text-[var(--text-muted)] mb-3 uppercase tracking-wider text-xs">Harmony Games Unlimited</h3>
 						<ul class="space-y-2 text-[var(--text-muted)]">
-							<li>✓ Quiz-based (identify chords)</li>
-							<li>✓ Great for ear training</li>
-							<li>✓ Theory recognition</li>
+							<li>✓ Quiz-based — identify chords by ear</li>
+							<li>✓ Builds harmonic listening skills</li>
+							<li>✓ Theory recognition &amp; ear training</li>
 						</ul>
 					</div>
 					<div>
+						<div class="hands-icon-placeholder" style="height: 80px; margin: 0 auto 16px;"></div>
 						<h3 class="font-semibold text-[var(--primary)] mb-3 uppercase tracking-wider text-xs">Chord Trainer</h3>
 						<ul class="space-y-2 text-[var(--text)]">
-							<li>✓ Performance-based (play the voicings)</li>
-							<li>✓ MIDI validates actual playing</li>
+							<li>✓ Performance-based — play the voicings</li>
+							<li>✓ MIDI validates actual playing at the keys</li>
 							<li>✓ Speed drill through all 12 keys</li>
 							<li>✓ Weakness analysis per chord root</li>
-							<li>✓ Custom progressions (standards)</li>
+							<li>✓ Works at 2 AM, no live session needed</li>
 						</ul>
 					</div>
 				</div>
 
 				<p class="text-[var(--text-muted)] mt-6 text-sm leading-relaxed">
-					They're complementary: Harmony Games trains the <em>ear</em>, Chord Trainer trains the <em>hands</em>. Together, they cover the full learning loop.
+					They're <strong class="text-[var(--text)]">complementary</strong>, not competing. Harmony Games confirms understanding — Chord Trainer builds fluency. Together with All the Keys sessions and Guided Practice, you'd cover the complete journey from concept to muscle memory.
 				</p>
 			</div>
 		</div>
@@ -393,20 +431,17 @@
 			<h2 class="text-2xl sm:text-3xl font-bold mb-10 text-center">Simple Terms</h2>
 
 			<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-				<div class="card p-6 text-center">
-					<div class="text-3xl font-bold text-[var(--primary)] mb-2">30 Days</div>
+				<div class="card p-6 text-center">				<img src="/elements/open-studio/pricing-trial.webp" alt="30 Days Free Trial" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">30 Days</div>
 					<div class="text-sm font-medium mb-2">Free Trial</div>
 					<p class="text-xs text-[var(--text-muted)]">Full functionality. MIDI, progress, all voicings. Zero risk.</p>
 				</div>
 
-				<div class="card p-6 text-center border-[var(--primary)]/30">
-					<div class="text-3xl font-bold text-[var(--primary)] mb-2">Flat Fee</div>
+				<div class="card p-6 text-center border-[var(--primary)]/30">				<img src="/elements/open-studio/pricing-flat.webp" alt="Flat Fee Monthly License" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">Flat Fee</div>
 					<div class="text-sm font-medium mb-2">Monthly License</div>
 					<p class="text-xs text-[var(--text-muted)]">Predictable cost. No per-user fees. Scales with your growth.</p>
 				</div>
 
-				<div class="card p-6 text-center">
-					<div class="text-3xl font-bold text-[var(--primary)] mb-2">White-Label</div>
+				<div class="card p-6 text-center">				<img src="/elements/open-studio/pricing-whitelabel.webp" alt="White-Label Your Branding" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">White-Label</div>
 					<div class="text-sm font-medium mb-2">Your Branding</div>
 					<p class="text-xs text-[var(--text-muted)]">Open Studio colors, logo, domain. Students never know it's external.</p>
 				</div>
@@ -432,10 +467,10 @@
 						Schedule a Demo
 					</a>
 					<a
-						href="/train"
+						href="/embed?theme=openstudio&mode=2-5-1&voicing=shell"
 						class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
 					>
-						Try the Live Trainer
+						Try the Live Demo
 						<ArrowRight size={18} />
 					</a>
 				</div>
@@ -808,6 +843,10 @@
 
 	/* ── Mobile ───────────────────────────────────────── */
 	@media (max-width: 768px) {
+		.hero-bg-image {
+			object-position: 70% center !important;
+		}
+
 		.os-nav-links {
 			display: none;
 		}
