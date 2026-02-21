@@ -32,11 +32,11 @@
 		origin: string; // postMessage target origin
 	}
 
-	const PRESET_LABELS: Record<string, string> = {
-		'shell-warmup': 'Shell Voicing Warmup',
-		'rootless-drill': 'Rootless Voicing Drill',
-		'251-advanced': 'ii – V – I Advanced',
-		'openstudio-intro': 'Open Studio Intro',
+	const PRESET_KEYS: Record<string, string> = {
+		'shell-warmup': 'embed.preset_shell_warmup',
+		'rootless-drill': 'embed.preset_rootless_drill',
+		'251-advanced': 'embed.preset_251_advanced',
+		'openstudio-intro': 'embed.preset_openstudio_intro',
 	};
 
 	const VOICING_KEYS: Record<VoicingType, string> = {
@@ -439,10 +439,10 @@
 				{/if}
 
 				<div class="setup-meta">
-					<span class="meta-badge">{VOICING_LABELS[config.voicing] ?? config.voicing}</span>
-					<span class="meta-badge">{PROGRESSION_LABELS[config.progressionMode] ?? config.progressionMode}</span>
+					<span class="meta-badge">{t(VOICING_KEYS[config.voicing])}</span>
+					<span class="meta-badge">{t(PROGRESSION_KEYS[config.progressionMode])}</span>
 					<span class="meta-badge">{config.chords} {t('embed.stat_chords')}</span>
-					<span class="meta-badge">{DIFFICULTY_LABELS[config.difficulty]}</span>
+					<span class="meta-badge">{t(DIFFICULTY_KEYS[config.difficulty])}</span>
 				</div>
 
 				{#if midiState === 'connected' && midiHasDevice}
@@ -468,9 +468,9 @@
 			<!-- Top bar -->
 			<div class="top-bar">
 				<div class="top-bar-left">
-					<span class="voicing-label">{VOICING_LABELS[config.voicing] ?? config.voicing}</span>
+					<span class="voicing-label">{t(VOICING_KEYS[config.voicing])}</span>
 					{#if midiState === 'connected' && midiHasDevice}
-						<span class="midi-dot" title="MIDI Connected" aria-label="MIDI Connected">●</span>
+						<span class="midi-dot" title={t('embed.midi_connected')} aria-label={t('embed.midi_connected')}>●</span>
 					{/if}
 				</div>
 				<div class="top-bar-center">

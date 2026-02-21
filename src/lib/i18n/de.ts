@@ -601,6 +601,10 @@ export const de = {
     play_again: 'Nochmal Spielen',
     full_trainer: 'Zum Trainer ↗',
     brand: 'jazzchords.app',
-    back_to_setup_title: 'Zurück zum Setup'
+    back_to_setup_title: 'Zurück zum Setup',
+    preset_shell_warmup: 'Shell-Voicing Aufwärmen',
+    preset_rootless_drill: 'Rootless-Voicing Drill',
+    preset_251_advanced: 'ii – V – I Fortgeschritten',
+    preset_openstudio_intro: 'Open Studio Intro'
   }
 };
