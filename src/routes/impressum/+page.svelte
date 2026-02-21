@@ -1,6 +1,10 @@
+<script lang="ts">
+	import { t } from '$lib/i18n';
+</script>
+
 <svelte:head>
-	<title>Impressum – Chord Trainer</title>
-	<meta name="description" content="Legal notice (Impressum) for Chord Trainer by Aaron Technologies OÜ." />
+	<title>{t('impressum.title')}</title>
+	<meta name="description" content={t('impressum.meta_desc')} />
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
