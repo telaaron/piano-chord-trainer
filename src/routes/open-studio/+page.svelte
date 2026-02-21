@@ -12,14 +12,15 @@
 		Bookmark,
 		User,
 	} from 'lucide-svelte';
+	import { t } from '$lib/i18n';
 </script>
 
 <svelte:head>
-	<title>Jazz Voicing Practice Tool for Open Studio | Chord Trainer Integration</title>
-	<meta name="description" content="Embed a MIDI chord voicing speed-drill trainer inside Open Studio. Pre-loaded with lesson voicings, white-label branding, weakness analysis. 30-day free trial." />
+	<title>{t('open_studio.title')}</title>
+	<meta name="description" content={t('open_studio.meta_desc')} />
 	<link rel="canonical" href="https://jazzchords.app/open-studio" />
-	<meta property="og:title" content="Chord Trainer for Open Studio – Jazz Voicing Practice, Embedded" />
-	<meta property="og:description" content="A dedicated chord voicing speed-drill trainer built for Open Studio Jazz. White-label integration, MIDI recognition, progress tracking — inside your platform." />
+	<meta property="og:title" content={t('open_studio.title')} />
+	<meta property="og:description" content={t('open_studio.meta_desc')} />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/open-studio" />
 	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
@@ -29,8 +30,8 @@
 	<meta property="og:image:alt" content="Chord Trainer embedded inside Open Studio Jazz platform" />
 	<meta property="og:site_name" content="Chord Trainer" />
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="Chord Trainer for Open Studio – Jazz Voicing Practice" />
-	<meta name="twitter:description" content="Jazz voicing speed-drill trainer built for the Open Studio learning environment. MIDI, progress tracking, white-label." />
+	<meta name="twitter:title" content={t('open_studio.title')} />
+	<meta name="twitter:description" content={t('open_studio.meta_desc')} />
 	<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
 	<meta name="twitter:image:alt" content="Chord Trainer embedded inside Open Studio Jazz platform" />
 
@@ -87,23 +88,22 @@
 				to bottom,
 				rgba(0,0,0,0.15) 0%,
 				rgba(0,0,0,0.55) 50%,
-				rgba(0,0,0,0.92) 100%
+				var(--bg) 100%
 			);
 		"></div>
 
 		<!-- Content -->
 		<div class="max-w-4xl mx-auto px-4 py-20 sm:py-28 text-center" style="position: relative; z-index: 2;">
 			<div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-xs text-[var(--text-muted)] tracking-wide uppercase">
-				Built for Open Studio
+				{t('open_studio.badge')}
 			</div>
 
 			<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] mb-6">
-				<span class="text-gradient">Your 2 AM Practice Partner.</span><br />
-				<span class="text-[var(--text-muted)] text-2xl sm:text-3xl lg:text-4xl font-medium mt-2 block">Async drill companion for Open Studio students.</span>
+				{@html t('open_studio.hero_h1')}
 			</h1>
 
 			<p class="text-lg sm:text-xl text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-10">
-				Open Studio has the live sessions. Adam and Peter have the concepts. Chord Trainer is what happens <strong class="text-[var(--text)]">at 2 AM when no live class is running</strong> — MIDI-validated, timed speed drills that turn voicing knowledge into muscle memory.
+				{@html t('open_studio.hero_p')}
 			</p>
 
 			<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -111,7 +111,7 @@
 					href="/embed?theme=openstudio&mode=2-5-1&voicing=shell"
 					class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold transition-colors"
 				>
-					Try the Live Demo
+					{t('open_studio.cta_demo')}
 					<Play size={18} />
 				</a>
 				<a
@@ -119,7 +119,7 @@
 					class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
 				>
 					<Mail size={18} />
-					Schedule a Demo
+					{t('open_studio.cta_schedule')}
 				</a>
 			</div>
 		</div>
@@ -129,12 +129,12 @@
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
 			<div class="card p-8 sm:p-10 border-[var(--accent-amber)]/20">
-				<h2 class="text-xl font-bold mb-4 text-[var(--accent-amber)]">The Opportunity</h2>
+				<h2 class="text-xl font-bold mb-4 text-[var(--accent-amber)]">{t('open_studio.opportunity_title')}</h2>
 				<p class="text-[var(--text-muted)] leading-relaxed text-lg">
-					Open Studio already has the best jazz piano instruction online — 56K+ players, 2500+ lessons, live sessions every week, Guided Practice, Harmony Games. You've built an incredible ecosystem.
+					{t('open_studio.opportunity_p1')}
 				</p>
 				<p class="text-[var(--text-muted)] leading-relaxed text-lg mt-4">
-					One piece that's still missing: <strong class="text-[var(--text)]">async, MIDI-validated drill practice</strong> for the hours between live sessions. Students understand shell voicings after the class — they just can't play them in all 12 keys yet. That transformation happens through repetition, not re-watching. <strong class="text-[var(--text)]">Chord Trainer is that repetition tool.</strong>
+					{@html t('open_studio.opportunity_p2')}
 				</p>
 			</div>
 		</div>
@@ -143,9 +143,9 @@
 	<!-- How It Works Inside OS -->
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">How It Works Alongside Open Studio</h2>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">{t('open_studio.how_title')}</h2>
 			<p class="text-center text-[var(--text-muted)] mb-12 max-w-2xl mx-auto">
-				Students use it between sessions — or open the demo right after a lesson to drill the same voicings.
+				{t('open_studio.how_sub')}
 			</p>
 
 			<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
@@ -153,9 +153,9 @@
 					<div class="w-12 h-12 rounded-xl bg-[var(--primary-muted)] flex items-center justify-center mx-auto mb-4">
 						<Monitor size={24} class="text-[var(--primary)]" />
 					</div>
-					<h3 class="font-bold mb-2">1. Watch the Lesson</h3>
+					<h3 class="font-bold mb-2">{t('open_studio.how_step1')}</h3>
 					<p class="text-sm text-[var(--text-muted)]">
-						Student watches Adam teach shell voicings, rootless concepts, or any chord topic.
+						{t('open_studio.how_step1_desc')}
 					</p>
 				</div>
 
@@ -163,17 +163,17 @@
 					<div class="w-12 h-12 rounded-xl bg-[var(--primary-muted)] flex items-center justify-center mx-auto mb-4">
 						<Keyboard size={24} class="text-[var(--primary)]" />
 					</div>
-					<h3 class="font-bold mb-2">2. Click "Practice"</h3>
+					<h3 class="font-bold mb-2">{t('open_studio.how_step2')}</h3>
 					<p class="text-sm text-[var(--text-muted)]">
-						A new tab opens with the trainer pre-loaded for exactly those voicings. One click to start drilling.
+						{t('open_studio.how_step2_desc')}
 					</p>
 				</div>
 
 				<div class="card p-6 text-center">
 					<img src="/elements/open-studio/step-track-progress.webp" alt="Track Progress" width="72" height="72" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />
-					<h3 class="font-bold mb-2">3. Track Progress</h3>
+					<h3 class="font-bold mb-2">{t('open_studio.how_step3')}</h3>
 					<p class="text-sm text-[var(--text-muted)]">
-						MIDI validates every chord. Weakness analysis shows which keys need work. Speed improves session by session.
+						{t('open_studio.how_step3_desc')}
 					</p>
 				</div>
 			</div>
@@ -183,10 +183,10 @@
 	<!-- Platform Mock — Accurate Open Studio UI -->
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-5xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">Inside Your Platform</h2>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">{t('open_studio.platform_title')}</h2>
 			<p class="text-center text-[var(--text-muted)] mb-10 max-w-2xl mx-auto">
-				A new <strong class="text-[var(--text)]">"Practice"</strong> tab — right next to Overview, Materials, and Shortcuts.
-				<span class="block mt-1 text-sm text-[var(--text-dim)]">Preview — embed integration ready for pilot</span>
+				{@html t('open_studio.platform_sub')}
+				<span class="block mt-1 text-sm text-[var(--text-dim)]">{t('open_studio.platform_preview')}</span>
 			</p>
 
 			<div class="os-mock">
@@ -302,15 +302,15 @@
 			<div class="os-embed-benefits">
 				<div class="os-benefit-item">
 					<CheckCircle size={20} class="text-[#00a86b]" />
-					<span>Students never leave Open Studio</span>
+					<span>{t('open_studio.benefits_1')}</span>
 				</div>
 				<div class="os-benefit-item">
 					<CheckCircle size={20} class="text-[#00a86b]" />
-					<span>Pre-loaded with the lesson's voicings</span>
+					<span>{t('open_studio.benefits_2')}</span>
 				</div>
 				<div class="os-benefit-item">
 					<CheckCircle size={20} class="text-[#00a86b]" />
-					<span>White-label — matches your design system</span>
+					<span>{t('open_studio.benefits_3')}</span>
 				</div>
 			</div>
 		</div>
@@ -319,19 +319,19 @@
 	<!-- What The Trainer Covers -->
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">What Students Can Practice</h2>
-			<p class="text-center text-[var(--text-muted)] mb-10">Every concept Adam &amp; Peter teach has a matching drill.</p>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">{t('open_studio.practice_title')}</h2>
+			<p class="text-center text-[var(--text-muted)] mb-10">{t('open_studio.practice_sub')}</p>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				{#each [
-					{ title: 'Shell Voicings (3-7)', desc: '"The bread and butter" — drill through all 12 keys' },
-					{ title: 'Rootless A (Bill Evans)', desc: '3-5-7-9 voicings, the classic left-hand sound' },
-					{ title: 'Rootless B', desc: '7-9-3-5, the complement to A voicings' },
-					{ title: 'ii-V-I Progressions', desc: 'The most common jazz cadence, all 12 keys' },
-					{ title: 'I-vi-ii-V Turnarounds', desc: 'Full rhythm changes turnaround' },
-					{ title: 'Custom Progressions', desc: 'Autumn Leaves, All The Things, any standard' },
-					{ title: 'Inversions (1st – 3rd)', desc: 'Drop-2, spread voicings, all positions' },
-					{ title: '15 Chord Qualities', desc: 'Maj7, m7, dom7, m7b5, dim7, alt, sus, and more' },
+					{ title: t('open_studio.practice_shell'), desc: t('open_studio.practice_shell_desc') },
+					{ title: t('open_studio.practice_rootless_a'), desc: t('open_studio.practice_rootless_a_desc') },
+					{ title: t('open_studio.practice_rootless_b'), desc: t('open_studio.practice_rootless_b_desc') },
+					{ title: t('open_studio.practice_251'), desc: t('open_studio.practice_251_desc') },
+					{ title: t('open_studio.practice_turnaround'), desc: t('open_studio.practice_turnaround_desc') },
+					{ title: t('open_studio.practice_custom'), desc: t('open_studio.practice_custom_desc') },
+					{ title: t('open_studio.practice_inversions'), desc: t('open_studio.practice_inversions_desc') },
+					{ title: t('open_studio.practice_qualities'), desc: t('open_studio.practice_qualities_desc') },
 				] as item}
 					<div class="card p-5 flex items-start gap-3">
 						<CheckCircle size={18} class="text-[var(--primary)] flex-shrink-0 mt-0.5" />
@@ -348,42 +348,42 @@
 	<!-- Integration Options -->
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-10 text-center">Integration Options</h2>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-10 text-center">{t('open_studio.integration_title')}</h2>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 				<div class="card p-6 border-[var(--primary)]/30 relative overflow-hidden">
 					<div class="absolute top-3 right-3 text-[0.65rem] uppercase tracking-wider text-[var(--primary)] bg-[var(--primary-muted)] px-2 py-0.5 rounded-full font-semibold">Recommended</div>
 					<Layers size={24} class="text-[var(--primary)] mb-3" />
-					<h3 class="font-bold mb-2">Lesson Tab</h3>
+					<h3 class="font-bold mb-2">{t('open_studio.integration_lesson')}</h3>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-						New "Practice" tab within each lesson. Context-specific: the lesson's voicings are pre-loaded. Zero friction for students.
+						{t('open_studio.integration_lesson_desc')}
 					</p>
 					<p class="text-xs text-[var(--text-dim)] mt-3 font-mono">iframe with URL params</p>
 				</div>
 
 				<div class="card p-6">
 					<Monitor size={24} class="text-[var(--primary)] mb-3" />
-					<h3 class="font-bold mb-2">Standalone Section</h3>
+					<h3 class="font-bold mb-2">{t('open_studio.integration_standalone')}</h3>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-						Dedicated "Practice Tools" area in your navigation. For free practice, not tied to any specific lesson. Scalable to future tools.
+						{t('open_studio.integration_standalone_desc')}
 					</p>
 					<p class="text-xs text-[var(--text-dim)] mt-3 font-mono">Subdomain or embedded route</p>
 				</div>
 
 				<div class="card p-6">
 					<Zap size={24} class="text-[var(--primary)] mb-3" />
-					<h3 class="font-bold mb-2">Post-Video Challenge</h3>
+					<h3 class="font-bold mb-2">{t('open_studio.integration_challenge')}</h3>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-						CTA after the video: "Ready to practice? Test in all 12 keys!" Highest conversion — motivation peaks right after learning.
+						{t('open_studio.integration_challenge_desc')}
 					</p>
 					<p class="text-xs text-[var(--text-dim)] mt-3 font-mono">Overlay / modal trigger</p>
 				</div>
 
 				<div class="card p-6">
 					<Play size={24} class="text-[var(--primary)] mb-3" />
-					<h3 class="font-bold mb-2">Materials Enhancement</h3>
+					<h3 class="font-bold mb-2">{t('open_studio.integration_materials')}</h3>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-						Alongside PDFs in the Materials tab: "🎹 Practice this voicing interactively." Lowest integration effort.
+						{t('open_studio.integration_materials_desc')}
 					</p>
 					<p class="text-xs text-[var(--text-dim)] mt-3 font-mono">Link with preset params</p>
 				</div>
@@ -395,31 +395,31 @@
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
 			<div class="card p-8 sm:p-10">
-				<h2 class="text-xl font-bold mb-6">Harmony Games trains the <em>ear</em>.<br /><span class="text-gradient">Chord Trainer trains the <em>hands</em>.</span></h2>
+				<h2 class="text-xl font-bold mb-6">{@html t('open_studio.comparison_title')}</h2>
 
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-					<div>					<img src="/elements/open-studio/compare-ear.webp" alt="Harmony Games Unlimited" width="80" height="80" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />						<h3 class="font-semibold text-[var(--text-muted)] mb-3 uppercase tracking-wider text-xs">Harmony Games Unlimited</h3>
+					<div>					<img src="/elements/open-studio/compare-ear.webp" alt="Harmony Games Unlimited" width="80" height="80" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />						<h3 class="font-semibold text-[var(--text-muted)] mb-3 uppercase tracking-wider text-xs">{t('open_studio.comparison_hg')}</h3>
 						<ul class="space-y-2 text-[var(--text-muted)]">
-							<li>✓ Quiz-based — identify chords by ear</li>
-							<li>✓ Builds harmonic listening skills</li>
-							<li>✓ Theory recognition &amp; ear training</li>
+							<li>{t('open_studio.comparison_hg_1')}</li>
+							<li>{t('open_studio.comparison_hg_2')}</li>
+							<li>{t('open_studio.comparison_hg_3')}</li>
 						</ul>
 					</div>
 					<div>
 						<div class="hands-icon-placeholder" style="height: 80px; margin: 0 auto 16px;"></div>
-						<h3 class="font-semibold text-[var(--primary)] mb-3 uppercase tracking-wider text-xs">Chord Trainer</h3>
+						<h3 class="font-semibold text-[var(--primary)] mb-3 uppercase tracking-wider text-xs">{t('open_studio.comparison_ct')}</h3>
 						<ul class="space-y-2 text-[var(--text)]">
-							<li>✓ Performance-based — play the voicings</li>
-							<li>✓ MIDI validates actual playing at the keys</li>
-							<li>✓ Speed drill through all 12 keys</li>
-							<li>✓ Weakness analysis per chord root</li>
-							<li>✓ Works at 2 AM, no live session needed</li>
+							<li>{t('open_studio.comparison_ct_1')}</li>
+							<li>{t('open_studio.comparison_ct_2')}</li>
+							<li>{t('open_studio.comparison_ct_3')}</li>
+							<li>{t('open_studio.comparison_ct_4')}</li>
+							<li>{t('open_studio.comparison_ct_5')}</li>
 						</ul>
 					</div>
 				</div>
 
 				<p class="text-[var(--text-muted)] mt-6 text-sm leading-relaxed">
-					They're <strong class="text-[var(--text)]">complementary</strong>, not competing. Harmony Games confirms understanding — Chord Trainer builds fluency. Together with All the Keys sessions and Guided Practice, you'd cover the complete journey from concept to muscle memory.
+					{@html t('open_studio.comparison_summary')}
 				</p>
 			</div>
 		</div>
@@ -428,22 +428,22 @@
 	<!-- Terms -->
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-10 text-center">Simple Terms</h2>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-10 text-center">{t('open_studio.terms_title')}</h2>
 
 			<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-				<div class="card p-6 text-center">				<img src="/elements/open-studio/pricing-trial.webp" alt="30 Days Free Trial" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">30 Days</div>
-					<div class="text-sm font-medium mb-2">Free Trial</div>
-					<p class="text-xs text-[var(--text-muted)]">Full functionality. MIDI, progress, all voicings. Zero risk.</p>
+				<div class="card p-6 text-center">				<img src="/elements/open-studio/pricing-trial.webp" alt="30 Days Free Trial" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">{t('open_studio.terms_trial')}</div>
+					<div class="text-sm font-medium mb-2">{t('open_studio.terms_trial_sub')}</div>
+					<p class="text-xs text-[var(--text-muted)]">{t('open_studio.terms_trial_desc')}</p>
 				</div>
 
-				<div class="card p-6 text-center border-[var(--primary)]/30">				<img src="/elements/open-studio/pricing-flat.webp" alt="Flat Fee Monthly License" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">Flat Fee</div>
-					<div class="text-sm font-medium mb-2">Monthly License</div>
-					<p class="text-xs text-[var(--text-muted)]">Predictable cost. No per-user fees. Scales with your growth.</p>
+				<div class="card p-6 text-center border-[var(--primary)]/30">				<img src="/elements/open-studio/pricing-flat.webp" alt="Flat Fee Monthly License" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">{t('open_studio.terms_flat')}</div>
+					<div class="text-sm font-medium mb-2">{t('open_studio.terms_flat_sub')}</div>
+					<p class="text-xs text-[var(--text-muted)]">{t('open_studio.terms_flat_desc')}</p>
 				</div>
 
-				<div class="card p-6 text-center">				<img src="/elements/open-studio/pricing-whitelabel.webp" alt="White-Label Your Branding" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">White-Label</div>
-					<div class="text-sm font-medium mb-2">Your Branding</div>
-					<p class="text-xs text-[var(--text-muted)]">Open Studio colors, logo, domain. Students never know it's external.</p>
+				<div class="card p-6 text-center">				<img src="/elements/open-studio/pricing-whitelabel.webp" alt="White-Label Your Branding" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">{t('open_studio.terms_white')}</div>
+					<div class="text-sm font-medium mb-2">{t('open_studio.terms_white_sub')}</div>
+					<p class="text-xs text-[var(--text-muted)]">{t('open_studio.terms_white_desc')}</p>
 				</div>
 			</div>
 		</div>
@@ -453,9 +453,9 @@
 	<section class="px-4 py-20 sm:py-28">
 		<div class="max-w-3xl mx-auto text-center">
 			<div class="card p-10 sm:p-14 border-[var(--primary)]/20">
-				<h2 class="text-2xl sm:text-3xl font-bold mb-4">Let's Build This Together</h2>
+				<h2 class="text-2xl sm:text-3xl font-bold mb-4">{t('open_studio.final_title')}</h2>
 				<p class="text-[var(--text-muted)] mb-8 max-w-lg mx-auto leading-relaxed">
-					15-minute demo. I'll show you the trainer running with Open Studio branding, walk through the integration options, and answer any questions.
+					{t('open_studio.final_desc')}
 				</p>
 
 				<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -464,13 +464,13 @@
 						class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold transition-colors"
 					>
 						<Mail size={18} />
-						Schedule a Demo
+						{t('open_studio.cta_schedule')}
 					</a>
 					<a
 						href="/embed?theme=openstudio&mode=2-5-1&voicing=shell"
 						class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
 					>
-						Try the Live Demo
+						{t('open_studio.cta_demo')}
 						<ArrowRight size={18} />
 					</a>
 				</div>

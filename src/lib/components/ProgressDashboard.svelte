@@ -63,9 +63,9 @@
 		const min = Math.min(...avgs);
 		const range = max - min || 1;
 		return avgs.map((v) => ({
-			height: 20 + ((v - min) / range) * 80,
-			value: v,
-		}));
+height: 20 + ((v - min) / range) * 80,
+value: v,
+}));
 	});
 
 	const trend = $derived.by(() => {
@@ -84,34 +84,22 @@
 
 {#if stats.totalSessions > 0}
 	<div class="card p-5 sm:p-6 max-w-2xl mx-auto space-y-5" style="border-left: 3px solid #fb923c; box-shadow: 0 0 24px rgba(251,146,60,0.08);">
-		<div class="flex items-center justify-between">
-			<h3 class="text-lg font-bold flex items-center gap-2">
-				<img src="/elements/icons/icon-progress.webp" alt="Your Progress" width="36" height="36" loading="lazy" style="width:36px;height:36px;mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle; filter: drop-shadow(0 0 10px rgba(251,146,60,0.55));" />
-				{t('ui.your_progress')}
-			</h3>
-			<button
-				class="text-xs text-[var(--text-dim)] hover:text-[var(--accent-red)] transition-colors cursor-pointer"
-				onclick={handleClear}
-			>
-				{t('ui.reset')}
-			</button>
-		</div>
 
-		<!-- Overview stats -->
-		<div class="grid grid-cols-3 gap-3">
-			<div class="rounded-[var(--radius)] p-3 text-center" style="background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.18);">
-				<div class="text-3xl font-bold" style="color:#fb923c; filter: drop-shadow(0 0 8px rgba(251,146,60,0.4));">{stats.totalSessions}</div>
-				<div class="text-xs text-[var(--text-muted)] mt-1">{t('ui.sessions')}</div>
+		<!-- Compact stats row -->
+		<div class="flex items-center gap-4 text-sm">
+			<div class="flex flex-col items-center flex-1">
+				<span class="font-bold text-lg" style="color:#fb923c;">{stats.totalSessions}</span>
+				<span class="text-xs text-[var(--text-muted)]">{t('ui.sessions')}</span>
 			</div>
-			<div class="rounded-[var(--radius)] p-3 text-center" style="background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.18);">
-				<div class="text-3xl font-bold" style="color:#fb923c; filter: drop-shadow(0 0 8px rgba(251,146,60,0.4));">{stats.totalChords}</div>
-				<div class="text-xs text-[var(--text-muted)] mt-1">{t('ui.chords_practiced')}</div>
+			<div class="w-px h-8 bg-[var(--border)]"></div>
+			<div class="flex flex-col items-center flex-1">
+				<span class="font-bold text-lg" style="color:#fb923c;">{stats.totalChords}</span>
+				<span class="text-xs text-[var(--text-muted)]">{t('ui.chords_practiced')}</span>
 			</div>
-			<div class="rounded-[var(--radius)] p-3 text-center" style="background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.18);">
-				<div class="text-3xl font-bold" style="color:#fb923c; filter: drop-shadow(0 0 8px rgba(251,146,60,0.4));">
-					{(stats.overallAvgMs / 1000).toFixed(1)}s
-				</div>
-				<div class="text-xs text-[var(--text-muted)] mt-1">{t('ui.avg_per_chord')}</div>
+			<div class="w-px h-8 bg-[var(--border)]"></div>
+			<div class="flex flex-col items-center flex-1">
+				<span class="font-bold text-lg" style="color:#fb923c;">{(stats.overallAvgMs / 1000).toFixed(1)}s</span>
+				<span class="text-xs text-[var(--text-muted)]">{t('ui.avg_per_chord')}</span>
 			</div>
 		</div>
 
@@ -130,7 +118,7 @@
 			</div>
 		{/if}
 
-		<!-- Weak chords -->
+		<!-- Weak chords: top 2 only -->
 		{#if weakChords.length > 0}
 			<div>
 				<div class="text-sm font-medium text-[var(--text-muted)] mb-2 flex items-center gap-1.5">
@@ -138,7 +126,7 @@
 					{t('ui.focus_on')}
 				</div>
 				<div class="space-y-2">
-					{#each weakChords.slice(0, 3) as wc}
+					{#each weakChords.slice(0, 2) as wc}
 						{@const barWidth = Math.min(100, (wc.avgMs / (weakChords[0]?.avgMs || 1)) * 100)}
 						<div class="relative bg-[var(--bg)] rounded-[var(--radius-sm)] border border-[var(--border)] overflow-hidden">
 							<div
@@ -157,43 +145,40 @@
 			</div>
 		{/if}
 
-		<!-- Trend sparkline -->
+		<!-- Trend sparkline: 80px bars, no labels -->
 		{#if sparkData && stats.totalSessions >= 5}
-		<div class="rounded-[var(--radius)] p-4" style="background: rgba(251,146,60,0.05); border: 1px solid rgba(251,146,60,0.12);">
-			<div class="flex items-center justify-between mb-3">
-				<span class="text-xs text-[var(--text-muted)]">{t('ui.last_10_sessions')}</span>
-				{#if trend !== null}
-					<span class="text-xs font-medium {trend < 0 ? 'text-[var(--accent-green)]' : trend > 0 ? 'text-[var(--accent-red)]' : 'text-[var(--text-muted)]'}">
-						{trend < 0 ? `↓ ${t('ui.faster')}` : trend > 0 ? `↑ ${t('ui.slower')}` : `→ ${t('ui.same')}`} ({Math.abs(trend).toFixed(0)}%)
-					</span>
-				{/if}
+			<div class="rounded-[var(--radius)] p-3" style="background: rgba(251,146,60,0.05); border: 1px solid rgba(251,146,60,0.12);">
+				<div class="flex items-center justify-between mb-2">
+					<span class="text-xs text-[var(--text-muted)]">{t('ui.last_10_sessions')}</span>
+					{#if trend !== null}
+						<span class="text-xs font-medium {trend < 0 ? 'text-[var(--accent-green)]' : trend > 0 ? 'text-[var(--accent-red)]' : 'text-[var(--text-muted)]'}">
+							{trend < 0 ? `↓ ${t('ui.faster')}` : trend > 0 ? `↑ ${t('ui.slower')}` : `→ ${t('ui.same')}`} ({Math.abs(trend).toFixed(0)}%)
+						</span>
+					{/if}
+				</div>
+				<div class="flex items-end gap-1" style="height: 80px;">
+					{#each sparkData as bar, i}
+						<div
+							class="flex-1 rounded-t-sm transition-all"
+							style="height: {bar.height}%; background: {i === sparkData.length - 1 ? '#fb923c' : 'rgba(251,146,60,0.25)'}; {i === sparkData.length - 1 ? 'filter: drop-shadow(0 0 6px rgba(251,146,60,0.7));' : ''}"
+							title="{(bar.value / 1000).toFixed(2)}s per chord"
+						></div>
+					{/each}
+				</div>
 			</div>
-			<div class="flex items-end gap-1 h-14">
-				{#each sparkData as bar, i}
-					<div
-						class="flex-1 rounded-t-sm transition-all"
-						style="height: {bar.height}%; background: {i === sparkData.length - 1 ? '#fb923c' : 'rgba(251,146,60,0.25)'}; {i === sparkData.length - 1 ? 'filter: drop-shadow(0 0 6px rgba(251,146,60,0.7));' : ''}"
-						title="{(bar.value / 1000).toFixed(2)}s per chord"
-					></div>
-				{/each}
-			</div>
-			<div class="flex justify-between text-[10px] text-[var(--text-dim)] mt-1">
-				<span>{t('ui.oldest')}</span>
-				<span>{t('ui.newest')}</span>
-		</div>
-	</div>
-{/if}
-<!-- Personal bests -->
-	{#if Object.keys(stats.personalBests).length > 3}
-		<details>
-			<summary class="text-sm font-medium text-[var(--text-muted)] cursor-pointer hover:text-[var(--text)] mb-2 flex items-center gap-1.5">
-				<img src="/elements/icons/icon-personal-best.webp" alt={t('ui.personal_bests')} width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle;" />
-				{t('ui.personal_bests')} ({Object.keys(stats.personalBests).length})
-			</summary>
-			<div class="space-y-1.5 mt-2">
-				{#each Object.entries(stats.personalBests).slice(0, 8) as [key, best]}
-					{@const parts = key.split('-')}
-					{@const diff = parts[0]}
+		{/if}
+
+		<!-- Personal bests (collapsible) — reset link lives here -->
+		{#if Object.keys(stats.personalBests).length > 3}
+			<details>
+				<summary class="text-sm font-medium text-[var(--text-muted)] cursor-pointer hover:text-[var(--text)] mb-2 flex items-center gap-1.5">
+					<img src="/elements/icons/icon-personal-best.webp" alt={t('ui.personal_bests')} width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; display:inline-block; vertical-align:middle;" />
+					{t('ui.personal_bests')} ({Object.keys(stats.personalBests).length})
+				</summary>
+				<div class="space-y-1.5 mt-2">
+					{#each Object.entries(stats.personalBests).slice(0, 8) as [key, best]}
+						{@const parts = key.split('-')}
+						{@const diff = parts[0]}
 						{@const voicingKey = parts.length >= 3 ? parts.slice(1, -1).join('-') : parts[1]}
 						{@const mode = parts[parts.length - 1]}
 						<div class="flex items-center justify-between text-sm bg-[var(--bg)] rounded-[var(--radius-sm)] px-3 py-2 border border-[var(--border)]">
@@ -210,6 +195,12 @@
 						</div>
 					{/each}
 				</div>
+				<button
+					class="mt-3 text-xs text-[var(--text-dim)] hover:text-[var(--accent-red)] transition-colors cursor-pointer block"
+					onclick={handleClear}
+				>
+					{t('ui.reset')}
+				</button>
 			</details>
 		{/if}
 
@@ -239,5 +230,6 @@
 					{/each}
 				</div>
 			</details>
-		{/if}</div>
+		{/if}
+	</div>
 {/if}

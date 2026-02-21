@@ -33,9 +33,10 @@
 			</a>
 			<a
 				href="/for-educators"
-				class="hidden sm:inline-block px-3 py-1.5 rounded-sm transition-colors {page.url.pathname === '/for-educators' ? 'bg-[var(--primary-muted)] text-[var(--primary)] font-medium' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
+				class="px-3 py-1.5 rounded-sm transition-colors {page.url.pathname === '/for-educators' ? 'bg-[var(--primary-muted)] text-[var(--primary)] font-medium' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
 			>
-				{t('nav.educators')}
+				<span class="hidden sm:inline">{t('nav.educators')}</span>
+				<span class="sm:hidden">Educators</span>
 			</a>
 			<button
 				onclick={toggleLanguage}
@@ -72,6 +73,7 @@
 				<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-[var(--text-dim)]">
 					<span>&copy; 2026 Aaron Technologies OÜ</span>
 					<div class="flex items-center gap-4">
+						<a href="/for-educators" class="hover:text-[var(--text-muted)] transition-colors">For Educators</a>
 						<a href="/about" class="hover:text-[var(--text-muted)] transition-colors">About</a>
 						<a href="/midi-test" class="hover:text-[var(--text-muted)] transition-colors">MIDI Test</a>
 						<a href="/privacy" class="hover:text-[var(--text-muted)] transition-colors">Privacy</a>

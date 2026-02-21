@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n';
 	import {
 		ArrowRight,
 		CheckCircle,
@@ -11,11 +12,11 @@
 </script>
 
 <svelte:head>
-	<title>Jazz Piano Voicing Trainer for Music Schools & Online Platforms | Chord Trainer</title>
-	<meta name="description" content="Embed a professional MIDI voicing trainer into your jazz education platform — Open Studio, Jazz-Academy, Pianote, Learn Jazz Standards, or your own teaching site. White-label, MIDI, progress tracking." />
+	<title>{t('educators.title')}</title>
+	<meta name="description" content={t('educators.meta_desc')} />
 	<link rel="canonical" href="https://jazzchords.app/for-educators" />
-	<meta property="og:title" content="Jazz Voicing Trainer for Music Schools &amp; Online Jazz Platforms" />
-	<meta property="og:description" content="Embed a professional MIDI voicing trainer into any jazz education platform. White-label ready, progress tracking. 30-day free trial." />
+	<meta property="og:title" content={t('educators.title')} />
+	<meta property="og:description" content={t('educators.meta_desc')} />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/for-educators" />
 	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
@@ -110,7 +111,7 @@
 				to bottom,
 				rgba(0,0,0,0.2) 0%,
 				rgba(0,0,0,0.5) 50%,
-				rgba(0,0,0,0.95) 100%
+				var(--bg) 100%
 			);
 		"></div>
 
@@ -118,18 +119,16 @@
 		<div class="text-center px-4 py-16 sm:py-24" style="position: relative; z-index: 2;">
 			<div class="max-w-4xl mx-auto">
 				<div class="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-xs text-[var(--text-muted)]">
-					For Jazz Education Platforms, Music Schools &amp; Private Teachers
+					{t('educators.badge')}
 				</div>
 
 				<h1 class="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-6">
-					<span class="text-gradient">"Take it through all 12 keys"</span><br />
-					<span class="text-[var(--text-muted)] text-3xl sm:text-4xl">Now there's a tool for that.</span>
+					<span class="text-gradient">{@html t('educators.hero_h1_gradient')}</span><br />
+					<span class="text-[var(--text-muted)] text-3xl sm:text-4xl">{t('educators.hero_h1_b')}</span>
 				</h1>
 
 				<p class="text-lg text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed">
-					Speed-drill training that systematically builds chord voicing fluency.
-					MIDI recognition validates technique. Progress tracking shows improvement.
-					Embeds into any platform — or links directly from your lessons.
+					{t('educators.hero_p')}
 				</p>
 			</div>
 		</div>
@@ -139,13 +138,13 @@
 
 		<!-- Platforms we speak to -->
 		<section class="mb-20">
-			<h2 class="text-xl sm:text-2xl font-bold mb-8 text-center">Built for platforms like yours</h2>
+			<h2 class="text-xl sm:text-2xl font-bold mb-8 text-center">{t('educators.platforms_title')}</h2>
 			<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 				{#each [
-					{ name: 'Open Studio Jazz', desc: 'Async drill companion to live sessions &amp; Harmony Games', href: '/open-studio' },
-					{ name: 'Jazz-Academy', desc: 'Complement video theory lessons with hands-on drill', href: '' },
-					{ name: 'Learn Jazz Standards', desc: 'Practice the standards your students are learning', href: '' },
-					{ name: 'Private Teachers', desc: 'Assign drills as homework — track student results', href: '' },
+					{ name: 'Open Studio Jazz', desc: t('educators.platform_open_studio'), href: '/open-studio' },
+					{ name: 'Jazz-Academy', desc: t('educators.platform_jazz_academy'), href: '' },
+					{ name: 'Learn Jazz Standards', desc: t('educators.platform_learn_jazz'), href: '' },
+					{ name: 'Private Teachers', desc: t('educators.platform_private_teachers'), href: '' },
 				] as platform}
 					{#if platform.href}
 						<a href={platform.href} class="card card-hover p-5 text-center block no-underline">
@@ -165,56 +164,55 @@
 		<!-- Problem -->
 		<section class="mb-20">
 			<div class="card p-8 sm:p-10 border-[var(--accent-amber)]/20">
-				<h2 class="text-xl font-bold mb-4 text-[var(--accent-amber)]">The Problem</h2>
+				<h2 class="text-xl font-bold mb-4 text-[var(--accent-amber)]">{t('educators.problem_title')}</h2>
 				<p class="text-[var(--text-muted)] leading-relaxed text-lg">
-					Students learn voicing theory but struggle to <strong class="text-[var(--text)]">play changes fluently in all 12 keys</strong>.
-					There's no dedicated tool for the repetitive, timed speed-drill practice that builds muscle memory.
+					{@html t('educators.problem_desc')}
 				</p>
 			</div>
 		</section>
 
 		<!-- Solution -->
 		<section class="mb-20">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-8 text-center">The Solution</h2>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-8 text-center">{t('educators.solution_title')}</h2>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 				<div class="card p-6">
 					<div class="flex items-center gap-3 mb-3">
 						<Zap size={20} class="text-[var(--primary)]" />
-						<h3 class="font-semibold">Speed Training</h3>
+						<h3 class="font-semibold">{t('educators.solution_speed')}</h3>
 					</div>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-						ii-V-I progressions through all 12 keys. Timed per chord for measurable improvement.
+						{t('educators.solution_speed_desc')}
 					</p>
 				</div>
 
 				<div class="card p-6">
 					<div class="flex items-center gap-3 mb-3">
 						<CheckCircle size={20} class="text-[var(--accent-green)]" />
-						<h3 class="font-semibold">MIDI Validation</h3>
+						<h3 class="font-semibold">{t('educators.solution_midi')}</h3>
 					</div>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-						Auto-validates chords and advances. Accuracy score per session.
+						{t('educators.solution_midi_desc')}
 					</p>
 				</div>
 
 				<div class="card p-6">
 					<div class="flex items-center gap-3 mb-3">
 						<BarChart3 size={20} class="text-[var(--accent-red)]" />
-						<h3 class="font-semibold">Progress Analytics</h3>
+						<h3 class="font-semibold">{t('educators.solution_analytics')}</h3>
 					</div>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-						Weakness analysis, improvement trends, practice streaks.
+						{t('educators.solution_analytics_desc')}
 					</p>
 				</div>
 
 				<div class="card p-6">
 					<div class="flex items-center gap-3 mb-3">
 						<Users size={20} class="text-[var(--accent-purple)]" />
-						<h3 class="font-semibold">Guided Practice</h3>
+						<h3 class="font-semibold">{t('educators.solution_guided')}</h3>
 					</div>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
-						One-tap practice plans. Students start instantly.
+						{t('educators.solution_guided_desc')}
 					</p>
 				</div>
 			</div>
@@ -222,21 +220,21 @@
 
 		<!-- What we cover -->
 		<section class="mb-20">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-8 text-center">What students can train</h2>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-8 text-center">{t('educators.what_students_train')}</h2>
 			<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
 				{#each [
-					'14 chord types (Maj7 to Alt)',
-					'Shell voicings (3-7)',
-					'Rootless A voicings',
-					'Inversions (1st, 2nd, 3rd)',
-					'ii-V-I progressions',
-					'I-vi-ii-V turnarounds',
-					'Circle of fourths',
-					'Custom progressions',
-					'3 difficulty levels',
-					'3 notation systems',
-					'Audio playback',
-					'Built-in metronome',
+					t('educators.train_chord_types'),
+					t('educators.train_shell_voicings'),
+					t('educators.train_rootless_a'),
+					t('educators.train_inversions'),
+					t('educators.train_progressions'),
+					t('educators.train_turnarounds'),
+					t('educators.train_circle'),
+					t('educators.train_custom'),
+					t('educators.train_difficulty'),
+					t('educators.train_notation'),
+					t('educators.train_audio'),
+					t('educators.train_metronome'),
 				] as item}
 					<div class="flex items-center gap-2 text-sm text-[var(--text-muted)]">
 						<CheckCircle size={14} class="text-[var(--accent-green)] flex-shrink-0" />
@@ -248,15 +246,15 @@
 
 		<!-- Integration -->
 		<section class="mb-20">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-8 text-center">Integration Options</h2>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-8 text-center">{t('educators.integration_title')}</h2>
 
 			<div class="space-y-4">
 				<div class="card p-6 flex items-start gap-4">
 					<Shield size={24} class="text-[var(--primary)] flex-shrink-0 mt-0.5" />
 					<div>
-						<h3 class="font-semibold mb-1">White-Label Integration</h3>
+						<h3 class="font-semibold mb-1">{t('educators.integration_white_label')}</h3>
 						<p class="text-sm text-[var(--text-muted)]">
-							Embed directly into your platform with your branding. Custom colors, logo, and domain. Your students never leave your site.
+							{t('educators.integration_white_label_desc')}
 						</p>
 					</div>
 				</div>
@@ -264,9 +262,9 @@
 				<div class="card p-6 flex items-start gap-4">
 					<Zap size={24} class="text-[var(--accent-green)] flex-shrink-0 mt-0.5" />
 					<div>
-						<h3 class="font-semibold mb-1">Free 30-Day Trial</h3>
+						<h3 class="font-semibold mb-1">{t('educators.integration_trial')}</h3>
 						<p class="text-sm text-[var(--text-muted)]">
-							Test with your members at zero risk. Full functionality, MIDI support, progress tracking. See engagement metrics before committing.
+							{t('educators.integration_trial_desc')}
 						</p>
 					</div>
 				</div>
@@ -274,9 +272,9 @@
 				<div class="card p-6 flex items-start gap-4">
 					<BarChart3 size={24} class="text-[var(--accent-amber)] flex-shrink-0 mt-0.5" />
 					<div>
-						<h3 class="font-semibold mb-1">Flexible Licensing</h3>
+						<h3 class="font-semibold mb-1">{t('educators.integration_licensing')}</h3>
 						<p class="text-sm text-[var(--text-muted)]">
-							Flat monthly fee or revenue share. Built-in analytics to track member engagement.
+							{t('educators.integration_licensing_desc')}
 						</p>
 					</div>
 				</div>
@@ -285,16 +283,16 @@
 
 		<!-- How It Works -->
 		<section class="mb-20">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-8 text-center">How Integration Works</h2>
+			<h2 class="text-2xl sm:text-3xl font-bold mb-8 text-center">{t('educators.how_it_works')}</h2>
 
 			<div class="space-y-4">
 				<div class="card p-6">
 					<div class="flex items-start gap-4">
 						<div class="w-8 h-8 rounded-full bg-[var(--primary-muted)] flex items-center justify-center flex-shrink-0 text-sm font-bold text-[var(--primary)]">1</div>
 						<div>
-							<h3 class="font-semibold mb-1">Embed via iframe or Widget</h3>
+							<h3 class="font-semibold mb-1">{t('educators.how_step1')}</h3>
 							<p class="text-sm text-[var(--text-muted)]">
-								Add the trainer to your platform with a single embed code. Customize colors, presets, and branding via URL parameters.
+								{t('educators.how_step1_desc')}
 							</p>
 						</div>
 					</div>
@@ -304,9 +302,9 @@
 					<div class="flex items-start gap-4">
 						<div class="w-8 h-8 rounded-full bg-[var(--primary-muted)] flex items-center justify-center flex-shrink-0 text-sm font-bold text-[var(--primary)]">2</div>
 						<div>
-							<h3 class="font-semibold mb-1">Match to Your Curriculum</h3>
+							<h3 class="font-semibold mb-1">{t('educators.how_step2')}</h3>
 							<p class="text-sm text-[var(--text-muted)]">
-								Link specific voicing drills to your lessons. Shell voicings lesson → Shell voicing drill. ii-V-I lesson → ii-V-I in all 12 keys.
+								{t('educators.how_step2_desc')}
 							</p>
 						</div>
 					</div>
@@ -316,9 +314,9 @@
 					<div class="flex items-start gap-4">
 						<div class="w-8 h-8 rounded-full bg-[var(--primary-muted)] flex items-center justify-center flex-shrink-0 text-sm font-bold text-[var(--primary)]">3</div>
 						<div>
-							<h3 class="font-semibold mb-1">Students Practice & Improve</h3>
+							<h3 class="font-semibold mb-1">{t('educators.how_step3')}</h3>
 							<p class="text-sm text-[var(--text-muted)]">
-								MIDI validates technique. Per-chord timing shows weaknesses. Students see measurable improvement session by session.
+								{t('educators.how_step3_desc')}
 							</p>
 						</div>
 					</div>
@@ -330,7 +328,7 @@
 					href="/embed?mode=2-5-1&voicing=shell&chords=12"
 					class="inline-flex items-center gap-2 text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
 				>
-					See the embed widget live
+					{t('educators.see_live_widget')}
 					<ArrowRight size={14} />
 				</a>
 			</div>
@@ -339,10 +337,9 @@
 		<!-- CTA -->
 		<section class="text-center">
 			<div class="card p-10 sm:p-14 border-[var(--primary)]/20">
-				<h2 class="text-2xl sm:text-3xl font-bold mb-4">Let's talk</h2>
+				<h2 class="text-2xl sm:text-3xl font-bold mb-4">{t('educators.cta_title')}</h2>
 				<p class="text-[var(--text-muted)] mb-8 max-w-lg mx-auto">
-					See the tool in action. 15-minute demo, no obligations.
-					Let's discuss how this fits your platform.
+					{t('educators.cta_desc')}
 				</p>
 
 				<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -350,7 +347,7 @@
 						href="/embed?mode=2-5-1&voicing=shell&chords=12"
 						class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold transition-colors"
 					>
-						Try the Embed Demo
+						{t('educators.cta_try_demo')}
 						<ArrowRight size={18} />
 					</a>
 					<a
@@ -358,7 +355,7 @@
 						class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
 					>
 						<Mail size={18} />
-						Get in Touch
+						{t('educators.cta_contact')}
 					</a>
 				</div>
 			</div>

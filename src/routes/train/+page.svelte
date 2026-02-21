@@ -21,6 +21,7 @@
 		CHORD_NOTATIONS,
 		VOICING_LABELS,
 		PROGRESSION_LABELS,
+		PROGRESSION_DESCRIPTIONS,
 		getNotePool,
 		getChordNotes,
 		getVoicingNotes,
@@ -210,6 +211,13 @@
 	const greeting = greetingText();
 
 	// (formatTime imported from $lib/utils/format)
+
+	/** Shared selection helper for option buttons */
+	function sel<T>(current: T, value: T): string {
+		return current === value
+			? 'border-[var(--primary)] bg-[var(--primary-muted)]'
+			: 'border-[var(--border)] hover:border-[var(--border-hover)]';
+	}
 
 	// ─── Game logic ──────────────────────────────────────────────
 	function generateChords() {
@@ -1025,40 +1033,23 @@
 	<div class="max-w-4xl mx-auto">
 		<!-- ─────── Setup Screen ─────── -->
 		{#if screen === 'setup'}
-			<div class="space-y-6" in:fade={{ duration: 200, delay: 100 }}>
-				<!-- Dashboard header -->
+			<div in:fade={{ duration: 200, delay: 100 }}>
+				<!-- Dashboard header (full width) -->
 				<div class="dashboard-header">
-					<!-- Row 1: Greeting + MIDI pill -->
 					<div class="dashboard-top">
-						<span class="dashboard-greeting">{greeting}!</span>
+						<div class="greeting-streak">
+							<span class="greeting">{greeting}!</span>
+							<div class="streak-inline">
+								<img src="/elements/images/streak-flame.webp" width="18" height="18" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
+								<span class="streak-num">{streak.current}</span>
+								<span class="streak-label">day streak</span>
+							</div>
+						</div>
 						<div class="midi-pill" class:connected={midiState === 'connected' && midiDevices.length > 0}>
-							<img src="/elements/images/midi-connect.webp" width="16" height="16" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
+							<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
 							<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : 'No MIDI'}</span>
 						</div>
 					</div>
-					<!-- Row 2: Stat tiles -->
-					<div class="dashboard-stats">
-						<div class="stat-tile">
-							<div class="stat-value">
-								<img src="/elements/images/streak-flame.webp" width="22" height="22" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
-								{streak.current}
-							</div>
-							<div class="stat-label">Streak</div>
-						</div>
-						<div class="stat-tile">
-							<div class="stat-value">{dashStats.totalSessions}</div>
-							<div class="stat-label">Sessions</div>
-						</div>
-						<div class="stat-tile">
-							<div class="stat-value">{dashStats.totalChords}</div>
-							<div class="stat-label">Chords</div>
-						</div>
-						<div class="stat-tile">
-							<div class="stat-value">{dashStats.totalSessions > 0 ? (dashStats.overallAvgMs / 1000).toFixed(1) : '–'}s</div>
-							<div class="stat-label">Ø / Chord</div>
-						</div>
-					</div>
-					<!-- Weekly goal bar -->
 					<div class="weekly-goal-row">
 						<span class="goal-label">Weekly Goal</span>
 						<div class="goal-bar">
@@ -1067,29 +1058,374 @@
 						<span class="goal-pct">{weeklyGoalPct}%</span>
 					</div>
 				</div>
-				<GameSettings
-					bind:difficulty
-					bind:notation
-					bind:voicing={voicing}
-					bind:displayMode
-					bind:accidentals
-					bind:notationSystem
-					bind:totalChords
-					bind:progressionMode
-					bind:midiEnabled
-					bind:inTimeMode
-					bind:inTimeBars
-					bind:adaptiveEnabled
-					bind:voiceLeadingEnabled
-					{streak}
-					{midiState}
-					{midiDevices}
-					onstart={startGame}
-					onstartplan={startPlan}
-					oncustomprogression={openCustomEditor}
-					onstarteartraining={startEarTraining}
-				/>
-				<ProgressDashboard />
+
+				<!-- Two-column layout -->
+				<div class="train-layout">
+					<!-- Left: Recommended plan + Plans grid -->
+					<div class="train-main">
+						<GameSettings
+							bind:difficulty
+							bind:notation
+							bind:voicing={voicing}
+							bind:displayMode
+							bind:accidentals
+							bind:notationSystem
+							bind:totalChords
+							bind:progressionMode
+							bind:midiEnabled
+							bind:inTimeMode
+							bind:inTimeBars
+							bind:adaptiveEnabled
+							bind:voiceLeadingEnabled
+							{streak}
+							{midiState}
+							{midiDevices}
+							onstartplan={startPlan}
+						/>
+					</div>
+
+					<!-- Right: Progress + Custom Progression + Custom Settings -->
+					<div class="train-sidebar">
+						<ProgressDashboard />
+
+						<!-- Custom Progression -->
+						<button
+							class="card w-full p-5 text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors group"
+							onclick={openCustomEditor}
+						>
+							<div class="flex items-center gap-5">
+								<img
+									src="/elements/icons/icon-custom-progression.webp"
+									alt="{t('settings.custom_progression')}"
+									width="68"
+									height="68"
+									loading="lazy"
+									style="width:68px; height:68px; mix-blend-mode:lighten; object-fit:contain; flex-shrink:0; filter: drop-shadow(0 0 12px rgba(251,146,60,0.6));"
+								/>
+								<div class="flex-1 min-w-0">
+									<div class="text-sm font-bold group-hover:text-[var(--primary)] transition-colors">{t('settings.custom_progression')}</div>
+									<div class="text-xs text-[var(--text-dim)] mt-1">{t('settings.custom_progression_desc')}</div>
+								</div>
+								<div class="text-[var(--text-dim)] text-xl group-hover:text-[var(--primary)] transition-colors">→</div>
+							</div>
+						</button>
+
+						<!-- Custom Settings -->
+						<details class="card group">
+							<summary class="cursor-pointer p-5 sm:p-6 flex items-center gap-4 justify-between">
+								<img
+									src="/elements/icons/icon-settings.webp"
+									alt="Settings"
+									width="48"
+									height="48"
+									loading="lazy"
+									style="width:48px; height:48px; flex-shrink:0; mix-blend-mode:lighten; object-fit:contain; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));"
+								/>
+								<div class="flex-1 min-w-0">
+									<div class="text-sm font-medium">{t('settings.custom_settings')}</div>
+									<div class="text-xs text-[var(--text-dim)] mt-1 flex flex-wrap gap-2">
+										<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">
+											{progressionMode === 'random' ? `${totalChords} ${t('results.chords')}` : PROGRESSION_LABELS[progressionMode]}
+										</span>
+										<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full capitalize">{t('settings.difficulty_' + difficulty)}</span>
+										<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">{VOICING_LABELS[voicing]}</span>
+										{#if midiEnabled}
+											<span class="bg-[var(--accent-green)]/20 text-[var(--accent-green)] px-2 py-0.5 rounded-full">MIDI</span>
+										{/if}
+									</div>
+								</div>
+								<svg class="w-5 h-5 text-[var(--text-dim)] transition-transform group-open:rotate-180 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+								</svg>
+							</summary>
+							<div class="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 border-t border-[var(--border)] space-y-6">
+								<!-- Start custom -->
+								<button
+									class="w-full h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer mt-4"
+									onclick={startGame}
+								>
+									▶ {t('settings.start_training')}
+								</button>
+								<!-- Practice mode -->
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">{t('settings.progression_mode')}</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">How chords are sequenced. Progressions train real jazz patterns.</p>
+									<div class="grid grid-cols-2 gap-3">
+										{#each [
+										{ val: 'random' as ProgressionMode, label: t('settings.progression_random'), sub: 'No pattern' },
+										{ val: '2-5-1' as ProgressionMode, label: t('settings.progression_251'), sub: 'Jazz standard' },
+										{ val: 'cycle-of-4ths' as ProgressionMode, label: t('settings.progression_cycle'), sub: 'All 12 keys' },
+										{ val: '1-6-2-5' as ProgressionMode, label: t('settings.progression_turnaround'), sub: 'Turnaround' },
+										] as opt}
+											<button
+												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(progressionMode, opt.val)}"
+												onclick={() => (progressionMode = opt.val)}
+											>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</fieldset>
+								<!-- MIDI Toggle -->
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">MIDI Recognition</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">Auto-advance when you play the correct chord</p>
+									<div class="grid grid-cols-2 gap-3">
+										{#each [
+										{ val: false, label: 'Off', sub: 'Space to advance' },
+										{ val: true, label: 'On', sub: 'Auto-advance' },
+										] as opt}
+											<button
+												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(midiEnabled, opt.val)}"
+												onclick={() => (midiEnabled = opt.val)}
+											>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+									<p class="mt-2 text-xs text-[var(--text-dim)]">
+										Web MIDI requires a desktop browser (Chrome/Edge). Not available on iPad/iPhone.
+									</p>
+								</fieldset>
+								<!-- Difficulty -->
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">{t('settings.difficulty')}</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">Chord types: Beginner = 5 basic, Advanced = 14+ extended</p>
+									<div class="grid grid-cols-3 gap-3">
+										{#each [
+										{ val: 'beginner' as Difficulty, label: t('settings.difficulty_beginner'), sub: '5 types' },
+										{ val: 'intermediate' as Difficulty, label: t('settings.difficulty_intermediate'), sub: '9 types' },
+										{ val: 'advanced' as Difficulty, label: t('settings.difficulty_advanced'), sub: '14+ types' },
+										] as opt}
+											<button
+												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(difficulty, opt.val)}"
+												onclick={() => (difficulty = opt.val)}
+											>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</fieldset>
+								<!-- Accidentals -->
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">{t('settings.accidentals')}</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">Whether black keys use # (sharp) or ♭ (flat). Jazz typically uses flats.</p>
+									<div class="grid grid-cols-3 gap-3">
+										{#each [
+											{ val: 'sharps' as AccidentalPreference, label: t('settings.accidentals_sharps'), sub: 'C#, D#, F#, G#, A#' },
+											{ val: 'flats' as AccidentalPreference, label: t('settings.accidentals_flats'), sub: 'Db, Eb, Gb, Ab, Bb' },
+											{ val: 'both' as AccidentalPreference, label: t('settings.accidentals_both'), sub: '# and ♭ mixed' },
+										] as opt}
+											<button
+												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(accidentals, opt.val)}"
+												onclick={() => (accidentals = opt.val)}
+											>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</fieldset>
+								<!-- Notation system -->
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">Notation System</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">International: B = the note below C. German: H = the note below C, B = Bb.</p>
+									<div class="grid grid-cols-2 gap-3">
+										{#each [
+											{ val: 'international' as NotationSystem, label: 'International', sub: 'C D E F G A B' },
+											{ val: 'german' as NotationSystem, label: 'German', sub: 'C D E F G A H (B=♭)' },
+										] as opt}
+											<button
+												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(notationSystem, opt.val)}"
+												onclick={() => (notationSystem = opt.val)}
+											>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</fieldset>
+								<!-- Chord notation style -->
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">Chord Notation</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">How chord types are written. Standard = spelled out, Symbols = Δ, -, ø etc.</p>
+									<div class="grid grid-cols-3 gap-3">
+										{#each [
+											{ val: 'standard' as NotationStyle, label: 'Standard', sub: 'CMaj7, Cm7' },
+											{ val: 'symbols' as NotationStyle, label: 'Symbols', sub: 'CΔ7, C-7, Cø7' },
+											{ val: 'short' as NotationStyle, label: 'Short', sub: 'CM7, Cmi7' },
+										] as opt}
+											<button
+												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(notation, opt.val)}"
+												onclick={() => (notation = opt.val)}
+											>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</fieldset>
+								<!-- Voicing type -->
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">Voicing Type</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">Determines which notes of a chord you play.</p>
+									<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">Basics</div>
+									<div class="grid grid-cols-2 gap-3">
+										{#each [
+											{ val: 'root' as VoicingType, label: 'Root Position', sub: 'Root + all notes from bottom.' },
+											{ val: 'shell' as VoicingType, label: 'Shell Voicing', sub: 'Root + 3rd + 7th only.' },
+											{ val: 'half-shell' as VoicingType, label: 'Half Shell', sub: '3rd/7th around the root.' },
+											{ val: 'full' as VoicingType, label: 'Full Voicing', sub: 'All notes in jazz order: 1-7-3-5.' },
+										] as opt}
+											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voicing, opt.val)}" onclick={() => (voicing = opt.val)}>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+									<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">🎹 Left-Hand Voicings</div>
+									<div class="grid grid-cols-2 gap-3">
+										{#each [
+											{ val: 'rootless-a' as VoicingType, label: 'Rootless A', sub: '3–5–7–9 · Bill Evans style.' },
+											{ val: 'rootless-b' as VoicingType, label: 'Rootless B', sub: '7–9–3–5 · Complement to Type A.' },
+										] as opt}
+											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voicing, opt.val)}" onclick={() => (voicing = opt.val)}>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+									<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">🔄 Inversions</div>
+									<div class="grid grid-cols-3 gap-3">
+										{#each [
+											{ val: 'inversion-1' as VoicingType, label: '1st Inversion', sub: '3rd on bottom.' },
+											{ val: 'inversion-2' as VoicingType, label: '2nd Inversion', sub: '5th on bottom.' },
+											{ val: 'inversion-3' as VoicingType, label: '3rd Inversion', sub: '7th on bottom.' },
+										] as opt}
+											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voicing, opt.val)}" onclick={() => (voicing = opt.val)}>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</fieldset>
+								<!-- Display mode -->
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">Note Display</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">Whether individual chord notes are shown on the keyboard.</p>
+									<div class="grid grid-cols-3 gap-3">
+										{#each [
+											{ val: 'off' as DisplayMode, label: 'Off', sub: 'Play blind — no help' },
+											{ val: 'always' as DisplayMode, label: 'Always', sub: 'Notes visible on keyboard' },
+											{ val: 'verify' as DisplayMode, label: 'Verify', sub: midiEnabled ? 'N/A with MIDI' : 'Play first, then reveal' },
+										] as opt}
+											<button
+												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(displayMode, opt.val)} {opt.val === 'verify' && midiEnabled ? 'opacity-40 cursor-not-allowed' : ''}"
+												onclick={() => { if (!(opt.val === 'verify' && midiEnabled)) displayMode = opt.val; }}
+												disabled={opt.val === 'verify' && midiEnabled}
+											>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</fieldset>
+								<!-- Chord count -->
+								{#if progressionMode === 'random'}
+									<fieldset>
+										<legend class="text-sm font-medium mb-3">Number of Chords</legend>
+										<input
+											type="number"
+											min="5"
+											max="50"
+											bind:value={totalChords}
+											class="w-full px-4 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+										/>
+									</fieldset>
+								{:else}
+									<div class="p-3 bg-[var(--bg)] rounded-[var(--radius)] border border-[var(--border)] text-sm text-[var(--text-muted)]">
+										{PROGRESSION_DESCRIPTIONS[progressionMode]}
+									</div>
+								{/if}
+								<!-- Advanced Modes -->
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">In-Time Mode</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">Chord changes happen on the beat. Trains timing instead of speed.</p>
+									<div class="grid grid-cols-2 gap-3">
+										{#each [
+											{ val: false, label: 'Off', sub: 'Speed drill' },
+											{ val: true, label: 'On', sub: 'Play on the beat' },
+										] as opt}
+											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(inTimeMode, opt.val)}" onclick={() => (inTimeMode = opt.val)}>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+									{#if inTimeMode}
+										<div class="mt-3">
+											<div class="text-xs font-medium text-[var(--text-muted)] mb-2">Bars per Chord</div>
+											<div class="grid grid-cols-3 gap-3">
+												{#each [1, 2, 4] as bars}
+													<button class="p-2 rounded-[var(--radius)] border-2 transition-all text-center {sel(inTimeBars, bars)}" onclick={() => (inTimeBars = bars)}>
+														<div class="font-semibold text-sm">{bars}</div>
+														<div class="text-xs text-[var(--text-dim)]">{bars === 1 ? 'bar' : 'bars'}</div>
+													</button>
+												{/each}
+											</div>
+										</div>
+									{/if}
+								</fieldset>
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">Adaptive Difficulty</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">Weak chords appear more often. Spaced repetition for your drills.</p>
+									<div class="grid grid-cols-2 gap-3">
+										{#each [
+											{ val: false, label: 'Off', sub: 'Equal weighting' },
+											{ val: true, label: 'On', sub: 'Adapt to you' },
+										] as opt}
+											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(adaptiveEnabled, opt.val)}" onclick={() => (adaptiveEnabled = opt.val)}>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</fieldset>
+								<fieldset>
+									<legend class="text-sm font-medium mb-1">Voice Leading</legend>
+									<p class="text-xs text-[var(--text-dim)] mb-3">Highlight common tones and note movements between chords.</p>
+									<div class="grid grid-cols-2 gap-3">
+										{#each [
+											{ val: false, label: 'Off', sub: 'Standard display' },
+											{ val: true, label: 'On', sub: 'Show connections' },
+										] as opt}
+											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voiceLeadingEnabled, opt.val)}" onclick={() => (voiceLeadingEnabled = opt.val)}>
+												<div class="font-semibold text-sm">{opt.label}</div>
+												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</fieldset>
+								<!-- Ear Training -->
+								<button
+									class="w-full p-4 rounded-[var(--radius)] border-2 border-[var(--border)] hover:border-[var(--accent-amber)] transition-all text-left group"
+									onclick={startEarTraining}
+								>
+									<div class="flex items-center gap-3">
+										<span class="text-2xl">👂</span>
+										<div>
+											<div class="font-semibold text-sm group-hover:text-[var(--accent-amber)] transition-colors">Ear Training Mode</div>
+											<div class="text-xs text-[var(--text-dim)] mt-0.5">Hear a chord, play it blind. No chord name shown.</div>
+										</div>
+									</div>
+								</button>
+							</div>
+						</details>
+					</div>
+				</div>
 			</div>
 		{/if}
 
@@ -1586,12 +1922,12 @@
 	.dashboard-header {
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
-		padding: 16px;
+		gap: 10px;
+		padding: 14px 16px;
 		background: rgba(255,255,255,0.03);
 		border: 1px solid rgba(255,255,255,0.07);
-		border-radius: 16px;
-		margin-bottom: 24px;
+		border-radius: 14px;
+		margin-bottom: 20px;
 	}
 
 	.dashboard-top {
@@ -1600,10 +1936,30 @@
 		align-items: center;
 	}
 
-	.dashboard-greeting {
-		font-size: 1.1rem;
+	.greeting-streak {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
+
+	.greeting {
+		font-size: 1.05rem;
 		font-weight: 700;
 		color: #fff;
+	}
+
+	.streak-inline {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 0.85rem;
+		color: #fb923c;
+		font-weight: 600;
+	}
+
+	.streak-label {
+		color: #666;
+		font-weight: 400;
 	}
 
 	.midi-pill {
@@ -1619,39 +1975,6 @@
 	.midi-pill.connected {
 		background: rgba(74,222,128,0.1);
 		color: #4ade80;
-	}
-
-	.dashboard-stats {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 10px;
-	}
-
-	.stat-tile {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		padding: 12px 8px;
-		background: rgba(255,255,255,0.04);
-		border: 1px solid rgba(255,255,255,0.06);
-		border-radius: 12px;
-		gap: 4px;
-	}
-
-	.stat-value {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 1.4rem;
-		font-weight: 700;
-		color: #fb923c;
-	}
-
-	.stat-label {
-		font-size: 0.7rem;
-		color: #666;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
 	}
 
 	.weekly-goal-row {
@@ -1688,9 +2011,45 @@
 		white-space: nowrap;
 	}
 
-	@media (max-width: 640px) {
-		.dashboard-stats {
-			grid-template-columns: repeat(2, 1fr);
+	/* Two-column layout */
+	.train-layout {
+		display: grid;
+		grid-template-columns: 1fr 340px;
+		gap: 20px;
+		align-items: start;
+	}
+
+	.train-main {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		min-width: 0;
+	}
+
+	.train-sidebar {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		position: sticky;
+		top: 20px;
+		max-height: calc(100vh - 80px);
+		overflow-y: auto;
+		scrollbar-width: none;
+	}
+
+	.train-sidebar::-webkit-scrollbar {
+		display: none;
+	}
+
+	@media (max-width: 768px) {
+		.train-layout {
+			grid-template-columns: 1fr;
 		}
+		.train-sidebar {
+			position: static;
+			max-height: none;
+		}
+		.train-main { order: 1; }
+		.train-sidebar { order: 2; }
 	}
 </style>

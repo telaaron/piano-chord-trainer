@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { t } from '$lib/i18n';
 	import {
 		Piano,
 		Volume2,
@@ -110,37 +111,40 @@
 		<!-- Badge -->
 		<div class="badge hide-mobile">
 			<span class="dot"></span>
-			MIDI · Audio · Progress Tracking
+			{t('landing.badge')}
 		</div>
 
 		<!-- Titles -->
 		<h1>
-			<span class="gradient-text">Master Jazz Piano</span>
-			<span class="white-text">Voicings in All 12 Keys</span>
+			{@html t('landing.hero_title').replace(/Master Jazz Piano/g, '<span class="gradient-text">Master Jazz Piano</span>').replace(/Voicings in All 12 Keys/g, '<span class="white-text">Voicings in All 12 Keys</span>')
+				.replace(/Meistere Jazz-Piano-Voicings/g, '<span class="gradient-text">Meistere Jazz-Piano-Voicings</span>')
+				.replace(/in allen 12 Tonarten/g, '<span class="white-text">in allen 12 Tonarten</span>')}
 		</h1>
 
 		<p class="subtitle hide-mobile">
-			Speed training that builds muscle memory. See a chord, play it, get faster.
-			Shell voicings, rootless, ii-V-I — through every key.
+			{t('landing.hero_subtitle')}
 		</p>
 
 		<p class="subtitle show-mobile-only">
-			See a chord, play it, get faster — through all 12 keys.
+			{t('landing.hero_subtitle_mobile')}
 		</p>
 
 		<!-- CTAs -->
 		<div class="cta-buttons">
 			<a href="/train" class="btn btn-primary">
-				Start Training
+				{t('landing.cta_start')}
 				<span class="arrow">→</span>
 			</a>
 			<a href="/for-educators" class="btn btn-secondary hide-mobile">
-				For Music Schools
+				{t('landing.cta_educators')}
 			</a>
 		</div>
 
-		<p class="footnote hide-mobile">Free. No signup. Works in Chrome &amp; Edge.</p>
-		<p class="footnote show-mobile-only">Free · MIDI · No signup</p>
+		<p class="footnote hide-mobile">{t('landing.footnote')}</p>
+		<p class="footnote show-mobile-only">{t('landing.footnote_mobile')}</p>
+		<a href="/for-educators" class="educator-mobile-link show-mobile-only">
+			{t('landing.cta_educators')} →
+		</a>
 	</div>
 
 	<!-- Piano Animation (Scroll-controlled) -->
@@ -177,11 +181,11 @@
 		</div>
 		<div class="story-text">
 			<span class="story-num">01</span>
-			<h2 class="story-title">Plug In</h2>
-			<p class="story-desc">Connect your MIDI keyboard via USB. The app detects it instantly — no drivers, no setup.</p>
+			<h2 class="story-title">{t('landing.step1_title')}</h2>
+			<p class="story-desc">{t('landing.step1_desc')}</p>
 			<div class="story-chips">
-				<span class="story-chip"><Piano size={14} />MIDI auto-detect</span>
-				<span class="story-chip"><Volume2 size={14} />Audio &amp; metronome</span>
+				<span class="story-chip"><Piano size={14} />{t('landing.step1_chip1')}</span>
+				<span class="story-chip"><Volume2 size={14} />{t('landing.step1_chip2')}</span>
 			</div>
 		</div>
 	</div>
@@ -195,11 +199,11 @@
 		</div>
 		<div class="story-text">
 			<span class="story-num">02</span>
-			<h2 class="story-title">Play</h2>
-			<p class="story-desc">See a chord on screen, play it on your keyboard. Instant feedback every time.</p>
+			<h2 class="story-title">{t('landing.step2_title')}</h2>
+			<p class="story-desc">{t('landing.step2_desc')}</p>
 			<div class="story-chips">
-				<span class="story-chip"><Target size={14} />ii-V-I all 12 keys</span>
-				<span class="story-chip"><Keyboard size={14} />4+ voicing types</span>
+				<span class="story-chip"><Target size={14} />{t('landing.step2_chip1')}</span>
+				<span class="story-chip"><Keyboard size={14} />{t('landing.step2_chip2')}</span>
 			</div>
 		</div>
 	</div>
@@ -213,11 +217,11 @@
 		</div>
 		<div class="story-text">
 			<span class="story-num">03</span>
-			<h2 class="story-title">Get Faster</h2>
-			<p class="story-desc">Track your response times, pinpoint weak spots, watch yourself improve session by session.</p>
+			<h2 class="story-title">{t('landing.step3_title')}</h2>
+			<p class="story-desc">{t('landing.step3_desc')}</p>
 			<div class="story-chips">
-				<span class="story-chip"><BarChart3 size={14} />Weakness tracking</span>
-				<span class="story-chip"><BookOpen size={14} />Practice plans</span>
+				<span class="story-chip"><BarChart3 size={14} />{t('landing.step3_chip1')}</span>
+				<span class="story-chip"><BookOpen size={14} />{t('landing.step3_chip2')}</span>
 			</div>
 		</div>
 	</div>
@@ -227,13 +231,13 @@
 <!-- Bottom CTA -->
 <section class="cta-section">
 	<div class="max-w-xl mx-auto text-center px-4">
-		<h2 class="text-2xl sm:text-3xl font-bold mb-3">Ready?</h2>
-		<p class="text-[var(--text-muted)] mb-6">No account. No install. Just play.</p>
+		<h2 class="text-2xl sm:text-3xl font-bold mb-3">{t('landing.bottom_cta_title')}</h2>
+		<p class="text-[var(--text-muted)] mb-6">{t('landing.bottom_cta_desc')}</p>
 		<a
 			href="/train"
 			class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-lg transition-colors"
 		>
-			Start Training
+			{t('landing.cta_start')}
 			<ArrowRight size={20} />
 		</a>
 	</div>
@@ -380,6 +384,10 @@
 		display: block;
 	}
 
+	.educator-mobile-link {
+		display: none;
+	}
+
 	/* Piano Video */
 	.piano-container {
 		position: absolute;
@@ -410,6 +418,19 @@
 
 		.show-mobile-only {
 			display: block !important;
+		}
+
+		.educator-mobile-link {
+			display: inline-block !important;
+			margin-top: 0.75rem;
+			font-size: 0.8rem;
+			color: var(--text-muted);
+			text-decoration: none;
+			transition: color 0.15s;
+		}
+
+		.educator-mobile-link:hover {
+			color: var(--text);
 		}
 
 		.hero {

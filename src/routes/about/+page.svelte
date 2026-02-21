@@ -1,10 +1,26 @@
+<script lang="ts">
+	import { t } from '$lib/i18n';
+</script>
+
 <svelte:head>
-	<title>About – Chord Trainer</title>
-	<meta name="description" content="Built at 2 AM because the tool didn't exist. Chord Trainer by Aaron Technologies OÜ." />
+	<title>{t('about.title')}</title>
+	<meta name="description" content={t('about.meta_desc')} />
 	<link rel="canonical" href="https://jazzchords.app/about" />
-	<meta property="og:title" content="About – Chord Trainer" />
-	<meta property="og:description" content="Built at 2 AM because the tool didn't exist. Chord Trainer by Aaron Technologies OÜ." />
+	<meta property="og:title" content={t('about.title')} />
+	<meta property="og:description" content={t('about.meta_desc')} />
+	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/about" />
+	<meta property="og:site_name" content="Chord Trainer" />
+	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta property="og:image:type" content="image/webp" />
+	<meta property="og:image:width" content="966" />
+	<meta property="og:image:height" content="507" />
+	<meta property="og:image:alt" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content={t('about.title')} />
+	<meta name="twitter:description" content={t('about.meta_desc')} />
+	<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
+	<meta name="twitter:image:alt" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
 </svelte:head>
 
 <div class="about-page">
@@ -21,9 +37,9 @@
 		/>
 		<div class="about-hero-overlay"></div>
 		<div class="about-hero-content">
-			<p class="about-eyebrow">Aaron Technologies OÜ</p>
+			<p class="about-eyebrow">{t('about.eyebrow')}</p>
 			<h1 class="about-hero-h1">
-				Built at 2&nbsp;AM,<br>because the tool didn't exist.
+				{@html t('about.h1')}
 			</h1>
 		</div>
 	</section>
@@ -31,33 +47,26 @@
 	<!-- ── 2. Story ── -->
 	<section class="about-story">
 		<p>
-			Every jazz teacher eventually says it:
-			<strong class="accent">"Take it through all 12 keys."</strong>
-			Every student nods — and then practices C major for another week.
+			{@html t('about.p1')}
 		</p>
 		<p>
-			Not because they don't understand the voicing.
-			Because there was no tool that made drilling all 12 keys
-			fast, measurable, and actually engaging.
+			{@html t('about.p2')}
 		</p>
 		<p>
-			Chord Trainer is that tool. MIDI-validated, timed per chord,
-			weakness analysis built in. It works at 2&nbsp;AM when no class is running.
+			{@html t('about.p3')}
 		</p>
 	</section>
 
 	<!-- ── 3. Company block ── -->
 	<section class="about-company">
 		<div class="company-col">
-			<p class="col-label">The Company</p>
+			<p class="col-label">{t('about.company_title')}</p>
 			<p class="col-body">
-				Aaron Technologies OÜ<br>
-				Registry: 17336129 · VAT: EE102955587<br>
-				Tallinn, Estonia
+				{@html t('about.company_address')}
 			</p>
 		</div>
 		<div class="company-col">
-			<p class="col-label">Contact</p>
+			<p class="col-label">{t('about.contact_title')}</p>
 			<p class="col-body">
 				<a href="mailto:info@jazzchords.app">info@jazzchords.app</a><br>
 				<a href="/impressum">Impressum</a><br>
@@ -101,7 +110,7 @@
 			to bottom,
 			rgba(0,0,0,0.1) 0%,
 			rgba(0,0,0,0.4) 60%,
-			rgba(0,0,0,1) 100%
+			var(--bg) 100%
 		);
 	}
 
