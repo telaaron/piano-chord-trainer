@@ -20,6 +20,7 @@
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import { MidiService, type MidiConnectionState, type MidiDevice, type ChordMatchResult } from '$lib/services/midi';
 	import { formatTime } from '$lib/utils/format';
+	import { t } from '$lib/i18n';
 
 	// ─── Config ────────────────────────────────────────────────────
 	interface EmbedConfig {
@@ -36,6 +37,31 @@
 		'rootless-drill': 'Rootless Voicing Drill',
 		'251-advanced': 'ii – V – I Advanced',
 		'openstudio-intro': 'Open Studio Intro',
+	};
+
+	const VOICING_KEYS: Record<VoicingType, string> = {
+		'root': 'settings.voicing_root',
+		'shell': 'settings.voicing_shell',
+		'half-shell': 'settings.voicing_half_shell',
+		'full': 'settings.voicing_full',
+		'rootless-a': 'settings.voicing_rootless_a',
+		'rootless-b': 'settings.voicing_rootless_b',
+		'inversion-1': 'settings.voicing_inversion_1',
+		'inversion-2': 'settings.voicing_inversion_2',
+		'inversion-3': 'settings.voicing_inversion_3',
+	};
+
+	const PROGRESSION_KEYS: Record<ProgressionMode, string> = {
+		'random': 'settings.progression_random',
+		'2-5-1': 'settings.progression_251',
+		'cycle-of-4ths': 'settings.progression_cycle',
+		'1-6-2-5': 'settings.progression_turnaround',
+	};
+
+	const DIFFICULTY_KEYS: Record<Difficulty, string> = {
+		'beginner': 'settings.difficulty_beginner',
+		'intermediate': 'settings.difficulty_intermediate',
+		'advanced': 'settings.difficulty_advanced',
 	};
 
 	const PRESETS: Record<string, Omit<EmbedConfig, 'origin'>> = {
@@ -406,7 +432,7 @@
 				<!-- Logo mark -->
 				<div class="setup-icon" aria-hidden="true">🎹</div>
 
-				<h1 class="setup-title">Chord Trainer</h1>
+				<h1 class="setup-title">{t('embed.setup_title')}</h1>
 
 				{#if presetLabel}
 					<p class="setup-preset-label">{presetLabel}</p>
@@ -415,23 +441,23 @@
 				<div class="setup-meta">
 					<span class="meta-badge">{VOICING_LABELS[config.voicing] ?? config.voicing}</span>
 					<span class="meta-badge">{PROGRESSION_LABELS[config.progressionMode] ?? config.progressionMode}</span>
-					<span class="meta-badge">{config.chords} chords</span>
+					<span class="meta-badge">{config.chords} {t('embed.stat_chords')}</span>
 					<span class="meta-badge">{DIFFICULTY_LABELS[config.difficulty]}</span>
 				</div>
 
 				{#if midiState === 'connected' && midiHasDevice}
-					<p class="setup-midi-status connected">🎹 MIDI Connected — press a chord to auto-start</p>
+					<p class="setup-midi-status connected">{t('embed.midi_connected')}</p>
 				{:else if midiState === 'connecting'}
-					<p class="setup-midi-status">Connecting MIDI…</p>
+					<p class="setup-midi-status">{t('embed.connecting')}</p>
 				{:else}
-					<p class="setup-hint">Press <kbd>Space</kbd> or tap the button to start. Connect a MIDI keyboard for automatic validation.</p>
+					<p class="setup-hint">{@html t('embed.setup_hint')}</p>
 				{/if}
 
 				<button class="btn-start" onclick={startGame}>
-					Start Drill
+					{t('embed.start_drill')}
 				</button>
 
-				<p class="setup-shortcut">or press <kbd>Space</kbd></p>
+				<p class="setup-shortcut">{@html t('embed.or_press_space')}</p>
 			</div>
 		</div>
 	{/if}
@@ -464,9 +490,9 @@
 			<div class="chord-area" class:streak-glow={streakGlow}>
 				{#if !timerStarted}
 					<div class="chord-start-hint">
-						<p class="hint-label">Ready?</p>
-						<button class="btn-begin" onclick={beginTimer}>Begin</button>
-						<p class="hint-sub">or press <kbd>Space</kbd></p>
+						<p class="hint-label">{t('embed.ready')}</p>
+						<button class="btn-begin" onclick={beginTimer}>{t('embed.begin')}</button>
+						<p class="hint-sub">{@html t('embed.or_press_space')}</p>
 					</div>
 				{:else}
 					<div class="chord-display"
@@ -478,10 +504,10 @@
 						{#if currentData?.voicing && currentData.voicing.length > 0}
 							<div class="chord-voicing">{currentData.voicing.join(' – ')}</div>
 						{:else if currentData}
-							<div class="chord-voicing" style="color: var(--text-dim)">No voicing data</div>
+							<div class="chord-voicing" style="color: var(--text-dim)">{t('embed.no_voicing')}</div>
 						{/if}
 						{#if streak >= STREAK_THRESHOLD}
-							<div class="streak-badge">🔥 {streak} streak</div>
+							<div class="streak-badge">{t('embed.streak', { count: streak })}</div>
 						{/if}
 					</div>
 				{/if}
@@ -501,12 +527,12 @@
 
 			<!-- Actions -->
 			<div class="action-bar">
-				<button class="btn-secondary" onclick={resetToSetup} title="Back to setup">
-					↩ Restart
+				<button class="btn-secondary" onclick={resetToSetup} title={t('embed.back_to_setup_title')}>
+					{t('embed.back_to_setup')}
 				</button>
 				{#if timerStarted}
 					<button class="btn-next" onclick={nextChord}>
-						{currentIdx < totalChords - 1 ? 'Next →' : 'Finish ✓'}
+						{currentIdx < totalChords - 1 ? t('embed.next') : t('embed.finish')}
 					</button>
 				{/if}
 			</div>
@@ -518,45 +544,45 @@
 		<div class="results-screen">
 			<div class="results-inner">
 				<div class="results-icon" aria-hidden="true">✓</div>
-				<h2 class="results-title">Session Complete</h2>
+				<h2 class="results-title">{t('embed.session_complete')}</h2>
 
 				<div class="results-stats">
 					<div class="stat">
 						<div class="stat-value">{totalChords}</div>
-						<div class="stat-label">Chords</div>
+						<div class="stat-label">{t('embed.stat_chords')}</div>
 					</div>
 					<div class="stat">
 						<div class="stat-value">{formatTime(endTime - startTime)}</div>
-						<div class="stat-label">Total Time</div>
+						<div class="stat-label">{t('embed.stat_total_time')}</div>
 					</div>
 					<div class="stat">
 						<div class="stat-value">{(avgMs / 1000).toFixed(1)}s</div>
-						<div class="stat-label">Avg / Chord</div>
+						<div class="stat-label">{t('embed.stat_avg')}</div>
 					</div>
 					{#if midiTotalAttempts > 0}
 						<div class="stat">
 							<div class="stat-value">{midiAccuracy}%</div>
-							<div class="stat-label">MIDI Accuracy</div>
+							<div class="stat-label">{t('embed.stat_accuracy')}</div>
 						</div>
 					{/if}
 					{#if bestStreak >= STREAK_THRESHOLD}
 						<div class="stat">
 							<div class="stat-value">🔥 {bestStreak}</div>
-							<div class="stat-label">Best Streak</div>
+							<div class="stat-label">{t('embed.stat_best_streak')}</div>
 						</div>
 					{/if}
 				</div>
 
 				<div class="results-actions">
 					<button class="btn-start" onclick={startGame}>
-						Play Again
+						{t('embed.play_again')}
 					</button>
 					<a class="results-link" href="/train" target="_top">
-						Full Trainer ↗
+						{t('embed.full_trainer')}
 					</a>
 				</div>
 
-				<p class="results-brand">jazzchords.app</p>
+				<p class="results-brand">{t('embed.brand')}</p>
 			</div>
 		</div>
 	{/if}

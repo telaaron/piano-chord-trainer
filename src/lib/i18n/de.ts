@@ -510,5 +510,97 @@ export const de = {
     liability_content_text: 'Als Diensteanbieter sind wir gemäß den allgemeinen Gesetzen für eigene Inhalte auf diesen Seiten verantwortlich. Wir sind jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.',
     liability_links: 'Haftung für Links',
     liability_links_text: 'Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.'
+  },
+
+  privacy: {
+    title: 'Datenschutz – Chord Trainer',
+    meta_desc: 'Datenschutzerklärung für Chord Trainer von Aaron Technologies OÜ. Wie wir deine Daten behandeln.',
+    h1: 'Datenschutz',
+    last_updated: 'Zuletzt aktualisiert: 17. Februar 2026',
+    intro: 'Chord Trainer ("die App") ist ein Produkt von <strong>Aaron Technologies OÜ</strong>, registriert in Estland (Registry Code: 17336129, VAT ID: EE102955587). Diese Datenschutzerklärung erklärt, wie wir deine Informationen sammeln, nutzen und schützen.',
+    
+    h_data_collect: '1. Daten, die wir sammeln',
+    
+    h_local_storage: '1.1 Lokal gespeicherte Daten (Dein Browser)',
+    p_local_storage: 'Die App verwendet <strong>localStorage</strong> in deinem Browser zum Speichern von:',
+    li_settings: 'Deine Übungseinstellungen (Schwierigkeit, Voicing-Typ, Notationssystem)',
+    li_history: 'Session-Verlauf (Zeitstempel, Punktzahlen, Akkord-Zeiten)',
+    li_streak: 'Übungsserien-Daten (Streak)',
+    li_theme: 'Design-Präferenz',
+    p_local_storage_end: 'Diese Daten <strong>verlassen niemals dein Gerät</strong>. Sie werden an keinen Server gesendet. Du kannst sie jederzeit löschen, indem du deine Browserdaten löschst.',
+    
+    h_midi: '1.2 Web MIDI API',
+    p_midi: 'Wenn du die Erlaubnis erteilst, greift die App über die Web MIDI API auf deine MIDI-Geräte zu. MIDI-Daten (Note On/Off Events) werden <strong>vollständig in deinem Browser</strong> verarbeitet und niemals übertragen.',
+    
+    h_analytics: '1.3 Analytics',
+    p_analytics: 'Wir nutzen <strong>Vercel Analytics</strong>, um anonyme, aggregierte Nutzungsdaten zu sammeln: Seitenaufrufe, Land, Browsertyp und Gerätetyp. Es werden keine personenbezogenen Daten, Cookies oder Tracking-IDs verwendet. Vercel Analytics ist DSGVO-konform und nutzt keine Cookies.',
+    
+    h_hosting: '1.4 Hosting',
+    p_hosting: 'Die App wird bei <strong>Vercel</strong> (Vercel Inc., San Francisco, CA) gehostet. Vercel kann Server-Logs inklusive IP-Adressen zu Sicherheits- und Performancezwecken sammeln. Siehe <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Vercels Datenschutzerklärung</a>.',
+    
+    h_fonts: '1.5 Fonts',
+    p_fonts: 'Wir nutzen Google Fonts (Inter), die von <code>fonts.googleapis.com</code> geladen werden. Google kann deine IP-Adresse erfassen, wenn Fonts geladen werden. Siehe <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Googles Datenschutzerklärung</a>.',
+    
+    h_no_collect: '2. Daten, die wir NICHT sammeln',
+    li_no_account: 'Keine Account-Erstellung, keine E-Mail-Erfassung',
+    li_no_cookies: 'Keine Cookies (außer technische von Vercel)',
+    li_no_personal: 'Keine persönlichen Informationen',
+    li_no_audio: 'Keine Audio-Aufnahmen',
+    li_no_midi: 'Keine Übertragung von MIDI-Daten',
+    
+    h_third_party: '3. Dienste von Drittanbietern',
+    th_service: 'Dienst',
+    th_purpose: 'Zweck',
+    th_policy: 'Datenschutz',
+    td_vercel_purpose: 'Hosting & Analytics',
+    td_fonts_purpose: 'Typografie',
+    td_cloudflare_purpose: 'DNS & CDN',
+    td_link: 'Link',
+    
+    h_rights: '4. Deine Rechte (DSGVO)',
+    p_rights: 'Unter der Datenschutz-Grundverordnung (DSGVO) hast du das Recht auf:',
+    li_access: '<strong>Auskunft</strong> über deine Daten — alle Übungsdaten liegen im localStorage deines Browsers',
+    li_delete: '<strong>Löschen</strong> deiner Daten — lösche deine Browserdaten oder den localStorage',
+    li_portability: '<strong>Datenübertragbarkeit</strong> — die Entwicklertools deines Browser können den localStorage exportieren',
+    li_object: '<strong>Widerspruch</strong> — kontaktiere uns, um der Verarbeitung zu widersprechen',
+    
+    h_children: '5. Privatsphäre von Kindern',
+    p_children: 'Die App sammelt wissentlich keine Daten von Kindern unter 16 Jahren. Da gar keine persönlichen Daten gesammelt werden, sind keine besonderen Maßnahmen erforderlich.',
+    
+    h_changes: '6. Änderungen dieser Richtlinie',
+    p_changes: 'Wir können diese Richtlinie gelegentlich aktualisieren. Das Datum "Zuletzt aktualisiert" oben zeigt die letzte Überarbeitung an.',
+    
+    h_contact: '7. Kontakt',
+    contact_address: 'Aaron Technologies OÜ<br>Sepapaja tn 6<br>15551 Tallinn, Estland<br>Registry Code: 17336129<br>VAT ID: EE102955587',
+    contact_email: 'E-Mail:',
+    contact_alt: 'Alternativ:',
+    contact_phone: 'Telefon:',
+    contact_website: 'Webseite:'
+  },
+
+  embed: {
+    setup_title: 'Chord Trainer',
+    midi_connected: '🎹 MIDI Verbunden',
+    connecting: 'Verbinde MIDI…',
+    setup_hint: 'Drücke <kbd>Leertaste</kbd> oder den Button zum Starten. Schließe ein MIDI-Keyboard an für automatische Erkennung.',
+    start_drill: 'Training Starten',
+    or_press_space: 'oder <kbd>Leertaste</kbd>',
+    ready: 'Bereit?',
+    begin: 'Los',
+    no_voicing: 'Keine Voicing-Daten',
+    streak: '🔥 {count} Serie',
+    back_to_setup: '↩ Neustart',
+    next: 'Weiter →',
+    finish: 'Fertig ✓',
+    session_complete: 'Session Beendet',
+    stat_chords: 'Akkorde',
+    stat_total_time: 'Gesamtzeit',
+    stat_avg: 'Ø / Akkord',
+    stat_accuracy: 'MIDI Genaugkeit',
+    stat_best_streak: 'Beste Serie',
+    play_again: 'Nochmal Spielen',
+    full_trainer: 'Zum Trainer ↗',
+    brand: 'jazzchords.app',
+    back_to_setup_title: 'Zurück zum Setup'
   }
 };

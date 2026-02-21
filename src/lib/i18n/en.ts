@@ -510,5 +510,97 @@ export const en = {
     liability_content_text: 'As a service provider, we are responsible for our own content on these pages according to general legislation. However, we are not obligated to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity.',
     liability_links: 'Liability for Links',
     liability_links_text: 'Our website contains links to external websites over whose content we have no influence. We therefore cannot accept any liability for this third-party content. The respective provider or operator is always responsible for the content of the linked pages.'
+  },
+
+  privacy: {
+    title: 'Privacy Policy – Chord Trainer',
+    meta_desc: 'Privacy Policy for Chord Trainer by Aaron Technologies OÜ. How we handle your data.',
+    h1: 'Privacy Policy',
+    last_updated: 'Last updated: February 17, 2026',
+    intro: 'Chord Trainer ("the App") is a product of <strong>Aaron Technologies OÜ</strong>, registered in Estonia (Registry Code: 17336129, VAT ID: EE102955587). This privacy policy explains how we collect, use, and protect your information.',
+    
+    h_data_collect: '1. Data We Collect',
+    
+    h_local_storage: '1.1 Data Stored Locally (Your Browser)',
+    p_local_storage: 'The App uses <strong>localStorage</strong> in your browser to store:',
+    li_settings: 'Your practice settings (difficulty, voicing type, notation system)',
+    li_history: 'Session history (timestamps, scores, chord timings)',
+    li_streak: 'Practice streak data',
+    li_theme: 'Theme preference',
+    p_local_storage_end: 'This data <strong>never leaves your device</strong>. It is not sent to any server. You can delete it at any time by clearing your browser data.',
+    
+    h_midi: '1.2 Web MIDI API',
+    p_midi: 'If you grant permission, the App accesses your MIDI devices through the Web MIDI API. MIDI data (note on/off events) is processed <strong>entirely in your browser</strong> and is never transmitted.',
+    
+    h_analytics: '1.3 Analytics',
+    p_analytics: 'We use <strong>Vercel Analytics</strong> to collect anonymous, aggregated usage data: page views, country, browser type, and device type. No personal data, cookies, or tracking IDs are used. Vercel Analytics is GDPR-compliant and does not use cookies.',
+    
+    h_hosting: '1.4 Hosting',
+    p_hosting: 'The App is hosted on <strong>Vercel</strong> (Vercel Inc., San Francisco, CA). Vercel may collect server logs including IP addresses for security and performance purposes. See <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Vercel\'s Privacy Policy</a>.',
+    
+    h_fonts: '1.5 Fonts',
+    p_fonts: 'We use Google Fonts (Inter) loaded from <code>fonts.googleapis.com</code>. Google may collect your IP address when fonts are loaded. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google\'s Privacy Policy</a>.',
+    
+    h_no_collect: '2. Data We Do NOT Collect',
+    li_no_account: 'No account creation, no email collection',
+    li_no_cookies: 'No cookies (except technical ones from Vercel)',
+    li_no_personal: 'No personal information',
+    li_no_audio: 'No audio recordings',
+    li_no_midi: 'No MIDI data transmission',
+    
+    h_third_party: '3. Third-Party Services',
+    th_service: 'Service',
+    th_purpose: 'Purpose',
+    th_policy: 'Privacy Policy',
+    td_vercel_purpose: 'Hosting & Analytics',
+    td_fonts_purpose: 'Typography',
+    td_cloudflare_purpose: 'DNS & CDN',
+    td_link: 'Link',
+    
+    h_rights: '4. Your Rights (GDPR)',
+    p_rights: 'Under the General Data Protection Regulation (GDPR), you have the right to:',
+    li_access: '<strong>Access</strong> your data — all practice data is in your browser\'s localStorage',
+    li_delete: '<strong>Delete</strong> your data — clear your browser data or localStorage',
+    li_portability: '<strong>Portability</strong> — your browser\'s developer tools can export localStorage',
+    li_object: '<strong>Object</strong> — contact us to object to any processing',
+    
+    h_children: '5. Children\'s Privacy',
+    p_children: 'The App does not knowingly collect personal data from children under 16. Since no personal data is collected at all, no special measures are required.',
+    
+    h_changes: '6. Changes to This Policy',
+    p_changes: 'We may update this policy occasionally. The "Last updated" date at the top indicates the latest revision.',
+    
+    h_contact: '7. Contact',
+    contact_address: 'Aaron Technologies OÜ<br>Sepapaja tn 6<br>15551 Tallinn, Estonia<br>Registry Code: 17336129<br>VAT ID: EE102955587',
+    contact_email: 'Email:',
+    contact_alt: 'Alternative:',
+    contact_phone: 'Phone:',
+    contact_website: 'Website:'
+  },
+
+  embed: {
+    setup_title: 'Chord Trainer',
+    midi_connected: '🎹 MIDI Connected — press a chord to auto-start',
+    connecting: 'Connecting MIDI…',
+    setup_hint: 'Press <kbd>Space</kbd> or tap the button to start. Connect a MIDI keyboard for automatic validation.',
+    start_drill: 'Start Drill',
+    or_press_space: 'or press <kbd>Space</kbd>',
+    ready: 'Ready?',
+    begin: 'Begin',
+    no_voicing: 'No voicing data',
+    streak: '🔥 {count} streak',
+    back_to_setup: '↩ Restart',
+    next: 'Next →',
+    finish: 'Finish ✓',
+    session_complete: 'Session Complete',
+    stat_chords: 'Chords',
+    stat_total_time: 'Total Time',
+    stat_avg: 'Avg / Chord',
+    stat_accuracy: 'MIDI Accuracy',
+    stat_best_streak: 'Best Streak',
+    play_again: 'Play Again',
+    full_trainer: 'Full Trainer ↗',
+    brand: 'jazzchords.app',
+    back_to_setup_title: 'Back to setup'
   }
 };

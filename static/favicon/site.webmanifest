@@ -1,51 +1,21 @@
 {
-  "name": "Chord Trainer – Jazz Piano Voicings",
-  "short_name": "Chord Trainer",
-  "description": "Speed training for jazz piano voicings. MIDI recognition, ii-V-I progressions, progress tracking. Free.",
-  "start_url": "/train",
-  "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "theme_color": "#e8763b",
-  "background_color": "#0a0908",
-  "categories": ["music", "education"],
+  "name": "JazzChords Trainer",
+  "short_name": "JazzChords",
   "icons": [
     {
-      "src": "/favicon/web-app-manifest-192x192.png",
+      "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/favicon/web-app-manifest-512x512.png",
+      "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/favicon/favicon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/favicon/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
     }
   ],
-  "shortcuts": [
-    {
-      "name": "Start Training",
-      "short_name": "Train",
-      "url": "/train",
-      "icons": [
-        {
-          "src": "/favicon/web-app-manifest-192x192.png",
-          "sizes": "192x192"
-        }
-      ]
-    }
-  ]
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone"
 }
