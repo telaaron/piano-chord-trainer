@@ -156,3 +156,36 @@ export function displayToQuality(display: string, style: NotationStyle): string 
 	}
 	return display;
 }
+
+/**
+ * Get all unique valid pitch-class sets for a chord across common voicing types.
+ * Used in Free Voice Leading mode to validate any voicing the player chooses.
+ *
+ * Returns an array of Sets, each containing the pitch classes (0-11) for one voicing variant.
+ * Deduplicates — e.g. shell and half-shell share the same PCs.
+ */
+export function getValidPCSets(
+	root: string,
+	quality: string,
+	pref: AccidentalPreference,
+): Set<number>[] {
+	const allNotes = getChordNotes(root, quality, pref);
+	if (allNotes.length === 0) return [];
+
+	const voicingTypes: VoicingType[] = ['root', 'shell', 'half-shell', 'full', 'rootless-a', 'rootless-b'];
+	const seen = new Set<string>();
+	const result: Set<number>[] = [];
+
+	for (const vt of voicingTypes) {
+		const notes = getVoicingNotes(allNotes, vt, root, pref);
+		const pcs = new Set(notes.map(noteToSemitone).filter(pc => pc !== -1));
+		// Deduplicate by sorted PC string
+		const key = [...pcs].sort((a, b) => a - b).join(',');
+		if (!seen.has(key)) {
+			seen.add(key);
+			result.push(pcs);
+		}
+	}
+
+	return result;
+}

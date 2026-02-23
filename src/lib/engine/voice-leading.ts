@@ -5,6 +5,28 @@ import { noteToSemitone, NOTES_FLATS, NOTES_SHARPS, type AccidentalPreference } 
 
 // ─── Types ──────────────────────────────────────────────────
 
+/**
+ * Voice Leading exercise mode:
+ * - 'guided'         — Nachspielen: keyboard shows the optimal inversion, player copies it
+ * - 'find-inversion' — Umkehrung finden: chord name + voicing type shown, player must find closest inversion via MIDI
+ * - 'free'           — Frei: only chord name shown, any voicing type accepted, scored by movement distance
+ */
+export type VoiceLeadingMode = 'guided' | 'find-inversion' | 'free';
+
+/**
+ * Result of validating a player's MIDI input against the expected voice-led chord.
+ */
+export interface VLValidationResult {
+	/** Was the attempt valid (correct pitch classes)? */
+	valid: boolean;
+	/** 'optimal' = tightest inversion, 'correct' = right notes/wrong inversion, 'wrong' = wrong notes */
+	grade: 'optimal' | 'correct' | 'wrong';
+	/** Total semitone movement from previous chord (lower = better) */
+	playerMovement: number;
+	/** The optimal (minimum) movement achievable */
+	optimalMovement: number;
+}
+
 export interface VoiceMovement {
 	/** Source note name, e.g. "E" */
 	from: string;
@@ -32,55 +54,29 @@ export interface VoiceLeadingInfo {
 // ─── Helpers ────────────────────────────────────────────────
 
 /**
- * Compute the shortest signed distance between two pitch classes (0–11).
- * Range: -6 … +6  (prefers the shorter path)
+ * Place pitch classes in ascending order (same logic as keyboard.ts placeAscending).
+ * Returns chromatic indices where each note is above the previous.
  */
-function signedSemitoneDist(fromPC: number, toPC: number): number {
-	let diff = ((toPC - fromPC) % 12 + 12) % 12; // 0..11
-	if (diff > 6) diff -= 12; // fold to -5..6
-	return diff;
+function placeAscending(pitchClasses: number[]): number[] {
+	const indices: number[] = [];
+	let prevIdx = -1;
+	for (const pc of pitchClasses) {
+		let kbIdx = pc;
+		if (prevIdx !== -1) {
+			while (kbIdx <= prevIdx) kbIdx += 12;
+		}
+		indices.push(kbIdx);
+		prevIdx = kbIdx;
+	}
+	return indices;
 }
 
 /**
- * Solve the optimal assignment of `from` voices → `to` voices
- * minimising total absolute semitone movement.
- *
- * For small voice counts (≤ 6) we brute-force all permutations.
- * Jazz voicings rarely exceed 4-5 notes, so this is fine.
+ * Compute the signed distance between two chromatic indices (actual keyboard positions).
+ * Preserves octave information — Bb3(10) → Bb4(22) = +12, not 0.
  */
-function optimalAssignment(fromPCs: number[], toPCs: number[]): number[] {
-	const n = Math.min(fromPCs.length, toPCs.length);
-	// If arrays differ in size, pad the shorter with -1 (unmatched)
-	const fromArr = fromPCs.slice(0, n);
-	const toArr = toPCs.slice(0, n);
-
-	let bestPerm: number[] = [];
-	let bestCost = Infinity;
-
-	// Generate all permutations of indices 0..n-1
-	const indices = Array.from({ length: n }, (_, i) => i);
-
-	function permute(arr: number[], start: number) {
-		if (start === arr.length) {
-			let cost = 0;
-			for (let i = 0; i < arr.length; i++) {
-				cost += Math.abs(signedSemitoneDist(fromArr[i], toArr[arr[i]]));
-			}
-			if (cost < bestCost) {
-				bestCost = cost;
-				bestPerm = [...arr];
-			}
-			return;
-		}
-		for (let i = start; i < arr.length; i++) {
-			[arr[start], arr[i]] = [arr[i], arr[start]];
-			permute(arr, start + 1);
-			[arr[start], arr[i]] = [arr[i], arr[start]];
-		}
-	}
-
-	permute(indices, 0);
-	return bestPerm;
+function chromaticDist(fromIdx: number, toIdx: number): number {
+	return toIdx - fromIdx;
 }
 
 // ─── Main API ───────────────────────────────────────────────
@@ -89,8 +85,10 @@ function optimalAssignment(fromPCs: number[], toPCs: number[]): number[] {
  * Analyze voice leading from one set of notes to another.
  *
  * Both arrays should be note names (e.g. ["D","F","C"]).
- * The algorithm finds the assignment that minimizes total movement
- * and reports common tones, per-voice movements, and total cost.
+ * The algorithm places both voicings on the keyboard (via placeAscending)
+ * and compares actual chromatic positions — so a common tone is only
+ * detected when it's at the same keyboard position (same octave),
+ * not just the same pitch class in a different octave.
  */
 export function analyzeVoiceLeading(fromNotes: string[], toNotes: string[]): VoiceLeadingInfo {
 	if (fromNotes.length === 0 || toNotes.length === 0) {
@@ -100,33 +98,32 @@ export function analyzeVoiceLeading(fromNotes: string[], toNotes: string[]): Voi
 	const fromPCs = fromNotes.map(noteToSemitone);
 	const toPCs = toNotes.map(noteToSemitone);
 
-	// Match size: if unequal, match the smaller count
-	const matchLen = Math.min(fromPCs.length, toPCs.length);
-	const fromSlice = fromPCs.slice(0, matchLen);
-	const toSlice = toPCs.slice(0, matchLen);
-	const fromSliceNames = fromNotes.slice(0, matchLen);
-	const toSliceNames = toNotes.slice(0, matchLen);
+	// Place on keyboard to get actual chromatic indices (octave-aware)
+	const fromIndices = placeAscending(fromPCs.filter(pc => pc !== -1));
+	const toIndices = placeAscending(toPCs.filter(pc => pc !== -1));
 
-	const perm = optimalAssignment(fromSlice, toSlice);
+	const matchLen = Math.min(fromIndices.length, toIndices.length);
 
+	// For voice-led voicings the notes are already in optimal order
+	// (position i in from maps to position i in to), so we do a direct
+	// positional comparison rather than permutation search.
 	const movements: VoiceMovement[] = [];
 	const commonTones: string[] = [];
 	let totalMovement = 0;
 
 	for (let i = 0; i < matchLen; i++) {
-		const toIdx = perm[i];
-		const semitones = signedSemitoneDist(fromSlice[i], toSlice[toIdx]);
-		const stays = semitones === 0;
+		const dist = chromaticDist(fromIndices[i], toIndices[i]);
+		const stays = dist === 0; // Same chromatic index = same key on keyboard
 		movements.push({
-			from: fromSliceNames[i],
-			to: toSliceNames[toIdx],
-			semitones,
+			from: fromNotes[i],
+			to: toNotes[i],
+			semitones: dist,
 			stays,
 		});
 		if (stays) {
-			commonTones.push(fromSliceNames[i]);
+			commonTones.push(fromNotes[i]);
 		}
-		totalMovement += Math.abs(semitones);
+		totalMovement += Math.abs(dist);
 	}
 
 	// Handle extra notes in the longer array (new/dropped voices)
@@ -168,22 +165,23 @@ export function formatVoiceLeading(info: VoiceLeadingInfo): string {
 
 /**
  * Given a previous voicing (note names) and the target chord's note names,
- * compute the optimal rearrangement of the target notes that minimises
- * total voice movement.
+ * find the **rotation** (inversion) of the target notes that minimises
+ * total voice movement on the actual keyboard.
  *
- * Jazz voice leading principle: each voice in the previous chord moves
- * to the nearest available note in the new chord. Common tones stay,
- * other voices move by the smallest possible interval.
+ * Key insight: `placeAscending()` maps a note-name array to keyboard
+ * positions deterministically (the array order sets bottom-to-top).
+ * Each rotation of the target array produces a different inversion with
+ * different keyboard positions. We score every rotation against the
+ * previous chord's keyboard positions and pick the tightest voice leading.
  *
- * This function works with pitch classes (not absolute MIDI notes)
- * because the PianoKeyboard component maps notes to pitch classes anyway.
- * The returned array has the same length as the previous voicing
- * (excess target notes are appended).
+ * Example — G7 shell [G,B,F] at keys [7,11,17] → Dm7 shell [D,F,C]:
+ *   Rot 0 [D,F,C] → [2,5,12]  → score 16 (big jump down)
+ *   Rot 1 [F,C,D] → [5,12,14] → score 6  ← best! F stays near G, C near B, D near F
+ *   Rot 2 [C,D,F] → [0,2,5]   → score 28 (way too low)
  *
- * @param prevVoicing - note names of the previous chord's voicing (e.g. ["C","E","B"])
- * @param targetNotes - note names of the new chord's voicing in standard order (e.g. ["D","F#","C"])
- * @param pref - accidental preference for note naming
- * @returns rearranged target notes with optimal voice assignments
+ * @param prevVoicing - note names of the previous chord's voicing
+ * @param targetNotes - note names of the new chord in standard voicing order
+ * @returns rotated target notes array for optimal voice leading
  */
 export function computeVoiceLeadVoicing(
 	prevVoicing: string[],
@@ -193,30 +191,192 @@ export function computeVoiceLeadVoicing(
 	if (prevVoicing.length === 0) return targetNotes;
 	if (targetNotes.length === 0) return targetNotes;
 
+	// Compute actual keyboard positions of previous voicing
 	const prevPCs = prevVoicing.map(noteToSemitone).filter(pc => pc !== -1);
-	const targetPCs = targetNotes.map(noteToSemitone).filter(pc => pc !== -1);
+	if (prevPCs.length === 0) return targetNotes;
+	const prevPositions = placeAscending(prevPCs);
 
-	if (prevPCs.length === 0 || targetPCs.length === 0) return targetNotes;
+	// Filter valid target notes
+	const validTargets = targetNotes.filter(n => noteToSemitone(n) !== -1);
+	const n = validTargets.length;
+	if (n === 0) return targetNotes;
 
-	const n = Math.min(prevPCs.length, targetPCs.length);
-	const prevSlice = prevPCs.slice(0, n);
-	const targetSlice = targetPCs.slice(0, n);
-	const targetNameSlice = targetNotes.slice(0, n);
+	let bestRotation = validTargets;
+	let bestScore = Infinity;
 
-	// Find the permutation of targetSlice that minimises total movement
-	const perm = optimalAssignment(prevSlice, targetSlice);
+	// Try all rotations (inversions) of the target voicing
+	for (let r = 0; r < n; r++) {
+		const rotated = [...validTargets.slice(r), ...validTargets.slice(0, r)];
+		const rotatedPCs = rotated.map(noteToSemitone);
+		const positions = placeAscending(rotatedPCs);
 
-	// Build the rearranged voicing: each voice in prevVoicing maps to the
-	// best-matching target note.
-	const result: string[] = new Array(n);
-	for (let i = 0; i < n; i++) {
-		result[i] = targetNameSlice[perm[i]];
+		// Score: positional voice matching (voice 1→1, 2→2, etc.)
+		// This gives proper voice-leading where common tones stay on the same key
+		const matchLen = Math.min(prevPositions.length, positions.length);
+		let score = 0;
+		for (let i = 0; i < matchLen; i++) {
+			score += Math.abs(positions[i] - prevPositions[i]);
+		}
+
+		// Extra voices in target: penalise distance from previous chord's range centre
+		if (positions.length > matchLen) {
+			const prevCenter = (prevPositions[0] + prevPositions[prevPositions.length - 1]) / 2;
+			for (let i = matchLen; i < positions.length; i++) {
+				score += Math.abs(positions[i] - prevCenter);
+			}
+		}
+
+		if (score < bestScore) {
+			bestScore = score;
+			bestRotation = rotated;
+		}
 	}
 
-	// Append any leftover target notes (if target has more notes)
-	for (let i = n; i < targetNotes.length; i++) {
-		result.push(targetNotes[i]);
+	return bestRotation;
+}
+
+// ─── VL Mode Helpers ────────────────────────────────────────
+
+/**
+ * Generate all rotations (inversions) of a note array.
+ * E.g. [D,F,C] → [[D,F,C], [F,C,D], [C,D,F]]
+ */
+export function getAllRotations(notes: string[]): string[][] {
+	const n = notes.length;
+	if (n === 0) return [notes];
+	const rotations: string[][] = [];
+	for (let r = 0; r < n; r++) {
+		rotations.push([...notes.slice(r), ...notes.slice(0, r)]);
+	}
+	return rotations;
+}
+
+/**
+ * Compute the total voice-leading movement from a previous voicing to
+ * a set of played MIDI notes (sorted ascending by pitch).
+ *
+ * @param prevVoicing  - note names of the previous chord's voicing
+ * @param playedMidi   - MIDI note numbers the player pressed (sorted ascending)
+ * @returns total semitone movement (sum of absolute differences, position-matched)
+ */
+export function scorePlayerMovement(
+	prevVoicing: string[],
+	playedMidi: number[],
+): number {
+	if (prevVoicing.length === 0 || playedMidi.length === 0) return 0;
+
+	const prevPCs = prevVoicing.map(noteToSemitone).filter(pc => pc !== -1);
+	const prevPositions = placeAscending(prevPCs);
+
+	// playedMidi is already absolute MIDI notes — normalise to keyboard-relative
+	// The keyboard starts at C3 (MIDI 48) but we just need relative distances,
+	// so use the raw MIDI values directly for movement scoring.
+	const sorted = [...playedMidi].sort((a, b) => a - b);
+	const matchLen = Math.min(prevPositions.length, sorted.length);
+
+	// Offset: align the prevPositions range to MIDI space
+	// prevPositions are 0-based chromatic indices from C3 (MIDI 48)
+	const midiBase = 48;
+	let total = 0;
+	for (let i = 0; i < matchLen; i++) {
+		total += Math.abs(sorted[i] - (prevPositions[i] + midiBase));
+	}
+	return total;
+}
+
+/**
+ * Validate a player's MIDI input for "Find the Inversion" mode (Mode B).
+ *
+ * Checks whether the played pitch classes match the voicing's pitch classes,
+ * then grades as optimal/correct/wrong based on movement distance.
+ *
+ * @param playedMidi      - MIDI note numbers currently pressed
+ * @param voicingNotes    - the base voicing notes (e.g. shell of Dm7 = [D,F,C])
+ * @param prevVoicing     - note names of the previous chord's voicing
+ * @param optimalVoicing  - the optimal rotation computed by computeVoiceLeadVoicing
+ * @returns VLValidationResult
+ */
+export function validateFindInversion(
+	playedMidi: number[],
+	voicingNotes: string[],
+	prevVoicing: string[],
+	optimalVoicing: string[],
+): VLValidationResult {
+	if (playedMidi.length === 0) {
+		return { valid: false, grade: 'wrong', playerMovement: 0, optimalMovement: 0 };
 	}
 
-	return result;
+	// Expected pitch classes (same for all rotations of a voicing)
+	const expectedPCs = new Set(voicingNotes.map(noteToSemitone).filter(pc => pc !== -1));
+	// Played pitch classes
+	const playedPCs = new Set(playedMidi.map(m => m % 12));
+
+	// Check: do played PCs match expected PCs?
+	if (playedPCs.size !== expectedPCs.size) {
+		return { valid: false, grade: 'wrong', playerMovement: 0, optimalMovement: 0 };
+	}
+	for (const pc of expectedPCs) {
+		if (!playedPCs.has(pc)) {
+			return { valid: false, grade: 'wrong', playerMovement: 0, optimalMovement: 0 };
+		}
+	}
+
+	// Pitch classes match — compute movement scores
+	const playerMovement = scorePlayerMovement(prevVoicing, playedMidi);
+	const optimalMovement = scorePlayerMovement(prevVoicing, optimalToMidi(optimalVoicing));
+
+	// Grade: if within 2 semitones of optimal → 'optimal', else 'correct'
+	const grade = playerMovement <= optimalMovement + 2 ? 'optimal' : 'correct';
+
+	return { valid: true, grade, playerMovement, optimalMovement };
+}
+
+/**
+ * Validate a player's MIDI input for "Free" mode (Mode C).
+ *
+ * Accepts any pitch-class set that matches a valid voicing of the chord.
+ * Scores purely by movement distance from the previous chord.
+ *
+ * @param playedMidi      - MIDI note numbers currently pressed
+ * @param validPCSets     - array of valid pitch-class sets (one per voicing type)
+ * @param prevVoicing     - note names of the previous chord's voicing
+ * @returns VLValidationResult (grade is always 'optimal' or 'wrong' — no penalty for voicing choice)
+ */
+export function validateFreeVoicing(
+	playedMidi: number[],
+	validPCSets: Set<number>[],
+	prevVoicing: string[],
+): VLValidationResult {
+	if (playedMidi.length === 0) {
+		return { valid: false, grade: 'wrong', playerMovement: 0, optimalMovement: 0 };
+	}
+
+	const playedPCs = new Set(playedMidi.map(m => m % 12));
+
+	// Check against each valid PC set
+	const matchesAny = validPCSets.some(expected => {
+		if (playedPCs.size !== expected.size) return false;
+		for (const pc of expected) {
+			if (!playedPCs.has(pc)) return false;
+		}
+		return true;
+	});
+
+	if (!matchesAny) {
+		return { valid: false, grade: 'wrong', playerMovement: 0, optimalMovement: 0 };
+	}
+
+	const playerMovement = scorePlayerMovement(prevVoicing, playedMidi);
+
+	return { valid: true, grade: 'optimal', playerMovement, optimalMovement: 0 };
+}
+
+/**
+ * Convert a voicing (note names) to approximate MIDI note numbers
+ * using placeAscending + a MIDI base of C3 = 48.
+ */
+function optimalToMidi(voicing: string[]): number[] {
+	const pcs = voicing.map(noteToSemitone).filter(pc => pc !== -1);
+	const positions = placeAscending(pcs);
+	return positions.map(p => p + 48); // C3 base
 }

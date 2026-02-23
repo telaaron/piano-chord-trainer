@@ -4,6 +4,7 @@
 	import type { MidiConnectionState, MidiDevice } from '$lib/services/midi';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import { noteToSemitone, NOTES_SHARPS } from '$lib/engine';
+	import { t } from '$lib/i18n';
 
 	// ─── MIDI state ──────────────────────────────────────────────
 	const midi = new MidiService();
@@ -150,24 +151,24 @@
 </script>
 
 <svelte:head>
-	<title>MIDI Test – Chord Trainer</title>
+	<title>{t('midi_test.title')} – Chord Trainer</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
 <main class="flex-1 max-w-4xl mx-auto px-4 py-8 space-y-6">
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-2xl font-bold text-[var(--text)]">MIDI Test</h1>
-			<p class="text-sm text-[var(--text-muted)] mt-1">Live view of your MIDI keyboard — verify that notes are received correctly.</p>
+			<h1 class="text-2xl font-bold text-[var(--text)]">{t('midi_test.title')}</h1>
+			<p class="text-sm text-[var(--text-muted)] mt-1">{t('midi_test.subtitle')}</p>
 		</div>
 		<a href="/train" class="px-4 py-2 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors text-[var(--text-muted)]">
-			← Back to Train
+			{t('midi_test.back')}
 		</a>
 	</div>
 
 	<!-- Connection Status -->
 	<section class="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] p-5 space-y-4">
-		<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">Connection</h2>
+		<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t('midi_test.connection')}</h2>
 
 		<div class="flex items-center gap-3 flex-wrap">
 			<div class="flex items-center gap-2">
@@ -178,17 +179,17 @@
 						: 'bg-red-500'}"></div>
 				<span class="font-medium text-[var(--text)]">
 					{#if midiState === 'connected' && midiDevices.length > 0}
-						Connected
+						{t('midi_test.connected')}
 					{:else if midiState === 'connected'}
-						API OK — No Device
+						{t('midi_test.api_ok')}
 					{:else if midiState === 'connecting'}
-						Connecting…
+						{t('midi_test.connecting')}
 					{:else if midiState === 'unsupported'}
-						Not Supported (use Chrome/Edge)
+						{t('midi_test.unsupported')}
 					{:else if midiState === 'denied'}
-						Permission Denied
+						{t('midi_test.permission_denied')}
 					{:else}
-						Disconnected
+						{t('midi_test.disconnected')}
 					{/if}
 				</span>
 			</div>
@@ -198,14 +199,14 @@
 					class="px-4 py-1.5 rounded-[var(--radius-sm)] bg-[var(--primary)] text-white text-sm font-medium hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
 					onclick={() => midi.init()}
 				>
-					Connect
+					{t('midi_test.connect_btn')}
 				</button>
 			{/if}
 		</div>
 
 		{#if midiDevices.length > 0}
 			<div class="space-y-2">
-				<p class="text-xs text-[var(--text-dim)] uppercase tracking-wide">Devices ({midiDevices.length})</p>
+				<p class="text-xs text-[var(--text-dim)] uppercase tracking-wide">{t('midi_test.devices_label')} ({midiDevices.length})</p>
 				{#each midiDevices as device}
 					<button
 						class="block w-full text-left px-4 py-2.5 rounded-[var(--radius-sm)] border transition-all cursor-pointer
@@ -215,9 +216,9 @@
 						onclick={() => selectDevice(device.id)}
 					>
 						<span class="font-medium">{device.name}</span>
-						<span class="text-xs text-[var(--text-dim)] ml-2">ID: {device.id}</span>
+						<span class="text-xs text-[var(--text-dim)] ml-2">{t('midi_test.id_label')}: {device.id}</span>
 						{#if device.id === midiSelectedDeviceId}
-							<span class="text-xs text-[var(--primary)] ml-2">● active</span>
+							<span class="text-xs text-[var(--primary)] ml-2">● {t('midi_test.active_label')}</span>
 						{/if}
 					</button>
 				{/each}
@@ -227,7 +228,7 @@
 
 	<!-- Live Piano -->
 	<section class="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] p-5 space-y-4">
-		<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">Live Keyboard</h2>
+		<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t('midi_test.live_keyboard')}</h2>
 
 		<PianoKeyboard
 			midiActiveNotes={midiActiveNotes}
@@ -238,13 +239,13 @@
 		<!-- Active notes display -->
 		<div class="flex items-center gap-4 flex-wrap">
 			<div class="text-sm text-[var(--text-muted)]">
-				Held notes:
+				{t('midi_test.held_notes')}
 				{#if activeNoteNames.length > 0}
 					<span class="font-mono font-bold text-[var(--text)]">
 						{activeNoteNames.join(' · ')}
 					</span>
 				{:else}
-					<span class="text-[var(--text-dim)]">None — press a key</span>
+					<span class="text-[var(--text-dim)]">{t('midi_test.none_press_key')}</span>
 				{/if}
 			</div>
 		</div>
@@ -266,33 +267,33 @@
 	<section class="grid grid-cols-3 gap-4">
 		<div class="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] p-4 text-center">
 			<p class="text-2xl font-bold text-[var(--text)] font-mono">{noteOnCount}</p>
-			<p class="text-xs text-[var(--text-dim)] mt-1">Note On</p>
+			<p class="text-xs text-[var(--text-dim)] mt-1">{t('midi_test.note_on')}</p>
 		</div>
 		<div class="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] p-4 text-center">
 			<p class="text-2xl font-bold text-[var(--text)] font-mono">{noteOffCount}</p>
-			<p class="text-xs text-[var(--text-dim)] mt-1">Note Off</p>
+			<p class="text-xs text-[var(--text-dim)] mt-1">{t('midi_test.note_off')}</p>
 		</div>
 		<div class="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] p-4 text-center">
 			<p class="text-2xl font-bold text-[var(--text)] font-mono">{midiActiveNotes.size}</p>
-			<p class="text-xs text-[var(--text-dim)] mt-1">Held Now</p>
+			<p class="text-xs text-[var(--text-dim)] mt-1">{t('midi_test.held_now')}</p>
 		</div>
 	</section>
 
 	<!-- Event Log -->
 	<section class="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] p-5 space-y-3">
 		<div class="flex items-center justify-between">
-			<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">Event Log</h2>
+			<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t('midi_test.event_log')}</h2>
 			<button
 				class="px-3 py-1 text-xs rounded-[var(--radius-sm)] border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors cursor-pointer text-[var(--text-muted)]"
 				onclick={clearLog}
 			>
-				Clear
+				{t('midi_test.clear_log')}
 			</button>
 		</div>
 
 		<div class="max-h-[300px] overflow-y-auto font-mono text-xs space-y-0.5 scroll-smooth">
 			{#if log.length === 0}
-				<p class="text-[var(--text-dim)] py-4 text-center">Play a note on your MIDI keyboard…</p>
+				<p class="text-[var(--text-dim)] py-4 text-center">{t('midi_test.log_empty')}</p>
 			{/if}
 			{#each log as entry}
 				<div class="flex gap-2 py-0.5
@@ -309,13 +310,13 @@
 
 	<!-- Troubleshooting -->
 	<section class="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-card)] p-5 space-y-3">
-		<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">Troubleshooting</h2>
+		<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t('midi_test.troubleshooting')}</h2>
 		<ul class="text-sm text-[var(--text-muted)] space-y-2 list-disc list-inside">
-			<li><strong>No devices shown?</strong> Make sure your MIDI keyboard is plugged in via USB <em>before</em> opening this page. Then click "Connect".</li>
-			<li><strong>"Permission Denied"?</strong> Your browser blocked MIDI access. Reset site permissions and reload.</li>
-			<li><strong>Device shows but no notes?</strong> Some keyboards need the correct MIDI channel (usually Ch 1). Check your keyboard settings.</li>
-			<li><strong>Bluetooth MIDI?</strong> Web MIDI doesn't natively support Bluetooth on most platforms. Use a USB cable or a BLE-MIDI bridge app.</li>
-			<li><strong>Notes stuck?</strong> If the piano shows notes held that you've released, try disconnecting and reconnecting the device.</li>
+			<li>{@html t('midi_test.ts_item1')}</li>
+			<li>{@html t('midi_test.ts_item2')}</li>
+			<li>{@html t('midi_test.ts_item3')}</li>
+			<li>{@html t('midi_test.ts_item4')}</li>
+			<li>{@html t('midi_test.ts_item5')}</li>
 		</ul>
 	</section>
 </main>

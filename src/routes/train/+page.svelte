@@ -12,6 +12,11 @@
 	import ProgressionEditor from '$lib/components/ProgressionEditor.svelte';
 	import ProgressionPlayer from '$lib/components/ProgressionPlayer.svelte';
 	import ProgressionResults from '$lib/components/ProgressionResults.svelte';
+	import HabitDashboard from '$lib/components/HabitDashboard.svelte';
+	import HabitOnboarding from '$lib/components/HabitOnboarding.svelte';
+	import CelebrationOverlay from '$lib/components/CelebrationOverlay.svelte';
+	import type { HabitProfile, CelebrationEvent, QuickStartSuggestion, TimeOfDay } from '$lib/engine/habits';
+	import { loadHabitProfile, saveHabitProfile, processSessionHabits, scheduleDailyReminder, scheduleStreakSaver } from '$lib/services/habits';
 	import { MidiService } from '$lib/services/midi';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
 	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadHistory, computeStats, type ProgressStats, type StreakData, type ChordTiming } from '$lib/services/progress';
@@ -19,8 +24,6 @@
 	import {
 		CHORDS_BY_DIFFICULTY,
 		CHORD_NOTATIONS,
-		VOICING_LABELS,
-		PROGRESSION_LABELS,
 		PROGRESSION_DESCRIPTIONS,
 		getNotePool,
 		getChordNotes,
@@ -32,8 +35,13 @@
 		generateProgression,
 		analyzeVoiceLeading,
 		computeVoiceLeadVoicing,
+		computeSessionOctaves,
+		PRACTICE_PLANS,
 		getWeightedChordPool,
 		pickWeightedChord,
+		validateFindInversion,
+		validateFreeVoicing,
+		getValidPCSets,
 		type Difficulty,
 		type NotationStyle,
 		type VoicingType,
@@ -46,9 +54,31 @@
 		type CustomChord,
 		type SessionEvaluation,
 		type VoiceLeadingInfo,
+		type OctaveCount,
+		type VoiceLeadingMode,
+		type VLValidationResult,
 	} from '$lib/engine';
 
 	import { formatTime } from '$lib/utils/format';
+
+	const VOICING_KEYS: Record<VoicingType, string> = {
+		'root': 'settings.voicing_root',
+		'shell': 'settings.voicing_shell',
+		'half-shell': 'settings.voicing_half_shell',
+		'full': 'settings.voicing_full',
+		'rootless-a': 'settings.voicing_rootless_a',
+		'rootless-b': 'settings.voicing_rootless_b',
+		'inversion-1': 'settings.voicing_inversion_1',
+		'inversion-2': 'settings.voicing_inversion_2',
+		'inversion-3': 'settings.voicing_inversion_3',
+	};
+
+	const PROGRESSION_KEYS: Record<ProgressionMode, string> = {
+		'random': 'settings.progression_random',
+		'2-5-1': 'settings.progression_251',
+		'cycle-of-4ths': 'settings.progression_cycle',
+		'1-6-2-5': 'settings.progression_turnaround',
+	};
 
 	// ─── Exercise descriptions ───────────────────────────────────
 	const VOICING_EXAMPLES: Record<VoicingType, string> = {
@@ -75,6 +105,13 @@
 	let midiEnabled = $state(false);
 	let streak: StreakData = $state({ current: 0, best: 0, lastDate: '' });
 	let dashStats: ProgressStats = $state(computeStats([]));
+
+	// ─── Habit Engine state ─────────────────────────────────────
+	let habitProfile: HabitProfile = $state(null as unknown as HabitProfile);
+	let showOnboarding = $state(false);
+	let pendingCelebrations: CelebrationEvent[] = $state([]);
+	let notificationCleanup: (() => void) | null = $state(null);
+	let streakSaverCleanup: (() => void) | null = $state(null);
 
 	// ─── Audio / Metronome settings ──────────────────────────────
 	let audioEnabled = $state(true);
@@ -107,8 +144,19 @@
 
 	// ─── Voice Leading state ─────────────────────────────────────
 	let voiceLeadingInfo: VoiceLeadingInfo | null = $state(null);
+	/** Fixed keyboard octave count for the entire session (prevents zoom during VL) */
+	let sessionOctaves: OctaveCount | null = $state(null);
+	/** Voice leading sub-mode */
+	let vlMode: VoiceLeadingMode = $state('guided');
+	/** VL validation result for modes B/C */
+	let vlValidation: VLValidationResult | null = $state(null);
+	/** Tracks movement scores across the session for avg display */
+	let vlMovementScores: number[] = $state([]);
+	/** Count of optimal inversions found (mode B) */
+	let vlOptimalCount = $state(0);
 
 	let screen: Screen = $state<Screen>('setup');
+	let settingsOpen = $state(false);
 	let playPhase: PlayPhase = $state<PlayPhase>('playing');
 	let timerStarted = $state(false);
 	let paused = $state(false);
@@ -150,7 +198,10 @@
 	const currentChord = $derived(chords[currentIdx] ?? '');
 	const currentData = $derived(chordsWithNotes[currentIdx] ?? null);
 	const shouldShowVoicing = $derived(
-		displayMode === 'always' || (displayMode === 'verify' && playPhase === 'verifying'),
+		// In VL modes B/C, hide the voicing on the keyboard (player must find it)
+		voiceLeadingEnabled && vlMode !== 'guided'
+			? false
+			: displayMode === 'always' || (displayMode === 'verify' && playPhase === 'verifying'),
 	);
 	const actualTotalChords = $derived(chords.length || totalChords);
 	const progress = $derived(((currentIdx + 1) / actualTotalChords) * 100);
@@ -338,6 +389,16 @@
 		earTrainingCorrect = 0;
 		earTrainingTotal = 0;
 		voiceLeadingInfo = null;
+		vlValidation = null;
+		vlMovementScores = [];
+		vlOptimalCount = 0;
+
+		// Compute stable keyboard range for the session
+		if (voiceLeadingEnabled && chordsWithNotes.length > 0) {
+			sessionOctaves = computeSessionOctaves(chordsWithNotes, accidentals);
+		} else {
+			sessionOctaves = null;
+		}
 
 		// Re-register MIDI handler (ProgressionPlayer may have overwritten it)
 		midi.onNotes(handleMidiNotes);
@@ -444,6 +505,7 @@
 
 		if (plan.id === 'voice-leading-flow') {
 			voiceLeadingEnabled = true;
+			vlMode = plan.settings.vlMode ?? vlMode;
 		} else {
 			voiceLeadingEnabled = false;
 		}
@@ -490,6 +552,7 @@
 
 		playPhase = 'playing';
 		midiMatchResult = null;
+		vlValidation = null;
 		midi.releaseAll();
 
 		// Record timing for the chord we're leaving
@@ -539,7 +602,7 @@
 		currentBeat = 0;
 
 		// Save session to progress history
-		saveSession({
+		const sessionResult = saveSession({
 			timestamp: Date.now(),
 			elapsedMs: endTime - startTime,
 			totalChords: actualTotalChords,
@@ -561,6 +624,22 @@
 
 		// Update streak
 		streak = recordPracticeDay();
+
+		// ─── Habit Engine: process session ───────────────────────
+		if (habitProfile) {
+			// Compute previous best avg for PB detection
+			const history = loadHistory();
+			const sameKey = history.filter(h => h.id !== sessionResult.id && h.settings.difficulty === difficulty && h.settings.voicing === voicing && h.settings.progressionMode === progressionMode);
+			const previousBestAvg = sameKey.length > 0 ? Math.min(...sameKey.map(h => h.avgMs)) : undefined;
+			const habitResult = processSessionHabits(sessionResult, previousBestAvg);
+			habitProfile = loadHabitProfile(); // reload after processing
+			if (habitResult.celebrations.length > 0) {
+				pendingCelebrations = habitResult.celebrations;
+			}
+		}
+
+		// Refresh dashboard stats
+		dashStats = computeStats(loadHistory());
 	}
 
 	function restartGame() {
@@ -578,6 +657,7 @@
 		pauseAccumulated = 0;
 		showExerciseInfo = false;
 		voiceLeadingInfo = null;
+		vlValidation = null;
 		earTrainingRevealed = false;
 		if (timerHandle) clearInterval(timerHandle);
 		timerHandle = null;
@@ -631,10 +711,15 @@
 
 		if (screen !== 'playing' || !currentData || !midiEnabled) return;
 
-		// Use inversion-aware check when voicing is an inversion
+		// ── Voice Leading modes B/C: custom validation ──
+		if (voiceLeadingEnabled && vlMode !== 'guided' && activeNotes.size > 0) {
+			handleVLModeMidi(activeNotes);
+			return;
+		}
+
+		// ── Standard / Guided mode validation ──
 		let result: ChordMatchResult;
 		if (voicing.startsWith('inversion-') && currentData.voicing.length > 0) {
-			// First note in voicing array is the bass note for this inversion
 			result = midi.checkChordWithBass(currentData.voicing, currentData.voicing[0]);
 		} else {
 			result = midi.checkChordLenient(currentData.voicing);
@@ -645,14 +730,11 @@
 			midiTotalAttempts++;
 			midiCorrectCount++;
 
-			// In-Time mode: record when the chord was played (timing relative to beat 1)
 			if (inTimeMode && inTimeChordPlayedAt === null) {
 				const timeSinceBeatOne = Date.now() - inTimeBeatOneTime;
 				inTimeChordPlayedAt = timeSinceBeatOne;
 			}
 
-			// Auto-advance after short delay (let player hear the chord)
-			// In In-Time mode, don't auto-advance on correct — wait for beat
 			if (!inTimeMode && !autoAdvanceTimeout) {
 				autoAdvanceTimeout = setTimeout(() => {
 					autoAdvanceTimeout = null;
@@ -660,10 +742,77 @@
 				}, 400);
 			}
 		} else if (activeNotes.size > 0 && result.accuracy < 1) {
-			// Wrong attempt tracked when player has enough notes held
 			const expectedCount = currentData.voicing.length;
 			if (activeNotes.size >= expectedCount) {
 				midiTotalAttempts++;
+			}
+		}
+	}
+
+	/**
+	 * Handle MIDI input for VL modes B (Find Inversion) and C (Free).
+	 */
+	function handleVLModeMidi(activeNotes: Set<number>) {
+		if (!currentData) return;
+		const midiNotes = [...activeNotes];
+		const expectedCount = vlMode === 'free' ? 3 : currentData.voicing.length; // at least 3 notes for free mode
+
+		// Wait until player has enough notes held
+		if (midiNotes.length < expectedCount) {
+			vlValidation = null;
+			return;
+		}
+
+		const prevVoicing = currentIdx > 0 ? chordsWithNotes[currentIdx - 1]?.voicing ?? [] : [];
+
+		if (vlMode === 'find-inversion') {
+			// Get the base voicing notes (before voice-led rearrangement)
+			const baseNotes = getVoicingNotes(currentData.notes, voicing, currentData.root, accidentals);
+			const result = validateFindInversion(midiNotes, baseNotes, prevVoicing, currentData.voicing);
+			vlValidation = result;
+
+			if (result.valid) {
+				midiTotalAttempts++;
+				midiCorrectCount++;
+				vlMovementScores.push(result.playerMovement);
+				if (result.grade === 'optimal') vlOptimalCount++;
+
+				// Set MIDI match result for compatibility
+				midiMatchResult = { correct: true, missing: [], extra: [], accuracy: 1 };
+
+				// Auto-advance (longer delay for feedback reading)
+				if (!autoAdvanceTimeout) {
+					autoAdvanceTimeout = setTimeout(() => {
+						autoAdvanceTimeout = null;
+						nextChord();
+					}, result.grade === 'optimal' ? 600 : 1200);
+				}
+			} else {
+				midiMatchResult = { correct: false, missing: [], extra: [], accuracy: 0 };
+				midiTotalAttempts++;
+			}
+		} else if (vlMode === 'free') {
+			// Get all valid pitch-class sets for this chord
+			const validSets = getValidPCSets(currentData.root, currentData.type, accidentals);
+			const result = validateFreeVoicing(midiNotes, validSets, prevVoicing);
+			vlValidation = result;
+
+			if (result.valid) {
+				midiTotalAttempts++;
+				midiCorrectCount++;
+				vlMovementScores.push(result.playerMovement);
+
+				midiMatchResult = { correct: true, missing: [], extra: [], accuracy: 1 };
+
+				if (!autoAdvanceTimeout) {
+					autoAdvanceTimeout = setTimeout(() => {
+						autoAdvanceTimeout = null;
+						nextChord();
+					}, 800);
+				}
+			} else {
+				midiMatchResult = { correct: false, missing: [], extra: [], accuracy: 0 };
+				if (midiNotes.length >= 3) midiTotalAttempts++;
 			}
 		}
 	}
@@ -970,6 +1119,23 @@
 		// Load dashboard stats
 		dashStats = computeStats(loadHistory());
 
+		// ─── Habit Engine init ───────────────────────────────────
+		habitProfile = loadHabitProfile();
+		if (!habitProfile.onboardingDone) {
+			showOnboarding = true;
+		}
+		// Schedule notifications if user opted in
+		if (habitProfile.notificationsEnabled) {
+			const dailyCleanup = scheduleDailyReminder(habitProfile);
+			const streakCleanup = scheduleStreakSaver(habitProfile);
+			notificationCleanup = dailyCleanup;
+			streakSaverCleanup = streakCleanup;
+		}
+		// Register service worker for push notifications
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js').catch(() => {});
+		}
+
 		// MIDI setup — always probe for devices so we can show auto-detection
 		midi.onNotes(handleMidiNotes);
 		midi.onConnection((state) => {
@@ -1000,6 +1166,8 @@
 			if (autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
 			midi.destroy();
 			disposeAll();
+			notificationCleanup?.();
+			streakSaverCleanup?.();
 		};
 	});
 </script>
@@ -1035,29 +1203,39 @@
 		{#if screen === 'setup'}
 			<div in:fade={{ duration: 200, delay: 100 }}>
 				<!-- Dashboard header (full width) -->
-				<div class="dashboard-header">
-					<div class="dashboard-top">
-						<div class="greeting-streak">
-							<span class="greeting">{greeting}!</span>
-							<div class="streak-inline">
-								<img src="/elements/images/streak-flame.webp" width="18" height="18" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
-								<span class="streak-num">{streak.current}</span>
-								<span class="streak-label">day streak</span>
+				{#if habitProfile}
+					<HabitDashboard
+						profile={habitProfile}
+						{streak}
+						weekDots={sbWeekDots}
+						midiConnected={midiState === 'connected' && midiDevices.length > 0}
+						onquickstart={(suggestion) => {
+							const plan = PRACTICE_PLANS.find(p => p.id === suggestion.planId);
+							if (plan) {
+								startPlan(plan);
+							} else {
+								startGame();
+							}
+						}}
+					/>
+				{:else}
+					<div class="dashboard-header">
+						<div class="dashboard-top">
+							<div class="greeting-streak">
+								<span class="greeting">{greeting}!</span>
+								<div class="streak-inline">
+									<img src="/elements/images/streak-flame.webp" width="18" height="18" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
+									<span class="streak-num">{streak.current}</span>
+									<span class="streak-label">day streak</span>
+								</div>
+							</div>
+							<div class="midi-pill" class:connected={midiState === 'connected' && midiDevices.length > 0}>
+								<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
+								<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : 'No MIDI'}</span>
 							</div>
 						</div>
-						<div class="midi-pill" class:connected={midiState === 'connected' && midiDevices.length > 0}>
-							<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
-							<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : 'No MIDI'}</span>
-						</div>
 					</div>
-					<div class="weekly-goal-row">
-						<span class="goal-label">Weekly Goal</span>
-						<div class="goal-bar">
-							<div class="goal-fill" style="width: {weeklyGoalPct}%"></div>
-						</div>
-						<span class="goal-pct">{weeklyGoalPct}%</span>
-					</div>
-				</div>
+				{/if}
 
 				<!-- Two-column layout -->
 				<div class="train-layout">
@@ -1077,6 +1255,7 @@
 							bind:inTimeBars
 							bind:adaptiveEnabled
 							bind:voiceLeadingEnabled
+							bind:vlMode
 							{streak}
 							{midiState}
 							{midiDevices}
@@ -1110,321 +1289,294 @@
 							</div>
 						</button>
 
-						<!-- Custom Settings -->
-						<details class="card group">
-							<summary class="cursor-pointer p-5 sm:p-6 flex items-center gap-4 justify-between">
-								<img
-									src="/elements/icons/icon-settings.webp"
-									alt="Settings"
-									width="48"
-									height="48"
-									loading="lazy"
-									style="width:48px; height:48px; flex-shrink:0; mix-blend-mode:lighten; object-fit:contain; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));"
-								/>
-								<div class="flex-1 min-w-0">
-									<div class="text-sm font-medium">{t('settings.custom_settings')}</div>
-									<div class="text-xs text-[var(--text-dim)] mt-1 flex flex-wrap gap-2">
-										<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">
-											{progressionMode === 'random' ? `${totalChords} ${t('results.chords')}` : PROGRESSION_LABELS[progressionMode]}
-										</span>
-										<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full capitalize">{t('settings.difficulty_' + difficulty)}</span>
-										<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">{VOICING_LABELS[voicing]}</span>
-										{#if midiEnabled}
-											<span class="bg-[var(--accent-green)]/20 text-[var(--accent-green)] px-2 py-0.5 rounded-full">MIDI</span>
-										{/if}
-									</div>
-								</div>
-								<svg class="w-5 h-5 text-[var(--text-dim)] transition-transform group-open:rotate-180 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-								</svg>
-							</summary>
-							<div class="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 border-t border-[var(--border)] space-y-6">
-								<!-- Start custom -->
-								<button
-									class="w-full h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer mt-4"
-									onclick={startGame}
-								>
-									▶ {t('settings.start_training')}
-								</button>
-								<!-- Practice mode -->
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">{t('settings.progression_mode')}</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">How chords are sequenced. Progressions train real jazz patterns.</p>
-									<div class="grid grid-cols-2 gap-3">
-										{#each [
-										{ val: 'random' as ProgressionMode, label: t('settings.progression_random'), sub: 'No pattern' },
-										{ val: '2-5-1' as ProgressionMode, label: t('settings.progression_251'), sub: 'Jazz standard' },
-										{ val: 'cycle-of-4ths' as ProgressionMode, label: t('settings.progression_cycle'), sub: 'All 12 keys' },
-										{ val: '1-6-2-5' as ProgressionMode, label: t('settings.progression_turnaround'), sub: 'Turnaround' },
-										] as opt}
-											<button
-												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(progressionMode, opt.val)}"
-												onclick={() => (progressionMode = opt.val)}
-											>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-								</fieldset>
-								<!-- MIDI Toggle -->
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">MIDI Recognition</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">Auto-advance when you play the correct chord</p>
-									<div class="grid grid-cols-2 gap-3">
-										{#each [
-										{ val: false, label: 'Off', sub: 'Space to advance' },
-										{ val: true, label: 'On', sub: 'Auto-advance' },
-										] as opt}
-											<button
-												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(midiEnabled, opt.val)}"
-												onclick={() => (midiEnabled = opt.val)}
-											>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-									<p class="mt-2 text-xs text-[var(--text-dim)]">
-										Web MIDI requires a desktop browser (Chrome/Edge). Not available on iPad/iPhone.
-									</p>
-								</fieldset>
-								<!-- Difficulty -->
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">{t('settings.difficulty')}</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">Chord types: Beginner = 5 basic, Advanced = 14+ extended</p>
-									<div class="grid grid-cols-3 gap-3">
-										{#each [
-										{ val: 'beginner' as Difficulty, label: t('settings.difficulty_beginner'), sub: '5 types' },
-										{ val: 'intermediate' as Difficulty, label: t('settings.difficulty_intermediate'), sub: '9 types' },
-										{ val: 'advanced' as Difficulty, label: t('settings.difficulty_advanced'), sub: '14+ types' },
-										] as opt}
-											<button
-												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(difficulty, opt.val)}"
-												onclick={() => (difficulty = opt.val)}
-											>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-								</fieldset>
-								<!-- Accidentals -->
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">{t('settings.accidentals')}</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">Whether black keys use # (sharp) or ♭ (flat). Jazz typically uses flats.</p>
-									<div class="grid grid-cols-3 gap-3">
-										{#each [
-											{ val: 'sharps' as AccidentalPreference, label: t('settings.accidentals_sharps'), sub: 'C#, D#, F#, G#, A#' },
-											{ val: 'flats' as AccidentalPreference, label: t('settings.accidentals_flats'), sub: 'Db, Eb, Gb, Ab, Bb' },
-											{ val: 'both' as AccidentalPreference, label: t('settings.accidentals_both'), sub: '# and ♭ mixed' },
-										] as opt}
-											<button
-												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(accidentals, opt.val)}"
-												onclick={() => (accidentals = opt.val)}
-											>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-								</fieldset>
-								<!-- Notation system -->
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">Notation System</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">International: B = the note below C. German: H = the note below C, B = Bb.</p>
-									<div class="grid grid-cols-2 gap-3">
-										{#each [
-											{ val: 'international' as NotationSystem, label: 'International', sub: 'C D E F G A B' },
-											{ val: 'german' as NotationSystem, label: 'German', sub: 'C D E F G A H (B=♭)' },
-										] as opt}
-											<button
-												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(notationSystem, opt.val)}"
-												onclick={() => (notationSystem = opt.val)}
-											>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-								</fieldset>
-								<!-- Chord notation style -->
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">Chord Notation</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">How chord types are written. Standard = spelled out, Symbols = Δ, -, ø etc.</p>
-									<div class="grid grid-cols-3 gap-3">
-										{#each [
-											{ val: 'standard' as NotationStyle, label: 'Standard', sub: 'CMaj7, Cm7' },
-											{ val: 'symbols' as NotationStyle, label: 'Symbols', sub: 'CΔ7, C-7, Cø7' },
-											{ val: 'short' as NotationStyle, label: 'Short', sub: 'CM7, Cmi7' },
-										] as opt}
-											<button
-												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(notation, opt.val)}"
-												onclick={() => (notation = opt.val)}
-											>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-								</fieldset>
-								<!-- Voicing type -->
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">Voicing Type</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">Determines which notes of a chord you play.</p>
-									<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">Basics</div>
-									<div class="grid grid-cols-2 gap-3">
-										{#each [
-											{ val: 'root' as VoicingType, label: 'Root Position', sub: 'Root + all notes from bottom.' },
-											{ val: 'shell' as VoicingType, label: 'Shell Voicing', sub: 'Root + 3rd + 7th only.' },
-											{ val: 'half-shell' as VoicingType, label: 'Half Shell', sub: '3rd/7th around the root.' },
-											{ val: 'full' as VoicingType, label: 'Full Voicing', sub: 'All notes in jazz order: 1-7-3-5.' },
-										] as opt}
-											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voicing, opt.val)}" onclick={() => (voicing = opt.val)}>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-									<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">🎹 Left-Hand Voicings</div>
-									<div class="grid grid-cols-2 gap-3">
-										{#each [
-											{ val: 'rootless-a' as VoicingType, label: 'Rootless A', sub: '3–5–7–9 · Bill Evans style.' },
-											{ val: 'rootless-b' as VoicingType, label: 'Rootless B', sub: '7–9–3–5 · Complement to Type A.' },
-										] as opt}
-											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voicing, opt.val)}" onclick={() => (voicing = opt.val)}>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-									<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">🔄 Inversions</div>
-									<div class="grid grid-cols-3 gap-3">
-										{#each [
-											{ val: 'inversion-1' as VoicingType, label: '1st Inversion', sub: '3rd on bottom.' },
-											{ val: 'inversion-2' as VoicingType, label: '2nd Inversion', sub: '5th on bottom.' },
-											{ val: 'inversion-3' as VoicingType, label: '3rd Inversion', sub: '7th on bottom.' },
-										] as opt}
-											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voicing, opt.val)}" onclick={() => (voicing = opt.val)}>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-								</fieldset>
-								<!-- Display mode -->
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">Note Display</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">Whether individual chord notes are shown on the keyboard.</p>
-									<div class="grid grid-cols-3 gap-3">
-										{#each [
-											{ val: 'off' as DisplayMode, label: 'Off', sub: 'Play blind — no help' },
-											{ val: 'always' as DisplayMode, label: 'Always', sub: 'Notes visible on keyboard' },
-											{ val: 'verify' as DisplayMode, label: 'Verify', sub: midiEnabled ? 'N/A with MIDI' : 'Play first, then reveal' },
-										] as opt}
-											<button
-												class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(displayMode, opt.val)} {opt.val === 'verify' && midiEnabled ? 'opacity-40 cursor-not-allowed' : ''}"
-												onclick={() => { if (!(opt.val === 'verify' && midiEnabled)) displayMode = opt.val; }}
-												disabled={opt.val === 'verify' && midiEnabled}
-											>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-								</fieldset>
-								<!-- Chord count -->
-								{#if progressionMode === 'random'}
-									<fieldset>
-										<legend class="text-sm font-medium mb-3">Number of Chords</legend>
-										<input
-											type="number"
-											min="5"
-											max="50"
-											bind:value={totalChords}
-											class="w-full px-4 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-										/>
-									</fieldset>
-								{:else}
-									<div class="p-3 bg-[var(--bg)] rounded-[var(--radius)] border border-[var(--border)] text-sm text-[var(--text-muted)]">
-										{PROGRESSION_DESCRIPTIONS[progressionMode]}
-									</div>
-								{/if}
-								<!-- Advanced Modes -->
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">In-Time Mode</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">Chord changes happen on the beat. Trains timing instead of speed.</p>
-									<div class="grid grid-cols-2 gap-3">
-										{#each [
-											{ val: false, label: 'Off', sub: 'Speed drill' },
-											{ val: true, label: 'On', sub: 'Play on the beat' },
-										] as opt}
-											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(inTimeMode, opt.val)}" onclick={() => (inTimeMode = opt.val)}>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-									{#if inTimeMode}
-										<div class="mt-3">
-											<div class="text-xs font-medium text-[var(--text-muted)] mb-2">Bars per Chord</div>
-											<div class="grid grid-cols-3 gap-3">
-												{#each [1, 2, 4] as bars}
-													<button class="p-2 rounded-[var(--radius)] border-2 transition-all text-center {sel(inTimeBars, bars)}" onclick={() => (inTimeBars = bars)}>
-														<div class="font-semibold text-sm">{bars}</div>
-														<div class="text-xs text-[var(--text-dim)]">{bars === 1 ? 'bar' : 'bars'}</div>
-													</button>
-												{/each}
-											</div>
-										</div>
+						<!-- Training einrichten trigger -->
+					<button
+						class="card w-full p-5 sm:p-6 text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors group"
+						onclick={() => settingsOpen = true}
+					>
+						<div class="flex items-center gap-4">
+							<img
+								src="/elements/icons/icon-settings.webp"
+								alt="Settings"
+								width="48"
+								height="48"
+								loading="lazy"
+								style="width:48px; height:48px; flex-shrink:0; mix-blend-mode:lighten; object-fit:contain; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));"
+							/>
+							<div class="flex-1 min-w-0">
+								<div class="text-sm font-medium group-hover:text-[var(--primary)] transition-colors">{t('settings.custom_settings')}</div>
+								<div class="text-xs text-[var(--text-dim)] mt-1 flex flex-wrap gap-2">
+									<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">
+										{progressionMode === 'random' ? `${totalChords} ${t('results.chords')}` : t(PROGRESSION_KEYS[progressionMode])}
+									</span>
+									<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full capitalize">{t('settings.difficulty_' + difficulty)}</span>
+									<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">{t(VOICING_KEYS[voicing])}</span>
+									{#if midiEnabled}
+										<span class="bg-[var(--accent-green)]/20 text-[var(--accent-green)] px-2 py-0.5 rounded-full">MIDI</span>
 									{/if}
-								</fieldset>
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">Adaptive Difficulty</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">Weak chords appear more often. Spaced repetition for your drills.</p>
-									<div class="grid grid-cols-2 gap-3">
-										{#each [
-											{ val: false, label: 'Off', sub: 'Equal weighting' },
-											{ val: true, label: 'On', sub: 'Adapt to you' },
-										] as opt}
-											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(adaptiveEnabled, opt.val)}" onclick={() => (adaptiveEnabled = opt.val)}>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-								</fieldset>
-								<fieldset>
-									<legend class="text-sm font-medium mb-1">Voice Leading</legend>
-									<p class="text-xs text-[var(--text-dim)] mb-3">Highlight common tones and note movements between chords.</p>
-									<div class="grid grid-cols-2 gap-3">
-										{#each [
-											{ val: false, label: 'Off', sub: 'Standard display' },
-											{ val: true, label: 'On', sub: 'Show connections' },
-										] as opt}
-											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voiceLeadingEnabled, opt.val)}" onclick={() => (voiceLeadingEnabled = opt.val)}>
-												<div class="font-semibold text-sm">{opt.label}</div>
-												<div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
-											</button>
-										{/each}
-									</div>
-								</fieldset>
-								<!-- Ear Training -->
-								<button
-									class="w-full p-4 rounded-[var(--radius)] border-2 border-[var(--border)] hover:border-[var(--accent-amber)] transition-all text-left group"
-									onclick={startEarTraining}
-								>
-									<div class="flex items-center gap-3">
-										<span class="text-2xl">👂</span>
-										<div>
-											<div class="font-semibold text-sm group-hover:text-[var(--accent-amber)] transition-colors">Ear Training Mode</div>
-											<div class="text-xs text-[var(--text-dim)] mt-0.5">Hear a chord, play it blind. No chord name shown.</div>
-										</div>
-									</div>
-								</button>
+								</div>
 							</div>
-						</details>
+							<div class="text-[var(--text-dim)] text-xl group-hover:text-[var(--primary)] transition-colors flex-shrink-0">→</div>
+						</div>
+					</button>
 					</div>
+				</div>
+			</div>
+		{/if}
+
+		<!-- ─── Training einrichten Modal ─── -->
+		{#if settingsOpen}
+			<div
+				class="fixed inset-0 z-40 bg-black/75"
+				transition:fade={{ duration: 180 }}
+				onclick={() => settingsOpen = false}
+				role="presentation"
+			></div>
+			<div
+				class="settings-modal"
+				transition:fly={{ y: 500, duration: 340, opacity: 1 }}
+				role="dialog"
+				aria-modal="true"
+			>
+				<div class="settings-modal-header">
+					<h2 class="text-base font-bold">{t('settings.custom_settings')}</h2>
+					<button
+						class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-muted)] transition-colors text-2xl leading-none cursor-pointer text-[var(--text-dim)] hover:text-[var(--text)]"
+						onclick={() => settingsOpen = false}
+						aria-label="Schließen"
+					>×</button>
+				</div>
+				<div class="settings-modal-body space-y-6">
+					<button
+						class="w-full h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
+						onclick={() => { settingsOpen = false; startGame(); }}
+					>▶ {t('settings.start_training')}</button>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.progression_mode')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.progression_desc')}</p>
+						<div class="grid grid-cols-2 gap-3">
+							{#each [
+								{ val: 'random' as ProgressionMode, label: t('settings.progression_random'), sub: t('settings.progression_random_sub') },
+								{ val: '2-5-1' as ProgressionMode, label: t('settings.progression_251'), sub: t('settings.progression_251_sub') },
+								{ val: 'cycle-of-4ths' as ProgressionMode, label: t('settings.progression_cycle'), sub: t('settings.progression_cycle_sub') },
+								{ val: '1-6-2-5' as ProgressionMode, label: t('settings.progression_turnaround'), sub: t('settings.progression_turnaround_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(progressionMode, opt.val)}" onclick={() => (progressionMode = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.midi_recognition')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.midi_desc')}</p>
+						<div class="grid grid-cols-2 gap-3">
+							{#each [
+								{ val: false, label: t('settings.on_off_off'), sub: t('settings.midi_off_sub') },
+								{ val: true, label: t('settings.on_off_on'), sub: t('settings.midi_on_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(midiEnabled, opt.val)}" onclick={() => (midiEnabled = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+						<p class="mt-2 text-xs text-[var(--text-dim)]">{t('settings.midi_note')}</p>
+					</fieldset>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.difficulty')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.difficulty_desc')}</p>
+						<div class="grid grid-cols-3 gap-3">
+							{#each [
+								{ val: 'beginner' as Difficulty, label: t('settings.difficulty_beginner'), sub: t('settings.difficulty_beginner_sub') },
+								{ val: 'intermediate' as Difficulty, label: t('settings.difficulty_intermediate'), sub: t('settings.difficulty_intermediate_sub') },
+								{ val: 'advanced' as Difficulty, label: t('settings.difficulty_advanced'), sub: t('settings.difficulty_advanced_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left overflow-hidden {sel(difficulty, opt.val)}" onclick={() => (difficulty = opt.val)}>
+									<div class="font-semibold text-sm truncate">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.accidentals')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.accidentals_desc')}</p>
+						<div class="grid grid-cols-3 gap-3">
+							{#each [
+								{ val: 'sharps' as AccidentalPreference, label: t('settings.accidentals_sharps'), sub: t('settings.accidentals_sharps_sub') },
+								{ val: 'flats' as AccidentalPreference, label: t('settings.accidentals_flats'), sub: t('settings.accidentals_flats_sub') },
+								{ val: 'both' as AccidentalPreference, label: t('settings.accidentals_both'), sub: t('settings.accidentals_both_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(accidentals, opt.val)}" onclick={() => (accidentals = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.notation_system')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.notation_system_desc')}</p>
+						<div class="grid grid-cols-2 gap-3">
+							{#each [
+								{ val: 'international' as NotationSystem, label: t('settings.notation_system_international'), sub: t('settings.notation_system_international_sub') },
+								{ val: 'german' as NotationSystem, label: t('settings.notation_system_german'), sub: t('settings.notation_system_german_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(notationSystem, opt.val)}" onclick={() => (notationSystem = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.chord_notation_title')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.chord_notation_desc')}</p>
+						<div class="grid grid-cols-3 gap-3">
+							{#each [
+								{ val: 'standard' as NotationStyle, label: t('settings.notation_standard'), sub: t('settings.notation_standard_sub') },
+								{ val: 'symbols' as NotationStyle, label: t('settings.notation_symbols'), sub: t('settings.notation_symbols_sub') },
+								{ val: 'short' as NotationStyle, label: t('settings.notation_short'), sub: t('settings.notation_short_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(notation, opt.val)}" onclick={() => (notation = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.voicing')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.voicing_desc')}</p>
+						<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">{t('settings.voicing_basics')}</div>
+						<div class="grid grid-cols-2 gap-3">
+							{#each [
+								{ val: 'root' as VoicingType, label: t('settings.voicing_root'), sub: t('settings.voicing_root_sub') },
+								{ val: 'shell' as VoicingType, label: t('settings.voicing_shell'), sub: t('settings.voicing_shell_sub') },
+								{ val: 'half-shell' as VoicingType, label: t('settings.voicing_half_shell'), sub: t('settings.voicing_half_shell_sub') },
+								{ val: 'full' as VoicingType, label: t('settings.voicing_full'), sub: t('settings.voicing_full_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voicing, opt.val)}" onclick={() => (voicing = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+						<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">🎹 {t('settings.voicing_left_hand')}</div>
+						<div class="grid grid-cols-2 gap-3">
+							{#each [
+								{ val: 'rootless-a' as VoicingType, label: t('settings.voicing_rootless_a'), sub: t('settings.voicing_rootless_a_sub') },
+								{ val: 'rootless-b' as VoicingType, label: t('settings.voicing_rootless_b'), sub: t('settings.voicing_rootless_b_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voicing, opt.val)}" onclick={() => (voicing = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+						<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">🔄 {t('settings.voicing_inversions_group')}</div>
+						<div class="grid grid-cols-3 gap-3">
+							{#each [
+								{ val: 'inversion-1' as VoicingType, label: t('settings.voicing_inversion_1'), sub: t('settings.voicing_inversion_1_sub') },
+								{ val: 'inversion-2' as VoicingType, label: t('settings.voicing_inversion_2'), sub: t('settings.voicing_inversion_2_sub') },
+								{ val: 'inversion-3' as VoicingType, label: t('settings.voicing_inversion_3'), sub: t('settings.voicing_inversion_3_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voicing, opt.val)}" onclick={() => (voicing = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.display_mode')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.display_mode_desc')}</p>
+						<div class="grid grid-cols-3 gap-3">
+							{#each [
+								{ val: 'off' as DisplayMode, label: t('settings.display_mode_off'), sub: t('settings.display_mode_off_sub') },
+								{ val: 'always' as DisplayMode, label: t('settings.display_mode_always'), sub: t('settings.display_mode_always_sub') },
+								{ val: 'verify' as DisplayMode, label: t('settings.display_mode_verify'), sub: midiEnabled ? t('settings.display_mode_verify_midi') : t('settings.display_mode_verify_sub') },
+							] as opt}
+								<button
+									class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(displayMode, opt.val)} {opt.val === 'verify' && midiEnabled ? 'opacity-40 cursor-not-allowed' : ''}"
+									onclick={() => { if (!(opt.val === 'verify' && midiEnabled)) displayMode = opt.val; }}
+									disabled={opt.val === 'verify' && midiEnabled}
+								><div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div></button>
+							{/each}
+						</div>
+					</fieldset>
+					{#if progressionMode === 'random'}
+						<fieldset>
+							<legend class="text-sm font-medium mb-3">{t('settings.chord_count')}</legend>
+							<input type="number" min="5" max="50" bind:value={totalChords}
+								class="w-full px-4 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+							/>
+						</fieldset>
+					{:else}
+						<div class="p-3 bg-[var(--bg)] rounded-[var(--radius)] border border-[var(--border)] text-sm text-[var(--text-muted)]">
+							{t(PROGRESSION_KEYS[progressionMode])}
+						</div>
+					{/if}
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.in_time_mode')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.in_time_desc')}</p>
+						<div class="grid grid-cols-2 gap-3">
+							{#each [
+								{ val: false, label: t('settings.on_off_off'), sub: t('settings.in_time_off_sub') },
+								{ val: true, label: t('settings.on_off_on'), sub: t('settings.in_time_on_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(inTimeMode, opt.val)}" onclick={() => (inTimeMode = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+						{#if inTimeMode}
+							<div class="mt-3">
+								<div class="text-xs font-medium text-[var(--text-muted)] mb-2">{t('settings.bars_per_chord')}</div>
+								<div class="grid grid-cols-3 gap-3">
+									{#each [1, 2, 4] as bars}
+										<button class="p-2 rounded-[var(--radius)] border-2 transition-all text-center {sel(inTimeBars, bars)}" onclick={() => (inTimeBars = bars)}>
+											<div class="font-semibold text-sm">{bars}</div>
+											<div class="text-xs text-[var(--text-dim)]">{bars === 1 ? t('settings.bar_singular') : t('settings.bar_plural')}</div>
+										</button>
+									{/each}
+								</div>
+							</div>
+						{/if}
+					</fieldset>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.adaptive_mode')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.adaptive_desc')}</p>
+						<div class="grid grid-cols-2 gap-3">
+							{#each [
+								{ val: false, label: t('settings.on_off_off'), sub: t('settings.adaptive_off_sub') },
+								{ val: true, label: t('settings.on_off_on'), sub: t('settings.adaptive_on_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(adaptiveEnabled, opt.val)}" onclick={() => (adaptiveEnabled = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+					</fieldset>
+					<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.voice_leading')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.voice_leading_desc')}</p>
+						<div class="grid grid-cols-2 gap-3">
+							{#each [
+								{ val: false, label: t('settings.on_off_off'), sub: t('settings.voice_leading_off_sub') },
+								{ val: true, label: t('settings.on_off_on'), sub: t('settings.voice_leading_on_sub') },
+							] as opt}
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(voiceLeadingEnabled, opt.val)}" onclick={() => (voiceLeadingEnabled = opt.val)}>
+									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+								</button>
+							{/each}
+						</div>
+					</fieldset>
+					<button
+						class="w-full p-4 rounded-[var(--radius)] border-2 border-[var(--border)] hover:border-[var(--accent-amber)] transition-all text-left group"
+						onclick={() => { settingsOpen = false; startEarTraining(); }}
+					>
+						<div class="flex items-center gap-3">
+							<span class="text-2xl">👂</span>
+							<div>
+								<div class="font-semibold text-sm group-hover:text-[var(--accent-amber)] transition-colors">Ear Training Mode</div>
+								<div class="text-xs text-[var(--text-dim)] mt-0.5">Hear a chord, play it blind. No chord name shown.</div>
+							</div>
+						</div>
+					</button>
 				</div>
 			</div>
 		{/if}
@@ -1483,11 +1635,11 @@
 				</button>
 				<div class="flex items-center gap-3">
 					<div class="text-sm text-[var(--text-muted)] text-right">
-						<span class="font-semibold text-[var(--text)]">{t('settings.voicing_' + voicing.replace(/-/g, '_'))}</span>
+						<span class="font-semibold text-[var(--text)]">{t(VOICING_KEYS[voicing])}</span>
 						<span class="mx-1">·</span>
 						<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
 						<span class="mx-1">·</span>
-						<span>{t('settings.progression_' + (progressionMode === 'cycle-of-4ths' ? 'cycle' : progressionMode === '1-6-2-5' ? 'turnaround' : progressionMode))}</span>
+						<span>{t(PROGRESSION_KEYS[progressionMode])}</span>
 					</div>
 					<button
 						class="w-7 h-7 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer flex items-center justify-center text-sm"
@@ -1651,7 +1803,7 @@
 
 				<!-- Chord card + keyboard (dimmed when paused or not started) -->
 				<div class="{paused ? 'opacity-30 pointer-events-none' : ''}">
-				<ChordCard chord={currentChord} system={notationSystem} onclick={nextChord} voiceLeading={voiceLeadingInfo} showVoiceLeading={voiceLeadingEnabled}>
+				<ChordCard chord={currentChord} system={notationSystem} onclick={nextChord} voiceLeading={voiceLeadingInfo} showVoiceLeading={voiceLeadingEnabled} vlMode={voiceLeadingEnabled ? vlMode : 'guided'} voicingTypeHint={voiceLeadingEnabled && vlMode === 'find-inversion' ? t('settings.voicing_' + voicing.replace(/-/g, '_')) : ''}>
 					<!-- Piano keyboard inside card -->
 					<div class="mt-8">
 						<PianoKeyboard
@@ -1663,11 +1815,27 @@
 							midiExpectedPitchClasses={expectedPitchClasses}
 							voiceLeading={voiceLeadingInfo}
 							showVoiceLeading={voiceLeadingEnabled}
+							forceOctaves={sessionOctaves}
 						/>
 					</div>
 
-					<!-- MIDI match feedback -->
-					{#if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
+					<!-- VL Mode B/C feedback -->
+					{#if voiceLeadingEnabled && vlMode !== 'guided' && vlValidation && midiActiveNotes.size > 0}
+						<div class="mt-4 text-center">
+							{#if vlValidation.grade === 'optimal'}
+								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Optimal!</span>
+								<div class="text-xs text-[var(--text-muted)] mt-0.5">Bewegung: {vlValidation.playerMovement} Halbtöne</div>
+							{:else if vlValidation.grade === 'correct'}
+								<span class="text-[var(--accent-amber)] font-semibold">Richtig, aber nicht engste Lage</span>
+								<div class="text-xs text-[var(--text-muted)] mt-0.5">
+									Deine Bewegung: {vlValidation.playerMovement} HT — Optimal: {vlValidation.optimalMovement} HT
+								</div>
+							{:else}
+								<span class="text-[var(--accent-red)] text-sm">Falsche Töne</span>
+							{/if}
+						</div>
+					<!-- Standard MIDI match feedback (guided mode / non-VL) -->
+					{:else if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
 						<div class="mt-4 text-center">
 							{#if midiMatchResult.correct}
 								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Correct!</span>
@@ -1902,6 +2070,10 @@
 					: 0}
 				{earTrainingCorrect}
 				{earTrainingTotal}
+				vlModeActive={voiceLeadingEnabled && vlMode !== 'guided' ? vlMode : ''}
+				vlAvgMovement={vlMovementScores.length > 0 ? Math.round(vlMovementScores.reduce((a, b) => a + b, 0) / vlMovementScores.length) : 0}
+				{vlOptimalCount}
+				vlTotalChords={vlMovementScores.length}
 				onrestart={restartGame}
 				onreset={resetToSetup}
 			/>
@@ -1915,6 +2087,33 @@
 		message={midiDisconnectToast}
 		onDismiss={() => (midiDisconnectToast = null)}
 		onReconnect={() => { midiDisconnectToast = null; midi.init(); }}
+	/>
+{/if}
+
+{#if showOnboarding}
+	<HabitOnboarding
+		oncomplete={(config) => {
+			habitProfile.dailyGoalMinutes = config.dailyGoalMinutes;
+			habitProfile.preferredTime = config.preferredTime as TimeOfDay;
+			habitProfile.notificationsEnabled = config.notificationsEnabled;
+			habitProfile.onboardingDone = true;
+			saveHabitProfile(habitProfile);
+			showOnboarding = false;
+			// Reload profile to get generated goals
+			habitProfile = loadHabitProfile();
+			// Schedule notifications if opted in
+			if (config.notificationsEnabled) {
+				notificationCleanup = scheduleDailyReminder(habitProfile);
+				streakSaverCleanup = scheduleStreakSaver(habitProfile);
+			}
+		}}
+	/>
+{/if}
+
+{#if pendingCelebrations.length > 0}
+	<CelebrationOverlay
+		celebrations={pendingCelebrations}
+		ondismiss={() => { pendingCelebrations = []; }}
 	/>
 {/if}
 
@@ -1977,40 +2176,6 @@
 		color: #4ade80;
 	}
 
-	.weekly-goal-row {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
-
-	.goal-label {
-		font-size: 0.72rem;
-		color: #666;
-		white-space: nowrap;
-	}
-
-	.goal-bar {
-		flex: 1;
-		height: 4px;
-		background: #1a1a1a;
-		border-radius: 999px;
-		overflow: hidden;
-	}
-
-	.goal-fill {
-		height: 100%;
-		background: #fb923c;
-		border-radius: 999px;
-		transition: width 0.8s ease-out;
-	}
-
-	.goal-pct {
-		font-size: 0.72rem;
-		color: #fb923c;
-		font-weight: 600;
-		white-space: nowrap;
-	}
-
 	/* Two-column layout */
 	.train-layout {
 		display: grid;
@@ -2030,26 +2195,51 @@
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
-		position: sticky;
-		top: 20px;
-		max-height: calc(100vh - 80px);
-		overflow-y: auto;
-		scrollbar-width: none;
-	}
-
-	.train-sidebar::-webkit-scrollbar {
-		display: none;
 	}
 
 	@media (max-width: 768px) {
 		.train-layout {
 			grid-template-columns: 1fr;
 		}
-		.train-sidebar {
-			position: static;
-			max-height: none;
-		}
 		.train-main { order: 1; }
 		.train-sidebar { order: 2; }
+	}
+
+	/* Settings modal */
+	.settings-modal {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 50;
+		max-height: 88vh;
+		background: var(--bg-card, #1c1a17);
+		border-radius: 20px 20px 0 0;
+		border-top: 1px solid var(--border);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+	@media (min-width: 600px) {
+		.settings-modal {
+			left: 50%;
+			right: auto;
+			width: 560px;
+			transform: translateX(-50%);
+		}
+	}
+	.settings-modal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 16px 20px;
+		border-bottom: 1px solid var(--border);
+		flex-shrink: 0;
+	}
+	.settings-modal-body {
+		overflow-y: auto;
+		padding: 20px;
+		padding-bottom: max(20px, env(safe-area-inset-bottom));
+		flex: 1;
 	}
 </style>

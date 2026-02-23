@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
 	import { convertChordNotation, type NotationSystem } from '$lib/engine';
-	import type { VoiceLeadingInfo } from '$lib/engine';
+	import type { VoiceLeadingInfo, VoiceLeadingMode } from '$lib/engine';
 	import { formatVoiceLeading } from '$lib/engine';
 
 	import type { Snippet } from 'svelte';
@@ -17,12 +17,16 @@
 		showVoiceLeading?: boolean;
 		/** Whether the chord name should be hidden (ear training mode) */
 		hideChordName?: boolean;
+		/** Voice leading exercise mode */
+		vlMode?: VoiceLeadingMode;
+		/** Voicing type hint for find-inversion mode, e.g. "Shell" */
+		voicingTypeHint?: string;
 	}
 
-	let { chord, system = 'international', onclick, children, voiceLeading = null, showVoiceLeading = false, hideChordName = false }: Props = $props();
+	let { chord, system = 'international', onclick, children, voiceLeading = null, showVoiceLeading = false, hideChordName = false, vlMode = 'guided', voicingTypeHint = '' }: Props = $props();
 
 	const display = $derived(convertChordNotation(chord, system));
-	const vlText = $derived(showVoiceLeading && voiceLeading ? formatVoiceLeading(voiceLeading) : '');
+	const vlText = $derived(showVoiceLeading && voiceLeading && vlMode === 'guided' ? formatVoiceLeading(voiceLeading) : '');
 </script>
 
 <div
@@ -41,6 +45,15 @@
 		<div class="text-6xl sm:text-8xl font-bold text-gradient animate-pulse-slow">
 			{display}
 		</div>
+		{#if vlMode === 'find-inversion' && voicingTypeHint}
+			<div class="mt-2 text-sm text-[var(--accent-amber)] font-medium">
+				🔍 {voicingTypeHint} — finde die engste Umkehrung
+			</div>
+		{:else if vlMode === 'free'}
+			<div class="mt-2 text-sm text-[var(--accent-purple)] font-medium">
+				🎹 Beliebiges Voicing — minimale Bewegung
+			</div>
+		{/if}
 	{/if}
 	{#if vlText}
 		<div class="mt-3 text-sm text-[var(--accent-amber)] font-mono">

@@ -178,3 +178,38 @@ export function isRootIndex(chromaticIndex: number, root: string, voicing: strin
 	});
 	return rootInVoicing;
 }
+
+// ─── Session-wide keyboard range ────────────────────────────
+
+/**
+ * Determine the keyboard octave count needed to display ALL chords in a session.
+ * Prevents the keyboard from zooming in/out between chords (important for voice leading).
+ *
+ * Scans every chord's voicing, runs placeAscending, and returns 2 or 3 depending
+ * on whether any chord needs 3 octaves.
+ */
+export function computeSessionOctaves(
+	allChords: ChordWithNotes[],
+	pref: AccidentalPreference,
+): OctaveCount {
+	const baseNotes = pref === 'flats' ? NOTES_FLATS : NOTES_SHARPS;
+
+	for (const chordData of allChords) {
+		const pitchClasses: number[] = [];
+		const seen = new Set<number>();
+		for (const note of chordData.voicing) {
+			const pc = noteToPitchClass(note, baseNotes);
+			if (pc !== -1 && !seen.has(pc)) {
+				pitchClasses.push(pc);
+				seen.add(pc);
+			}
+		}
+		if (pitchClasses.length === 0) continue;
+		const indices = placeAscending(pitchClasses);
+		// If any chord needs 3 octaves, the whole session uses 3
+		if (indices.some((idx) => idx >= 24)) {
+			return 3;
+		}
+	}
+	return 2;
+}

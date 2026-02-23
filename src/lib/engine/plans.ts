@@ -8,6 +8,7 @@ import type {
 	DisplayMode,
 	AccidentalPreference,
 	ProgressionMode,
+	VoiceLeadingMode,
 } from '$lib/engine';
 
 export interface PracticePlan {
@@ -30,6 +31,8 @@ export interface PracticePlan {
 		accidentals: AccidentalPreference;
 		progressionMode: ProgressionMode;
 		totalChords: number;
+		/** Voice leading sub-mode (only set on VL plans) */
+		vlMode?: VoiceLeadingMode;
 	};
 }
 
@@ -266,6 +269,7 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 			accidentals: 'both',
 			progressionMode: '2-5-1',
 			totalChords: 36,
+			vlMode: 'guided',
 		},
 	},
 ];

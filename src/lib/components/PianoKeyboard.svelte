@@ -31,6 +31,8 @@
 		voiceLeading?: VoiceLeadingInfo | null;
 		/** Whether to show voice leading indicators */
 		showVoiceLeading?: boolean;
+		/** Force a specific octave count (2 or 3) — prevents zoom during voice leading sessions */
+		forceOctaves?: OctaveCount | null;
 	}
 
 	let {
@@ -43,16 +45,22 @@
 		midiEnabled = false,
 		voiceLeading = null,
 		showVoiceLeading = false,
+		forceOctaves = null,
 	}: Props = $props();
 
 	/** Compute layout: which keys are active + how many octaves needed */
 	const layout = $derived.by(() => {
-		if (!chordData || !showVoicing) return { activeIndices: new Set<number>(), octaves: 2 as OctaveCount };
+		if (!chordData || !showVoicing) return { activeIndices: new Set<number>(), octaves: (forceOctaves ?? 2) as OctaveCount };
 		if (mini) {
 			// Mini keyboards always use 2 octaves (compact fallback)
 			return { activeIndices: getActiveKeyIndices(chordData, accidentalPref), octaves: 2 as OctaveCount };
 		}
-		return getKeyboardLayout(chordData, accidentalPref);
+		const result = getKeyboardLayout(chordData, accidentalPref);
+		// If session forces a specific octave count, use it (prevents zoom during voice leading)
+		if (forceOctaves && forceOctaves > result.octaves) {
+			return { activeIndices: result.activeIndices, octaves: forceOctaves };
+		}
+		return result;
 	});
 
 	const activeIndices = $derived(layout.activeIndices);

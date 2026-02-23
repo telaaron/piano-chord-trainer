@@ -38,6 +38,14 @@
 		earTrainingCorrect?: number;
 		/** Ear Training total attempts */
 		earTrainingTotal?: number;
+		/** Voice Leading: average movement score */
+		vlAvgMovement?: number;
+		/** Voice Leading: optimal inversions found (mode B) */
+		vlOptimalCount?: number;
+		/** Voice Leading: total VL chords attempted */
+		vlTotalChords?: number;
+		/** Voice Leading mode active */
+		vlModeActive?: string;
 		onrestart: () => void;
 		onreset: () => void;
 	}
@@ -59,6 +67,10 @@
 		inTimeModeActive = false,
 		earTrainingCorrect = 0,
 		earTrainingTotal = 0,
+		vlAvgMovement = 0,
+		vlOptimalCount = 0,
+		vlTotalChords = 0,
+		vlModeActive = '',
 		onrestart,
 		onreset,
 	}: Props = $props();
@@ -89,7 +101,7 @@
 	<!-- Stats grid -->
 	<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
 		{#each [
-			{ label: t('results.mode'), value: t('settings.progression_' + (progressionMode === 'cycle-of-4ths' ? 'cycle' : progressionMode === '1-6-2-5' ? 'turnaround' : progressionMode)) },
+			{ label: t('results.mode'), value: t('settings.progression_' + (progressionMode === 'cycle-of-4ths' ? 'cycle' : progressionMode === '1-6-2-5' ? 'turnaround' : progressionMode === '2-5-1' ? '251' : progressionMode)) },
 			{ label: t('results.difficulty'), value: t('settings.difficulty_' + difficulty) },
 			{ label: t('results.chords'), value: String(totalChords) },
 			{ label: t('results.notation'), value: t('settings.notation_' + notation) },
@@ -118,6 +130,22 @@
 				<div class="text-xs text-[var(--text-muted)] mb-1">Ear Score</div>
 				<div class="font-semibold text-[var(--accent-amber)]">{earTrainingTotal > 0 ? Math.round((earTrainingCorrect / earTrainingTotal) * 100) : 0}%</div>
 			</div>
+		{/if}
+		{#if vlModeActive && vlTotalChords > 0}
+			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+				<div class="text-xs text-[var(--text-muted)] mb-1">VL Modus</div>
+				<div class="font-semibold text-[var(--primary)] capitalize">{vlModeActive}</div>
+			</div>
+			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+				<div class="text-xs text-[var(--text-muted)] mb-1">⌀ Bewegung</div>
+				<div class="font-semibold text-[var(--accent-amber)]">{vlAvgMovement} HT</div>
+			</div>
+			{#if vlModeActive === 'find-inversion'}
+				<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+					<div class="text-xs text-[var(--text-muted)] mb-1">Optimal</div>
+					<div class="font-semibold text-[var(--accent-green)]">{vlOptimalCount}/{vlTotalChords}</div>
+				</div>
+			{/if}
 		{/if}
 	</div>
 

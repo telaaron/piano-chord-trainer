@@ -8,18 +8,18 @@ Everything that needs to work before we ship. Check off items as they pass.
 
 > **Blocker — solange MIDI nicht geht, kann nichts anderes getestet werden.**
 
-- [ ] **MIDI Test Page** (`/midi-test`): Seite laden, Keyboard anschließen
-- [ ] Gerät wird erkannt und angezeigt
-- [ ] Note-On Events erscheinen im Log (grüner Text)
-- [ ] Note-Off Events erscheinen im Log (grauer Text)
-- [ ] Live-Keyboard zeigt gedrückte Tasten in Echtzeit (grün)
-- [ ] Pitch-Class-Grid unten leuchtet auf
-- [ ] "Held Now"-Counter stimmt mit gedrückten Tasten überein
-- [ ] **Train → normaler Modus**: Chord spielen → grüne Tasten auf dem Keyboard
-- [ ] Korrekt gespielter Chord → "✓ Correct!" + auto-advance nach 400ms
-- [ ] Falscher Chord → rote Tasten für falsche Noten
-- [ ] MIDI Accuracy am Ende der Session > 0%
-- [ ] Nach Session-Ende: MIDI bleibt verbunden (kein Disconnect)
+- [x] **MIDI Test Page** (`/midi-test`): Seite laden, Keyboard anschließen
+- [x] Gerät wird erkannt und angezeigt
+- [x] Note-On Events erscheinen im Log (grüner Text)
+- [x] Note-Off Events erscheinen im Log (grauer Text)
+- [x] Live-Keyboard zeigt gedrückte Tasten in Echtzeit (grün)
+- [x] Pitch-Class-Grid unten leuchtet auf
+- [x] "Held Now"-Counter stimmt mit gedrückten Tasten überein
+- [x] **Train → normaler Modus**: Chord spielen → grüne Tasten auf dem Keyboard
+- [x] Korrekt gespielter Chord → "✓ Correct!" + auto-advance nach 400ms
+- [x] Falscher Chord → rote Tasten für falsche Noten
+- [x] MIDI Accuracy am Ende der Session > 0%
+- [x] Nach Session-Ende: MIDI bleibt verbunden (kein Disconnect)
 
 ---
 
@@ -30,37 +30,40 @@ Everything that needs to work before we ship. Check off items as they pass.
 > Common Tones bleiben auf derselben Taste (pitch class), andere Stimmen
 > bewegen sich minimal. Die Keyboard-Anzeige zeigt das korrekt.
 
-- [ ] Plan "Voice Leading Flow" starten
-- [ ] **Erster Chord**: normales Voicing, kein Voice-Leading-Highlight
+- [x] Plan "Voice Leading Flow" starten
+- [x] **Erster Chord**: normales Voicing, kein Voice-Leading-Highlight
 - [ ] **Ab 2. Chord**: Voicing ist umgeordnet (z.B. Shell Dm7 → G7: gemeinsame Töne bleiben)
-- [ ] Common Tones sind **gold/amber** mit glow (deutlich sichtbar!)
-  - [ ] Weiße Tasten: goldgelb mit Ring + Schatten
-  - [ ] Schwarze Tasten: goldgelb mit hellem Border + Glow
-- [ ] **Neue Töne** (bewegt): **blau** hervorgehoben
-  - [ ] Weiße Tasten: hellblau mit Ring
-  - [ ] Schwarze Tasten: blau mit hellem Border
-- [ ] Voice-Leading-Text unter dem Chord-Namen (z.B. "F stays, C → B (↓1)")
-- [ ] Voice Leading manuell an/aus-toggeln in GameSettings funktioniert
-- [ ] VL im Random-Modus (nicht nur 2-5-1)
+- [x] Common Tones sind **gold/amber** mit glow (deutlich sichtbar!)
+  - [x] Weiße Tasten: goldgelb mit Ring + Schatten
+  - [x] Schwarze Tasten: goldgelb mit hellem Border + Glow
+- [x] **Neue Töne** (bewegt): **blau** hervorgehoben
+  - [x] Weiße Tasten: hellblau mit Ring
+  - [x] Schwarze Tasten: blau mit hellem Border
+- [x] Voice-Leading-Text unter dem Chord-Namen (z.B. "F stays, C → B (↓1)")
+- [x] Voice Leading manuell an/aus-toggeln in GameSettings funktioniert
+- [x] VL im Random-Modus (nicht nur 2-5-1)
 - [ ] MIDI-Erkennung mit voice-led Voicing: korrekt gespieltes umgeordnetes Voicing wird erkannt
+
+Probleme: 
+- bei comman tones ist es wichtig das es der gleiche ton ist nicht die gleiche tonbezeichnung in einer anderen oktave. man kann überlegen, ob man als übung immer die nächstbeste umkehrung finden soll. was möglichst viele common tones behält. so ist es aktuell ein nachspielen von was da steht und manchmal leuchten tasten gelb manchmal blau. was ist der sinn dahinter. dann muss man am anfang sagen, dass die übung ist: immer die nächstbeste umkehrung zu finden. da gibts dann auch die option sich das voicing auszusuchen oder nicht. es lässt ganz viel möglichkeiten übungen zu erschaffen. mit einem festgelegten voicing zb shell immer die am nächsten liegende umkehrung beim nächsten akkord zu nehmen. oder halt noch das voicing selber zu variieren. lass uns da brainstormen. Midi geht in der übung. 
 
 ---
 
 ## 2. In-Time Comping
 
-- [ ] Plan "In-Time Comping" starten
-- [ ] Metronom startet automatisch bei 100 BPM
-- [ ] Bar-Counter sichtbar (z.B. "Bar 1/2")
+- [x] Plan "In-Time Comping" starten
+- [x] Metronom startet automatisch bei 100 BPM
+- [x] Bar-Counter sichtbar (z.B. "Bar 1/2")
 - [ ] **Stoppuhr ist versteckt** (In-Time braucht keine Zeitanzeige)
-- [ ] Chord wechselt automatisch nach 2 Bars (auf Beat 1 von Bar 3)
+- [x] Chord wechselt automatisch nach 2 Bars (auf Beat 1 von Bar 3)
 - [ ] **Mit MIDI**: gedrückte Tasten werden sofort angezeigt (grün/rot)
 - [ ] **Mit MIDI**: nach Chord-Wechsel werden gehaltene Noten neu gegen neuen Chord geprüft
-- [ ] **Ohne MIDI**: Session soll trotzdem durchlaufen (Chords wechseln automatisch)
-- [ ] Skip-Button / Space zum Überspringen
+- [x] **Ohne MIDI**: Session soll trotzdem durchlaufen (Chords wechseln automatisch)
+- [x] Skip-Button / Space zum Überspringen
 - [ ] Results: "Avg. Timing: Xms" wird angezeigt (nicht "N/A")
 - [ ] Results: MIDI Accuracy wird korrekt angezeigt
-- [ ] In-Time manuell an/aus in GameSettings
-- [ ] Bars per Chord (1, 2, 4) einstellbar und wirksam
+- [x] In-Time manuell an/aus in GameSettings
+- [?] Bars per Chord (1, 2, 4) einstellbar und wirksam
 
 ---
 

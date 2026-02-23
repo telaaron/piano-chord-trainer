@@ -114,7 +114,7 @@
 
 	const config = parseConfig();
 	const presetKey = page.url.searchParams.get('preset') || '';
-	const presetLabel = PRESET_LABELS[presetKey] || '';
+	const presetLabel = PRESET_KEYS[presetKey] ? t(PRESET_KEYS[presetKey]) : '';
 
 	// ─── State machine ──────────────────────────────────────────────
 	type Screen = 'setup' | 'playing' | 'finished';
@@ -143,12 +143,6 @@
 	let bestStreak = $state(0);
 	let streakGlow = $state(false);
 	const STREAK_THRESHOLD = 5;
-
-	const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-		beginner: 'Beginner',
-		intermediate: 'Intermediate',
-		advanced: 'Advanced',
-	};
 
 	// ─── Derived ────────────────────────────────────────────────────
 	const currentData = $derived(chordsWithNotes[currentIdx] ?? null);

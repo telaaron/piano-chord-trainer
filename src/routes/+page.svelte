@@ -86,18 +86,18 @@
 </script>
 
 <svelte:head>
-	<title>Chord Trainer – Jazz Piano Voicing Speed Training</title>
-	<meta name="description" content="Master jazz piano voicings in all 12 keys. Speed training with MIDI recognition, ii-V-I progressions, 4 voicing types, and progress tracking. Free, no signup." />
+	<title>{t('landing.meta_title')}</title>
+	<meta name="description" content={t('landing.meta_desc')} />
 	<link rel="canonical" href="https://jazzchords.app/" />
-	<meta property="og:title" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
-	<meta property="og:description" content="Master jazz piano voicings in all 12 keys. Speed training with MIDI recognition and ii-V-I progressions." />
+	<meta property="og:title" content={t('landing.meta_title')} />
+	<meta property="og:description" content={t('landing.meta_desc')} />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://jazzchords.app/" />
 	<meta property="og:image" content="https://jazzchords.app/seo/OG-image.webp" />
 	<meta property="og:image:type" content="image/webp" />
 	<meta property="og:image:width" content="966" />
 	<meta property="og:image:height" content="507" />
-	<meta property="og:image:alt" content="Chord Trainer hero with piano and jazz voicing practice" />
+	<meta property="og:image:alt" content={t('landing.og_alt')} />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
 	<meta name="twitter:description" content="Master jazz piano voicings in all 12 keys. MIDI recognition, ii-V-I progressions, progress tracking." />
@@ -116,9 +116,7 @@
 
 		<!-- Titles -->
 		<h1>
-			{@html t('landing.hero_title').replace(/Master Jazz Piano/g, '<span class="gradient-text">Master Jazz Piano</span>').replace(/Voicings in All 12 Keys/g, '<span class="white-text">Voicings in All 12 Keys</span>')
-				.replace(/Meistere Jazz-Piano-Voicings/g, '<span class="gradient-text">Meistere Jazz-Piano-Voicings</span>')
-				.replace(/in allen 12 Tonarten/g, '<span class="white-text">in allen 12 Tonarten</span>')}
+			{@html t('landing.hero_title_html')}
 		</h1>
 
 		<p class="subtitle hide-mobile">

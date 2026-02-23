@@ -13,6 +13,7 @@
 		type NotationSystem,
 		type ProgressionMode,
 		type PracticePlan,
+		type VoiceLeadingMode,
 	} from '$lib/engine';
 	import { loadRecentPlanIds, type StreakData } from '$lib/services/progress';
 	import type { MidiConnectionState, MidiDevice } from '$lib/services/midi';
@@ -40,6 +41,8 @@
 		adaptiveEnabled: boolean;
 		/** Voice leading visualization toggle */
 		voiceLeadingEnabled: boolean;
+		/** Voice leading sub-mode */
+		vlMode: VoiceLeadingMode;
 		onstartplan: (plan: PracticePlan) => void;
 	}
 
@@ -60,8 +63,15 @@
 		inTimeBars = $bindable(),
 		adaptiveEnabled = $bindable(),
 		voiceLeadingEnabled = $bindable(),
+		vlMode = $bindable(),
 		onstartplan,
 	}: Props = $props();
+
+	const VL_MODE_CONFIG: Record<VoiceLeadingMode, { label: string; desc: string; icon: string }> = {
+		guided:          { label: 'Nachspielen',       desc: 'Keyboard zeigt die optimale Umkehrung — spiele sie nach', icon: '👁️' },
+		'find-inversion': { label: 'Umkehrung finden',  desc: 'Finde die nächste Umkehrung selbst via MIDI',            icon: '🔍' },
+		free:            { label: 'Frei',               desc: 'Beliebige Voicing — bewertet nach Bewegungsdistanz',     icon: '🎹' },
+	};
 
 	let suggested: PracticePlan = $state(PRACTICE_PLANS[0]);
 
@@ -140,37 +150,59 @@
 		<h3 class="text-sm font-medium text-[var(--text-muted)] mb-3">{t('settings.all_plans')}</h3>
 		<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
 			{#each PRACTICE_PLANS.filter((p) => p.id !== suggested.id) as plan}
-				<button
-					class="card p-4 text-left cursor-pointer transition-all duration-200 group relative hover:z-10 hover:scale-105 hover:border-[var(--border-hover)]"
-					style="border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
-					onclick={() => onstartplan(plan)}
-				>
-					<!-- Difficulty badge -->
+				{#if plan.id === 'voice-leading-flow'}
+					<!-- Voice Leading Flow: special card with inline mode selector -->
 					<div
-						class="absolute top-2 right-2 uppercase font-medium"
-						style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};"
+						class="card p-4 text-left transition-all duration-200 relative col-span-2 sm:col-span-3"
+						style="border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
 					>
-						{t('settings.difficulty_' + plan.level)}
-					</div>
-					<!-- Icon + name (always visible) -->
-					<img
-						src="/elements/icons/{PLAN_ICON[plan.id]}.webp"
-						alt="{t(plan.name)}"
-						width="56"
-						height="56"
-						loading="lazy"
-						style="width:56px; height:56px; mix-blend-mode:lighten; object-fit:contain; margin-bottom:0.5rem; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));"
-					/>
-					<div class="font-semibold text-sm group-hover:text-[var(--primary)] transition-colors">{t(plan.name)}</div>
-					<!-- Hover overlay: tagline + description, absolutely positioned so nothing shifts -->
-					<div class="absolute inset-x-0 bottom-0 translate-y-full pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-						<div class="rounded-[var(--radius)] border border-[var(--border-hover)] bg-[var(--bg-card,#1a1a1a)] p-3 shadow-xl"
-							style="box-shadow: 0 8px 32px rgba(0,0,0,0.6), {LEVEL_CONFIG[plan.level].shadow};">
-							<div class="text-xs font-medium text-[var(--text-muted)] mb-1">{t(plan.tagline)}</div>
-							<div class="text-xs text-[var(--text-dim)] leading-snug">{t(plan.description)}</div>
+						<div class="absolute top-2 right-2 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
+							{t('settings.difficulty_' + plan.level)}
+						</div>
+						<div class="flex items-center gap-3 mb-3">
+							<img src="/elements/icons/{PLAN_ICON[plan.id]}.webp" alt="{t(plan.name)}" width="44" height="44"
+								loading="lazy" style="width:44px; height:44px; mix-blend-mode:lighten; object-fit:contain; flex-shrink:0; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));" />
+							<div>
+								<div class="font-semibold text-sm">{t(plan.name)}</div>
+								<div class="text-xs text-[var(--text-dim)] mt-0.5">{t(plan.tagline)}</div>
+							</div>
+						</div>
+						<!-- Mode sub-buttons — each starts the plan with that mode -->
+						<div class="grid grid-cols-3 gap-2">
+							{#each (['guided', 'find-inversion', 'free'] as VoiceLeadingMode[]) as mode}
+								{@const cfg = VL_MODE_CONFIG[mode]}
+								<button
+									class="p-2.5 rounded-[var(--radius)] border text-left transition-all cursor-pointer {vlMode === mode ? 'border-[var(--primary)] bg-[var(--primary-muted)]' : 'border-[var(--border)] hover:border-[var(--border-hover)]'}"
+									onclick={() => { vlMode = mode; onstartplan(plan); }}
+								>
+									<div class="text-base mb-1">{cfg.icon}</div>
+									<div class="text-xs font-semibold {vlMode === mode ? 'text-[var(--primary)]' : ''}">{cfg.label}</div>
+									<div class="text-[10px] text-[var(--text-dim)] mt-0.5 leading-snug hidden sm:block">{cfg.desc}</div>
+								</button>
+							{/each}
 						</div>
 					</div>
-				</button>
+				{:else}
+					<button
+						class="card p-4 text-left cursor-pointer transition-all duration-200 group relative hover:z-10 hover:scale-105 hover:border-[var(--border-hover)]"
+						style="border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
+						onclick={() => onstartplan(plan)}
+					>
+						<div class="absolute top-2 right-2 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
+							{t('settings.difficulty_' + plan.level)}
+						</div>
+						<img src="/elements/icons/{PLAN_ICON[plan.id]}.webp" alt="{t(plan.name)}" width="56" height="56"
+							loading="lazy" style="width:56px; height:56px; mix-blend-mode:lighten; object-fit:contain; margin-bottom:0.5rem; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));" />
+						<div class="font-semibold text-sm group-hover:text-[var(--primary)] transition-colors">{t(plan.name)}</div>
+						<div class="absolute inset-x-0 bottom-0 translate-y-full pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+							<div class="rounded-[var(--radius)] border border-[var(--border-hover)] bg-[var(--bg-card,#1a1a1a)] p-3 shadow-xl"
+								style="box-shadow: 0 8px 32px rgba(0,0,0,0.6), {LEVEL_CONFIG[plan.level].shadow};">
+								<div class="text-xs font-medium text-[var(--text-muted)] mb-1">{t(plan.tagline)}</div>
+								<div class="text-xs text-[var(--text-dim)] leading-snug">{t(plan.description)}</div>
+							</div>
+						</div>
+					</button>
+				{/if}
 			{/each}
 		</div>
 	</div>
