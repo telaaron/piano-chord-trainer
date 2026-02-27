@@ -1,4 +1,4 @@
-export { NOTES_SHARPS, NOTES_FLATS, ENHARMONIC_MAP, getNoteArray, getNotePool, noteToSemitone, getNoteName, convertNoteName, convertChordNotation } from './notes';
+export { NOTES_SHARPS, NOTES_FLATS, ENHARMONIC_MAP, getNoteArray, getNotePool, noteToSemitone, getNoteName, usesSharps, convertNoteName, convertChordNotation } from './notes';
 export type { NoteName, AccidentalPreference, NotationSystem } from './notes';
 
 export { CHORDS_BY_DIFFICULTY, CHORD_INTERVALS, CHORD_NOTATIONS, VOICING_LABELS } from './chords';

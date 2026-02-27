@@ -1,6 +1,6 @@
 // Progression engine – generate structured chord sequences (2-5-1, cycle of 4ths, etc.)
 
-import { NOTES_SHARPS, NOTES_FLATS, type AccidentalPreference } from './notes';
+import { NOTES_SHARPS, NOTES_FLATS, usesSharps, type AccidentalPreference } from './notes';
 import { CHORD_NOTATIONS, type NotationStyle } from './chords';
 
 /**
@@ -69,12 +69,13 @@ interface ProgressionChord {
  * Get note name from semitone, respecting key context.
  * For the progression engine we pick sharp or flat based on the key center.
  */
-function noteFromSemitone(semitone: number, pref: AccidentalPreference): string {
+function noteFromSemitone(semitone: number, pref: AccidentalPreference, keySemitone?: number): string {
 	const idx = ((semitone % 12) + 12) % 12;
 	if (pref === 'flats') return NOTES_FLATS[idx];
 	if (pref === 'sharps') return NOTES_SHARPS[idx];
-	// 'both': use flats for common jazz keys, sharps otherwise
-	return NOTES_FLATS[idx];
+	// 'both': use key context when available, otherwise decide from the note itself
+	const ref = keySemitone !== undefined ? ((keySemitone % 12) + 12) % 12 : idx;
+	return usesSharps(ref) ? NOTES_SHARPS[idx] : NOTES_FLATS[idx];
 }
 
 /** Get the key centers to cycle through */
@@ -113,7 +114,7 @@ function generateFromDegrees(
 	return degreeIndices.map((degIdx) => {
 		const rootSemitone = (keySemitone + SCALE_DEGREES[degIdx]) % 12;
 		const quality = MAJOR_DEGREE_QUALITIES[degIdx];
-		const root = noteFromSemitone(rootSemitone, pref);
+		const root = noteFromSemitone(rootSemitone, pref, keySemitone);
 		const displayQuality = CHORD_NOTATIONS[notation][quality] || quality;
 		return { root, quality, display: `${root}${displayQuality}` };
 	});

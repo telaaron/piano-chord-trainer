@@ -50,11 +50,23 @@ export function noteToSemitone(note: string): number {
 	return -1;
 }
 
+/**
+ * For 'both' preference, determine if a root/key semitone conventionally uses sharps.
+ * Sharp keys: C(0), D(2), E(4), F#/Gb(6), G(7), A(9), B(11)
+ * Flat keys:  Db(1), Eb(3), F(5), Ab(8), Bb(10)
+ */
+const FLAT_ROOTS = new Set([1, 3, 5, 8, 10]);
+export function usesSharps(semitone: number): boolean {
+	return !FLAT_ROOTS.has(((semitone % 12) + 12) % 12);
+}
+
 /** Get note name at a given semitone offset from root */
 export function getNoteName(rootSemitone: number, interval: number, pref: AccidentalPreference): string {
 	const index = (rootSemitone + interval) % 12;
-	const base = pref === 'sharps' ? NOTES_SHARPS : NOTES_FLATS;
-	return base[index];
+	if (pref === 'sharps') return NOTES_SHARPS[index];
+	if (pref === 'flats') return NOTES_FLATS[index];
+	// 'both': choose sharps/flats based on the chord root's key context
+	return usesSharps(rootSemitone) ? NOTES_SHARPS[index] : NOTES_FLATS[index];
 }
 
 /** Convert a note name between international and German notation */

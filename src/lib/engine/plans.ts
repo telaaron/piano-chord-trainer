@@ -262,14 +262,13 @@ export const PRACTICE_PLANS: PracticePlan[] = [
 		accent: 'var(--primary)',
 		level: 'intermediate',
 		settings: {
-			difficulty: 'beginner',
+			difficulty: 'intermediate',
 			notation: 'standard',
 			voicing: 'shell',
 			displayMode: 'always',
 			accidentals: 'both',
 			progressionMode: 'diatonic',
 			totalChords: 84,
-			vlMode: 'guided',
 		},
 	},
 ];

@@ -84,6 +84,21 @@ describe('getNoteName', () => {
 	it('wraps around octave correctly (C + 12 = C)', () => {
 		expect(getNoteName(0, 12, 'sharps')).toBe('C');
 	});
+
+	it('uses sharps for sharp-key roots with both pref (D major → F#)', () => {
+		// D=2, major 3rd=4 → F#
+		expect(getNoteName(2, 4, 'both')).toBe('F#');
+	});
+
+	it('uses flats for flat-key roots with both pref (Bb → Eb)', () => {
+		// Bb=10, perfect 4th=5 → Eb
+		expect(getNoteName(10, 5, 'both')).toBe('Eb');
+	});
+
+	it('uses sharps for E root with both pref (E7 → G#)', () => {
+		// E=4, major 3rd=4 → G#
+		expect(getNoteName(4, 4, 'both')).toBe('G#');
+	});
 });
 
 describe('getNoteArray', () => {
