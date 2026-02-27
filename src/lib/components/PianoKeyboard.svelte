@@ -33,6 +33,12 @@
 		showVoiceLeading?: boolean;
 		/** Force a specific octave count (2 or 3) — prevents zoom during voice leading sessions */
 		forceOctaves?: OctaveCount | null;
+		/** Enable clickable keys (ear training) */
+		interactive?: boolean;
+		/** Callback when a key is clicked: (chromaticIndex, shiftKeyHeld) */
+		onKeyClick?: (chrIdx: number, shiftKey: boolean) => void;
+		/** Set of pitch classes (0–11) currently selected by the user (ear training guess) */
+		selectedPitchClasses?: ReadonlySet<number>;
 	}
 
 	let {
@@ -46,7 +52,42 @@
 		voiceLeading = null,
 		showVoiceLeading = false,
 		forceOctaves = null,
+		interactive = false,
+		onKeyClick,
+		selectedPitchClasses = new Set<number>(),
 	}: Props = $props();
+
+	// ─── Interactive click flash state ───────────────────────────
+	let flashPCs = $state(new Set<number>());
+	let flashTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	function handleKeyClick(chrIdx: number, e: MouseEvent) {
+		if (!interactive) return;
+		e.stopPropagation();
+		onKeyClick?.(chrIdx, e.shiftKey);
+		// Brief blue flash for visual feedback
+		const pc = chrIdx % 12;
+		flashPCs = new Set([pc]);
+		if (flashTimeout) clearTimeout(flashTimeout);
+		flashTimeout = setTimeout(() => { flashPCs = new Set(); }, 200);
+	}
+
+	/** Selected/flash color for interactive ear-training mode */
+	function selectedColor(chrIdx: number, isBlack: boolean): string | null {
+		if (!interactive) return null;
+		const pc = chrIdx % 12;
+		if (selectedPitchClasses.has(pc)) {
+			return isBlack
+				? 'bg-amber-500 border-2 border-amber-300 shadow-[0_0_6px_rgba(245,158,11,0.5)]'
+				: 'bg-amber-200 ring-2 ring-amber-400 ring-inset';
+		}
+		if (flashPCs.has(pc)) {
+			return isBlack
+				? 'bg-sky-500 border-2 border-sky-300'
+				: 'bg-sky-200 ring-2 ring-sky-300 ring-inset';
+		}
+		return null;
+	}
 
 	/** Compute layout: which keys are active + how many octaves needed */
 	const layout = $derived.by(() => {
@@ -182,17 +223,22 @@
 					{@const root = active && isRoot(chrIdx)}
 					{@const midi = midiColor(chrIdx, false)}
 					{@const vl = vlColor(chrIdx, false)}
+					{@const sel = selectedColor(chrIdx, false)}
 					<div
 						class="flex-1 h-full border-r border-[var(--key-white-border)] last:border-r-0 relative transition-colors duration-100
+						{interactive ? 'cursor-pointer active:brightness-90' : ''}
 						{midi
 							? midi
 							: vl
 								? vl
-								: active
-									? root
-										? 'bg-[var(--primary)]'
-										: 'bg-[var(--primary)]/80'
-									: 'bg-[var(--key-white)] hover:brightness-95'}"
+								: sel
+									? sel
+									: active
+										? root
+											? 'bg-[var(--primary)]'
+											: 'bg-[var(--primary)]/80'
+										: 'bg-[var(--key-white)] hover:brightness-95'}"
+						onclick={(e) => handleKeyClick(chrIdx, e)}
 					>
 						{#if root}
 							<div class="absolute bottom-2 inset-x-0 flex justify-center">
@@ -209,18 +255,23 @@
 				{@const root = active && isRoot(key.idx)}
 				{@const midi = midiColor(key.idx, true)}
 				{@const vl = vlColor(key.idx, true)}
+				{@const sel = selectedColor(key.idx, true)}
 				<div
 					class="absolute top-0 h-[60%] {mini ? 'w-[5%]' : octaves === 3 ? 'w-[3%]' : 'w-[4.5%]'} -translate-x-1/2 rounded-b-md z-10 shadow-md transition-colors duration-100
+					{interactive ? 'cursor-pointer active:brightness-90' : ''}
 					{midi
 						? midi
 						: vl
 							? vl
-							: active
-								? root
-									? 'bg-[var(--primary)] border-2 border-white/50'
-									: 'bg-[var(--primary)]/80 border border-[var(--primary-hover)]'
-								: 'bg-gradient-to-b from-[#333] to-[#111] border-x border-b border-black/40'}"
+							: sel
+								? sel
+								: active
+									? root
+										? 'bg-[var(--primary)] border-2 border-white/50'
+										: 'bg-[var(--primary)]/80 border border-[var(--primary-hover)]'
+									: 'bg-gradient-to-b from-[#333] to-[#111] border-x border-b border-black/40'}"
 					style="left: {(key.pos * 100) / whiteKeyCount}%;"
+					onclick={(e) => handleKeyClick(key.idx, e)}
 				>
 					{#if root}
 						<div class="absolute bottom-1 inset-x-0 flex justify-center">

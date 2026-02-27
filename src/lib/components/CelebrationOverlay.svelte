@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
 	import type { CelebrationEvent } from '$lib/engine/habits';
+	import { playCelebrationSound } from '$lib/services/audio';
 	import { fade, scale } from 'svelte/transition';
 	import { onMount } from 'svelte';
 
@@ -28,6 +29,11 @@
 	const currentConfig = $derived(current ? (TYPE_CONFIG[current.type] || TYPE_CONFIG['xp-gain']) : TYPE_CONFIG['xp-gain']);
 
 	onMount(() => {
+		// Play celebration sound for the first event
+		if (celebrations.length > 0) {
+			playCelebrationSound(celebrations[0].type);
+		}
+
 		// Generate confetti pieces
 		const colors = ['#fb923c', '#f59e0b', '#4ade80', '#a78bfa', '#f472b6', '#38bdf8'];
 		confettiPieces = Array.from({ length: 30 }, () => ({
@@ -43,6 +49,8 @@
 	function handleNext() {
 		if (hasMore) {
 			currentIndex++;
+			// Play sound for the next celebration
+			playCelebrationSound(celebrations[currentIndex].type);
 		} else {
 			visible = false;
 			setTimeout(ondismiss, 300);

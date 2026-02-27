@@ -19,7 +19,7 @@
 		type ChordEval,
 		type SessionEvaluation,
 	} from '$lib/engine';
-	import { startMetronome, stopMetronome, playChord, stopAll, setMetronomeBpm } from '$lib/services/audio';
+	import { startMetronome, stopMetronome, playChord, playChordAtTime, stopAll, setMetronomeBpm } from '$lib/services/audio';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
 	import { MidiService } from '$lib/services/midi';
 
@@ -104,8 +104,8 @@
 		currentChord ? currentBeat / currentChord.beats : 0,
 	);
 
-	// ── Beat handler (called by metronome) ──
-	function onBeat(beat: number) {
+	// ── Beat handler (called by metronome with precise audio time) ──
+	function onBeat(beat: number, time: number) {
 		// During count-in
 		if (countInBeats < 4) {
 			countInBeats++;
@@ -119,9 +119,9 @@
 				currentLoop = 0;
 				chordWindowStart = Date.now();
 				resetChordTracking();
-				// Play first chord
+				// Play first chord at exact Transport time
 				if (audioEnabled && chordsWithNotes[0]) {
-					playChord(chordsWithNotes[0].voicing).catch(() => {});
+					playChordAtTime(chordsWithNotes[0].voicing, '2n', time);
 				}
 			}
 			return;
@@ -160,9 +160,9 @@
 
 			resetChordTracking();
 
-			// Play the new chord
+			// Play the new chord at exact Transport time
 			if (audioEnabled && chordsWithNotes[currentChordIdx]) {
-				playChord(chordsWithNotes[currentChordIdx].voicing).catch(() => {});
+				playChordAtTime(chordsWithNotes[currentChordIdx].voicing, '2n', time);
 			}
 		}
 	}

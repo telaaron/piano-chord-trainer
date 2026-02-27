@@ -51,6 +51,13 @@ export const de = {
 
     ear_training_title: 'Gehörtraining',
     ear_training_desc: 'Akkord hören, blind spielen. Kein Akkordname angezeigt.',
+    
+    restart_with_settings: 'Mit neuen Settings neu starten',
+    loop_label: 'Folge:',
+    clear: 'Leeren',
+    timing_note: 'Timing = erster Anschlag nach Bar 1',
+    correct_but_not_closest: 'Richtig, aber nicht engste Lage',
+    continue_playing: 'Weiter spielen',
 
     bars_per_chord: 'Takte pro Akkord',
     bar_singular: 'Takt',
@@ -102,6 +109,16 @@ export const de = {
     progression_cycle_sub: 'Alle 12 Tonarten',
     progression_turnaround: 'Turnaround (I-vi-ii-V)',
     progression_turnaround_sub: 'Turnaround',
+    progression_3625: 'iii-vi-ii-V',
+    progression_3625_sub: 'Erweiterter Turnaround',
+    progression_145: 'I-IV-V',
+    progression_145_sub: 'Blues / Pop Feeling',
+    progression_diatonic: 'Diatonisch',
+    progression_diatonic_sub: 'Alle 7 Stufen',
+    progression_custom: 'Eigene',
+    progression_custom_sub: 'Eigene Stufenfolge',
+    custom_degrees_label: 'Stufen',
+    custom_degrees_hint: 'Tippe Stufen 1–7 um deine Folge zu bauen',
 
     chord_count: 'Anzahl Akkorde',
     
@@ -153,8 +170,13 @@ export const de = {
     notation: 'Notation',
     accidentals: 'Vorzeichen',
     voicing: 'Voicing',
-    restart: 'Neustart',
-    menu: 'Zum Menü'
+    restart: 'Training neu starten',
+    menu: 'Zurück zum Menü',
+    
+    midi_accuracy: 'MIDI-Genauigkeit',
+    avg_timing: '⌀ Timing',
+    ear_score: 'Gehör-Punktzahl',
+    vl_mode: 'Stimmführungs-Modus',
   },
 
   plans: {
@@ -162,11 +184,11 @@ export const de = {
     warmup_tagline: 'Shell Voicings · ii-V-I · Alle Tonarten',
     warmup_desc: 'Leichtes Aufwärmen: Die 3 wichtigsten Töne jedes Akkords (Shell) durch alle 12 Tonarten.',
 
-    speed_name: 'Speed Run',
+    speed_name: 'Sprint',
     speed_tagline: 'Grundstellung · Zufall · Auf Zeit',
     speed_desc: 'Geschwindigkeitstraining: 20 zufällige Akkorde so schnell wie möglich. Keine Noten-Hilfe — nur du und die Uhr.',
 
-    deepdive_name: 'ii-V-I Deep Dive',
+    deepdive_name: 'ii-V-I Tiefgang',
     deepdive_tagline: 'Volle Voicings · Alle 12 Tonarten',
     deepdive_desc: 'Die wichtigste Jazz-Verbindung (ii-V-I) mit allen 4 Tönen. Noten sichtbar — ideal zum Lernen.',
 
@@ -174,7 +196,7 @@ export const de = {
     turnaround_tagline: 'I-vi-ii-V · Alle Tonarten · Shell',
     turnaround_desc: 'Die Akkordfolge von "I Got Rhythm" und hunderten Standards. 4 Akkorde × 12 Tonarten.',
 
-    challenge_name: 'Challenge',
+    challenge_name: 'Herausforderung',
     challenge_tagline: 'Erweiterte Akkorde · Keine Hilfe',
     challenge_desc: 'Für Fortgeschrittene: 30 komplexe Akkorde (9, 13, Alt) mit Symbol-Notation, ohne Notenanzeige.',
 
@@ -182,11 +204,11 @@ export const de = {
     quartenzirkel_tagline: '12 Tonarten · ♭ Vorzeichen · Half-Shell',
     quartenzirkel_desc: 'Einmal durch alle Tonarten im Quartabstand (C→F→B♭→E♭→…). Trainiert flüssige Wechsel.',
 
-    voicing_drill_name: 'Voicing Drill',
+    voicing_drill_name: 'Voicing-Drill',
     voicing_drill_tagline: 'Grundton → Shell → Halb → Voll',
     voicing_drill_desc: 'Übe alle 4 Voicing-Typen nacheinander mit ii-V-I. Baut Muskelgedächtnis für jeden Stil auf.',
 
-    left_hand_comping_name: 'Left-Hand Comping',
+    left_hand_comping_name: 'Linke-Hand Comping',
     left_hand_comping_tagline: 'Rootless A · ii-V-I · Ohne Grundton',
     left_hand_comping_desc: 'Voicings für die linke Hand im Band-Kontext: 3-5-7-9 ohne Grundton (spielt der Bassist). Bill Evans Stil.',
 
@@ -194,11 +216,11 @@ export const de = {
     inversions_drill_tagline: '1./2./3. Umkehrung · Alle Tonarten',
     inversions_drill_desc: 'Spiele jeden Akkord in verschiedenen Umkehrungen. Trainiert Stimmführung und Lagenwechsel.',
 
-    in_time_comping_name: 'In-Time Comping',
+    in_time_comping_name: 'Im-Takt Comping',
     in_time_comping_tagline: 'Auf den Schlag · 100 BPM · Shell',
     in_time_comping_desc: 'Akkordwechsel im Takt. Metronom läuft, du spielst im Timing — Präzision ist wichtiger als Speed.',
 
-    ear_check_name: 'Ear Check',
+    ear_check_name: 'Gehörtest',
     ear_check_tagline: 'Hören · Spielen · Keine Hilfe',
     ear_check_desc: 'Höre einen Akkord, dann spiele ihn nach. Kein Akkordname sichtbar — trainiere dein Gehör!',
 
@@ -206,7 +228,7 @@ export const de = {
     adaptive_drill_tagline: 'Smartes Üben · Alle Voicings',
     adaptive_drill_desc: 'Schwache Akkorde kommen öfter, starke seltener. Der Drill passt sich deiner Leistung an.',
 
-    voice_leading_flow_name: 'Voice Leading Flow',
+    voice_leading_flow_name: 'Stimmführungs-Flow',
     voice_leading_flow_tagline: 'Verbindungen sehen · ii-V-I · Shell',
     voice_leading_flow_desc: 'Stimmführungs-Visualisierung an — sieh, welche Töne liegen bleiben und welche sich bewegen.',
   },
@@ -425,6 +447,7 @@ export const de = {
     practice_qualities_desc: 'Maj7, m7, dom7, m7b5, dim7, alt, sus, und mehr',
 
     integration_title: 'Integrations-Optionen',
+    integration_recommended: 'Empfohlen',
     integration_lesson: 'Lektionen-Tab',
     integration_lesson_desc: 'Neuer "Practice" Tab in jeder Lektion. Kontext-spezifisch: Die Voicings der Lektion sind vorgeladen. Null Reibung für Schüler.',
     integration_standalone: 'Genereller Bereich',
@@ -491,6 +514,8 @@ export const de = {
     chords_practiced: 'Akkorde geübt',
     chords: 'Akkorde',
     avg_per_chord: 'Ø pro Akkord',
+    more_sessions_needed: 'Mehr Sitzungen für Trends nötig',
+    now: 'Jetzt',
     getting_faster: 'Wirst schneller!',
     focus_on: 'Konzentriere dich auf',
     last_10_sessions: 'Letzte 10 Sitzungen — Sekunden pro Akkord',
@@ -517,6 +542,14 @@ export const de = {
     ear_training_revealed: 'Leertaste für nächsten Akkord',
     ear_training_listen: 'Spiele was du hörst — oder Leertaste zum Aufdecken',
     ear_training_hidden: 'Leertaste zum Aufdecken',
+    ear_piano_hint: 'Klick = Anhören · Shift+Klick = Auswählen · Enter = Prüfen',
+    ear_mode_preview: 'Anhören',
+    ear_mode_select: 'Auswählen',
+    ear_note_singular: 'Ton',
+    ear_notes_plural: 'Töne',
+    ear_check: 'Prüfen',
+    ear_clear: 'Leeren',
+    ear_try_again: 'Nochmal',
     keep_trying: '{percent}% — weiter versuchen',
     
     // Progression Editor & Player
@@ -714,6 +747,9 @@ export const de = {
   },
 
   habit: {
+    // Level-System
+    rank_label: 'Rang:',
+
     // Level-Titel
     level_listener: 'Zuhörer',
     level_beginner: 'Einsteiger',
@@ -755,12 +791,15 @@ export const de = {
     goal_review_desc: 'Halte deine Skills frisch — diese Akkorde brauchen Auffrischung',
     goal_mastery_251: 'ii-V-I in allen Keys unter 2,5s/Akkord',
     goal_mastery_251_desc: 'Die ultimative Jazz-Übung — flüssig durch alle Tonarten',
+    goal_accuracy: '{target}% MIDI-Genauigkeit erreichen',
+    goal_accuracy_desc: 'Aktuell {current}% — sauberes Spiel schlägt Tempo',
+    xp_high_accuracy: '{accuracy}% Genauigkeit!',
 
     // Quick Start
     quick_restart: 'Schneller Neustart: 4 Akkorde',
     quick_restart_desc: 'Nur 4 Akkorde. Mehr brauchst du nicht.',
-    quick_weak_focus: '3 Min {root}-Fokus',
-    quick_weak_focus_desc: 'Deine {root}-Akkorde brauchen Arbeit — kurzes gezieltes Training',
+    quick_weak_focus: '{root} unter {target}s — gezieltes Training',
+    quick_weak_focus_desc: 'Fokus-Training — {roots} kommen am häufigsten',
     quick_warmup: '{minutes} Min Aufwärmen',
     quick_warmup_desc: 'Deine tägliche Übung — starte mit dem was du kannst',
 

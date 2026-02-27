@@ -69,8 +69,8 @@
 			<p class="col-label">{t('about.contact_title')}</p>
 			<p class="col-body">
 				<a href="mailto:info@jazzchords.app">info@jazzchords.app</a><br>
-				<a href="/impressum">Impressum</a><br>
-				<a href="/privacy">Privacy Policy</a>
+				<a href="/impressum">{t('nav.impressum')}</a><br>
+				<a href="/privacy">{t('nav.privacy')}</a>
 			</p>
 		</div>
 	</section>

@@ -352,7 +352,7 @@
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 				<div class="card p-6 border-[var(--primary)]/30 relative overflow-hidden">
-					<div class="absolute top-3 right-3 text-[0.65rem] uppercase tracking-wider text-[var(--primary)] bg-[var(--primary-muted)] px-2 py-0.5 rounded-full font-semibold">Recommended</div>
+					<div class="absolute top-3 right-3 text-[0.65rem] uppercase tracking-wider text-[var(--primary)] bg-[var(--primary-muted)] px-2 py-0.5 rounded-full font-semibold">{t('open_studio.integration_recommended')}</div>
 					<Layers size={24} class="text-[var(--primary)] mb-3" />
 					<h3 class="font-bold mb-2">{t('open_studio.integration_lesson')}</h3>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">

@@ -10,7 +10,7 @@ export type { ChordWithNotes } from './voicings';
 export { WHITE_KEY_COUNT, CHROMATIC_COUNT, BLACK_KEYS, WHITE_KEY_CHROMATIC, OCTAVE_CONFIGS, generateBlackKeys, whiteKeyChromaticIndex, getActiveKeyIndices, getKeyboardLayout, isRootIndex, computeSessionOctaves } from './keyboard';
 export type { OctaveCount, KeyboardLayout } from './keyboard';
 
-export { PROGRESSION_LABELS, PROGRESSION_DESCRIPTIONS, generateProgression } from './progressions';
+export { PROGRESSION_LABELS, PROGRESSION_DESCRIPTIONS, generateProgression, MODE_DEGREE_MAP, parseCustomDegrees, degreesToLabel } from './progressions';
 export type { ProgressionMode, GeneratedProgression } from './progressions';
 
 export { PRACTICE_PLANS, suggestPlan } from './plans';

@@ -143,6 +143,8 @@ export interface SavedSettings {
 	totalChords: number;
 	progressionMode: ProgressionMode;
 	midiEnabled: boolean;
+	/** 0-based degree indices for custom progression mode */
+	customDegrees?: number[];
 }
 
 export function loadSettings(): SavedSettings | null {

@@ -17,10 +17,11 @@ export const XP_NEW_VOICING = 15;
 export const XP_LONG_SESSION = 10; // > 5 min
 export const XP_DEDICATED = 20; // 3+ sessions in one day
 export const XP_FULL_CIRCLE = 30; // all 12 keys
+export const XP_HIGH_ACCURACY = 5; // ≥ 95% MIDI accuracy
 
 // ─── Types ──────────────────────────────────────────────────
 
-export type GoalType = 'speed' | 'consistency' | 'mastery' | 'exploration' | 'endurance' | 'review';
+export type GoalType = 'speed' | 'consistency' | 'mastery' | 'exploration' | 'endurance' | 'review' | 'accuracy';
 export type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 
 export interface SmartGoal {
@@ -81,6 +82,7 @@ export interface HabitProfile {
 	// Tracking
 	sessionsToday: number;
 	lastSessionDate: string; // YYYY-MM-DD
+	dailyGoalDates: string[]; // YYYY-MM-DD where daily goal was reached this week
 }
 
 export interface XPEvent {
@@ -256,6 +258,16 @@ export function calculateSessionXP(
 				reasonKey: 'habit.xp_full_circle',
 			});
 		}
+	}
+
+	// 8. High accuracy bonus (MIDI ≥ 95%)
+	if (session.midi?.enabled && session.midi.accuracy >= 95) {
+		events.push({
+			amount: XP_HIGH_ACCURACY,
+			reason: `${session.midi.accuracy}% accuracy!`,
+			reasonKey: 'habit.xp_high_accuracy',
+			reasonParams: { accuracy: session.midi.accuracy },
+		});
 	}
 
 	return events;
@@ -435,7 +447,35 @@ export function generateGoals(
 		});
 	}
 
-	// 6. MASTERY — ii-V-I all keys (for intermediate+ players)
+	// 6. ACCURACY — MIDI accuracy below 90%
+	const midiSessions = history.filter((s) => s.midi?.enabled && s.midi.accuracy > 0);
+	if (midiSessions.length >= 3 && goals.length < 3) {
+		const avgAccuracy = Math.round(
+			midiSessions.slice(0, 10).reduce((sum, s) => sum + s.midi.accuracy, 0) /
+			Math.min(midiSessions.length, 10),
+		);
+		if (avgAccuracy < 90) {
+			const target = Math.min(90, avgAccuracy + 10);
+			goals.push({
+				id: generateGoalId(),
+				type: 'accuracy',
+				title: `Reach ${target}% MIDI accuracy`,
+				titleKey: 'habit.goal_accuracy',
+				titleParams: { target },
+				description: `Currently ${avgAccuracy}% — clean playing beats fast playing`,
+				descriptionKey: 'habit.goal_accuracy_desc',
+				descriptionParams: { current: avgAccuracy, target },
+				icon: '🎯',
+				target,
+				current: avgAccuracy,
+				xpReward: XP_GOAL_COMPLETED,
+				createdAt: new Date().toISOString(),
+				expiresAt,
+			});
+		}
+	}
+
+	// 7. MASTERY — ii-V-I all keys (for intermediate+ players)
 	if (history.length > 20 && goals.length < 3) {
 		const iiVI_sessions = history.filter((s) => s.settings.progressionMode === '2-5-1');
 		const bestAvg = iiVI_sessions.length > 0
@@ -587,6 +627,8 @@ export interface QuickStartSuggestion {
 	planId?: string; // If it maps to an existing plan
 	minutes: number;
 	icon: string;
+	/** Root notes to focus on in adaptive drill (e.g. ['Db', 'F#', 'B']) */
+	focusRoots?: string[];
 }
 
 /**
@@ -597,8 +639,6 @@ export function getQuickStartSuggestion(
 	history: SessionResult[],
 	streak: StreakData,
 ): QuickStartSuggestion {
-	const weakChords = analyzeWeakChords(history, 1);
-
 	// After streak loss — ultra low friction
 	if (streak.current === 0 && streak.best > 3) {
 		return {
@@ -611,17 +651,22 @@ export function getQuickStartSuggestion(
 		};
 	}
 
-	// Weak chord focus
-	if (weakChords.length > 0 && weakChords[0].avgMs > 3000) {
+	// Weak chord focus — top 3 weakest roots
+	const weakest3 = analyzeWeakChords(history, 3).filter(w => w.avgMs > 2500);
+	if (weakest3.length > 0) {
+		const roots = weakest3.map(w => w.root);
+		const targetTime = Math.max(1.5, Math.round(weakest3[0].avgMs / 1000 * 0.75 * 10) / 10);
 		return {
-			title: `3 min ${weakChords[0].root} focus`,
+			title: `Weak spots: get ${roots[0]} under ${targetTime}s`,
 			titleKey: 'habit.quick_weak_focus',
-			titleParams: { root: weakChords[0].root },
-			description: `Your ${weakChords[0].root} chords need work — quick targeted drill`,
+			titleParams: { root: roots.join(', '), target: targetTime },
+			description: `Focused drill — ${roots.join(', ')} appear most often`,
 			descriptionKey: 'habit.quick_weak_focus_desc',
-			descriptionParams: { root: weakChords[0].root },
+			descriptionParams: { roots: roots.join(', ') },
+			planId: 'adaptive-drill',
 			minutes: 3,
 			icon: '🎯',
+			focusRoots: roots,
 		};
 	}
 
@@ -702,6 +747,15 @@ export function checkGoalProgress(
 				g.current = best === Infinity ? 0 : Number((best / 1000).toFixed(1));
 				break;
 			}
+			case 'accuracy': {
+				const recentMidi = history.filter((s) => s.midi?.enabled && s.midi.accuracy > 0).slice(0, 10);
+				if (recentMidi.length > 0) {
+					g.current = Math.round(
+						recentMidi.reduce((sum, s) => sum + s.midi.accuracy, 0) / recentMidi.length,
+					);
+				}
+				break;
+			}
 			case 'review': {
 				// Count practiced since goal creation
 				const sinceCreation = history.filter((s) => new Date(s.timestamp) >= new Date(g.createdAt));
@@ -734,6 +788,7 @@ function isGoalMet(goal: SmartGoal): boolean {
 		case 'endurance':
 		case 'exploration':
 		case 'review':
+		case 'accuracy':
 			return goal.current >= goal.target;
 		case 'speed':
 		case 'mastery':
@@ -763,6 +818,7 @@ export function createDefaultProfile(): HabitProfile {
 		onboardingDone: false,
 		sessionsToday: 0,
 		lastSessionDate: '',
+		dailyGoalDates: [],
 	};
 }
 

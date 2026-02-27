@@ -32,6 +32,7 @@
 		exploration: '#a78bfa',
 		endurance: '#f472b6',
 		review: '#38bdf8',
+		accuracy: '#06b6d4',
 	};
 
 	const color = $derived(GOAL_COLORS[goal.type] || '#fb923c');

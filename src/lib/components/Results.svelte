@@ -113,27 +113,27 @@
 				<div class="font-semibold capitalize">{stat.value}</div>
 			</div>
 		{/each}
-		{#if midiEnabled}
+		{#if midiEnabled && midiAccuracy > 0}
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
-				<div class="text-xs text-[var(--text-muted)] mb-1">MIDI Accuracy</div>
+				<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.midi_accuracy')}</div>
 				<div class="font-semibold text-[var(--accent-green)]">{midiAccuracy}%</div>
 			</div>
 		{/if}
 		{#if inTimeModeActive}
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
-				<div class="text-xs text-[var(--text-muted)] mb-1">Avg. Timing</div>
+				<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.avg_timing')}</div>
 				<div class="font-semibold text-[var(--accent-amber)]">{avgTimingMs > 0 ? avgTimingMs + 'ms' : 'N/A'}</div>
 			</div>
 		{/if}
 		{#if earTrainingTotal > 0}
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
-				<div class="text-xs text-[var(--text-muted)] mb-1">Ear Score</div>
+				<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.ear_score')}</div>
 				<div class="font-semibold text-[var(--accent-amber)]">{earTrainingTotal > 0 ? Math.round((earTrainingCorrect / earTrainingTotal) * 100) : 0}%</div>
 			</div>
 		{/if}
 		{#if vlModeActive && vlTotalChords > 0}
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
-				<div class="text-xs text-[var(--text-muted)] mb-1">VL Modus</div>
+				<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.vl_mode')}</div>
 				<div class="font-semibold text-[var(--primary)] capitalize">{vlModeActive}</div>
 			</div>
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">

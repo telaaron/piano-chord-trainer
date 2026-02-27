@@ -153,8 +153,25 @@ export function processSessionHabits(
 	profile.totalXP += totalXP;
 	profile.weeklyXP += totalXP;
 
-	// 3. Track sessions today
+	// 3. Track daily goal achievement
 	const todayStr = new Date().toISOString().slice(0, 10);
+	const sessionMinutes = Math.round(session.elapsedMs / 60000);
+	if (sessionMinutes >= profile.dailyGoalMinutes && !profile.dailyGoalDates.includes(todayStr)) {
+		profile.dailyGoalDates.push(todayStr);
+	}
+
+	// Reset daily goal dates when week changes
+	const today = new Date();
+	const day = today.getDay();
+	const diff = day === 0 ? 6 : day - 1;
+	const monday = new Date(today);
+	monday.setDate(today.getDate() - diff);
+	const weekStart = monday.toISOString().slice(0, 10);
+	if (profile.weekStart !== weekStart) {
+		profile.dailyGoalDates = [];
+	}
+
+	// 4. Track sessions today
 	if (profile.lastSessionDate === todayStr) {
 		profile.sessionsToday++;
 	} else {

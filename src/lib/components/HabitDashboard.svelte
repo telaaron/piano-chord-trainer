@@ -72,7 +72,7 @@
 		<div class="dash-left">
 			<div class="greeting-row">
 				<span class="greeting">{greeting}!</span>
-				<span class="level-title-inline">{t(levelInfo.titleKey)}</span>
+				<span class="level-title-inline">{t('habit.rank_label')} {t(levelInfo.titleKey)}</span>
 			</div>
 			<div class="streak-level-row">
 				<div class="streak-inline">

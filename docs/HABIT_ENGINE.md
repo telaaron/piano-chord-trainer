@@ -1,8 +1,8 @@
 # Habit Engine – Psychologisch fundiertes Übungssystem
 
 **Autor:** CTO  
-**Status:** Design & Implementation  
-**Datum:** 23. Februar 2026  
+**Status:** ✅ Vollständig implementiert  
+**Datum:** 24. Februar 2026  
 **Version:** v0.6.0  
 
 ---
@@ -357,34 +357,36 @@ Nach jeder Session werden alle aktiven Ziele geprüft. Erreichte Ziele:
 
 ```
 src/lib/engine/
-  └── habits.ts           ← Pure engine: Goal-Generierung, XP, Levels, Spaced Rep
-  └── habits.test.ts      ← Tests
+  └── habits.ts           ← Pure engine: Goal-Generierung, XP, Levels, Spaced Rep ✅
+  └── habits.test.ts      ← 46 Unit-Tests ✅
 
 src/lib/services/
-  └── habits.ts           ← localStorage Persistence, Notification Scheduling
-  └── notifications.ts    ← Service Worker Registration, Push Logic
+  └── habits.ts           ← localStorage Persistence, Notification Scheduling ✅
+  (notifications.ts in habits.ts integriert — kein separates File nötig)
+
+src/lib/services/
+  └── audio.ts            ← playCelebrationSound() für Micro-Reward Sounds ✅
 
 src/lib/components/
-  └── HabitDashboard.svelte    ← Neues Dashboard (ersetzt Weekly Goal)
-  └── HabitOnboarding.svelte   ← Ersteinrichtung
-  └── GoalCard.svelte          ← Einzelnes Ziel mit Progress
-  └── LevelBadge.svelte        ← Level + XP Anzeige
-  └── CelebrationOverlay.svelte ← Konfetti, Level-Up etc.
-  └── QuickStart.svelte        ← "3 Min Db-Fokus" Suggestion
+  └── HabitDashboard.svelte    ← Neues Dashboard (ersetzt Weekly Goal) ✅
+  └── HabitOnboarding.svelte   ← Ersteinrichtung (4 Steps) ✅
+  └── GoalCard.svelte          ← Einzelnes Ziel mit Progress ✅
+  └── LevelBadge.svelte        ← Level + XP Anzeige ✅
+  └── CelebrationOverlay.svelte ← Konfetti, Level-Up, Sounds ✅
+  (QuickStart.svelte in HabitDashboard integriert — kein separates File nötig)
 
 static/
-  └── sw.js               ← Service Worker für Notifications
+  └── sw.js               ← Service Worker für Notifications ✅
 ```
 
 ### localStorage Keys
 
 ```
-chord-trainer-habit-profile    → HabitProfile
-chord-trainer-xp               → { total: number, weekly: number, weekStart: string }
-chord-trainer-goals             → SmartGoal[]
-chord-trainer-chord-schedule    → ChordReview[]
+chord-trainer-habit-profile    → HabitProfile (enthält XP, Goals, Schedule, Config)
 chord-trainer-celebrations      → CelebrationEvent[] (pending, nicht gezeigt)
 ```
+
+> XP, Goals und ChordSchedule sind im HabitProfile konsolidiert — keine separaten Keys nötig.
 
 ### Migration
 
@@ -397,16 +399,28 @@ Bestehende Daten (Streak, History) werden beim ersten Load in das neue System mi
 
 ## 📋 Implementation Reihenfolge
 
-1. **habits.ts** (Engine) — Types, XP-Berechnung, Goal-Generierung, Level-System
-2. **habits service** (Persistence) — localStorage, Load/Save, Migration
-3. **HabitDashboard** — Neues Dashboard-Widget (ersetzt Weekly Goal)
-4. **GoalCard + LevelBadge** — UI-Komponenten
-5. **CelebrationOverlay** — Micro-Rewards Visual
-6. **QuickStart** — Intelligente Session-Empfehlung
-7. **notifications.ts + sw.js** — Push Notifications
-8. **HabitOnboarding** — Ersteinrichtung für neue Nutzer
-9. **Integration** in train/+page.svelte
-10. **i18n** — Alle Strings in EN + DE
+Alle Schritte abgeschlossen:
+
+1. ✅ **habits.ts** (Engine) — Types, XP-Berechnung, Goal-Generierung, Level-System
+2. ✅ **habits service** (Persistence) — localStorage, Load/Save, Migration
+3. ✅ **HabitDashboard** — Neues Dashboard-Widget (ersetzt Weekly Goal)
+4. ✅ **GoalCard + LevelBadge** — UI-Komponenten
+5. ✅ **CelebrationOverlay** — Micro-Rewards Visual + Sounds
+6. ✅ **QuickStart** — In HabitDashboard integriert
+7. ✅ **sw.js** — Push Notifications (Service Worker)
+8. ✅ **HabitOnboarding** — Ersteinrichtung für neue Nutzer
+9. ✅ **Integration** in train/+page.svelte
+10. ✅ **i18n** — Alle Strings in EN + DE (~80 Keys)
+
+### Design-Entscheidungen vs. Spec
+
+| Spec-Element | Entscheidung |
+|---|---|
+| `practiceAnchor` (Freitext) | Feld existiert im Type, Onboarding fragt es nicht ab — overcomplicates UX, Erinnerungen funktionieren ohne |
+| `notifications.ts` separates File | In `services/habits.ts` integriert — zu wenig Code für eigenes Modul |
+| `QuickStart.svelte` separates File | In HabitDashboard eingebaut — gehört inhaltlich zusammen |
+| Max 3 Goals gleichzeitig | Auf 2 reduziert (CPO Review) — weniger Cognitive Load |
+| Goal-Descriptions | Entfernt (CPO Review) — Titel reicht, spart vertikalen Platz |
 
 ---
 

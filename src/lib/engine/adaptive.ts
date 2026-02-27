@@ -39,6 +39,7 @@ const WEIGHT_WEAK = 4.0;        // Slow chords appear 4× more often
 const WEIGHT_NEW = 2.5;         // Unseen chords get a boost
 const WEIGHT_NORMAL = 1.0;      // Average chords
 const WEIGHT_STRONG = 0.3;      // Fast chords appear less
+const WEIGHT_FOCUS = 10.0;      // Focused-drill roots appear ~60-70%
 
 /** Threshold: chords slower than median × factor are "weak" */
 const WEAK_FACTOR = 1.4;
@@ -121,12 +122,14 @@ function computeTrend(times: number[]): 'improving' | 'stable' | 'declining' {
  * @param history All chord timing records from past sessions
  * @param pool Available chord types for the current difficulty
  * @param notePool Available root notes
+ * @param focusRoots Optional root notes to heavily prioritize (e.g. ['Db', 'F#'])
  * @returns Weighted chord list for random selection
  */
 export function getWeightedChordPool(
 	history: ChordTiming[],
 	pool: ChordType[],
 	notePool: string[],
+	focusRoots?: string[],
 ): WeightedChord[] {
 	const performance = analyzePerformance(history);
 
@@ -163,6 +166,12 @@ export function getWeightedChordPool(
 			} else {
 				weight = WEIGHT_NORMAL;
 				reason = 'normal';
+			}
+
+			// Apply focus boost for targeted roots
+			if (focusRoots?.length && focusRoots.includes(root)) {
+				weight = Math.max(weight, WEIGHT_FOCUS);
+				reason = 'weak'; // Treat as weak for UI consistency
 			}
 
 			weighted.push({

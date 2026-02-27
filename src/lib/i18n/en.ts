@@ -52,6 +52,13 @@ export const en = {
     ear_training_title: 'Ear Training Mode',
     ear_training_desc: 'Hear a chord, play it blind. No chord name shown.',
     
+    restart_with_settings: 'Restart with new settings',
+    loop_label: 'Loop:',
+    clear: 'Clear',
+    timing_note: 'Timing = first attack after Bar 1',
+    correct_but_not_closest: 'Correct, but not closest voicing',
+    continue_playing: 'Continue playing',
+    
     bars_per_chord: 'Bars per Chord',
     bar_singular: 'bar',
     bar_plural: 'bars',
@@ -100,6 +107,16 @@ export const en = {
     progression_cycle_sub: 'All 12 keys',
     progression_turnaround: 'Turnaround (I-vi-ii-V)',
     progression_turnaround_sub: 'Turnaround',
+    progression_3625: 'iii-vi-ii-V',
+    progression_3625_sub: 'Extended turnaround',
+    progression_145: 'I-IV-V',
+    progression_145_sub: 'Blues / Pop Feel',
+    progression_diatonic: 'Diatonic',
+    progression_diatonic_sub: 'All 7 degrees',
+    progression_custom: 'Custom',
+    progression_custom_sub: 'Your own degrees',
+    custom_degrees_label: 'Scale Degrees',
+    custom_degrees_hint: 'Tap degrees 1–7 to build your sequence',
 
     chord_count: 'Number of Chords',
     
@@ -152,7 +169,12 @@ export const en = {
     accidentals: 'Accidentals',
     voicing: 'Voicing',
     restart: 'Restart Training',
-    menu: 'Back to Menu'
+    menu: 'Back to Menu',
+    
+    midi_accuracy: 'MIDI Accuracy',
+    avg_timing: 'Avg. Timing',
+    ear_score: 'Ear Score',
+    vl_mode: 'Voice Leading Mode',
   },
 
   plans: {
@@ -423,6 +445,7 @@ export const en = {
     practice_qualities_desc: 'Maj7, m7, dom7, m7b5, dim7, alt, sus, and more',
     
     integration_title: 'Integration Options',
+    integration_recommended: 'Recommended',
     integration_lesson: 'Lesson Tab',
     integration_lesson_desc: 'New "Practice" tab within each lesson. Context-specific: the lesson\'s voicings are pre-loaded. Zero friction for students.',
     integration_standalone: 'Standalone Section',
@@ -489,6 +512,8 @@ export const en = {
     chords_practiced: 'Chords practiced',
     chords: 'chords',
     avg_per_chord: 'Ø per chord',
+    more_sessions_needed: 'More sessions needed for trends',
+    now: 'Now',
     getting_faster: 'Getting faster!',
     focus_on: 'Focus on',
     last_10_sessions: 'Last 10 sessions — seconds per chord',
@@ -515,6 +540,14 @@ export const en = {
     ear_training_revealed: 'Press Space for next chord',
     ear_training_listen: 'Play what you hear — or press Space to reveal',
     ear_training_hidden: 'Press Space to reveal the chord',
+    ear_piano_hint: 'Click = listen · Shift+Click = select · Enter = check',
+    ear_mode_preview: 'Listen',
+    ear_mode_select: 'Select',
+    ear_note_singular: 'note',
+    ear_notes_plural: 'notes',
+    ear_check: 'Check',
+    ear_clear: 'Clear',
+    ear_try_again: 'Try again',
     keep_trying: '{percent}% — keep trying',
   },
 
@@ -712,6 +745,9 @@ export const en = {
   },
 
   habit: {
+    // Level system
+    rank_label: 'Rank:',
+
     // Level titles
     level_listener: 'Listener',
     level_beginner: 'Beginner',
@@ -753,12 +789,15 @@ export const en = {
     goal_review_desc: 'Keep your skills sharp — these chords need refreshing',
     goal_mastery_251: 'ii-V-I in all keys under 2.5s/chord',
     goal_mastery_251_desc: 'The ultimate jazz drill — smooth through every key',
+    goal_accuracy: 'Reach {target}% MIDI accuracy',
+    goal_accuracy_desc: 'Currently {current}% — clean playing beats fast playing',
+    xp_high_accuracy: '{accuracy}% accuracy!',
 
     // Quick start
     quick_restart: 'Quick restart: 4 chords',
     quick_restart_desc: "Just 4 chords. That's all it takes to start again.",
-    quick_weak_focus: '3 min {root} focus',
-    quick_weak_focus_desc: 'Your {root} chords need work — quick targeted drill',
+    quick_weak_focus: '{root} under {target}s — focused drill',
+    quick_weak_focus_desc: 'Targeted training — {roots} appear most often',
     quick_warmup: '{minutes} min warm-up',
     quick_warmup_desc: 'Your daily practice — start with what you know',
 

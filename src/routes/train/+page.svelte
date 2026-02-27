@@ -20,7 +20,7 @@
 	import { MidiService } from '$lib/services/midi';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
 	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadHistory, computeStats, type ProgressStats, type StreakData, type ChordTiming } from '$lib/services/progress';
-	import { playChord, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll, setSoundPreset, getSoundPreset, SOUND_PRESETS, type SoundPreset } from '$lib/services/audio';
+	import { playChord, playChordAtTime, playNote, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll, setSoundPreset, getSoundPreset, SOUND_PRESETS, type SoundPreset } from '$lib/services/audio';
 	import {
 		CHORDS_BY_DIFFICULTY,
 		CHORD_NOTATIONS,
@@ -42,6 +42,8 @@
 		validateFindInversion,
 		validateFreeVoicing,
 		getValidPCSets,
+		degreesToLabel,
+		parseCustomDegrees,
 		type Difficulty,
 		type NotationStyle,
 		type VoicingType,
@@ -78,6 +80,10 @@
 		'2-5-1': 'settings.progression_251',
 		'cycle-of-4ths': 'settings.progression_cycle',
 		'1-6-2-5': 'settings.progression_turnaround',
+		'3-6-2-5': 'settings.progression_3625',
+		'1-4-5': 'settings.progression_145',
+		'diatonic': 'settings.progression_diatonic',
+		'custom': 'settings.progression_custom',
 	};
 
 	// ─── Exercise descriptions ───────────────────────────────────
@@ -102,6 +108,8 @@
 	let notationSystem: NotationSystem = $state('international');
 	let totalChords = $state(20);
 	let progressionMode: ProgressionMode = $state('random');
+	/** 0-based degree indices for 'custom' progression mode */
+	let customDegrees: number[] = $state([1, 4, 0]); // default ii-V-I
 	let midiEnabled = $state(false);
 	let streak: StreakData = $state({ current: 0, best: 0, lastDate: '' });
 	let dashStats: ProgressStats = $state(computeStats([]));
@@ -127,7 +135,9 @@
 	// ─── New mode settings ───────────────────────────────────────
 	let inTimeMode = $state(false);
 	let inTimeBars = $state(2);
+	let inTimeLookAhead = $state(false);
 	let adaptiveEnabled = $state(false);
+	let focusRoots: string[] = $state([]);
 	let voiceLeadingEnabled = $state(false);
 
 	// ─── In-Time mode state ──────────────────────────────────────
@@ -137,10 +147,19 @@
 	let inTimeChordPlayedAt: number | null = $state(null);
 	let inTimeBeatOneTime = $state(0);
 
+	// ─── Look-ahead confirm dialog state ───────────────────────
+	let showLookAheadConfirm = $state(false);
+
 	// ─── Ear Training state ──────────────────────────────────────
 	let earTrainingRevealed = $state(false);
 	let earTrainingCorrect = $state(0);
 	let earTrainingTotal = $state(0);
+	/** Pitch classes (0-11) the user selected as their guess by clicking the piano */
+	let earGuessNotes: Set<number> = $state(new Set());
+	/** Mobile toggle: when true, plain click = select; when false, plain click = preview */
+	let earSelectMode = $state(false);
+	/** Result of the last guess submission */
+	let earGuessResult: 'correct' | 'wrong' | null = $state(null);
 
 	// ─── Voice Leading state ─────────────────────────────────────
 	let voiceLeadingInfo: VoiceLeadingInfo | null = $state(null);
@@ -157,6 +176,8 @@
 
 	let screen: Screen = $state<Screen>('setup');
 	let settingsOpen = $state(false);
+	/** Tracks which screen opened the settings modal (null = from setup) */
+	let settingsOpenedFromScreen: Screen | null = $state(null);
 	let playPhase: PlayPhase = $state<PlayPhase>('playing');
 	let timerStarted = $state(false);
 	let paused = $state(false);
@@ -234,30 +255,27 @@
 		return t('settings.greeting_evening');
 	}
 
-	function getStatusbarWeekDots(s: StreakData): boolean[] {
+	function getStatusbarWeekDots(profile: HabitProfile | null): boolean[] {
 		const dots: boolean[] = Array(7).fill(false);
-		if (s.current === 0 || !s.lastDate) return dots;
-		const practiceDates = new Set<string>();
-		const lastDate = new Date(s.lastDate + 'T00:00:00');
-		for (let i = 0; i < s.current; i++) {
-			const d = new Date(lastDate);
-			d.setDate(lastDate.getDate() - i);
-			practiceDates.add(d.toISOString().slice(0, 10));
-		}
+		if (!profile) return dots;
+
 		const today = new Date();
 		const jsDay = today.getDay();
 		const daysFromMonday = jsDay === 0 ? 6 : jsDay - 1;
 		const monday = new Date(today);
 		monday.setDate(today.getDate() - daysFromMonday);
+
+		// Check each day of the week against dailyGoalDates
+		const goalDateSet = new Set(profile.dailyGoalDates);
 		for (let i = 0; i < 7; i++) {
 			const d = new Date(monday);
 			d.setDate(monday.getDate() + i);
-			dots[i] = practiceDates.has(d.toISOString().slice(0, 10));
+			dots[i] = goalDateSet.has(d.toISOString().slice(0, 10));
 		}
 		return dots;
 	}
 
-	const sbWeekDots = $derived(getStatusbarWeekDots(streak));
+	const sbWeekDots = $derived(getStatusbarWeekDots(habitProfile));
 	const weeklyGoalPct = $derived(Math.min(100, Math.round((sbWeekDots.filter(Boolean).length / 5) * 100)));
 	const greeting = greetingText();
 
@@ -274,7 +292,7 @@
 	function generateChords() {
 		// Progression modes
 		if (progressionMode !== 'random') {
-			const result = generateProgression(progressionMode, accidentals, notation, totalChords);
+			const result = generateProgression(progressionMode, accidentals, notation, totalChords, customDegrees);
 			const newChords: string[] = [];
 			const newData: ChordWithNotes[] = [];
 
@@ -304,7 +322,7 @@
 		// Adaptive mode: use weighted selection
 		if (adaptiveEnabled && progressionMode === 'random') {
 			const history = loadHistory().flatMap(s => s.chordTimings ?? []);
-			const weighted = getWeightedChordPool(history, available, pool);
+			const weighted = getWeightedChordPool(history, available, pool, focusRoots.length > 0 ? focusRoots : undefined);
 			let lastRoot = '';
 			let lastDisplay = '';
 
@@ -421,6 +439,7 @@
 			totalChords,
 			progressionMode,
 			midiEnabled,
+			customDegrees,
 		});
 	}
 
@@ -446,15 +465,58 @@
 			inTimeBarCount = 0;
 			inTimeBeatOneTime = Date.now();
 			metronomeEnabled = true;
-			startMetronome(metronomeBpm, 4, (beat) => {
+			startMetronome(metronomeBpm, 4, (beat, time) => {
 				currentBeat = beat;
-				handleInTimeBeat(beat);
+				handleInTimeBeat(beat, time);
 			});
 		} else if (metronomeEnabled) {
 			// Standard metronome
 			startMetronome(metronomeBpm, 4, (beat) => {
 				currentBeat = beat;
 			});
+		}
+	}
+
+	/** Show dialog asking to restart with look-ahead enabled; pauses game first. */
+	function promptLookAhead() {
+		if (screen !== 'playing' || !timerStarted || paused) return;
+		togglePause(); // pause so the metronome stops while the dialog is open
+		showLookAheadConfirm = true;
+	}
+
+	/** Confirmed: enable look-ahead, restart, auto-begin timing. */
+	function confirmLookAhead() {
+		showLookAheadConfirm = false;
+		inTimeLookAhead = true;
+		startGame();
+		beginTimer(); // skip the manual "Start" click
+	}
+
+	/** Cancelled: close dialog and resume from where we left off. */
+	function cancelLookAhead() {
+		showLookAheadConfirm = false;
+		if (paused) togglePause();
+	}
+
+	/** Open settings modal from an active game screen (auto-pauses) */
+	function openSettingsFromGame() {
+		settingsOpenedFromScreen = screen;
+		// Auto-pause if timer is running and not already paused
+		if (timerStarted && !paused) {
+			togglePause();
+		}
+		settingsOpen = true;
+	}
+
+	/** Close settings modal — resumes game if opened from gameplay */
+	function closeSettingsModal() {
+		settingsOpen = false;
+		if (settingsOpenedFromScreen) {
+			// Resume if we auto-paused
+			if (timerStarted && paused) {
+				togglePause();
+			}
+			settingsOpenedFromScreen = null;
 		}
 	}
 
@@ -479,6 +541,10 @@
 	}
 
 	function startPlan(plan: PracticePlan) {
+		// Clear focus roots unless this is an adaptive drill with focus
+		if (plan.id !== 'adaptive-drill') {
+			focusRoots = [];
+		}
 		// Apply plan settings
 		difficulty = plan.settings.difficulty;
 		notation = plan.settings.notation;
@@ -493,6 +559,7 @@
 			inTimeMode = true;
 			inTimeBars = 2;
 			metronomeBpm = 100;
+			audioEnabled = false; // timing exercise — audio distracts more than it helps
 		} else {
 			inTimeMode = false;
 		}
@@ -856,7 +923,7 @@
 	// ─── In-Time Mode Logic ──────────────────────────────────────
 
 	/** Called on each metronome beat in In-Time mode */
-	function handleInTimeBeat(beat: number) {
+	function handleInTimeBeat(beat: number, time: number) {
 		if (!inTimeMode || screen !== 'playing' || paused || !timerStarted) return;
 
 		if (beat === 1) {
@@ -903,11 +970,12 @@
 					midiMatchResult = null;
 					inTimeChordPlayedAt = null;
 					if (audioEnabled && chordsWithNotes[currentIdx]) {
-						playChord(chordsWithNotes[currentIdx].voicing).catch(() => {});
+						playChordAtTime(chordsWithNotes[currentIdx].voicing, '2n', time);
 					}
-					// Re-check currently held MIDI notes against the new chord
-					if (midiEnabled && midiActiveNotes.size > 0) {
-						handleMidiNotes(midi.activeNotes as Set<number>);
+					// Release all held notes so previous chord doesn't bleed into the new one.
+					// The player needs to re-play to get feedback on the new chord.
+					if (midiEnabled) {
+						midi.releaseAll();
 					}
 				} else {
 					endGame();
@@ -937,6 +1005,9 @@
 		earTrainingRevealed = false;
 		earTrainingCorrect = 0;
 		earTrainingTotal = 0;
+		earGuessNotes = new Set();
+		earGuessResult = null;
+		earSelectMode = false;
 		voiceLeadingInfo = null;
 		midi.releaseAll();
 		midi.onNotes(handleEarTrainingMidi);
@@ -981,6 +1052,8 @@
 
 		earTrainingRevealed = false;
 		midiMatchResult = null;
+		earGuessNotes = new Set();
+		earGuessResult = null;
 		midi.releaseAll();
 
 		if (currentIdx < actualTotalChords - 1) {
@@ -1036,6 +1109,70 @@
 		}
 	}
 
+	// ─── Clickable Piano (Ear Training without MIDI) ─────────────
+
+	const CHROMATIC_NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+	/** Convert a keyboard chromatic index to a Tone.js note name (e.g. 0→"C3", 13→"C#4") */
+	function chrIdxToNoteName(chrIdx: number): string {
+		return CHROMATIC_NOTE_NAMES[chrIdx % 12] + (3 + Math.floor(chrIdx / 12));
+	}
+
+	/** Handle piano key click in ear training: preview or select */
+	function handleEarPianoClick(chrIdx: number, shiftKey: boolean) {
+		// Always play the note
+		const noteName = chrIdxToNoteName(chrIdx);
+		playNote(noteName, '4n');
+
+		// Determine if this click should toggle selection
+		// Default: click = preview, shift+click = select
+		// With earSelectMode toggled: click = select, shift+click = preview
+		const selecting = earSelectMode ? !shiftKey : shiftKey;
+
+		if (selecting) {
+			const pc = chrIdx % 12;
+			const next = new Set(earGuessNotes);
+			if (next.has(pc)) next.delete(pc);
+			else next.add(pc);
+			earGuessNotes = next;
+			earGuessResult = null;
+		}
+	}
+
+	/** Submit the user's ear training guess (selected pitch classes vs expected) */
+	function submitEarGuess() {
+		if (earGuessNotes.size === 0 || !currentData) return;
+
+		const expected = expectedPitchClasses;
+		const correct = earGuessNotes.size === expected.size &&
+			[...earGuessNotes].every((pc) => expected.has(pc));
+
+		if (correct) {
+			earGuessResult = 'correct';
+			earTrainingCorrect++;
+			earTrainingTotal++;
+			earTrainingRevealed = true;
+
+			// Auto-advance after a delay
+			if (!autoAdvanceTimeout) {
+				autoAdvanceTimeout = setTimeout(() => {
+					autoAdvanceTimeout = null;
+					earTrainingNext();
+				}, 1200);
+			}
+		} else {
+			earGuessResult = 'wrong';
+			// Don't count as attempt yet — let user correct
+			setTimeout(() => { if (earGuessResult === 'wrong') earGuessResult = null; }, 1500);
+		}
+	}
+
+	/** Clear all selected guess notes */
+	function clearEarGuess() {
+		earGuessNotes = new Set();
+		earGuessResult = null;
+	}
+
 	// ─── Voice Leading computation on chord change ───────────────
 
 	/** Update voice leading info when chord index changes (standard mode) */
@@ -1075,6 +1212,11 @@
 				nextChord();
 			}
 		}
+		// H = prompt Vorschau (look-ahead) — only meaningful in In-Time mode when not yet active
+		if (e.code === 'KeyH' && screen === 'playing' && timerStarted && !paused && inTimeMode && !inTimeLookAhead) {
+			e.preventDefault();
+			promptLookAhead();
+		}
 		if (e.code === 'Space' && screen === 'ear-training') {
 			e.preventDefault();
 			if (!timerStarted) {
@@ -1085,13 +1227,37 @@
 				earTrainingReveal();
 			}
 		}
+		// Enter = submit ear training guess
+		if (e.code === 'Enter' && screen === 'ear-training' && timerStarted && !earTrainingRevealed && earGuessNotes.size > 0) {
+			e.preventDefault();
+			submitEarGuess();
+		}
+		// Backspace = clear ear training guess
+		if (e.code === 'Backspace' && screen === 'ear-training' && timerStarted && !earTrainingRevealed && earGuessNotes.size > 0) {
+			e.preventDefault();
+			clearEarGuess();
+		}
 		if (e.code === 'KeyP' && screen === 'playing' && timerStarted) {
 			e.preventDefault();
 			togglePause();
 		}
+		// S = open/close settings from active game screens
+		if (e.code === 'KeyS' && (screen === 'playing' || screen === 'ear-training')) {
+			e.preventDefault();
+			if (settingsOpen) {
+				closeSettingsModal();
+			} else {
+				openSettingsFromGame();
+			}
+		}
+		// Escape: close settings modal first, otherwise back to setup
 		if (e.code === 'Escape' && (screen === 'playing' || screen === 'ear-training')) {
 			e.preventDefault();
-			resetToSetup();
+			if (settingsOpen) {
+				closeSettingsModal();
+			} else {
+				resetToSetup();
+			}
 		}
 	}
 
@@ -1108,6 +1274,7 @@
 			totalChords = saved.totalChords;
 			progressionMode = saved.progressionMode;
 			midiEnabled = saved.midiEnabled;
+			if (saved.customDegrees && saved.customDegrees.length > 0) customDegrees = saved.customDegrees;
 		}
 
 		// Load streak data
@@ -1210,6 +1377,8 @@
 						weekDots={sbWeekDots}
 						midiConnected={midiState === 'connected' && midiDevices.length > 0}
 						onquickstart={(suggestion) => {
+							// Set focus roots for adaptive drill targeting
+							focusRoots = suggestion.focusRoots ?? [];
 							const plan = PRACTICE_PLANS.find(p => p.id === suggestion.planId);
 							if (plan) {
 								startPlan(plan);
@@ -1307,7 +1476,7 @@
 								<div class="text-sm font-medium group-hover:text-[var(--primary)] transition-colors">{t('settings.custom_settings')}</div>
 								<div class="text-xs text-[var(--text-dim)] mt-1 flex flex-wrap gap-2">
 									<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">
-										{progressionMode === 'random' ? `${totalChords} ${t('results.chords')}` : t(PROGRESSION_KEYS[progressionMode])}
+										{progressionMode === 'random' ? `${totalChords} ${t('results.chords')}` : progressionMode === 'custom' ? degreesToLabel(customDegrees) : t(PROGRESSION_KEYS[progressionMode])}
 									</span>
 									<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full capitalize">{t('settings.difficulty_' + difficulty)}</span>
 									<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">{t(VOICING_KEYS[voicing])}</span>
@@ -1329,7 +1498,7 @@
 			<div
 				class="fixed inset-0 z-40 bg-black/75"
 				transition:fade={{ duration: 180 }}
-				onclick={() => settingsOpen = false}
+				onclick={closeSettingsModal}
 				role="presentation"
 			></div>
 			<div
@@ -1342,30 +1511,74 @@
 					<h2 class="text-base font-bold">{t('settings.custom_settings')}</h2>
 					<button
 						class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-muted)] transition-colors text-2xl leading-none cursor-pointer text-[var(--text-dim)] hover:text-[var(--text)]"
-						onclick={() => settingsOpen = false}
+						onclick={closeSettingsModal}
 						aria-label="Schließen"
 					>×</button>
 				</div>
 				<div class="settings-modal-body space-y-6">
 					<button
 						class="w-full h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
-						onclick={() => { settingsOpen = false; startGame(); }}
-					>▶ {t('settings.start_training')}</button>
+						onclick={() => { settingsOpen = false; settingsOpenedFromScreen = null; startGame(); }}
+					>{settingsOpenedFromScreen ? `↺ ${t('settings.restart_with_settings')}` : `▶ ${t('settings.start_training')}`}</button>
 					<fieldset>
 						<legend class="text-sm font-medium mb-1">{t('settings.progression_mode')}</legend>
 						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.progression_desc')}</p>
-						<div class="grid grid-cols-2 gap-3">
-							{#each [
-								{ val: 'random' as ProgressionMode, label: t('settings.progression_random'), sub: t('settings.progression_random_sub') },
-								{ val: '2-5-1' as ProgressionMode, label: t('settings.progression_251'), sub: t('settings.progression_251_sub') },
-								{ val: 'cycle-of-4ths' as ProgressionMode, label: t('settings.progression_cycle'), sub: t('settings.progression_cycle_sub') },
-								{ val: '1-6-2-5' as ProgressionMode, label: t('settings.progression_turnaround'), sub: t('settings.progression_turnaround_sub') },
-							] as opt}
-								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(progressionMode, opt.val)}" onclick={() => (progressionMode = opt.val)}>
-									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+						<div class="grid grid-cols-2 gap-2">
+							{#each ([
+								{ val: 'random' as ProgressionMode,        label: t('settings.progression_random'),     sub: t('settings.progression_random_sub') },
+								{ val: 'cycle-of-4ths' as ProgressionMode, label: t('settings.progression_cycle'),      sub: t('settings.progression_cycle_sub') },
+								{ val: '2-5-1' as ProgressionMode,         label: t('settings.progression_251'),        sub: t('settings.progression_251_sub') },
+								{ val: '1-6-2-5' as ProgressionMode,       label: t('settings.progression_turnaround'), sub: t('settings.progression_turnaround_sub') },
+								{ val: '3-6-2-5' as ProgressionMode,       label: t('settings.progression_3625'),       sub: t('settings.progression_3625_sub') },
+								{ val: '1-4-5' as ProgressionMode,         label: t('settings.progression_145'),        sub: t('settings.progression_145_sub') },
+								{ val: 'diatonic' as ProgressionMode,      label: t('settings.progression_diatonic'),   sub: t('settings.progression_diatonic_sub') },
+								{ val: 'custom' as ProgressionMode,        label: t('settings.progression_custom'),     sub: t('settings.progression_custom_sub') },
+							] as Array<{val: ProgressionMode; label: string; sub: string}>).map(o => o) as opt}
+								<button class="p-2.5 rounded-[var(--radius)] border-2 transition-all text-left {sel(progressionMode, opt.val)}" onclick={() => (progressionMode = opt.val)}>
+									<div class="font-semibold text-sm leading-tight">{opt.label}</div>
+									<div class="text-xs text-[var(--text-dim)] mt-0.5 leading-tight">{opt.sub}</div>
 								</button>
 							{/each}
 						</div>
+
+						<!-- Custom degree builder -->
+						{#if progressionMode === 'custom'}
+							<div class="mt-3 space-y-2">
+								<div class="text-xs font-medium text-[var(--text-muted)]">{t('settings.custom_degrees_label')}</div>
+								<p class="text-xs text-[var(--text-dim)]">{t('settings.custom_degrees_hint')}</p>
+								<div class="flex gap-1.5 flex-wrap">
+									{#each [0,1,2,3,4,5,6] as di}
+										{@const romans = ['I','ii','iii','IV','V','vi','vii°']}
+										{@const qualities = ['Maj7','m7','m7','Maj7','7','m7','m7b5']}
+										<button
+											class="flex flex-col items-center px-2 py-1.5 rounded-[var(--radius-sm)] border-2 transition-all text-center cursor-pointer min-w-[2.5rem]
+												{customDegrees.includes(di) ? 'border-[var(--primary)] bg-[var(--primary-muted)]' : 'border-[var(--border)] hover:border-[var(--border-hover)]'}"
+											onclick={() => {
+												customDegrees = customDegrees.includes(di)
+													? customDegrees.filter(d => d !== di)
+													: [...customDegrees, di];
+											}}
+										>
+											<span class="text-xs font-bold leading-none">{romans[di]}</span>
+											<span class="text-[9px] text-[var(--text-dim)] leading-none mt-0.5">{qualities[di]}</span>
+										</button>
+									{/each}
+								</div>
+								{#if customDegrees.length > 0}
+									<div class="flex items-center gap-1.5 flex-wrap mt-1">
+										<span class="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('ui.loop_label')}</span>
+										{#each customDegrees as di, i}
+											{@const romans = ['I','ii','iii','IV','V','vi','vii°']}
+											<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[var(--primary-muted)] border border-[var(--primary)]/30 text-xs font-semibold">
+												{romans[di]}
+												<button class="text-[var(--text-dim)] hover:text-[var(--accent-red)] leading-none cursor-pointer" onclick={() => { customDegrees = customDegrees.filter((_, idx) => idx !== i); }}>×</button>
+											</span>
+										{/each}
+										<button class="text-[10px] text-[var(--text-dim)] hover:text-[var(--accent-red)] underline cursor-pointer" onclick={() => { customDegrees = []; }}>{t('ui.clear')}</button>
+									</div>
+								{/if}
+							</div>
+						{/if}
 					</fieldset>
 					<fieldset>
 						<legend class="text-sm font-medium mb-1">{t('settings.midi_recognition')}</legend>
@@ -1534,6 +1747,20 @@
 										</button>
 									{/each}
 								</div>
+								<div class="mt-3">
+									<div class="text-xs font-medium text-[var(--text-muted)] mb-1">👁 Vorschau (Look-ahead)</div>
+									<p class="text-xs text-[var(--text-dim)] mb-2">Siehst du den nächsten Chord schon im letzten Bar?</p>
+									<div class="grid grid-cols-2 gap-3">
+										{#each [
+											{ val: false, label: 'Blind', sub: 'Nächster Chord unbekannt — testet Reaktion' },
+											{ val: true, label: 'Vorschau', sub: 'Nächster Chord im letzten Bar sichtbar — testet Vorbereitung' },
+										] as opt}
+											<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(inTimeLookAhead, opt.val)}" onclick={() => (inTimeLookAhead = opt.val)}>
+												<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
+											</button>
+										{/each}
+									</div>
+								</div>
 							</div>
 						{/if}
 					</fieldset>
@@ -1567,13 +1794,13 @@
 					</fieldset>
 					<button
 						class="w-full p-4 rounded-[var(--radius)] border-2 border-[var(--border)] hover:border-[var(--accent-amber)] transition-all text-left group"
-						onclick={() => { settingsOpen = false; startEarTraining(); }}
+						onclick={() => { settingsOpen = false; settingsOpenedFromScreen = null; startEarTraining(); }}
 					>
 						<div class="flex items-center gap-3">
 							<span class="text-2xl">👂</span>
 							<div>
-								<div class="font-semibold text-sm group-hover:text-[var(--accent-amber)] transition-colors">Ear Training Mode</div>
-								<div class="text-xs text-[var(--text-dim)] mt-0.5">Hear a chord, play it blind. No chord name shown.</div>
+								<div class="font-semibold text-sm group-hover:text-[var(--accent-amber)] transition-colors">{t('settings.ear_training_title')}</div>
+								<div class="text-xs text-[var(--text-dim)] mt-0.5">{t('settings.ear_training_desc')}</div>
 							</div>
 						</div>
 					</button>
@@ -1641,6 +1868,11 @@
 						<span class="mx-1">·</span>
 						<span>{t(PROGRESSION_KEYS[progressionMode])}</span>
 					</div>
+					<button
+						class="w-7 h-7 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer flex items-center justify-center text-sm"
+						onclick={openSettingsFromGame}
+						title="Settings (S)"
+					>⚙</button>
 					<button
 						class="w-7 h-7 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer flex items-center justify-center text-sm"
 						onclick={() => (showExerciseInfo = !showExerciseInfo)}
@@ -1738,20 +1970,37 @@
 								></div>
 							{/each}
 						</div>
-						{#if inTimeMode}
-							<span class="text-xs text-[var(--accent-amber)] font-mono">
-								Bar {Math.min(inTimeBarCount, inTimeBars)}/{inTimeBars}
-							</span>
-						{/if}
 					{/if}
 				</div>
+
+				<!-- In-Time bar counter — always visible while playing, even with metronome collapsed -->
+				{#if inTimeMode && timerStarted}
+					<div class="flex items-center justify-between px-4 py-2.5 rounded-[var(--radius)] border border-[var(--accent-amber)]/25 bg-[var(--accent-amber)]/5">
+						<div class="flex items-center gap-3">
+							{#each Array.from({length: inTimeBars}, (_, i) => i + 1) as barNum}
+								<div class="flex flex-col items-center gap-0.5">
+									<div class="w-9 h-9 rounded-[var(--radius-sm)] border-2 flex items-center justify-center font-mono font-bold text-sm transition-all duration-150
+										{Math.min(inTimeBarCount, inTimeBars) === barNum
+											? (barNum === 1
+												? 'border-[var(--accent-amber)] bg-[var(--accent-amber)]/15 text-[var(--accent-amber)]'
+												: 'border-[var(--primary)]/50 bg-[var(--primary-muted)] text-[var(--primary)]')
+											: 'border-[var(--border)] text-[var(--text-dim)]'}">{barNum}</div>
+									<span class="text-[9px] leading-tight {barNum === 1 ? 'text-[var(--accent-amber)]' : 'text-[var(--text-dim)]'}">{barNum === 1 ? '▶ spielen' : 'halten'}</span>
+								</div>
+							{/each}
+						</div>
+						<span class="text-xs text-[var(--text-dim)] hidden sm:block">{t('ui.timing_note')}</span>
+					</div>
+				{/if}
 
 				<!-- Progress bar + timer -->
 				<div>
 					<div class="flex justify-between text-sm mb-2 text-[var(--text-muted)]">
 						<span>{t('ui.chord_progress', { current: currentIdx + 1, total: actualTotalChords })}</span>
 						<div class="flex items-center gap-3">
+							{#if !inTimeMode}
 							<span class="font-mono">{timerStarted ? formatTime(elapsedMs > 0 ? elapsedMs : 0) : '0:00.00'}</span>
+							{/if}
 							{#if timerStarted}
 								<button
 									class="flex items-center gap-1 text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
@@ -1763,6 +2012,13 @@
 									onclick={restartGame}
 									title={t('ui.restart')}
 								>↺ {t('ui.restart')}</button>
+								{#if inTimeMode && !inTimeLookAhead}
+									<button
+										class="flex items-center gap-1 text-xs px-2 py-0.5 rounded border border-[var(--accent-amber)]/50 text-[var(--accent-amber)] hover:border-[var(--accent-amber)] hover:bg-[var(--accent-amber)]/10 transition-colors cursor-pointer"
+										onclick={promptLookAhead}
+										title="Vorschau aktivieren — zeigt nächsten Chord im letzten Bar (H)"
+									>👁 Vorschau <kbd class="ml-0.5 px-1 py-0.5 rounded border border-[var(--accent-amber)]/40 font-mono text-[10px] not-italic">H</kbd></button>
+								{/if}
 							{/if}
 						</div>
 					</div>
@@ -1802,7 +2058,8 @@
 				{/if}
 
 				<!-- Chord card + keyboard (dimmed when paused or not started) -->
-				<div class="{paused ? 'opacity-30 pointer-events-none' : ''}">
+				<div class="{paused ? 'opacity-30 pointer-events-none' : ''} flex items-start gap-4">
+				<div class="flex-1 min-w-0">
 				<ChordCard chord={currentChord} system={notationSystem} onclick={nextChord} voiceLeading={voiceLeadingInfo} showVoiceLeading={voiceLeadingEnabled} vlMode={voiceLeadingEnabled ? vlMode : 'guided'} voicingTypeHint={voiceLeadingEnabled && vlMode === 'find-inversion' ? t('settings.voicing_' + voicing.replace(/-/g, '_')) : ''}>
 					<!-- Piano keyboard inside card -->
 					<div class="mt-8">
@@ -1826,7 +2083,7 @@
 								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Optimal!</span>
 								<div class="text-xs text-[var(--text-muted)] mt-0.5">Bewegung: {vlValidation.playerMovement} Halbtöne</div>
 							{:else if vlValidation.grade === 'correct'}
-								<span class="text-[var(--accent-amber)] font-semibold">Richtig, aber nicht engste Lage</span>
+								<span class="text-[var(--accent-amber)] font-semibold">{t('ui.correct_but_not_closest')}</span>
 								<div class="text-xs text-[var(--text-muted)] mt-0.5">
 									Deine Bewegung: {vlValidation.playerMovement} HT — Optimal: {vlValidation.optimalMovement} HT
 								</div>
@@ -1881,7 +2138,22 @@
 						</div>
 					{/if}
 				</ChordCard>
-				</div>
+				</div><!-- /flex-1 -->
+
+				<!-- Next chord preview (In-Time look-ahead) — outer container always present so ChordCard width stays stable -->
+				{#if inTimeMode && inTimeLookAhead}
+					<div class="w-36 shrink-0 pt-2">
+						{#if inTimeBarCount === inTimeBars && currentIdx < actualTotalChords - 1 && chordsWithNotes[currentIdx + 1]}
+							<div class="flex flex-col items-center gap-1.5" transition:fade={{ duration: 120 }}>
+								<span class="text-[10px] font-medium uppercase tracking-widest text-[var(--text-dim)]">Nächster</span>
+								<div class="card w-full py-6 px-4 text-center opacity-60 hover:opacity-80 transition-opacity">
+									<div class="text-2xl font-bold text-gradient leading-snug break-words">{chordsWithNotes[currentIdx + 1].chord}</div>
+								</div>
+							</div>
+						{/if}
+					</div>
+				{/if}
+				</div><!-- /flex row -->
 
 				<!-- Instruction -->
 				<div class="text-center text-sm text-[var(--text-muted)]">
@@ -1901,7 +2173,46 @@
 						<p>{t('ui.tap_space')}</p>
 					{/if}
 				</div>
+
+				</div>
 			</div>
+		{/if}
+
+		<!-- ─── Look-ahead confirm dialog ─── -->
+		{#if showLookAheadConfirm}
+			<div
+				class="fixed inset-0 z-40 bg-black/60"
+				transition:fade={{ duration: 180 }}
+				onclick={cancelLookAhead}
+				role="presentation"
+			></div>
+			<div
+				class="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-md bg-[var(--bg-card)] rounded-t-2xl border-t border-x border-[var(--border)] p-6 space-y-5 shadow-2xl"
+				transition:fly={{ y: 120, duration: 300, opacity: 1 }}
+				role="dialog"
+				aria-modal="true"
+			>
+				<div class="flex items-start justify-between">
+					<div>
+						<h3 class="text-base font-bold">Mit Vorschau üben?</h3>
+						<p class="text-sm text-[var(--text-muted)] mt-1">Im letzten Bar siehst du den nächsten Chord — ideal zum Einspielen. Die Session startet neu.</p>
+					</div>
+					<button
+						class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-muted)] transition-colors text-2xl leading-none cursor-pointer text-[var(--text-dim)] hover:text-[var(--text)] shrink-0 ml-4"
+						onclick={cancelLookAhead}
+						aria-label="Abbrechen"
+					>×</button>
+				</div>
+				<div class="grid grid-cols-2 gap-3">
+					<button
+						class="h-12 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
+						onclick={cancelLookAhead}
+					>{t('ui.continue_playing')}</button>
+					<button
+						class="h-12 rounded-[var(--radius)] bg-[var(--accent-amber)] text-[var(--bg)] font-semibold hover:opacity-90 transition-opacity cursor-pointer text-sm"
+						onclick={confirmLookAhead}
+					>👁 Neu starten mit Vorschau</button>
+				</div>
 			</div>
 		{/if}
 
@@ -1916,10 +2227,17 @@
 				>
 					← {t('ui.back')}
 				</button>
-				<div class="text-sm text-[var(--text-muted)]">
-					<span class="font-semibold text-[var(--accent-amber)]">{t('ui.ear_training')}</span>
-					<span class="mx-1">·</span>
-					<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
+				<div class="flex items-center gap-3">
+					<div class="text-sm text-[var(--text-muted)]">
+						<span class="font-semibold text-[var(--accent-amber)]">{t('ui.ear_training')}</span>
+						<span class="mx-1">·</span>
+						<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
+					</div>
+					<button
+						class="w-7 h-7 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-amber)] hover:text-[var(--accent-amber)] transition-colors cursor-pointer flex items-center justify-center text-sm"
+						onclick={openSettingsFromGame}
+						title="Settings (S)"
+					>⚙</button>
 				</div>
 			</div>
 
@@ -1973,7 +2291,7 @@
 						onclick={() => earTrainingRevealed ? earTrainingNext() : earTrainingReveal()}
 						hideChordName={!earTrainingRevealed}
 					>
-						<!-- Piano keyboard (hidden until revealed) -->
+						<!-- Piano keyboard — always interactive for click-to-play -->
 						{#if earTrainingRevealed}
 							<div class="mt-8">
 								<PianoKeyboard
@@ -1983,6 +2301,9 @@
 									midiEnabled={midiEnabled}
 									midiActiveNotes={midiActiveNotes}
 									midiExpectedPitchClasses={expectedPitchClasses}
+									interactive={true}
+									onKeyClick={handleEarPianoClick}
+									selectedPitchClasses={earGuessNotes}
 								/>
 							</div>
 						{:else}
@@ -1994,7 +2315,57 @@
 									midiEnabled={midiEnabled}
 									midiActiveNotes={midiActiveNotes}
 									midiExpectedPitchClasses={expectedPitchClasses}
+									interactive={true}
+									onKeyClick={handleEarPianoClick}
+									selectedPitchClasses={earGuessNotes}
 								/>
+							</div>
+						{/if}
+
+						<!-- Guess controls (only before reveal) -->
+						{#if !earTrainingRevealed}
+							<div class="mt-4 flex flex-col items-center gap-3">
+								<!-- Mode toggle + note count -->
+								<div class="flex items-center gap-3">
+									<button
+										class="px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer
+											{earSelectMode
+												? 'border-[var(--accent-amber)] bg-[var(--accent-amber)]/15 text-[var(--accent-amber)]'
+												: 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-amber)] hover:text-[var(--accent-amber)]'}"
+										onclick={(e) => { e.stopPropagation(); earSelectMode = !earSelectMode; }}
+										title={earSelectMode ? t('ui.ear_mode_preview') : t('ui.ear_mode_select')}
+									>
+										{earSelectMode ? '🎯 ' + t('ui.ear_mode_select') : '🎹 ' + t('ui.ear_mode_preview')}
+									</button>
+									{#if earGuessNotes.size > 0}
+										<span class="text-xs text-[var(--text-muted)]">
+											{earGuessNotes.size} {earGuessNotes.size === 1 ? t('ui.ear_note_singular') : t('ui.ear_notes_plural')}
+										</span>
+									{/if}
+								</div>
+
+								<!-- Submit + Clear buttons -->
+								{#if earGuessNotes.size > 0}
+									<div class="flex gap-2" transition:fade={{ duration: 150 }}>
+										<button
+											class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] font-medium transition-all cursor-pointer
+												{earGuessResult === 'correct'
+													? 'bg-[var(--accent-green)] text-white'
+													: earGuessResult === 'wrong'
+														? 'bg-[var(--accent-red)] text-white animate-shake'
+														: 'bg-[var(--accent-amber)] text-black hover:brightness-110'}"
+											onclick={(e) => { e.stopPropagation(); submitEarGuess(); }}
+										>
+											{earGuessResult === 'correct' ? '✓ ' + t('ui.correct') : earGuessResult === 'wrong' ? '✗ ' + t('ui.ear_try_again') : '⏎ ' + t('ui.ear_check')}
+										</button>
+										<button
+											class="px-3 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
+											onclick={(e) => { e.stopPropagation(); clearEarGuess(); }}
+										>
+											{t('ui.ear_clear')}
+										</button>
+									</div>
+								{/if}
 							</div>
 						{/if}
 
@@ -2031,7 +2402,7 @@
 						{:else if midiEnabled}
 							<p>{t('ui.ear_training_listen')}</p>
 						{:else}
-							<p>{t('ui.ear_training_hidden')}</p>
+							<p>{t('ui.ear_piano_hint')}</p>
 						{/if}
 					</div>
 				{/if}
@@ -2241,5 +2612,17 @@
 		padding: 20px;
 		padding-bottom: max(20px, env(safe-area-inset-bottom));
 		flex: 1;
+	}
+
+	/* Shake animation for wrong guess */
+	:global(.animate-shake) {
+		animation: shake 0.4s ease-in-out;
+	}
+	@keyframes shake {
+		0%, 100% { transform: translateX(0); }
+		20% { transform: translateX(-4px); }
+		40% { transform: translateX(4px); }
+		60% { transform: translateX(-3px); }
+		80% { transform: translateX(3px); }
 	}
 </style>

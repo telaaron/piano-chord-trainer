@@ -112,13 +112,8 @@ let started = false;
 let samplesLoading = false;
 let samplesLoadedCallbacks: (() => void)[] = [];
 
-// Pre-computed chromatic note names for releasing all Sampler voices
-const ALL_CHROMATIC: string[] = [];
-for (let oct = 2; oct <= 6; oct++) {
-	for (const n of ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']) {
-		ALL_CHROMATIC.push(`${n}${oct}`);
-	}
-}
+// Track currently sounding notes so we can release only those (fast)
+let activeNotes: string[] = [];
 
 // ─── AudioContext bootstrap ─────────────────────────────────────────────────
 /**
@@ -185,18 +180,17 @@ function getInstrument(): ToneType.PolySynth | ToneType.Sampler {
 }
 
 /**
- * Release all currently sounding voices on the instrument.
- * PolySynth has releaseAll(); Sampler does not — so we trigger
- * release on every chromatic note in the playing range (no-ops for
- * notes that are not currently sounding).
+ * Release all currently sounding voices.
+ * PolySynth: releaseAll().  Sampler: release only the tracked active notes.
  */
 function releaseAllVoices(time?: number): void {
 	if (!instrument) return;
-	if (typeof (instrument as any).releaseAll === 'function') {                // eslint-disable-line @typescript-eslint/no-explicit-any
-		(instrument as any).releaseAll(time);                                    // eslint-disable-line @typescript-eslint/no-explicit-any
-	} else {
-		(instrument as ToneType.Sampler).triggerRelease(ALL_CHROMATIC, time);
+	if ('releaseAll' in instrument && typeof instrument.releaseAll === 'function') {
+		(instrument as ToneType.PolySynth).releaseAll(time);
+	} else if (activeNotes.length > 0) {
+		(instrument as ToneType.Sampler).triggerRelease([...activeNotes], time);
 	}
+	activeNotes = [];
 }
 
 // ─── Loading-state API ──────────────────────────────────────────────────────
@@ -259,44 +253,107 @@ function notesToToneNames(notes: string[]): string[] {
 }
 
 // ─── Playback ───────────────────────────────────────────────────────────────
+
 /**
- * Play a chord voicing.  Waits for Sampler samples if still loading.
- * @param notes – e.g. ["C", "E", "G", "B"]
- * @param duration – Tone.js duration string, e.g. "2n" (half note)
+ * SYNCHRONOUS chord trigger — zero async overhead.  Only works after
+ * ensureStarted() has been called at least once (which happens on first
+ * user interaction via playChord or startMetronome).
+ *
+ * @param toneNotes – octave-qualified note names, e.g. ["C3","E3","G3","B3"]
+ * @param duration  – Tone.js duration string
+ * @param time      – precise audio-context time (from Transport callback).
+ *                    If omitted, uses Tone.now() (= "now").
+ */
+function triggerChordSync(toneNotes: string[], duration: string, time?: number): void {
+	const inst = getInstrument();
+	const t = time ?? _tone!.now();
+
+	// Release previous notes at exactly the same instant
+	releaseAllVoices(t);
+	activeNotes = toneNotes;
+
+	if ('triggerAttackRelease' in inst) {
+		// PolySynth — takes array directly
+		(inst as ToneType.PolySynth).triggerAttackRelease(toneNotes, duration, t);
+	} else {
+		// Sampler — triggerAttackRelease also takes array
+		(inst as ToneType.Sampler).triggerAttackRelease(toneNotes, duration, t);
+	}
+}
+
+/**
+ * Play a chord voicing.  Works in two modes:
+ *
+ * HOT PATH (after init):  Entirely synchronous — no await, no microtask
+ * delays.  The chord fires at Tone.now() with zero overhead.
+ *
+ * COLD PATH (first call): Loads Tone.js, starts AudioContext, waits for
+ * Sampler samples if needed.  Subsequent calls take the hot path.
  */
 export async function playChord(notes: string[], duration: string = '2n'): Promise<void> {
+	const toneNotes = notesToToneNames(notes);
+
+	// ── Hot path: everything ready → fire synchronously ──
+	if (_tone && started && instrument && !samplesLoading) {
+		triggerChordSync(toneNotes, duration);
+		return;
+	}
+
+	// ── Cold path: first call or samples still loading ──
 	const T = await getTone();
 	await ensureStarted();
-	const inst = getInstrument();
-
-	// Block until Sampler samples are ready
+	getInstrument();
 	if (currentPreset === 'grand-piano' && samplesLoading) {
 		await T.loaded();
 	}
+	triggerChordSync(toneNotes, duration);
+}
 
+/**
+ * Transport-synced chord playback — for use inside metronome/backing-track
+ * callbacks that receive the precise audio-context `time` parameter.
+ *
+ * This fires the chord at EXACTLY the same instant as the metronome click,
+ * with zero JS-thread latency.  Must only be called after audio is started.
+ *
+ * @param notes    – note names WITHOUT octave, e.g. ["C","E","G","B"]
+ * @param duration – Tone.js duration string
+ * @param time     – the `time` value from a Tone.Loop / Sequence callback
+ */
+export function playChordAtTime(notes: string[], duration: string, time: number): void {
+	if (!_tone || !started || !instrument) return;
+	if (currentPreset === 'grand-piano' && samplesLoading) return;  // skip — can't play yet
 	const toneNotes = notesToToneNames(notes);
-	const now = T.now();
-
-	// Release current notes, then schedule new chord slightly in the future
-	releaseAllVoices(now);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	(inst as any).triggerAttackRelease(toneNotes, duration, now + 0.02);
+	triggerChordSync(toneNotes, duration, time);
 }
 
 /**
  * Play a single note (with octave, e.g. "C4").
  */
 export async function playNote(note: string, duration: string = '8n'): Promise<void> {
+	// Hot path
+	if (_tone && started && instrument && !samplesLoading) {
+		const inst = getInstrument();
+		if ('triggerAttackRelease' in inst) {
+			(inst as ToneType.PolySynth).triggerAttackRelease(note, duration);
+		} else {
+			(inst as ToneType.Sampler).triggerAttackRelease(note, duration);
+		}
+		return;
+	}
+	// Cold path
 	const T = await getTone();
 	await ensureStarted();
-	const inst = getInstrument();
-
+	getInstrument();
 	if (currentPreset === 'grand-piano' && samplesLoading) {
 		await T.loaded();
 	}
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	(inst as any).triggerAttackRelease(note, duration);
+	const inst = getInstrument();
+	if ('triggerAttackRelease' in inst) {
+		(inst as ToneType.PolySynth).triggerAttackRelease(note, duration);
+	} else {
+		(inst as ToneType.Sampler).triggerAttackRelease(note, duration);
+	}
 }
 
 /** Release all currently sounding notes */
@@ -307,6 +364,7 @@ export function stopAll(): void {
 /** Dispose chord / note instrument (keeps metronome & backing track intact) */
 export function disposeAudio(): void {
 	releaseAllVoices();
+	activeNotes = [];
 	if (instrument) {
 		instrument.dispose();
 		instrument = null;
@@ -326,7 +384,7 @@ let metronomeLoop: ToneType.Loop | null = null;
 let metronomeSynth: ToneType.MembraneSynth | null = null;
 let metronomeRunning = false;
 let beatCount = 0;
-let onBeatCallback: ((beat: number) => void) | null = null;
+let onBeatCallback: ((beat: number, time: number) => void) | null = null;
 
 function getMetronomeSynth(): ToneType.MembraneSynth {
 	if (!metronomeSynth) {
@@ -342,11 +400,19 @@ function getMetronomeSynth(): ToneType.MembraneSynth {
 
 /**
  * Start metronome.  Stops any running backing track (they share the Transport).
+ *
+ * The `onBeat` callback receives `(beat, time)` where `time` is the exact
+ * Web Audio context time of this beat.  Pass `time` to `playChordAtTime()`
+ * to trigger chords with **zero** JS-thread latency — perfectly on the beat.
+ *
+ * The callback fires synchronously inside the Transport Loop (NOT through
+ * requestAnimationFrame) so Svelte state updates and audio scheduling
+ * both happen at the earliest possible moment.
  */
 export async function startMetronome(
 	bpm: number,
 	beatsPerBar: number = 4,
-	onBeat?: (beat: number) => void,
+	onBeat?: (beat: number, time: number) => void,
 ): Promise<void> {
 	const T = await getTone();
 	await ensureStarted();
@@ -360,17 +426,17 @@ export async function startMetronome(
 
 	const click = getMetronomeSynth();
 
-	metronomeLoop = new T.Loop((time) => {
+	metronomeLoop = new T.Loop((time: number) => {
 		beatCount++;
 		const currentBeat = ((beatCount - 1) % beatsPerBar) + 1;
 
 		// Accent on beat 1
 		click.triggerAttackRelease(currentBeat === 1 ? 'C3' : 'C4', '32n', time);
 
+		// Fire callback directly — NOT through getDraw().schedule() —
+		// so callers can schedule audio at the exact `time`.
 		if (onBeatCallback) {
-			T.getDraw().schedule(() => {
-				onBeatCallback!(currentBeat);
-			}, time);
+			onBeatCallback(currentBeat, time);
 		}
 	}, '4n');
 
@@ -613,6 +679,68 @@ export function getBackingTrack(): BackingTrack {
 /** Is a backing track running? */
 export function isBackingTrackRunning(): boolean {
 	return backingTrackRunning;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  Celebration sound effects (Habit Engine)
+// ══════════════════════════════════════════════════════════════════════════════
+
+type CelebrationSoundType = 'level-up' | 'goal-complete' | 'streak-milestone' | 'personal-best' | 'xp-gain';
+
+/**
+ * Play a short celebration sound effect using Tone.js synthesis.
+ * Each celebration type has a distinct musical motif.
+ */
+export async function playCelebrationSound(type: CelebrationSoundType): Promise<void> {
+	try {
+		const T = await getTone();
+		await ensureStarted();
+
+		const synth = new T.Synth({
+			oscillator: { type: 'triangle' },
+			envelope: { attack: 0.01, decay: 0.15, sustain: 0.1, release: 0.3 },
+			volume: -12,
+		}).toDestination();
+
+		const now = T.now();
+
+		switch (type) {
+			case 'level-up':
+				// Ascending major arpeggio — triumphant
+				synth.triggerAttackRelease('C5', '16n', now);
+				synth.triggerAttackRelease('E5', '16n', now + 0.1);
+				synth.triggerAttackRelease('G5', '16n', now + 0.2);
+				synth.triggerAttackRelease('C6', '8n', now + 0.3);
+				break;
+			case 'goal-complete':
+				// Two-note achievement chime
+				synth.triggerAttackRelease('E5', '16n', now);
+				synth.triggerAttackRelease('A5', '8n', now + 0.12);
+				break;
+			case 'streak-milestone':
+				// Jazz lick — ascending min7 arpeggio
+				synth.triggerAttackRelease('D5', '16n', now);
+				synth.triggerAttackRelease('F5', '16n', now + 0.08);
+				synth.triggerAttackRelease('A5', '16n', now + 0.16);
+				synth.triggerAttackRelease('C6', '8n', now + 0.24);
+				break;
+			case 'personal-best':
+				// Fanfare — major 6th leap + resolve
+				synth.triggerAttackRelease('G5', '16n', now);
+				synth.triggerAttackRelease('E6', '8n', now + 0.15);
+				break;
+			case 'xp-gain':
+			default:
+				// Subtle click — single soft note
+				synth.triggerAttackRelease('G5', '32n', now);
+				break;
+		}
+
+		// Auto-dispose after sound finishes
+		setTimeout(() => synth.dispose(), 1500);
+	} catch {
+		// Audio not available — fail silently
+	}
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

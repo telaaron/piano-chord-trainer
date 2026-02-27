@@ -56,6 +56,10 @@
 		'2-5-1': 'settings.progression_251',
 		'cycle-of-4ths': 'settings.progression_cycle',
 		'1-6-2-5': 'settings.progression_turnaround',
+		'3-6-2-5': 'settings.progression_3625',
+		'1-4-5': 'settings.progression_145',
+		'diatonic': 'settings.progression_diatonic',
+		'custom': 'settings.progression_custom',
 	};
 
 	const DIFFICULTY_KEYS: Record<Difficulty, string> = {
