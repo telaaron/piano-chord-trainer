@@ -315,7 +315,9 @@ export const en = {
     bottom_cta_desc: 'No account. No install. Just play.',
     meta_title: 'Chord Trainer – Jazz Piano Voicing Speed Training',
     meta_desc: 'Master jazz piano voicings in all 12 keys. Speed training with MIDI recognition, ii-V-I progressions, 4 voicing types, and progress tracking. Free, no signup.',
-    og_alt: 'Chord Trainer hero with piano and jazz voicing practice'
+    og_alt: 'Chord Trainer hero with piano and jazz voicing practice',
+    twitter_title: 'Chord Trainer – Jazz Piano Voicing Speed Training',
+    twitter_desc: 'Master jazz piano voicings in all 12 keys. MIDI recognition, ii-V-I progressions, progress tracking.'
   },
 
   about: {

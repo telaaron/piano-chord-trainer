@@ -292,8 +292,8 @@ export const de = {
   },
 
   landing: {
-    hero_title: 'Meistere Jazz-Piano-Voicings in allen 12 Tonarten',
-    hero_title_html: '<span class="gradient-text">Meistere Jazz-Piano-Voicings</span> <span class="white-text">in allen 12 Tonarten</span>',
+    hero_title: 'Trainiere Jazz-Piano-Voicings in allen 12 Tonarten',
+    hero_title_html: '<span class="gradient-text">Trainiere Jazz-Piano-Voicings</span> <span class="white-text">in allen 12 Tonarten</span>',
     hero_subtitle: 'Speed-Training für das Muskelgedächtnis. Akkord sehen, spielen, schneller werden. Shell Voicings, Rootless, ii-V-I — durch alle Tonarten.',
     hero_subtitle_mobile: 'Akkord sehen, spielen, schneller werden — durch alle 12 Tonarten.',
     badge: 'MIDI · Audio · Übe-Statistik',
@@ -315,9 +315,11 @@ export const de = {
     step3_chip2: 'Übungspläne',
     bottom_cta_title: 'Bereit?',
     bottom_cta_desc: 'Kein Account. Keine Installation. Einfach spielen.',
-    meta_title: 'Chord Trainer – Jazz Piano Voicing Speed Training',
-    meta_desc: 'Meistere Jazz-Piano Voicings in allen 12 Tonarten. Schnelligkeitstraining mit MIDI-Erkennung, ii-V-I Verbindungen, 4 Voicing-Typen und Fortschrittsverfolgung. Kostenlos, keine Anmeldung.',
+    meta_title: 'Chord Trainer – Jazz Piano Speed Training',
+    meta_desc: 'Trainiere Jazz-Piano Voicings in allen 12 Tonarten. Schnelligkeitstraining mit MIDI-Erkennung, ii-V-I Verbindungen, 4 Voicing-Typen und Fortschrittsverfolgung. Kostenlos, keine Anmeldung.',
     og_alt: 'Chord Trainer Hero mit Klavier und Jazz-Voicing-Übung',
+    twitter_title: 'Chord Trainer – Jazz Piano Speed Training',
+    twitter_desc: 'Trainiere Jazz-Piano-Voicings in allen 12 Tonarten. MIDI-Erkennung, ii-V-I Kadenzen, Fortschrittskontrolle.',
   },
 
   about: {

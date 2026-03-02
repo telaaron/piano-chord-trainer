@@ -38,8 +38,6 @@
 		<!-- Preload LCP assets -->
 		<!-- Mobile hero (static piano image, shown as full-bleed bg on ≤968 px) -->
 		<link rel="preload" as="image" href="%sveltekit.assets%/bilder/piano.webp" media="(max-width: 968px)" />
-		<!-- Logo used in sticky nav — above the fold on every page -->
-		<link rel="preload" as="image" href="%sveltekit.assets%/favicon/favicon.svg" />
 
 		<!-- Structured Data: SoftwareApplication -->
 		<script type="application/ld+json">
@@ -95,8 +93,9 @@
 			}
 		</script>
 
-		<!-- Fonts — preconnect already established above; &display=swap prevents FOIT -->
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+		<!-- Fonts — non-blocking load: preload the CSS, swap rel to stylesheet once loaded -->
+		<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" onload="this.rel='stylesheet'" />
+		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
 
 		<!-- Icons -->
 		<link rel="icon" href="%sveltekit.assets%/favicon/favicon.ico" sizes="any" />

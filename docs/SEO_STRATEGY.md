@@ -39,11 +39,9 @@ Trag jazzchords.app als Alternative zu etablierten Tools ein:
 Web MIDI + automatisiertes Feedback = "AI-assisted learning" für diese Verzeichnisse.
 
 **Umsetzung:**
-- [theresanaiforthat.com/submit](https://theresanaiforthat.com/submit)
 - [futuretools.io/submit-a-tool](https://futuretools.io/submit-a-tool)
 
 **Checklist:**
-- [ ] There's An AI For That Submission
 - [ ] FutureTools Submission
 
 ---

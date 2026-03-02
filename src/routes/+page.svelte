@@ -99,10 +99,10 @@
 	<meta property="og:image:height" content="507" />
 	<meta property="og:image:alt" content={t('landing.og_alt')} />
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
-	<meta name="twitter:description" content="Master jazz piano voicings in all 12 keys. MIDI recognition, ii-V-I progressions, progress tracking." />
+	<meta name="twitter:title" content={t('landing.twitter_title')} />
+	<meta name="twitter:description" content={t('landing.twitter_desc')} />
 	<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
-	<meta name="twitter:image:alt" content="Chord Trainer hero with piano and jazz voicing practice" />
+	<meta name="twitter:image:alt" content={t('landing.og_alt')} />
 </svelte:head>
 
 <!-- Hero with Scroll-Controlled 3D Piano -->
@@ -175,7 +175,8 @@
 		<div class="story-image-wrap story-image-left">
 			<div class="story-glow story-glow-1"></div>
 			<img src="/bilder/pluged-in-piano.webp" alt="Connect MIDI keyboard via USB" class="story-image story-image-1"
-				width="800" height="600" loading="lazy" />
+				width="800" height="600" loading="lazy"
+				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
 		</div>
 		<div class="story-text">
 			<span class="story-num">01</span>
@@ -193,7 +194,8 @@
 		<div class="story-image-wrap story-image-right">
 			<div class="story-glow story-glow-2"></div>
 			<img src="/bilder/hands-on-piano.webp" alt="Play chords on the keyboard" class="story-image"
-				width="800" height="600" loading="lazy" />
+				width="800" height="600" loading="lazy"
+				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
 		</div>
 		<div class="story-text">
 			<span class="story-num">02</span>
@@ -211,7 +213,8 @@
 		<div class="story-image-wrap story-image-left">
 			<div class="story-glow story-glow-3"></div>
 			<img src="/bilder/lvl-up-piano.webp" alt="Level up and get faster" class="story-image"
-				width="800" height="600" loading="lazy" />
+				width="800" height="600" loading="lazy"
+				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
 		</div>
 		<div class="story-text">
 			<span class="story-num">03</span>
