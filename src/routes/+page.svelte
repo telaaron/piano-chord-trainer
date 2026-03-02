@@ -103,6 +103,52 @@
 	<meta name="twitter:description" content={t('landing.twitter_desc')} />
 	<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
 	<meta name="twitter:image:alt" content={t('landing.og_alt')} />
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "FAQPage",
+		"mainEntity": [
+			{
+				"@type": "Question",
+				"name": "What is a jazz piano voicing?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "A jazz piano voicing is a specific arrangement of the notes in a chord. Instead of playing all notes stacked from the root, jazz pianists use voicings like shell voicings (root, third, seventh), rootless voicings (third, fifth, seventh, ninth), and inversions to create a richer, more professional sound. Mastering voicings in all 12 keys is the foundation of jazz piano."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "How do I practice ii-V-I progressions efficiently?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "The most effective way to practice ii-V-I progressions is to drill them in all 12 keys until they become muscle memory. Start with shell voicings (root, third, seventh), then move to full voicings and rootless voicings. Use a speed-drill tool with a metronome to track your reaction time and identify which keys are weakest. Chord Trainer provides ii-V-I progressions in all 12 keys with MIDI recognition and weakness analysis."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "What is a rootless voicing in jazz piano?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "A rootless voicing omits the root note and instead uses the third, fifth, seventh, and ninth of the chord. Bill Evans popularized two rootless voicing shapes: Rootless A (3-5-7-9) and Rootless B (7-9-3-5). They sound fuller and more professional than root-position chords, and work perfectly in a piano trio where the bassist covers the root."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Can I practice jazz chords with a MIDI keyboard?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Yes. Chord Trainer supports MIDI keyboards via the Web MIDI API in Chrome and Edge on desktop. Connect your MIDI keyboard, select it in the app, and play along. The app recognizes chord voicings in real time — with octave tolerance and lenient matching so extra notes do not count against you — and automatically advances to the next chord when you play it correctly."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "Is Chord Trainer free to use?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Yes, Chord Trainer is completely free. No account, no signup, no subscription required. Open jazzchords.app in Chrome or Edge and start practicing immediately. All voicing types, progressions, guided practice plans, MIDI support, and progress tracking are included at no cost."
+				}
+			}
+		]
+	})}</script>`}
 </svelte:head>
 
 <!-- Hero with Scroll-Controlled 3D Piano -->
