@@ -7,11 +7,13 @@
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import Results from '$lib/components/Results.svelte';
 	import MidiStatus from '$lib/components/MidiStatus.svelte';
+	import MicStatus from '$lib/components/MicStatus.svelte';
 	import MidiToast from '$lib/components/MidiToast.svelte';
 	import ProgressDashboard from '$lib/components/ProgressDashboard.svelte';
 	import ProgressionEditor from '$lib/components/ProgressionEditor.svelte';
 	import ProgressionPlayer from '$lib/components/ProgressionPlayer.svelte';
 	import ProgressionResults from '$lib/components/ProgressionResults.svelte';
+	import ExplainPanel from '$lib/components/ExplainPanel.svelte';
 	import HabitDashboard from '$lib/components/HabitDashboard.svelte';
 	import HabitOnboarding from '$lib/components/HabitOnboarding.svelte';
 	import CelebrationOverlay from '$lib/components/CelebrationOverlay.svelte';
@@ -19,6 +21,8 @@
 	import { loadHabitProfile, saveHabitProfile, processSessionHabits, scheduleDailyReminder, scheduleStreakSaver } from '$lib/services/habits';
 	import { MidiService } from '$lib/services/midi';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
+	import { AudioInputService } from '$lib/services/audio-input';
+	import type { AudioInputState } from '$lib/services/audio-input';
 	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadHistory, computeStats, type ProgressStats, type StreakData, type ChordTiming } from '$lib/services/progress';
 	import { playChord, playChordAtTime, playNote, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll, setSoundPreset, getSoundPreset, SOUND_PRESETS, type SoundPreset } from '$lib/services/audio';
 	import {
@@ -110,7 +114,10 @@
 	let progressionMode: ProgressionMode = $state('random');
 	/** 0-based degree indices for 'custom' progression mode */
 	let customDegrees: number[] = $state([1, 4, 0]); // default ii-V-I
-	let midiEnabled = $state(false);
+	type InputMode = 'none' | 'midi' | 'microphone';
+	let inputMode: InputMode = $state<InputMode>('none');
+	/** Convenience: true when any real-time input (MIDI or Mic) is active */
+	const inputActive = $derived(inputMode !== 'none');
 	let streak: StreakData = $state({ current: 0, best: 0, lastDate: '' });
 	let dashStats: ProgressStats = $state(computeStats([]));
 
@@ -138,7 +145,9 @@
 	let inTimeLookAhead = $state(false);
 	let adaptiveEnabled = $state(false);
 	let focusRoots: string[] = $state([]);
+	let focusVoicing: string | null = $state(null);
 	let voiceLeadingEnabled = $state(false);
+	let showExplain = $state(false);
 
 	// ─── In-Time mode state ──────────────────────────────────────
 	let inTimeBeatCount = $state(0);
@@ -214,6 +223,10 @@
 	let midiCorrectCount = $state(0);
 	let midiTotalAttempts = $state(0);
 	let autoAdvanceTimeout: ReturnType<typeof setTimeout> | null = $state(null);
+
+	// ─── Audio Input (Microphone) state ─────────────────────────
+	const audioInput = new AudioInputService();
+	let micState: AudioInputState = $state('idle');
 
 	// ─── Derived ─────────────────────────────────────────────────
 	const currentChord = $derived(chords[currentIdx] ?? '');
@@ -321,7 +334,10 @@
 
 		// Adaptive mode: use weighted selection
 		if (adaptiveEnabled && progressionMode === 'random') {
-			const history = loadHistory().flatMap(s => s.chordTimings ?? []);
+			// Filter history to current voicing — so switching voicing type treats chords as "new"
+			const allHistory = loadHistory();
+			const matchingHistory = allHistory.filter(s => s.settings.voicing === voicing);
+			const history = matchingHistory.flatMap(s => s.chordTimings ?? []);
 			const weighted = getWeightedChordPool(history, available, pool, focusRoots.length > 0 ? focusRoots : undefined);
 			let lastRoot = '';
 			let lastDisplay = '';
@@ -411,8 +427,8 @@
 		vlMovementScores = [];
 		vlOptimalCount = 0;
 
-		// Compute stable keyboard range for the session
-		if (voiceLeadingEnabled && chordsWithNotes.length > 0) {
+		// Compute stable keyboard range for the entire session (prevents layout-shift between chords)
+		if (chordsWithNotes.length > 0) {
 			sessionOctaves = computeSessionOctaves(chordsWithNotes, accidentals);
 		} else {
 			sessionOctaves = null;
@@ -420,12 +436,15 @@
 
 		// Re-register MIDI handler (ProgressionPlayer may have overwritten it)
 		midi.onNotes(handleMidiNotes);
+		audioInput.onNotes(handleAudioInputNotes);
 		if (timerHandle) clearInterval(timerHandle);
 		timerHandle = null;
 
-		// Init MIDI if enabled
-		if (midiEnabled && midiState === 'disconnected') {
+		// Init input based on mode
+		if (inputMode === 'midi' && midiState === 'disconnected') {
 			midi.init();
+		} else if (inputMode === 'microphone' && (micState === 'idle' || micState === 'error')) {
+			audioInput.init();
 		}
 
 		// Persist settings
@@ -438,7 +457,8 @@
 			notationSystem,
 			totalChords,
 			progressionMode,
-			midiEnabled,
+			midiEnabled: inputActive,
+			inputMode,
 			customDegrees,
 		});
 	}
@@ -528,7 +548,14 @@
 			pauseAccumulated += Date.now() - pauseStart;
 			paused = false;
 			if (metronomeEnabled) {
-				startMetronome(metronomeBpm, 4, (beat) => { currentBeat = beat; });
+				if (inTimeMode) {
+					startMetronome(metronomeBpm, 4, (beat, time) => {
+						currentBeat = beat;
+						handleInTimeBeat(beat, time);
+					});
+				} else {
+					startMetronome(metronomeBpm, 4, (beat) => { currentBeat = beat; });
+				}
 			}
 		} else {
 			// Pause
@@ -541,14 +568,16 @@
 	}
 
 	function startPlan(plan: PracticePlan) {
-		// Clear focus roots unless this is an adaptive drill with focus
+		// Clear focus unless this is an adaptive drill with focus
 		if (plan.id !== 'adaptive-drill') {
 			focusRoots = [];
+			focusVoicing = null;
 		}
 		// Apply plan settings
 		difficulty = plan.settings.difficulty;
 		notation = plan.settings.notation;
-		voicing = plan.settings.voicing;
+		// Use focused voicing if set (e.g. from quick start weak-spot drill)
+		voicing = (focusVoicing as VoicingType) ?? plan.settings.voicing;
 		displayMode = plan.settings.displayMode;
 		accidentals = plan.settings.accidentals;
 		progressionMode = plan.settings.progressionMode;
@@ -607,8 +636,8 @@
 		}
 
 		// Verify mode: first press shows voicing, second press advances
-		// Skip verify phase when MIDI is doing the verification
-		if (displayMode === 'verify' && playPhase === 'playing' && !midiEnabled) {
+		// Skip verify phase when an input device is doing the verification
+		if (displayMode === 'verify' && playPhase === 'playing' && !inputActive) {
 			playPhase = 'verifying';
 			// Play chord audio when revealing the voicing
 			if (audioEnabled && currentData) {
@@ -684,7 +713,7 @@
 				progressionMode,
 			},
 			midi: {
-				enabled: midiEnabled,
+				enabled: inputActive,
 				accuracy: midiAccuracy,
 			},
 		});
@@ -735,8 +764,9 @@
 		stopMetronome();
 		stopAll();
 		currentBeat = 0;
-		// Re-register main MIDI handler (ear training may have overridden it)
+		// Re-register main MIDI/audio handler (ear training may have overridden it)
 		midi.onNotes(handleMidiNotes);
+		audioInput.onNotes(handleAudioInputNotes);
 	}
 
 	// ─── Custom Progression handlers ─────────────────────────────
@@ -776,20 +806,44 @@
 	function handleMidiNotes(activeNotes: Set<number>) {
 		midiActiveNotes = new Set(activeNotes);
 
-		if (screen !== 'playing' || !currentData || !midiEnabled) return;
+		if (screen !== 'playing' || !currentData || inputMode !== 'midi') return;
+
+		handleActiveNotesInput(activeNotes, midi);
+	}
+
+	/** Callback for the AudioInputService note events */
+	function handleAudioInputNotes(activeNotes: Set<number>) {
+		midiActiveNotes = new Set(activeNotes);
+
+		if (screen !== 'playing' || !currentData || inputMode !== 'microphone') return;
+
+		handleActiveNotesInput(activeNotes, audioInput);
+	}
+
+	/**
+	 * Core validation logic — shared between MIDI and audio input.
+	 * `service` is the active input provider (MidiService or AudioInputService), exposing
+	 * the same checkChord / checkChordLenient / checkChordWithBass interface.
+	 */
+	function handleActiveNotesInput(
+		activeNotes: Set<number>,
+		service: { checkChordLenient: (notes: string[]) => ChordMatchResult; checkChordWithBass: (notes: string[], bass: string) => ChordMatchResult },
+	) {
+		if (!currentData) return;
 
 		// ── Voice Leading modes B/C: custom validation ──
 		if (voiceLeadingEnabled && vlMode !== 'guided' && activeNotes.size > 0) {
-			handleVLModeMidi(activeNotes);
+			// VL modes only work with MIDI (they need note-by-note precision)
+			if (inputMode === 'midi') handleVLModeMidi(activeNotes);
 			return;
 		}
 
 		// ── Standard / Guided mode validation ──
 		let result: ChordMatchResult;
 		if (voicing.startsWith('inversion-') && currentData.voicing.length > 0) {
-			result = midi.checkChordWithBass(currentData.voicing, currentData.voicing[0]);
+			result = service.checkChordWithBass(currentData.voicing, currentData.voicing[0]);
 		} else {
-			result = midi.checkChordLenient(currentData.voicing);
+			result = service.checkChordLenient(currentData.voicing);
 		}
 		midiMatchResult = result;
 
@@ -974,9 +1028,8 @@
 					}
 					// Release all held notes so previous chord doesn't bleed into the new one.
 					// The player needs to re-play to get feedback on the new chord.
-					if (midiEnabled) {
-						midi.releaseAll();
-					}
+					if (inputMode === 'midi') midi.releaseAll();
+					else if (inputMode === 'microphone') audioInput.releaseAll();
 				} else {
 					endGame();
 				}
@@ -1010,10 +1063,14 @@
 		earSelectMode = false;
 		voiceLeadingInfo = null;
 		midi.releaseAll();
+		audioInput.releaseAll();
 		midi.onNotes(handleEarTrainingMidi);
+		audioInput.onNotes(handleEarTrainingMidi);
 
-		if (midiEnabled && midiState === 'disconnected') {
+		if (inputMode === 'midi' && midiState === 'disconnected') {
 			midi.init();
+		} else if (inputMode === 'microphone' && (micState === 'idle' || micState === 'error')) {
+			audioInput.init();
 		}
 	}
 
@@ -1081,7 +1138,7 @@
 				avgMs: (endTime - startTime) / actualTotalChords,
 				chordTimings: [...chordTimings],
 				settings: { difficulty, notation, voicing, displayMode, accidentals, progressionMode },
-				midi: { enabled: midiEnabled, accuracy: earTrainingTotal > 0 ? Math.round((earTrainingCorrect / earTrainingTotal) * 100) : 0 },
+				midi: { enabled: inputActive, accuracy: earTrainingTotal > 0 ? Math.round((earTrainingCorrect / earTrainingTotal) * 100) : 0 },
 			});
 			streak = recordPracticeDay();
 		}
@@ -1089,9 +1146,10 @@
 
 	function handleEarTrainingMidi(activeNotes: Set<number>) {
 		midiActiveNotes = new Set(activeNotes);
-		if (screen !== 'ear-training' || !currentData || !midiEnabled) return;
+		if (screen !== 'ear-training' || !currentData || !inputActive) return;
 
-		const result = midi.checkChordLenient(currentData.voicing);
+		const service = inputMode === 'microphone' ? audioInput : midi;
+		const result = service.checkChordLenient(currentData.voicing);
 		midiMatchResult = result;
 
 		if (result.correct && activeNotes.size > 0) {
@@ -1250,14 +1308,21 @@
 				openSettingsFromGame();
 			}
 		}
-		// Escape: close settings modal first, otherwise back to setup
+		// Escape: close settings modal first, close explain panel, otherwise back to setup
 		if (e.code === 'Escape' && (screen === 'playing' || screen === 'ear-training')) {
 			e.preventDefault();
-			if (settingsOpen) {
+			if (showExplain) {
+				showExplain = false;
+			} else if (settingsOpen) {
 				closeSettingsModal();
 			} else {
 				resetToSetup();
 			}
+		}
+		// ? (Shift+/) = toggle explain panel
+		if (e.key === '?' && (screen === 'playing' || screen === 'ear-training') && currentData && !settingsOpen) {
+			e.preventDefault();
+			showExplain = !showExplain;
 		}
 	}
 
@@ -1273,7 +1338,12 @@
 			notationSystem = (saved.notationSystem ?? 'international') as NotationSystem;
 			totalChords = saved.totalChords;
 			progressionMode = saved.progressionMode;
-			midiEnabled = saved.midiEnabled;
+			// Migrate old midiEnabled flag to inputMode
+			if (saved.inputMode) {
+				inputMode = saved.inputMode;
+			} else {
+				inputMode = saved.midiEnabled ? 'midi' : 'none';
+			}
 			if (saved.customDegrees && saved.customDegrees.length > 0) customDegrees = saved.customDegrees;
 		}
 
@@ -1312,9 +1382,9 @@
 			midiDevices = [...devices];
 			if (devices.length > 0) {
 				midiSelectedDeviceId = midi.selectedDeviceId;
-				// Auto-enable MIDI when a device is detected
-				if (!midiEnabled) {
-					midiEnabled = true;
+				// Auto-switch to MIDI input when a device is detected for the first time
+				if (inputMode === 'none') {
+					inputMode = 'midi';
 				}
 			}
 		});
@@ -1323,15 +1393,31 @@
 			midiDisconnectToast = t('ui.disconnected_reconnect', { device: deviceName });
 		});
 
-		// Always init MIDI to detect devices (even if not yet enabled)
+		// Always init MIDI to detect devices (even if not yet selected as input mode)
 		midi.init();
+
+		// Microphone state tracking
+		audioInput.onNotes(handleAudioInputNotes);
+		audioInput.onConnection((state) => {
+			micState = state;
+		});
+
+		// Retry MIDI init when tab becomes visible (handles backgrounded tabs, client-side nav)
+		function handleVisibility() {
+			if (document.visibilityState === 'visible') {
+				if (inputMode === 'midi' && midiState === 'disconnected') midi.init();
+			}
+		}
+		document.addEventListener('visibilitychange', handleVisibility);
 
 		window.addEventListener('keydown', handleKeydown);
 		return () => {
+			document.removeEventListener('visibilitychange', handleVisibility);
 			window.removeEventListener('keydown', handleKeydown);
 			if (timerHandle) clearInterval(timerHandle);
 			if (autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
 			midi.destroy();
+			audioInput.destroy();
 			disposeAll();
 			notificationCleanup?.();
 			streakSaverCleanup?.();
@@ -1377,8 +1463,9 @@
 						weekDots={sbWeekDots}
 						midiConnected={midiState === 'connected' && midiDevices.length > 0}
 						onquickstart={(suggestion) => {
-							// Set focus roots for adaptive drill targeting
+							// Set focus for adaptive drill targeting
 							focusRoots = suggestion.focusRoots ?? [];
+							focusVoicing = suggestion.focusVoicing ?? null;
 							const plan = PRACTICE_PLANS.find(p => p.id === suggestion.planId);
 							if (plan) {
 								startPlan(plan);
@@ -1419,7 +1506,7 @@
 							bind:notationSystem
 							bind:totalChords
 							bind:progressionMode
-							bind:midiEnabled
+							midiEnabled={inputMode === 'midi'}
 							bind:inTimeMode
 							bind:inTimeBars
 							bind:adaptiveEnabled
@@ -1480,8 +1567,10 @@
 									</span>
 									<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full capitalize">{t('settings.difficulty_' + difficulty)}</span>
 									<span class="bg-[var(--bg-muted)] px-2 py-0.5 rounded-full">{t(VOICING_KEYS[voicing])}</span>
-									{#if midiEnabled}
+									{#if inputMode === 'midi'}
 										<span class="bg-[var(--accent-green)]/20 text-[var(--accent-green)] px-2 py-0.5 rounded-full">MIDI</span>
+									{:else if inputMode === 'microphone'}
+										<span class="bg-[var(--accent-amber)]/20 text-[var(--accent-amber)] px-2 py-0.5 rounded-full">🎙 Mic</span>
 									{/if}
 								</div>
 							</div>
@@ -1580,20 +1669,25 @@
 							</div>
 						{/if}
 					</fieldset>
-					<fieldset>
-						<legend class="text-sm font-medium mb-1">{t('settings.midi_recognition')}</legend>
-						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.midi_desc')}</p>
-						<div class="grid grid-cols-2 gap-3">
+				<fieldset>
+						<legend class="text-sm font-medium mb-1">{t('settings.input_mode')}</legend>
+						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.input_mode_desc')}</p>
+						<div class="grid grid-cols-3 gap-3">
 							{#each [
-								{ val: false, label: t('settings.on_off_off'), sub: t('settings.midi_off_sub') },
-								{ val: true, label: t('settings.on_off_on'), sub: t('settings.midi_on_sub') },
+								{ val: 'none' as InputMode, label: t('settings.input_mode_none'), sub: t('settings.input_mode_none_sub') },
+								{ val: 'midi' as InputMode, label: t('settings.input_mode_midi'), sub: t('settings.input_mode_midi_sub') },
+								{ val: 'microphone' as InputMode, label: t('settings.input_mode_mic'), sub: t('settings.input_mode_mic_sub') },
 							] as opt}
-								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(midiEnabled, opt.val)}" onclick={() => (midiEnabled = opt.val)}>
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(inputMode, opt.val)}" onclick={() => {
+									inputMode = opt.val;
+									if (opt.val === 'midi' && midiState === 'disconnected') midi.init();
+									if (opt.val === 'microphone' && (micState === 'idle' || micState === 'error' || micState === 'denied')) audioInput.init();
+								}}>
 									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
 								</button>
 							{/each}
 						</div>
-						<p class="mt-2 text-xs text-[var(--text-dim)]">{t('settings.midi_note')}</p>
+						<p class="mt-2 text-xs text-[var(--text-dim)]">{t('settings.input_mode_note')}</p>
 					</fieldset>
 					<fieldset>
 						<legend class="text-sm font-medium mb-1">{t('settings.difficulty')}</legend>
@@ -1701,12 +1795,12 @@
 							{#each [
 								{ val: 'off' as DisplayMode, label: t('settings.display_mode_off'), sub: t('settings.display_mode_off_sub') },
 								{ val: 'always' as DisplayMode, label: t('settings.display_mode_always'), sub: t('settings.display_mode_always_sub') },
-								{ val: 'verify' as DisplayMode, label: t('settings.display_mode_verify'), sub: midiEnabled ? t('settings.display_mode_verify_midi') : t('settings.display_mode_verify_sub') },
+								{ val: 'verify' as DisplayMode, label: t('settings.display_mode_verify'), sub: inputActive ? t('settings.display_mode_verify_midi') : t('settings.display_mode_verify_sub') },
 							] as opt}
 								<button
-									class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(displayMode, opt.val)} {opt.val === 'verify' && midiEnabled ? 'opacity-40 cursor-not-allowed' : ''}"
-									onclick={() => { if (!(opt.val === 'verify' && midiEnabled)) displayMode = opt.val; }}
-									disabled={opt.val === 'verify' && midiEnabled}
+									class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(displayMode, opt.val)} {opt.val === 'verify' && inputActive ? 'opacity-40 cursor-not-allowed' : ''}"
+									onclick={() => { if (!(opt.val === 'verify' && inputActive)) displayMode = opt.val; }}
+									disabled={opt.val === 'verify' && inputActive}
 								><div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div></button>
 							{/each}
 						</div>
@@ -1829,7 +1923,7 @@
 				{accidentals}
 				{notationSystem}
 				{audioEnabled}
-				{midiEnabled}
+				midiEnabled={inputMode === 'midi'}
 				{midi}
 				{midiState}
 				{midiDevices}
@@ -1899,8 +1993,8 @@
 			{/if}
 
 			<div class="max-w-3xl mx-auto space-y-6">
-				<!-- MIDI status bar -->
-				{#if midiEnabled}
+				<!-- Input status bar -->
+				{#if inputMode === 'midi'}
 					<div class="flex items-center justify-between">
 						<MidiStatus
 							state={midiState}
@@ -1910,15 +2004,19 @@
 							onSelectDevice={handleMidiSelectDevice}
 							onConnect={handleMidiConnect}
 						/>
-						{#if midiTotalAttempts > 0}
-							<span class="text-xs text-[var(--text-muted)] font-mono">
-								Accuracy: {midiAccuracy}%
-							</span>
-						{/if}
+						<span class="text-xs text-[var(--text-muted)] font-mono min-w-[5rem] text-right">
+							Accuracy: {midiTotalAttempts > 0 ? `${midiAccuracy}%` : '—'}
+						</span>
 						<a href="/midi-test" class="text-xs text-[var(--text-dim)] hover:text-[var(--text-muted)] transition-colors underline underline-offset-2" title="Test your MIDI connection">
 							MIDI Test →
 						</a>
 					</div>
+				{:else if inputMode === 'microphone'}
+					<MicStatus
+						state={micState}
+						activeNoteCount={midiActiveNotes.size}
+						onConnect={() => audioInput.init()}
+					/>
 				{/if}
 
 				<!-- Audio / Metronome / Sound controls -->
@@ -2067,7 +2165,7 @@
 							chordData={currentData}
 							accidentalPref={accidentals}
 							showVoicing={shouldShowVoicing}
-							midiEnabled={midiEnabled}
+							midiEnabled={inputActive}
 							midiActiveNotes={midiActiveNotes}
 							midiExpectedPitchClasses={expectedPitchClasses}
 							voiceLeading={voiceLeadingInfo}
@@ -2091,8 +2189,8 @@
 								<span class="text-[var(--accent-red)] text-sm">Falsche Töne</span>
 							{/if}
 						</div>
-					<!-- Standard MIDI match feedback (guided mode / non-VL) -->
-					{:else if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
+					<!-- Standard match feedback (guided mode / non-VL) -->
+					{:else if inputActive && midiMatchResult && midiActiveNotes.size > 0}
 						<div class="mt-4 text-center">
 							{#if midiMatchResult.correct}
 								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Correct!</span>
@@ -2112,13 +2210,30 @@
 
 					<!-- Listen button -->
 					{#if audioEnabled && currentData}
-						<div class="mt-4 text-center">
+						<div class="mt-4 text-center flex items-center justify-center gap-2">
 							<!-- svelte-ignore a11y_click_events_have_key_events -->
 							<button
 								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
 								onclick={(e) => { e.stopPropagation(); replayChord(); }}
 							>
 								🎵 Listen
+							</button>
+							<button
+								class="px-2.5 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+								onclick={(e) => { e.stopPropagation(); showExplain = true; }}
+								title={t('explain.title')}
+							>
+								?
+							</button>
+						</div>
+					{:else if currentData}
+						<div class="mt-4 text-center">
+							<button
+								class="px-2.5 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+								onclick={(e) => { e.stopPropagation(); showExplain = true; }}
+								title={t('explain.title')}
+							>
+								? {t('explain.title')}
 							</button>
 						</div>
 					{/if}
@@ -2163,7 +2278,9 @@
 						<!-- hidden during pause -->
 					{:else if inTimeMode}
 						<p>{t('ui.play_beat_1')}</p>
-					{:else if midiEnabled && midiState === 'connected' && midiDevices.length > 0}
+					{:else if inputMode === 'microphone' && (micState === 'listening' || micState === 'analyzing')}
+						<p>{t('ui.play_mic')}</p>
+					{:else if inputMode === 'midi' && midiState === 'connected' && midiDevices.length > 0}
 						<p>{t('ui.play_auto')}</p>
 					{:else if displayMode === 'verify' && playPhase === 'playing'}
 						<p>{t('ui.play_verify')}</p>
@@ -2242,8 +2359,8 @@
 			</div>
 
 			<div class="max-w-3xl mx-auto space-y-6">
-				<!-- MIDI status -->
-				{#if midiEnabled}
+				<!-- Input status -->
+				{#if inputMode === 'midi'}
 					<MidiStatus
 						state={midiState}
 						devices={midiDevices}
@@ -2251,6 +2368,12 @@
 						activeNoteCount={midiActiveNotes.size}
 						onSelectDevice={handleMidiSelectDevice}
 						onConnect={handleMidiConnect}
+					/>
+				{:else if inputMode === 'microphone'}
+					<MicStatus
+						state={micState}
+						activeNoteCount={midiActiveNotes.size}
+						onConnect={() => audioInput.init()}
 					/>
 				{/if}
 
@@ -2298,7 +2421,7 @@
 									chordData={currentData}
 									accidentalPref={accidentals}
 									showVoicing={true}
-									midiEnabled={midiEnabled}
+									midiEnabled={inputActive}
 									midiActiveNotes={midiActiveNotes}
 									midiExpectedPitchClasses={expectedPitchClasses}
 									interactive={true}
@@ -2312,7 +2435,7 @@
 									chordData={null}
 									accidentalPref={accidentals}
 									showVoicing={false}
-									midiEnabled={midiEnabled}
+									midiEnabled={inputActive}
 									midiActiveNotes={midiActiveNotes}
 									midiExpectedPitchClasses={expectedPitchClasses}
 									interactive={true}
@@ -2369,8 +2492,8 @@
 							</div>
 						{/if}
 
-						<!-- MIDI feedback -->
-						{#if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
+						<!-- Input feedback -->
+						{#if inputActive && midiMatchResult && midiActiveNotes.size > 0}
 							<div class="mt-4 text-center">
 								{#if midiMatchResult.correct}
 									<span class="text-[var(--accent-green)] font-semibold text-lg">✓ {t('ui.correct')}</span>
@@ -2399,7 +2522,7 @@
 					<div class="text-center text-sm text-[var(--text-muted)]">
 						{#if earTrainingRevealed}
 							<p>{t('ui.ear_training_revealed')}</p>
-						{:else if midiEnabled}
+						{:else if inputActive}
 							<p>{t('ui.ear_training_listen')}</p>
 						{:else}
 							<p>{t('ui.ear_piano_hint')}</p>
@@ -2433,7 +2556,7 @@
 				{accidentals}
 				{notationSystem}
 				{progressionMode}
-				{midiEnabled}
+				midiEnabled={inputActive}
 				{midiAccuracy}
 				inTimeModeActive={inTimeMode}
 				avgTimingMs={inTimeTimingOffsets.length > 0
@@ -2485,6 +2608,14 @@
 	<CelebrationOverlay
 		celebrations={pendingCelebrations}
 		ondismiss={() => { pendingCelebrations = []; }}
+	/>
+{/if}
+
+{#if showExplain && currentData}
+	<ExplainPanel
+		chordData={currentData}
+		{voicing}
+		onclose={() => { showExplain = false; }}
 	/>
 {/if}
 

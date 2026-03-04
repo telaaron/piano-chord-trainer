@@ -5,6 +5,7 @@
 
 	let { children } = $props();
 	const isTrainPage = $derived(page.url.pathname.startsWith('/train'));
+	const isLearnLesson = $derived(/^\/learn\/[^/]+\/[^/]+/.test(page.url.pathname));
 	const isEmbedRoute = $derived(page.url.pathname.startsWith('/embed'));
 	
 	function toggleLanguage() {
@@ -25,6 +26,12 @@
 		</a>
 
 		<div class="flex items-center gap-1 text-sm">
+			<a
+				href="/learn"
+				class="px-3 py-1.5 rounded-sm transition-colors {page.url.pathname.startsWith('/learn') ? 'bg-[var(--primary-muted)] text-[var(--primary)] font-medium' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
+			>
+				{t('nav.learn')}
+			</a>
 			<a
 				href="/train"
 				class="px-3 py-1.5 rounded-sm transition-colors {page.url.pathname.startsWith('/train') ? 'bg-[var(--primary-muted)] text-[var(--primary)] font-medium' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
@@ -56,7 +63,7 @@
 	</div>
 
 	<!-- Footer (hidden on train page and embed routes for focus) -->
-	{#if !isTrainPage && !isEmbedRoute}
+	{#if !isTrainPage && !isLearnLesson && !isEmbedRoute}
 		<footer class="px-4 sm:px-6 py-8 border-t border-[var(--wood-dark)]/40">
 			<div class="max-w-5xl mx-auto space-y-5">
 				<!-- Logo + Brand -->
@@ -71,6 +78,7 @@
 
 				<!-- Nav links — wrap freely on mobile -->
 				<div class="flex flex-wrap gap-x-5 gap-y-2 text-xs text-[var(--text-dim)]">
+					<a href="/learn" class="hover:text-[var(--text-muted)] transition-colors">{t('nav.learn')}</a>
 					<a href="/for-educators" class="hover:text-[var(--text-muted)] transition-colors">{t('nav.educators')}</a>
 					<a href="/about" class="hover:text-[var(--text-muted)] transition-colors">{t('nav.about')}</a>
 					<a href="/midi-test" class="hover:text-[var(--text-muted)] transition-colors">{t('nav.midi_test')}</a>

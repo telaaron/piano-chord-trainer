@@ -86,7 +86,7 @@ export const en = {
     display_mode_always_sub: 'Notes visible on keyboard',
     display_mode_verify: 'Verify',
     display_mode_verify_sub: 'Play first, then reveal',
-    display_mode_verify_midi: 'N/A with MIDI',
+    display_mode_verify_midi: 'MIDI verifies automatically — no manual check needed',
 
     accidentals: 'Accidentals',
     accidentals_desc: 'Whether black keys use # (sharp) or ♭ (flat). Jazz typically uses flats.',
@@ -119,6 +119,16 @@ export const en = {
     custom_degrees_hint: 'Tap degrees 1–7 to build your sequence',
 
     chord_count: 'Number of Chords',
+    
+    input_mode: 'Input Mode',
+    input_mode_desc: 'How your playing is detected. MIDI for USB keyboards, Microphone for acoustic pianos or iPad.',
+    input_mode_none: 'Manual',
+    input_mode_none_sub: 'Space to advance',
+    input_mode_midi: 'MIDI',
+    input_mode_midi_sub: 'USB keyboard · auto-advance',
+    input_mode_mic: 'Microphone',
+    input_mode_mic_sub: 'Audio recognition · works on iPad',
+    input_mode_note: 'MIDI requires Chrome/Edge desktop. Microphone works everywhere including iOS.',
     
     midi_recognition: 'MIDI Recognition',
     midi_desc: 'Auto-advance when you play the correct chord',
@@ -243,6 +253,8 @@ export const en = {
 
   nav: {
     train: 'Train',
+    learn: 'Learn',
+    learn_short: 'Learn',
     educators: 'For Educators',
     educators_short: 'Educators',
     home: 'Home',
@@ -251,7 +263,7 @@ export const en = {
     impressum: 'Imprint',
     open_studio_link: 'Start your 7-day free trial on Open Studio',
     language: 'Language',
-    midi_test: 'MIDI Test',
+    midi_test: 'Input Test',
     contact: 'Contact',
     subtitle: 'Jazz Piano Speed Training',
     built_for: 'Built for jazz education',
@@ -289,6 +301,27 @@ export const en = {
     ts_item5: '<strong>Notes stuck?</strong> If the piano shows notes held that you\'ve released, try disconnecting and reconnecting the device.',
   },
 
+  mic_test: {
+    title: 'Mic Test',
+    subtitle: 'Live view of microphone-based chord detection — test audio recognition before training.',
+    status: 'Microphone Status',
+    start_btn: 'Start Listening',
+    stop_btn: 'Stop',
+    live_keyboard: 'Detected Notes (Live)',
+    held_notes: 'Detected notes:',
+    none_play_chord: 'None — play a chord',
+    detections: 'Detections',
+    event_log: 'Detection Log',
+    log_empty: 'Start microphone, then play a chord on your instrument…',
+    latency_note: 'Detection runs every ~0.8 s. Hold chords for at least 1 second.',
+    troubleshooting: 'Troubleshooting',
+    ts_item1: '<strong>No notes detected?</strong> Make sure your microphone is selected in browser settings and not muted.',
+    ts_item2: '<strong>"Permission Denied"?</strong> Click the microphone icon in your browser\'s address bar and allow access.',
+    ts_item3: '<strong>Wrong notes detected?</strong> Reduce background noise and play clearly. The ML model works best with clean piano tone.',
+    ts_item4: '<strong>Works on iPad/iOS?</strong> Yes — this uses the Web Audio API available in Safari on iOS. Tap "Start Listening" to begin.',
+    ts_item5: '<strong>Model loading slow?</strong> The first run downloads ~900 KB of ML model data. Subsequent uses are instant.',
+  },
+
   landing: {
     hero_title: 'Master Jazz Piano Voicings in All 12 Keys',
     hero_title_html: '<span class="gradient-text">Master Jazz Piano</span> <span class="white-text">Voicings in All 12 Keys</span>',
@@ -296,6 +329,7 @@ export const en = {
     hero_subtitle_mobile: 'See a chord, play it, get faster — through all 12 keys.',
     badge: 'MIDI · Audio · Progress Tracking',
     cta_start: 'Start Training',
+    cta_learn: 'Start Course',
     cta_educators: 'For Music Schools',
     footnote: 'Free. No signup. Works in Chrome & Edge.',
     footnote_mobile: 'Free · MIDI · No signup',
@@ -533,6 +567,8 @@ export const en = {
     get_ready: "Get ready — press Start when you're ready",
     play_beat_1: 'Play the chord on beat 1 — chord changes automatically',
     play_auto: 'Play the chord on your piano — auto-advance on correct voicing',
+    play_mic: 'Play the chord and hold it — audio detection will validate',
+    mic_hint: '🎙 Play and hold the chord for ~1 second',
     play_verify: 'Play the chord, then press Space to verify',
     check_verify: 'Check your voicing — then Space for next chord',
     tap_space: 'Tap the card or press Space',
@@ -619,6 +655,20 @@ export const en = {
     step_by_step: 'Step-by-step guide →',
     connect_keyboard_title: 'Connect a MIDI keyboard?',
     connect_keyboard_desc: 'Plug in a USB keyboard for auto chord recognition (Chrome/Edge)',
+  },
+
+  mic: {
+    listening: 'Listening…',
+    analyzing: 'Analyzing…',
+    loading_model: 'Loading model…',
+    requesting: 'Requesting mic…',
+    denied: 'Mic Denied',
+    unsupported: 'Not Supported',
+    error: 'Error',
+    idle: 'Mic Off',
+    enable: 'Enable Mic',
+    denied_hint: 'Allow microphone access in your browser settings and reload.',
+    unsupported_hint: 'Microphone requires a secure connection (HTTPS). Make sure you are on the production site, not a local network URL over plain HTTP.',
   },
 
   impressum: {
@@ -781,8 +831,8 @@ export const en = {
     this_week: 'this week',
     goal_consistency: 'Practice {days} days this week',
     goal_consistency_desc: 'Building the habit is more important than any single session',
-    goal_speed: 'Get {root} chords under {target}s',
-    goal_speed_desc: 'Currently {current}s average — aim for {target}s',
+    goal_speed: 'Get {root} {voicing} under {target}s',
+    goal_speed_desc: 'Currently {current}s — aim for {target}s',
     goal_exploration: 'Try {voicing}',
     goal_exploration_desc: 'Expand your vocabulary — {remaining} types still unexplored',
     goal_endurance: 'Complete a 50-chord session',
@@ -798,10 +848,18 @@ export const en = {
     // Quick start
     quick_restart: 'Quick restart: 4 chords',
     quick_restart_desc: "Just 4 chords. That's all it takes to start again.",
-    quick_weak_focus: '{root} under {target}s — focused drill',
-    quick_weak_focus_desc: 'Targeted training — {roots} appear most often',
+    quick_weak_focus: '{voicing}: {root} under {target}s',
+    quick_weak_focus_desc: 'Focused {voicing} drill — {roots} appear most often',
     quick_warmup: '{minutes} min warm-up',
     quick_warmup_desc: 'Your daily practice — start with what you know',
+
+    // Daily motivation
+    motivation_not_started: '{minutes} min today — let\'s go!',
+    motivation_keep_going: '{remaining} min left — keep going!',
+    motivation_almost: 'Almost there — just {remaining} min!',
+    motivation_goal_reached: 'Daily goal reached!',
+    motivation_extra: '{practiced} min today — extra XP!',
+    motivation_streak_risk: '{days}-day streak at risk!',
 
     // Celebrations
     celebration_xp: '+{amount} XP',
@@ -830,5 +888,364 @@ export const en = {
     onboard_5min: 'Quick session',
     onboard_10min: 'Solid practice',
     onboard_15min: 'Deep work',
-  }
+  },
+
+  // ─── Learn / Courses ──────────────────────────────────────
+  learn: {
+    title: 'Learn',
+    subtitle: 'Understand the logic behind chord voicings — step by step.',
+    continue: 'Continue learning',
+    start: 'Start course',
+    preview: 'Preview',
+    back_to_courses: '← Back to courses',
+    back_to_course: '← Back to course',
+    module: 'Module',
+    lesson: 'Lesson',
+    step_theory: 'Understand',
+    step_practice: 'Practice',
+    step_challenge: 'Master',
+    mastery_none: 'Not started',
+    mastery_started: 'In progress',
+    mastery_completed: 'Completed',
+    mastery_mastered: 'Mastered',
+    skip_step: 'Skip',
+    next_step: 'Next',
+    complete: 'Complete!',
+    practice_guided: 'Play the chord — the correct keys are highlighted.',
+    practice_free: 'Now without help! Only the chord name is visible.',
+    practice_hint: 'Show solution',
+    practice_correct: 'Correct!',
+    practice_streak: '{count}× correct in a row',
+    practice_next_chord: 'Next chord…',
+    challenge_intro: 'Speed drill: Play {quality} as shell voicing in all 12 keys.',
+    challenge_go: 'Go!',
+    challenge_result: 'Average: {avg}ms per chord',
+    challenge_pass: 'Passed! Lesson completed.',
+    challenge_retry: 'Not yet — need under {threshold}ms to pass.',
+    challenge_retry_btn: 'Try again',
+    listen: 'Listen',
+    level_beginner: 'Beginner',
+    level_intermediate: 'Intermediate',
+    level_advanced: 'Advanced',
+  },
+
+  course: {
+    shell: {
+      title: 'Understanding Shell Voicings',
+      subtitle: 'The 3-Note Method',
+      description: 'Learn to play any seventh chord with just 3 notes: root, third, and seventh.',
+      mod1: {
+        title: 'The Basic Chords',
+      },
+      maj7: {
+        title: 'Major Seventh (Maj7)',
+        subtitle: 'Root + major third + major seventh',
+        theory: 'A Maj7 shell voicing consists of 3 notes:\n\n• **Root** — Determines the chord letter\n• **Major 3rd** — 4 semitones above the root\n• **Major 7th** — 11 semitones above the root\n\nExample: **Cmaj7** = C + E + B',
+      },
+      dom7: {
+        title: 'Dominant Seventh (7)',
+        subtitle: 'Root + major third + minor seventh',
+        theory: 'A Dominant 7 shell voicing consists of 3 notes:\n\n• **Root**\n• **Major 3rd** — 4 semitones above the root\n• **Minor 7th** — 10 semitones above the root\n\nExample: **C7** = C + E + Bb\n\nThe difference from Maj7: the seventh is one semitone lower.',
+      },
+      m7: {
+        title: 'Minor Seventh (m7)',
+        subtitle: 'Root + minor third + minor seventh',
+        theory: 'An m7 shell voicing consists of 3 notes:\n\n• **Root**\n• **Minor 3rd** — 3 semitones above the root\n• **Minor 7th** — 10 semitones above the root\n\nExample: **Cm7** = C + Eb + Bb\n\nThe difference from Dom7: the third is one semitone lower.',
+      },
+    },
+    ultimate: {
+      title: 'Ultimate Plan',
+      subtitle: 'From Zero to Master',
+      description: 'The complete learning journey: all chord types, all voicings, all keys. 8 modules — from your first seventh chord to altered dominants.',
+      mod1: { title: 'Fundamentals: The 3 Core Chords' },
+      mod2: { title: 'Shell Voicings' },
+      mod3: { title: 'Sixth & Special Chords' },
+      mod4: { title: 'Extended Chords (9th)' },
+      mod5: { title: 'Full & Half-Shell Voicings' },
+      mod6: { title: 'Rootless Voicings' },
+      mod7: { title: 'Inversions' },
+      mod8: { title: 'Altered & Advanced' },
+      'fund-maj7': {
+        title: 'Major 7th (Maj7)',
+        subtitle: 'Root Position',
+        theory: 'The **Maj7** is the warm, stable sound in jazz and pop.\n\n• **Root** — determines the chord letter\n• **Major 3rd** — 4 semitones higher\n• **5th** — 7 semitones higher\n• **Major 7th** — 11 semitones higher\n\nExample: **CMaj7** = C + E + G + B\n\nPlay the chord from bottom to top — this is root position.',
+      },
+      'fund-dom7': {
+        title: 'Dominant 7th (7)',
+        subtitle: 'Root Position',
+        theory: 'The **Dominant 7** creates tension — it wants to resolve.\n\n• **Root**\n• **Major 3rd** — 4 semitones\n• **5th** — 7 semitones\n• **Minor 7th** — 10 semitones\n\nExample: **G7** = G + B + D + F\n\nDifference from Maj7: The seventh is one semitone lower (10 instead of 11 st).',
+      },
+      'fund-m7': {
+        title: 'Minor 7th (m7)',
+        subtitle: 'Root Position',
+        theory: 'The **m7** is the soft, melancholic chord.\n\n• **Root**\n• **Minor 3rd** — 3 semitones\n• **5th** — 7 semitones\n• **Minor 7th** — 10 semitones\n\nExample: **Dm7** = D + F + A + C\n\nMinor 3rd + minor 7th = minor character.',
+      },
+      'shell-maj7': {
+        title: 'Maj7 Shell',
+        subtitle: 'Root + 3rd + 7th',
+        theory: 'Shell Voicing = only the 3 most important notes:\n\n• **Root** — Identity\n• **3rd** — Major or minor?\n• **7th** — Major or minor?\n\nThe fifth is dropped — it doesn\'t define the character.\n\nExample: **CMaj7 Shell** = C + E + B',
+      },
+      'shell-dom7': {
+        title: 'Dom7 Shell',
+        subtitle: 'Root + 3rd + ♭7',
+        theory: 'In the dominant shell, only the seventh changes:\n\n• **Root**\n• **Major 3rd** — same as Maj7\n• **Minor 7th** — one semitone lower than Maj7\n\nExample: **C7 Shell** = C + E + Bb\n\nRemember: The 3rd stays the same, only the 7th moves.',
+      },
+      'shell-m7': {
+        title: 'm7 Shell',
+        subtitle: 'Root + ♭3 + ♭7',
+        theory: 'In the minor shell, the 3rd changes:\n\n• **Root**\n• **Minor 3rd** — one semitone lower than major\n• **Minor 7th** — same as Dom7\n\nExample: **Dm7 Shell** = D + F + C\n\nMastering 3 shells = ability to comp 80% of jazz standards.',
+      },
+      'sixth-6': {
+        title: 'Major 6th (6)',
+        subtitle: 'Alternative to Maj7',
+        theory: 'The **6th chord** replaces the seventh with a sixth:\n\n• R – 3 – 5 – 6\n\nSounds brighter and more open than Maj7. Often used as a tonic chord in older jazz standards.\n\nExample: **C6** = C + E + G + A',
+      },
+      'sixth-m6': {
+        title: 'Minor 6th (m6)',
+        subtitle: 'Minor + major 6th',
+        theory: 'The **m6** combines minor 3rd with major 6th:\n\n• R – ♭3 – 5 – 6\n\nCommon as minor tonic. The 6th gives the chord a special color.\n\nExample: **Am6** = A + C + E + F#',
+      },
+      'sixth-m7b5': {
+        title: 'Half-Diminished (m7♭5)',
+        subtitle: 'Typical ii in minor',
+        theory: 'The **half-diminished** chord (ø7):\n\n• R – ♭3 – ♭5 – ♭7\n\nLike m7, but with diminished 5th. Essential in minor ii-V-I\n(e.g. Bø7 → E7 → Am).\n\nExample: **Bm7♭5** = B + D + F + A',
+      },
+      'sixth-dim7': {
+        title: 'Diminished 7th (dim7)',
+        subtitle: 'Symmetric structure',
+        theory: 'The **dim7** is built entirely from minor thirds:\n\n• R – ♭3 – ♭5 – °7 (= 0, 3, 6, 9 st)\n\nSymmetric: Any of the 4 notes can be the root. Only 3 distinct dim7 chords exist!\n\nExample: **Bdim7** = B + D + F + Ab',
+      },
+      'ninth-maj9': {
+        title: 'Major 9th (Maj9)',
+        subtitle: 'Maj7 + 9th',
+        theory: 'The **Maj9** extends Maj7 with the 9th (= 2nd scale degree):\n\n• R – 3 – 5 – 7 – 9\n\nThe 9th adds color without changing stability. Lush and modern.\n\nExample: **CMaj9** = C + E + G + B + D',
+      },
+      'ninth-9': {
+        title: 'Dominant 9th (9)',
+        subtitle: 'Dom7 + 9th',
+        theory: 'The **Dom9** extends Dominant 7:\n\n• R – 3 – 5 – ♭7 – 9\n\nMore color than a plain Dom7. Standard in blues, funk, and soul.\n\nExample: **G9** = G + B + D + F + A',
+      },
+      'ninth-m9': {
+        title: 'Minor 9th (m9)',
+        subtitle: 'm7 + 9th',
+        theory: 'The **m9** extends m7:\n\n• R – ♭3 – 5 – ♭7 – 9\n\nSofter than m7 with extra color. Typical as ii chord in ii-V-I.\n\nExample: **Dm9** = D + F + A + C + E',
+      },
+      'ninth-69': {
+        title: 'Six-Nine (6/9)',
+        subtitle: 'Open ending chord',
+        theory: 'The **6/9** combines sixth and ninth without a seventh:\n\n• R – 3 – 5 – 6 – 9\n\nFloating, open sound. Often used as a final chord in bossa nova and cool jazz.\n\nExample: **C6/9** = C + E + G + A + D',
+      },
+      'full-maj7': {
+        title: 'Maj7 Full Voicing',
+        subtitle: 'R – 7 – 3 – 5',
+        theory: 'The **Full Voicing** arranges all 4 notes in jazz-typical order:\n\n• **Root** on bottom\n• **7th** above\n• **3rd** in the middle\n• **5th** on top\n\nFull and warm sound. The 7th right above the root creates a tight half step.\n\nExample: **CMaj7 Full** = C + B + E + G',
+      },
+      'full-dom7': {
+        title: 'Dom7 Full Voicing',
+        subtitle: 'R – ♭7 – 3 – 5',
+        theory: 'Full Voicing for Dominant 7:\n\n• R – ♭7 – 3 – 5\n\nThe whole step between root and minor 7th sounds more open than Maj7.\n\nExample: **C7 Full** = C + Bb + E + G',
+      },
+      'full-m7': {
+        title: 'm7 Full Voicing',
+        subtitle: 'R – ♭7 – ♭3 – 5',
+        theory: 'Full Voicing for Minor 7:\n\n• R – ♭7 – ♭3 – 5\n\nMinor 3rd and minor 7th combined = soft minor sound.\n\nExample: **Dm7 Full** = D + C + F + A',
+      },
+      'hshell-maj7': {
+        title: 'Half-Shell Voicing',
+        subtitle: '3 – R – 7',
+        theory: 'The **Half-Shell Voicing** reverses the shell formula:\n\n• **3rd** on bottom\n• **Root** in the middle\n• **7th** on top\n\nVery compact — notes are close together. Ideal for the left hand.\n\nExample: **CMaj7 Half-Shell** = E + C + B',
+      },
+      'rla-maj7': {
+        title: 'Rootless A — Maj7',
+        subtitle: '3 – 5 – 7 – 9',
+        theory: 'Rootless Voicing Type A (Bill Evans Style):\n\nThe **root is dropped** — the bass player covers it.\n\n• 3 – 5 – 7 – 9\n\nThe 9th replaces the root. The hand stays in mid register.\n\nExample: **CMaj7 RL-A** = E + G + B + D',
+      },
+      'rla-dom7': {
+        title: 'Rootless A — Dom7',
+        subtitle: '3 – 5 – ♭7 – 9',
+        theory: 'Rootless A for Dominant 7:\n\n• 3 – 5 – ♭7 – 9\n\nThe tritone (3 → ♭7) is preserved — tension is fully present.\n\nExample: **C7 RL-A** = E + G + Bb + D',
+      },
+      'rla-m7': {
+        title: 'Rootless A — m7',
+        subtitle: '♭3 – 5 – ♭7 – 9',
+        theory: 'Rootless A for Minor 7:\n\n• ♭3 – 5 – ♭7 – 9\n\nThe minor 3rd on the bottom defines the minor character even without the root.\n\nExample: **Dm7 RL-A** = F + A + C + E',
+      },
+      'rlb-maj7': {
+        title: 'Rootless B — Maj7',
+        subtitle: '7 – 9 – 3 – 5',
+        theory: 'Rootless Voicing Type B — complementary to Type A:\n\n• 7 – 9 – 3 – 5\n\nThe 7th is now on the bottom. When switching A→B, the hand moves minimally.\n\nExample: **CMaj7 RL-B** = B + D + E + G',
+      },
+      'rlb-dom7': {
+        title: 'Rootless B — Dom7',
+        subtitle: '♭7 – 9 – 3 – 5',
+        theory: 'Rootless B for Dominant 7:\n\n• ♭7 – 9 – 3 – 5\n\nMinor 7th on the bottom, 3rd on top. Ideal alternating with Rootless A.\n\nExample: **C7 RL-B** = Bb + D + E + G',
+      },
+      'rlb-m7': {
+        title: 'Rootless B — m7',
+        subtitle: '♭7 – 9 – ♭3 – 5',
+        theory: 'Rootless B for Minor 7:\n\n• ♭7 – 9 – ♭3 – 5\n\nMinor 7th on bottom, minor 3rd in the middle.\n\nExample: **Dm7 RL-B** = C + E + F + A',
+      },
+      'inv1-maj7': {
+        title: '1st Inversion — Maj7',
+        subtitle: '3rd in bass',
+        theory: 'The **1st Inversion** rotates the bottom note to the top:\n\n• 3 – 5 – 7 – R\n\nThe 3rd is now the lowest note. Useful for closer voice leading.\n\nExample: **CMaj7/E** = E + G + B + C',
+      },
+      'inv2-maj7': {
+        title: '2nd Inversion — Maj7',
+        subtitle: '5th in bass',
+        theory: 'In **2nd Inversion** the 5th is on the bottom:\n\n• 5 – 7 – R – 3\n\nMiddle register — connects root position and higher inversions.\n\nExample: **CMaj7/G** = G + B + C + E',
+      },
+      'inv3-maj7': {
+        title: '3rd Inversion — Maj7',
+        subtitle: '7th in bass',
+        theory: 'In **3rd Inversion** the 7th is on the bottom:\n\n• 7 – R – 3 – 5\n\nSounds bright and open. The 7th resolves naturally downward.\n\nExample: **CMaj7/B** = B + C + E + G',
+      },
+      'adv-7s9': {
+        title: 'Dominant #9 (Hendrix)',
+        subtitle: 'The Purple Haze sound',
+        theory: 'The **7#9** — also called the "Hendrix chord":\n\n• R – 3 – 5 – ♭7 – #9\n\nThe #9 is enharmonically the same as the minor 3rd. Major 3rd + #9 together = maximum friction.\n\nExample: **E7#9** = E + G# + B + D + G',
+      },
+      'adv-7b9': {
+        title: 'Dominant ♭9',
+        subtitle: 'Maximum tension',
+        theory: 'The **7b9** is extremely tense:\n\n• R – 3 – 5 – ♭7 – ♭9\n\nThe ♭9 creates a semitone above the root. Typically over the half-whole diminished scale.\n\nExample: **G7♭9** = G + B + D + F + Ab',
+      },
+      'adv-lyd': {
+        title: 'Lydian (Maj7#11)',
+        subtitle: 'Floating and modern',
+        theory: 'The **Maj7#11** creates the Lydian sound:\n\n• R – 3 – 5 – 7 – #11\n\nThe #11 (= raised 4th) lifts the chord into a floating sound world. Typical for modal jazz pieces.\n\nExample: **CMaj7#11** = C + E + G + B + F#',
+      },
+      'adv-m11': {
+        title: 'Minor 11 (m11)',
+        subtitle: 'Modal minor sound',
+        theory: 'The **m11** extends m9 by the 11th:\n\n• R – ♭3 – 5 – ♭7 – 9 – 11\n\n6 notes! The 11th (= 4th) reinforces the modal, Dorian character.\n\nExample: **Dm11** = D + F + A + C + E + G',
+      },
+      'adv-13': {
+        title: 'Dominant 13 (13)',
+        subtitle: 'Big band color',
+        theory: 'The **13th chord** is the most colorful dominant chord:\n\n• R – 3 – 5 – ♭7 – 9 – 13\n\nThe 13th (= 6th in a higher octave) gives the chord a full, warm sound. Standard in big band arrangements.\n\nExample: **G13** = G + B + D + F + A + E',
+      },
+    },
+  },
+
+  explain: {
+    title: 'How it works',
+    close: 'Got it',
+    listen: 'Listen',
+    voicing_label: 'Voicing',
+    chord_label: 'Chord',
+    notes_label: 'Notes',
+    formula_label: 'Formula',
+    quality: {
+      Maj7: {
+        title: 'Major 7th (Maj7)',
+        desc: '4 notes: root, **major 3rd** (4 st), **5th** (7 st), **major 7th** (11 st). Bright and stable — typical tonic chord.',
+      },
+      '7': {
+        title: 'Dominant 7th (7)',
+        desc: '4 notes: root, **major 3rd** (4 st), **5th** (7 st), **minor 7th** (10 st). The tritone between 3rd and 7th creates tension → wants to resolve.',
+      },
+      m7: {
+        title: 'Minor 7th (m7)',
+        desc: '4 notes: root, **minor 3rd** (3 st), **5th** (7 st), **minor 7th** (10 st). Soft, melancholic — commonly used as the ii chord.',
+      },
+      '6': {
+        title: 'Major 6th (6)',
+        desc: '4 notes: root, **major 3rd** (4 st), **5th** (7 st), **6th** (9 st). Alternative to Maj7 with a brighter, more open sound.',
+      },
+      m6: {
+        title: 'Minor 6th (m6)',
+        desc: '4 notes: root, **minor 3rd** (3 st), **5th** (7 st), **6th** (9 st). Common in minor tonic functions.',
+      },
+      Maj9: {
+        title: 'Major 9th (Maj9)',
+        desc: '5 notes: Maj7 + **9th** (14 st). The 9th adds color without changing the Maj7 stability. Lush and modern.',
+      },
+      '9': {
+        title: 'Dominant 9th (9)',
+        desc: '5 notes: Dom7 + **9th** (14 st). Extends the dominant sound with more color. Standard in blues and funk.',
+      },
+      m9: {
+        title: 'Minor 9th (m9)',
+        desc: '5 notes: m7 + **9th** (14 st). Softer than m7, with extra color from the 9th. Typical for ii-V-I.',
+      },
+      '6/9': {
+        title: 'Six-Nine (6/9)',
+        desc: '5 notes: root, 3rd, 5th, **6th** (9 st), **9th** (14 st). Floating, open sound — often used as an ending chord.',
+      },
+      'Maj7#11': {
+        title: 'Lydian Chord (Maj7#11)',
+        desc: '5 notes: Maj7 + **#11** (18 st). The #11 creates the Lydian sound — floating and modern.',
+      },
+      '7#9': {
+        title: 'Dominant #9 (Hendrix Chord)',
+        desc: '5 notes: Dom7 + **#9** (15 st). Major 3rd + #9 (= minor 3rd higher) create friction — the "Purple Haze" sound.',
+      },
+      '7b9': {
+        title: 'Dominant b9',
+        desc: '5 notes: Dom7 + **♭9** (13 st). Very tense — typically used over the half-whole diminished scale.',
+      },
+      m11: {
+        title: 'Minor 11th (m11)',
+        desc: '6 notes: m9 + **11th** (17 st). Very open, floating sound. The 4th/11th reinforces modal character.',
+      },
+      '13': {
+        title: 'Dominant 13th (13)',
+        desc: '6 notes: Dom9 + **13th** (21 st). Full, colorful dominant sound — common in big band arrangements.',
+      },
+      m7b5: {
+        title: 'Half-Diminished (m7♭5)',
+        desc: '4 notes: root, **minor 3rd** (3 st), **diminished 5th** (6 st), **minor 7th** (10 st). Typical as vii° in major or ii in minor.',
+      },
+      dim7: {
+        title: 'Diminished 7th (dim7)',
+        desc: '4 notes: root, **minor 3rd** (3 st), **diminished 5th** (6 st), **diminished 7th** (9 st). Symmetric structure — any note can be the root.',
+      },
+    },
+    root: {
+      title: 'Root Position',
+      desc: 'All chord tones from bottom to top, starting with the root. The complete representation of the chord.',
+      formula: 'Root – 3rd – 5th – 7th',
+    },
+    shell: {
+      title: 'Shell Voicing',
+      desc: 'Only 3 notes: root, third, and seventh. The fifth is omitted — it doesn\'t define the chord character. Ideal for comping because it stays open.',
+      formula: 'Root – 3rd – 7th',
+    },
+    'half-shell': {
+      title: 'Half-Shell Voicing',
+      desc: 'Third and seventh surround the root. Very compact voicing — often spread across just 2 keys with minimal distance.',
+      formula: '3rd – Root – 7th',
+    },
+    full: {
+      title: 'Full Voicing',
+      desc: 'All 4 tones in jazz-typical order: root on bottom, then seventh, third, fifth. Full and warm sound.',
+      formula: 'Root – 7th – 3rd – 5th',
+    },
+    'rootless-a': {
+      title: 'Rootless Voicing Type A',
+      desc: 'No root — the bass player covers it. 4 notes: third, fifth, seventh, ninth. Typical left-hand voicing.',
+      formula: '3rd – 5th – 7th – 9th',
+    },
+    'rootless-b': {
+      title: 'Rootless Voicing Type B',
+      desc: 'Complement to Type A with a different note order. Seventh on the bottom. Together with Type A, allows minimal hand movement during chord changes.',
+      formula: '7th – 9th – 3rd – 5th',
+    },
+    'inversion-1': {
+      title: '1st Inversion',
+      desc: 'The third is the lowest note. All other tones above it. Useful for closer voice leading to the next chord.',
+      formula: '3rd – 5th – 7th – Root',
+    },
+    'inversion-2': {
+      title: '2nd Inversion',
+      desc: 'The fifth is the lowest note. Middle register — connects root position and higher inversions.',
+      formula: '5th – 7th – Root – 3rd',
+    },
+    'inversion-3': {
+      title: '3rd Inversion',
+      desc: 'The seventh is the lowest note. Highest register — sounds bright and open. Natural downward resolution.',
+      formula: '7th – Root – 3rd – 5th',
+    },
+  },
 };

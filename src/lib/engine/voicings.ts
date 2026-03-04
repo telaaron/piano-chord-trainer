@@ -109,6 +109,71 @@ export function getVoicingNotes(
 	}
 }
 
+// ─── Interval name maps ────────────────────────────────────
+
+/** Context-aware interval names per chord quality (semitone → label). */
+const QUALITY_INTERVAL_NAMES: Record<string, Record<number, string>> = {
+	Maj7:       { 0: 'R', 4: '3', 7: '5', 11: '7' },
+	'7':        { 0: 'R', 4: '3', 7: '5', 10: '♭7' },
+	m7:         { 0: 'R', 3: '♭3', 7: '5', 10: '♭7' },
+	'6':        { 0: 'R', 4: '3', 7: '5', 9: '6' },
+	m6:         { 0: 'R', 3: '♭3', 7: '5', 9: '6' },
+	Maj9:       { 0: 'R', 4: '3', 7: '5', 11: '7', 2: '9' },
+	'9':        { 0: 'R', 4: '3', 7: '5', 10: '♭7', 2: '9' },
+	m9:         { 0: 'R', 3: '♭3', 7: '5', 10: '♭7', 2: '9' },
+	'6/9':      { 0: 'R', 4: '3', 7: '5', 9: '6', 2: '9' },
+	'Maj7#11':  { 0: 'R', 4: '3', 7: '5', 11: '7', 6: '♯11' },
+	'7#9':      { 0: 'R', 4: '3', 7: '5', 10: '♭7', 3: '♯9' },
+	'7b9':      { 0: 'R', 4: '3', 7: '5', 10: '♭7', 1: '♭9' },
+	m11:        { 0: 'R', 3: '♭3', 7: '5', 10: '♭7', 2: '9', 5: '11' },
+	'13':       { 0: 'R', 4: '3', 7: '5', 10: '♭7', 2: '9', 9: '13' },
+	m7b5:       { 0: 'R', 3: '♭3', 6: '♭5', 10: '♭7' },
+	dim7:       { 0: 'R', 3: '♭3', 6: '♭5', 9: '°7' },
+};
+
+/** Generic fallback for intervals added by voicings (e.g. 9th in rootless). */
+const GENERIC_INTERVAL: Record<number, string> = {
+	0: 'R', 1: '♭9', 2: '9', 3: '♭3', 4: '3', 5: '11',
+	6: '♯11', 7: '5', 8: '♯5', 9: '6', 10: '♭7', 11: '7',
+};
+
+/**
+ * Compute the interval labels for a set of voicing notes, aware of chord quality.
+ *
+ * Example: G9 shell voicing [G, B, F] → ['R', '3', '♭7']
+ */
+export function getVoicingIntervalLabels(
+	voicingNotes: string[],
+	root: string,
+	quality: string,
+): string[] {
+	const rootSemi = noteToSemitone(root);
+	if (rootSemi === -1) return voicingNotes;
+	const qualityMap = QUALITY_INTERVAL_NAMES[quality] || {};
+
+	return voicingNotes.map((note) => {
+		const semi = noteToSemitone(note);
+		if (semi === -1) return '?';
+		const interval = ((semi - rootSemi) % 12 + 12) % 12;
+		return qualityMap[interval] ?? GENERIC_INTERVAL[interval] ?? '?';
+	});
+}
+
+/**
+ * Compute the full chord formula (all intervals, not just voicing selection).
+ *
+ * Example: quality '9' → ['R', '3', '5', '♭7', '9']
+ */
+export function getChordFormula(quality: string): string[] {
+	const intervals = CHORD_INTERVALS[quality];
+	if (!intervals) return [];
+	const qualityMap = QUALITY_INTERVAL_NAMES[quality] || {};
+	return intervals.map((iv) => {
+		const pc = ((iv % 12) + 12) % 12;
+		return qualityMap[pc] ?? GENERIC_INTERVAL[pc] ?? '?';
+	});
+}
+
 /** Format voicing notes for display: "C – E – B" */
 export function formatVoicing(
 	chordData: ChordWithNotes,

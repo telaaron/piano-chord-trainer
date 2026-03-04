@@ -18,6 +18,7 @@
 		type ChordWithNotes,
 	} from '$lib/engine';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
+	import ExplainPanel from '$lib/components/ExplainPanel.svelte';
 	import { MidiService, type MidiConnectionState, type MidiDevice, type ChordMatchResult } from '$lib/services/midi';
 	import { formatTime } from '$lib/utils/format';
 	import { t } from '$lib/i18n';
@@ -118,6 +119,7 @@
 
 	const config = parseConfig();
 	const presetKey = page.url.searchParams.get('preset') || '';
+	let showExplain = $state(false);
 	const presetLabel = PRESET_KEYS[presetKey] ? t(PRESET_KEYS[presetKey]) : '';
 
 	// ─── State machine ──────────────────────────────────────────────
@@ -309,7 +311,7 @@
 		if (config.voicing.startsWith('inversion-') && currentData.voicing.length > 0) {
 			result = midi.checkChordWithBass(currentData.voicing, currentData.voicing[0]);
 		} else {
-			result = midi.checkChordLenient(currentData.voicing);
+			result = midi.checkChord(currentData.voicing);
 		}
 		midiMatchResult = result;
 
@@ -528,6 +530,11 @@
 				<button class="btn-secondary" onclick={resetToSetup} title={t('embed.back_to_setup_title')}>
 					{t('embed.back_to_setup')}
 				</button>
+				{#if timerStarted && currentData}
+					<button class="btn-secondary" onclick={() => { showExplain = true; }} title={t('explain.title')}>
+						?
+					</button>
+				{/if}
 				{#if timerStarted}
 					<button class="btn-next" onclick={nextChord}>
 						{currentIdx < totalChords - 1 ? t('embed.next') : t('embed.finish')}
@@ -585,6 +592,14 @@
 		</div>
 	{/if}
 </main>
+
+{#if showExplain && currentData}
+	<ExplainPanel
+		chordData={currentData}
+		voicing={config.voicing}
+		onclose={() => { showExplain = false; }}
+	/>
+{/if}
 
 <style>
 	/* ── Root widget ─────────────────────────────────────────── */

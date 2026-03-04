@@ -41,7 +41,12 @@
 <div class="goal-card" class:completed={isCompleted} style="--goal-color: {color}">
 	<div class="goal-header">
 		<span class="goal-icon">{goal.icon}</span>
-		<span class="goal-title">{t(goal.titleKey, goal.titleParams) || goal.title}</span>
+		<div class="goal-title-block">
+			<span class="goal-title">{t(goal.titleKey, goal.titleParams) || goal.title}</span>
+			{#if goal.descriptionKey}
+				<span class="goal-desc">{t(goal.descriptionKey, goal.descriptionParams)}</span>
+			{/if}
+		</div>
 		{#if isCompleted}
 			<span class="goal-done">✓</span>
 		{/if}
@@ -82,22 +87,38 @@
 
 	.goal-header {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		gap: 8px;
-		margin-bottom: 4px;
+		margin-bottom: 6px;
 	}
 
 	.goal-icon {
 		font-size: 0.85rem;
 		flex-shrink: 0;
+		margin-top: 1px;
+	}
+
+	.goal-title-block {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		flex: 1;
+		min-width: 0;
 	}
 
 	.goal-title {
 		font-size: 0.75rem;
 		font-weight: 600;
 		color: var(--text, #fff);
-		flex: 1;
 		min-width: 0;
+	}
+
+	.goal-desc {
+		font-size: 0.6rem;
+		color: rgba(255, 255, 255, 0.32);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.goal-done {

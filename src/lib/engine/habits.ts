@@ -1,8 +1,8 @@
 // Habit Engine — XP, Levels, Smart Goals, Spaced Repetition
 // Pure TypeScript, no DOM, no side effects.
 
-import type { SessionResult, StreakData, WeakChord } from '../services/progress';
-import { analyzeWeakChords } from '../services/progress';
+import type { SessionResult, StreakData, WeakChord, WeakSpot } from '../services/progress';
+import { analyzeWeakChords, analyzeWeakSpots } from '../services/progress';
 
 // ─── XP Constants ───────────────────────────────────────────
 
@@ -20,6 +20,19 @@ export const XP_FULL_CIRCLE = 30; // all 12 keys
 export const XP_HIGH_ACCURACY = 5; // ≥ 95% MIDI accuracy
 
 // ─── Types ──────────────────────────────────────────────────
+
+/** Short labels for voicing types (used in goals/quick start, no i18n needed — these are music terms) */
+const VOICING_SHORT_LABELS: Record<string, string> = {
+	'root': 'Root Pos.',
+	'shell': 'Shell',
+	'half-shell': 'Half Shell',
+	'full': 'Full',
+	'rootless-a': 'Rootless A',
+	'rootless-b': 'Rootless B',
+	'inversion-1': '1st Inv.',
+	'inversion-2': '2nd Inv.',
+	'inversion-3': '3rd Inv.',
+};
 
 export type GoalType = 'speed' | 'consistency' | 'mastery' | 'exploration' | 'endurance' | 'review' | 'accuracy';
 export type TimeOfDay = 'morning' | 'afternoon' | 'evening';
@@ -83,6 +96,7 @@ export interface HabitProfile {
 	sessionsToday: number;
 	lastSessionDate: string; // YYYY-MM-DD
 	dailyGoalDates: string[]; // YYYY-MM-DD where daily goal was reached this week
+	todayPracticeMs: number; // accumulated practice time today
 }
 
 export interface XPEvent {
@@ -344,23 +358,24 @@ export function generateGoals(
 		});
 	}
 
-	// 2. SPEED — based on weakest chords
-	const weakChords = analyzeWeakChords(history, 3);
-	if (weakChords.length > 0 && weakChords[0].avgMs > 2000) {
-		const wk = weakChords[0];
-		const targetTime = Math.max(1.5, Math.round((wk.avgMs / 1000) * 0.75 * 10) / 10);
+	// 2. SPEED — based on weakest root+voicing combo
+	const weakSpots = analyzeWeakSpots(history, 5);
+	if (weakSpots.length > 0 && weakSpots[0].avgMs > 2000) {
+		const ws = weakSpots[0];
+		const vLabel = VOICING_SHORT_LABELS[ws.voicing] || ws.voicing;
+		const targetTime = Math.max(1.5, Math.round((ws.avgMs / 1000) * 0.75 * 10) / 10);
 		goals.push({
 			id: generateGoalId(),
 			type: 'speed',
-			title: `Get ${wk.root} chords under ${targetTime}s`,
+			title: `Get ${ws.root} ${vLabel} under ${targetTime}s`,
 			titleKey: 'habit.goal_speed',
-			titleParams: { root: wk.root, target: targetTime },
-			description: `Currently ${(wk.avgMs / 1000).toFixed(1)}s average — aim for ${targetTime}s`,
+			titleParams: { root: ws.root, voicing: vLabel, target: targetTime },
+			description: `Currently ${(ws.avgMs / 1000).toFixed(1)}s average — aim for ${targetTime}s`,
 			descriptionKey: 'habit.goal_speed_desc',
-			descriptionParams: { current: Number((wk.avgMs / 1000).toFixed(1)), target: targetTime },
+			descriptionParams: { current: Number((ws.avgMs / 1000).toFixed(1)), target: targetTime },
 			icon: '⚡',
 			target: targetTime,
-			current: Number((wk.avgMs / 1000).toFixed(1)),
+			current: Number((ws.avgMs / 1000).toFixed(1)),
 			xpReward: XP_GOAL_COMPLETED,
 			createdAt: new Date().toISOString(),
 			expiresAt,
@@ -629,6 +644,8 @@ export interface QuickStartSuggestion {
 	icon: string;
 	/** Root notes to focus on in adaptive drill (e.g. ['Db', 'F#', 'B']) */
 	focusRoots?: string[];
+	/** Voicing type to drill (e.g. 'half-shell') */
+	focusVoicing?: string;
 }
 
 /**
@@ -651,22 +668,35 @@ export function getQuickStartSuggestion(
 		};
 	}
 
-	// Weak chord focus — top 3 weakest roots
-	const weakest3 = analyzeWeakChords(history, 3).filter(w => w.avgMs > 2500);
-	if (weakest3.length > 0) {
-		const roots = weakest3.map(w => w.root);
-		const targetTime = Math.max(1.5, Math.round(weakest3[0].avgMs / 1000 * 0.75 * 10) / 10);
+	// Weak chord focus — voicing-aware weak spots
+	const weakSpots = analyzeWeakSpots(history, 10);
+	const slowSpots = weakSpots.filter(ws => ws.avgMs > 2500);
+	if (slowSpots.length > 0) {
+		// Group by voicing to find which voicing has most issues
+		const byVoicing = new Map<string, typeof slowSpots>();
+		for (const ws of slowSpots) {
+			const list = byVoicing.get(ws.voicing) || [];
+			list.push(ws);
+			byVoicing.set(ws.voicing, list);
+		}
+		// Pick voicing with most weak spots (= biggest problem area)
+		const [worstVoicing, worstSpots] = [...byVoicing.entries()]
+			.sort((a, b) => b[1].length - a[1].length || b[1][0].avgMs - a[1][0].avgMs)[0];
+		const roots = worstSpots.slice(0, 3).map(ws => ws.root);
+		const targetTime = Math.max(1.5, Math.round(worstSpots[0].avgMs / 1000 * 0.75 * 10) / 10);
+		const voicingLabel = VOICING_SHORT_LABELS[worstVoicing] || worstVoicing;
 		return {
-			title: `Weak spots: get ${roots[0]} under ${targetTime}s`,
+			title: `${voicingLabel}: ${roots.join(', ')} under ${targetTime}s`,
 			titleKey: 'habit.quick_weak_focus',
-			titleParams: { root: roots.join(', '), target: targetTime },
-			description: `Focused drill — ${roots.join(', ')} appear most often`,
+			titleParams: { voicing: voicingLabel, root: roots.join(', '), target: targetTime },
+			description: `Focused drill — ${roots.join(', ')} in ${voicingLabel} appear most often`,
 			descriptionKey: 'habit.quick_weak_focus_desc',
-			descriptionParams: { roots: roots.join(', ') },
+			descriptionParams: { voicing: voicingLabel, roots: roots.join(', ') },
 			planId: 'adaptive-drill',
 			minutes: 3,
 			icon: '🎯',
 			focusRoots: roots,
+			focusVoicing: worstVoicing,
 		};
 	}
 
@@ -717,11 +747,15 @@ export function checkGoalProgress(
 				break;
 			}
 			case 'speed': {
-				// Check if weak chord improved
-				const weakChords = analyzeWeakChords(history, 5);
+				// Check if weak root+voicing combo improved
+				const spots = analyzeWeakSpots(history, 10);
 				const targetRoot = g.titleParams?.root as string;
+				const targetVoicing = g.titleParams?.voicing as string;
 				if (targetRoot) {
-					const matching = weakChords.find((w) => w.root === targetRoot);
+					// Try voicing-specific match first, fall back to root-only
+					const matching = targetVoicing
+						? spots.find((ws) => ws.root === targetRoot && VOICING_SHORT_LABELS[ws.voicing] === targetVoicing)
+						: spots.find((ws) => ws.root === targetRoot);
 					g.current = matching
 						? Number((matching.avgMs / 1000).toFixed(1))
 						: g.target; // If not in weak list anymore = improved!
@@ -819,6 +853,7 @@ export function createDefaultProfile(): HabitProfile {
 		sessionsToday: 0,
 		lastSessionDate: '',
 		dailyGoalDates: [],
+		todayPracticeMs: 0,
 	};
 }
 
@@ -850,4 +885,122 @@ export function migrateToHabitProfile(
 		: '';
 
 	return profile;
+}
+
+// ─── Daily Progress & Motivation ────────────────────────────
+
+export interface DailyProgress {
+	/** Minutes practiced today */
+	practicedMinutes: number;
+	/** Daily goal in minutes */
+	goalMinutes: number;
+	/** 0-100 progress percent */
+	progressPercent: number;
+	/** Minutes remaining (0 if goal met) */
+	remainingMinutes: number;
+	/** Whether daily goal is met */
+	goalMet: boolean;
+}
+
+/**
+ * Compute today's daily goal progress from the profile.
+ */
+export function getDailyProgress(profile: HabitProfile): DailyProgress {
+	const todayStr = new Date().toISOString().slice(0, 10);
+	const practicedMs = profile.lastSessionDate === todayStr ? profile.todayPracticeMs : 0;
+	const practicedMinutes = Math.round(practicedMs / 60000 * 10) / 10; // 1 decimal
+	const goalMinutes = profile.dailyGoalMinutes;
+	const progressPercent = Math.min(100, Math.round((practicedMs / (goalMinutes * 60000)) * 100));
+	const remainingMs = Math.max(0, goalMinutes * 60000 - practicedMs);
+	const remainingMinutes = Math.ceil(remainingMs / 60000);
+	const goalMet = practicedMs >= goalMinutes * 60000;
+
+	return { practicedMinutes, goalMinutes, progressPercent, remainingMinutes, goalMet };
+}
+
+export type MotivationType =
+	| 'not-started'      // No practice today yet
+	| 'just-started'     // < 30% of goal
+	| 'almost-there'     // ≥ 70% of goal
+	| 'goal-reached'     // 100% done
+	| 'extra-credit'     // Practicing beyond goal
+	| 'streak-at-risk';  // Evening + no practice + active streak
+
+export interface DailyMotivation {
+	type: MotivationType;
+	messageKey: string;
+	messageParams: Record<string, string | number>;
+	emoji: string;
+}
+
+/**
+ * Generate context-aware motivational micro-copy.
+ * Considers: daily progress, time of day, streak, sessions today.
+ */
+export function getDailyMotivation(
+	profile: HabitProfile,
+	streak: StreakData,
+): DailyMotivation {
+	const progress = getDailyProgress(profile);
+	const hour = new Date().getHours();
+	const todayStr = new Date().toISOString().slice(0, 10);
+	const practicedToday = profile.lastSessionDate === todayStr && profile.sessionsToday > 0;
+
+	// Streak at risk: evening (after 18h), haven't practiced, streak ≥ 2
+	if (!practicedToday && hour >= 18 && streak.current >= 2) {
+		return {
+			type: 'streak-at-risk',
+			messageKey: 'habit.motivation_streak_risk',
+			messageParams: { days: streak.current },
+			emoji: '🔥',
+		};
+	}
+
+	// Not started today
+	if (!practicedToday || progress.progressPercent === 0) {
+		return {
+			type: 'not-started',
+			messageKey: 'habit.motivation_not_started',
+			messageParams: { minutes: progress.goalMinutes },
+			emoji: '🎹',
+		};
+	}
+
+	// Goal reached + came back (extra credit)
+	if (progress.goalMet && profile.sessionsToday > 1) {
+		return {
+			type: 'extra-credit',
+			messageKey: 'habit.motivation_extra',
+			messageParams: { practiced: progress.practicedMinutes },
+			emoji: '⭐',
+		};
+	}
+
+	// Goal reached
+	if (progress.goalMet) {
+		return {
+			type: 'goal-reached',
+			messageKey: 'habit.motivation_goal_reached',
+			messageParams: {},
+			emoji: '🎉',
+		};
+	}
+
+	// Almost there (≥ 70%)
+	if (progress.progressPercent >= 70) {
+		return {
+			type: 'almost-there',
+			messageKey: 'habit.motivation_almost',
+			messageParams: { remaining: progress.remainingMinutes },
+			emoji: '💪',
+		};
+	}
+
+	// Just started (< 70%)
+	return {
+		type: 'just-started',
+		messageKey: 'habit.motivation_keep_going',
+		messageParams: { remaining: progress.remainingMinutes, practiced: progress.practicedMinutes },
+		emoji: '🎵',
+	};
 }

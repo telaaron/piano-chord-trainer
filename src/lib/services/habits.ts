@@ -61,6 +61,12 @@ export function loadHabitProfile(): HabitProfile {
 		const todayStr = today.toISOString().slice(0, 10);
 		if (profile.lastSessionDate !== todayStr) {
 			profile.sessionsToday = 0;
+			profile.todayPracticeMs = 0;
+		}
+
+		// Ensure todayPracticeMs exists (migration from older profiles)
+		if (typeof profile.todayPracticeMs !== 'number') {
+			profile.todayPracticeMs = 0;
 		}
 
 		return profile;
@@ -153,10 +159,14 @@ export function processSessionHabits(
 	profile.totalXP += totalXP;
 	profile.weeklyXP += totalXP;
 
-	// 3. Track daily goal achievement
+	// 3. Track daily practice time & goal achievement
 	const todayStr = new Date().toISOString().slice(0, 10);
-	const sessionMinutes = Math.round(session.elapsedMs / 60000);
-	if (sessionMinutes >= profile.dailyGoalMinutes && !profile.dailyGoalDates.includes(todayStr)) {
+	if (profile.lastSessionDate === todayStr) {
+		profile.todayPracticeMs += session.elapsedMs;
+	} else {
+		profile.todayPracticeMs = session.elapsedMs;
+	}
+	if (profile.todayPracticeMs >= profile.dailyGoalMinutes * 60000 && !profile.dailyGoalDates.includes(todayStr)) {
 		profile.dailyGoalDates.push(todayStr);
 	}
 

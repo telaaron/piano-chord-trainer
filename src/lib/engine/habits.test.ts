@@ -18,6 +18,8 @@ import {
 	XP_LONG_SESSION,
 	XP_DEDICATED,
 	XP_FULL_CIRCLE,
+	getDailyProgress,
+	getDailyMotivation,
 	type HabitProfile,
 	type SmartGoal,
 	type ChordReview,
@@ -389,5 +391,99 @@ describe('migrateToHabitProfile', () => {
 	it('handles empty history', () => {
 		const profile = migrateToHabitProfile([], { current: 0, best: 0, lastDate: '' });
 		expect(profile.totalXP).toBe(0);
+	});
+});
+
+// ─── Daily Progress & Motivation ────────────────────────────
+describe('getDailyProgress', () => {
+	it('computes zero progress when no practice today', () => {
+		const profile = createDefaultProfile();
+		profile.dailyGoalMinutes = 5;
+		profile.lastSessionDate = '2025-01-01'; // not today
+		const progress = getDailyProgress(profile);
+		expect(progress.practicedMinutes).toBe(0);
+		expect(progress.progressPercent).toBe(0);
+		expect(progress.goalMet).toBe(false);
+		expect(progress.remainingMinutes).toBe(5);
+	});
+
+	it('computes partial progress', () => {
+		const profile = createDefaultProfile();
+		profile.dailyGoalMinutes = 10;
+		profile.lastSessionDate = new Date().toISOString().slice(0, 10);
+		profile.todayPracticeMs = 3 * 60000; // 3 min
+		const progress = getDailyProgress(profile);
+		expect(progress.practicedMinutes).toBe(3);
+		expect(progress.progressPercent).toBe(30);
+		expect(progress.goalMet).toBe(false);
+		expect(progress.remainingMinutes).toBe(7);
+	});
+
+	it('reports goal met when practiced enough', () => {
+		const profile = createDefaultProfile();
+		profile.dailyGoalMinutes = 5;
+		profile.lastSessionDate = new Date().toISOString().slice(0, 10);
+		profile.todayPracticeMs = 6 * 60000; // 6 min > 5 min goal
+		const progress = getDailyProgress(profile);
+		expect(progress.goalMet).toBe(true);
+		expect(progress.progressPercent).toBe(100);
+		expect(progress.remainingMinutes).toBe(0);
+	});
+});
+
+describe('getDailyMotivation', () => {
+	it('returns not-started when no practice today', () => {
+		const profile = createDefaultProfile();
+		profile.dailyGoalMinutes = 5;
+		const streak = { current: 0, best: 0, lastDate: '' };
+		const motivation = getDailyMotivation(profile, streak);
+		expect(motivation.type).toBe('not-started');
+		expect(motivation.messageKey).toBe('habit.motivation_not_started');
+	});
+
+	it('returns goal-reached when goal met', () => {
+		const profile = createDefaultProfile();
+		profile.dailyGoalMinutes = 5;
+		profile.lastSessionDate = new Date().toISOString().slice(0, 10);
+		profile.todayPracticeMs = 5 * 60000;
+		profile.sessionsToday = 1;
+		const streak = { current: 1, best: 1, lastDate: '' };
+		const motivation = getDailyMotivation(profile, streak);
+		expect(motivation.type).toBe('goal-reached');
+	});
+
+	it('returns extra-credit when goal met and came back', () => {
+		const profile = createDefaultProfile();
+		profile.dailyGoalMinutes = 5;
+		profile.lastSessionDate = new Date().toISOString().slice(0, 10);
+		profile.todayPracticeMs = 12 * 60000;
+		profile.sessionsToday = 3;
+		const streak = { current: 5, best: 5, lastDate: '' };
+		const motivation = getDailyMotivation(profile, streak);
+		expect(motivation.type).toBe('extra-credit');
+	});
+
+	it('returns keep-going for partial progress', () => {
+		const profile = createDefaultProfile();
+		profile.dailyGoalMinutes = 10;
+		profile.lastSessionDate = new Date().toISOString().slice(0, 10);
+		profile.todayPracticeMs = 3 * 60000;
+		profile.sessionsToday = 1;
+		const streak = { current: 0, best: 0, lastDate: '' };
+		const motivation = getDailyMotivation(profile, streak);
+		expect(motivation.type).toBe('just-started');
+		expect(motivation.messageParams.remaining).toBe(7);
+	});
+
+	it('returns almost-there above 70%', () => {
+		const profile = createDefaultProfile();
+		profile.dailyGoalMinutes = 10;
+		profile.lastSessionDate = new Date().toISOString().slice(0, 10);
+		profile.todayPracticeMs = 8 * 60000;
+		profile.sessionsToday = 1;
+		const streak = { current: 0, best: 0, lastDate: '' };
+		const motivation = getDailyMotivation(profile, streak);
+		expect(motivation.type).toBe('almost-there');
+		expect(motivation.messageParams.remaining).toBe(2);
 	});
 });

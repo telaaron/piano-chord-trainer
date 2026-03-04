@@ -179,6 +179,9 @@
 				{t('landing.cta_start')}
 				<span class="arrow">→</span>
 			</a>
+			<a href="/learn" class="btn btn-secondary hide-mobile">
+				{t('landing.cta_learn')}
+			</a>
 			<a href="/for-educators" class="btn btn-secondary hide-mobile">
 				{t('landing.cta_educators')}
 			</a>

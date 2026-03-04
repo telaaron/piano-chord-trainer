@@ -124,7 +124,7 @@
 			class="absolute top-3 right-3 uppercase font-medium"
 			style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[suggested.level].color};"
 		>
-			{suggested.level}
+			{t('settings.difficulty_' + suggested.level)}
 		</div>
 		<div class="flex items-start gap-4">
 			<img

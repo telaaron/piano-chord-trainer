@@ -88,7 +88,7 @@ export const de = {
     display_mode_always_sub: 'Noten sichtbar',
     display_mode_verify: 'Prüfen',
     display_mode_verify_sub: 'Erst spielen, dann sehen',
-    display_mode_verify_midi: 'N/A mit MIDI',
+    display_mode_verify_midi: 'MIDI prüft automatisch — manuell nicht nötig',
 
     accidentals: 'Vorzeichen',
     accidentals_desc: 'Werden schwarze Tasten als # (Kreuz) oder ♭ (B) angezeigt',
@@ -121,6 +121,16 @@ export const de = {
     custom_degrees_hint: 'Tippe Stufen 1–7 um deine Folge zu bauen',
 
     chord_count: 'Anzahl Akkorde',
+    
+    input_mode: 'Eingabemodus',
+    input_mode_desc: 'Wie dein Spiel erkannt wird. MIDI für USB-Keyboards, Mikrofon für akustische Klaviere oder iPad.',
+    input_mode_none: 'Manuell',
+    input_mode_none_sub: 'Leertaste zum weiter',
+    input_mode_midi: 'MIDI',
+    input_mode_midi_sub: 'USB-Keyboard · Auto-Wechsel',
+    input_mode_mic: 'Mikrofon',
+    input_mode_mic_sub: 'Audio-Erkennung · iPad kompatibel',
+    input_mode_note: 'MIDI benötigt Chrome/Edge Desktop. Mikrofon funktioniert überall inkl. iOS.',
     
     midi_recognition: 'MIDI-Erkennung',
     midi_desc: 'Gehe automatisch zum nächsten Akkord, wenn du richtig spielst.',
@@ -245,6 +255,8 @@ export const de = {
 
   nav: {
     train: 'Trainieren',
+    learn: 'Lernen',
+    learn_short: 'Lernen',
     educators: 'Für Lehrer',
     educators_short: 'Lehrer',
     home: 'Start',
@@ -253,7 +265,7 @@ export const de = {
     impressum: 'Impressum',
     open_studio_link: 'Starte deine 7-Tage Testversion bei Open Studio',
     language: 'Sprache',
-    midi_test: 'MIDI-Test',
+    midi_test: 'Eingabe-Test',
     contact: 'Kontakt',
     subtitle: 'Jazz-Piano Speed-Training',
     built_for: 'Gebaut für die Jazz-Ausbildung',
@@ -291,6 +303,27 @@ export const de = {
     ts_item5: '<strong>Noten hängen?</strong> Wenn Noten als gehalten angezeigt werden, die du losgelassen hast: Gerät trennen und neu verbinden.',
   },
 
+  mic_test: {
+    title: 'Mikrofon-Test',
+    subtitle: 'Live-Ansicht der Akkorderkennung per Mikrofon — teste die Audioerkennung vor dem Training.',
+    status: 'Mikrofon-Status',
+    start_btn: 'Zuhören starten',
+    stop_btn: 'Stoppen',
+    live_keyboard: 'Erkannte Noten (Live)',
+    held_notes: 'Erkannte Noten:',
+    none_play_chord: 'Keine — spiele einen Akkord',
+    detections: 'Erkennungen',
+    event_log: 'Erkennungs-Log',
+    log_empty: 'Mikrofon starten, dann einen Akkord spielen…',
+    latency_note: 'Erkennung läuft alle ~0,8 s. Akkorde mindestens 1 Sekunde halten.',
+    troubleshooting: 'Fehlerbehebung',
+    ts_item1: '<strong>Keine Noten erkannt?</strong> Stelle sicher, dass dein Mikrofon im Browser ausgewählt und nicht stummgeschaltet ist.',
+    ts_item2: '<strong>„Zugriff verweigert"?</strong> Klicke auf das Mikrofon-Symbol in der Adressleiste deines Browsers und erlaube den Zugriff.',
+    ts_item3: '<strong>Falsche Noten erkannt?</strong> Reduziere Hintergrundgeräusche und spiele klar. Das ML-Modell funktioniert am besten mit sauberem Klavierklang.',
+    ts_item4: '<strong>Funktioniert auf iPad/iOS?</strong> Ja — es wird die Web Audio API genutzt, die in Safari auf iOS verfügbar ist. Tippe auf „Zuhören starten".',
+    ts_item5: '<strong>Modell lädt langsam?</strong> Beim ersten Start werden ~900 KB ML-Modell heruntergeladen. Danach geht es sofort.',
+  },
+
   landing: {
     hero_title: 'Trainiere Jazz-Piano-Voicings in allen 12 Tonarten',
     hero_title_html: '<span class="gradient-text">Trainiere Jazz-Piano-Voicings</span> <span class="white-text">in allen 12 Tonarten</span>',
@@ -298,6 +331,7 @@ export const de = {
     hero_subtitle_mobile: 'Akkord sehen, spielen, schneller werden — durch alle 12 Tonarten.',
     badge: 'MIDI · Audio · Übe-Statistik',
     cta_start: 'Training starten',
+    cta_learn: 'Kurs starten',
     cta_educators: 'Für Musikschulen',
     footnote: 'Kostenlos. Keine Anmeldung. Funktioniert in Chrome & Edge.',
     footnote_mobile: 'Kostenlos · MIDI · Ohne Anmeldung',
@@ -535,6 +569,8 @@ export const de = {
     get_ready: "Mach dich bereit — drücke Start wenn du so weit bist",
     play_beat_1: 'Spiele auf die 1 — Akkord wechselt automatisch',
     play_auto: 'Spiele auf dem Klavier — automatischer Wechsel bei Erfolg',
+    play_mic: 'Spiele den Akkord und halte ihn — Audio-Erkennung validiert',
+    mic_hint: '🎙 Spiele und halte den Akkord ca. 1 Sekunde',
     play_verify: 'Spiele den Akkord, dann Leertaste zum Prüfen',
     check_verify: 'Prüfe dein Voicing — dann Leertaste für nächsten Akkord',
     tap_space: 'Tippe auf die Karte oder drücke Leertaste',
@@ -621,6 +657,20 @@ export const de = {
     step_by_step: 'Schritt-für-Schritt Anleitung →',
     connect_keyboard_title: 'MIDI-Keyboard verbinden?',
     connect_keyboard_desc: 'Schließe ein USB-Keyboard für automatische Akkorderkennung an (Chrome/Edge)',
+  },
+
+  mic: {
+    listening: 'Hört zu…',
+    analyzing: 'Analysiert…',
+    loading_model: 'Modell laden…',
+    requesting: 'Mikrofon anfragen…',
+    denied: 'Mikrofon verweigert',
+    unsupported: 'Nicht unterstützt',
+    error: 'Fehler',
+    idle: 'Mikrofon aus',
+    enable: 'Mikrofon aktivieren',
+    denied_hint: 'Erlaube Mikrofon-Zugriff in den Browser-Einstellungen und lade neu.',
+    unsupported_hint: 'Mikrofon-Zugriff benötigt eine sichere Verbindung (HTTPS). Stelle sicher, dass du die Produktions-Website nutzt, nicht eine lokale Netzwerk-URL über HTTP.',
   },
 
   impressum: {
@@ -783,7 +833,7 @@ export const de = {
     this_week: 'diese Woche',
     goal_consistency: 'Übe {days} Tage diese Woche',
     goal_consistency_desc: 'Die Gewohnheit aufzubauen ist wichtiger als jede einzelne Session',
-    goal_speed: '{root}-Akkorde unter {target}s bringen',
+    goal_speed: '{root} {voicing} unter {target}s',
     goal_speed_desc: 'Aktuell {current}s — Ziel: {target}s',
     goal_exploration: 'Probiere {voicing}',
     goal_exploration_desc: 'Erweitere dein Vokabular — noch {remaining} Typen unentdeckt',
@@ -800,10 +850,18 @@ export const de = {
     // Quick Start
     quick_restart: 'Schneller Neustart: 4 Akkorde',
     quick_restart_desc: 'Nur 4 Akkorde. Mehr brauchst du nicht.',
-    quick_weak_focus: '{root} unter {target}s — gezieltes Training',
-    quick_weak_focus_desc: 'Fokus-Training — {roots} kommen am häufigsten',
+    quick_weak_focus: '{voicing}: {root} unter {target}s',
+    quick_weak_focus_desc: '{voicing}-Fokus — {roots} kommen am häufigsten',
     quick_warmup: '{minutes} Min Aufwärmen',
     quick_warmup_desc: 'Deine tägliche Übung — starte mit dem was du kannst',
+
+    // Tägliche Motivation
+    motivation_not_started: '{minutes} Min heute — los geht\'s!',
+    motivation_keep_going: 'Noch {remaining} Min — weiter so!',
+    motivation_almost: 'Fast da — noch {remaining} Min!',
+    motivation_goal_reached: 'Tagesziel geschafft!',
+    motivation_extra: '{practiced} Min heute — Bonus-XP!',
+    motivation_streak_risk: '{days}-Tage-Streak in Gefahr!',
 
     // Celebrations
     celebration_xp: '+{amount} XP',
@@ -832,5 +890,372 @@ export const de = {
     onboard_5min: 'Kurze Session',
     onboard_10min: 'Solides Training',
     onboard_15min: 'Tiefes Arbeiten',
-  }
+  },
+
+  // ─── Learn / Courses ──────────────────────────────────────
+  learn: {
+    title: 'Lernen',
+    subtitle: 'Verstehe die Logik hinter Akkord-Voicings — Schritt für Schritt.',
+    continue: 'Weiter lernen',
+    start: 'Kurs starten',
+    preview: 'Vorschau',
+    back_to_courses: '← Zurück zu den Kursen',
+    back_to_course: '← Zurück zum Kurs',
+    module: 'Modul',
+    lesson: 'Lektion',
+    step_theory: 'Verstehen',
+    step_practice: 'Üben',
+    step_challenge: 'Meistern',
+    mastery_none: 'Nicht begonnen',
+    mastery_started: 'In Arbeit',
+    mastery_completed: 'Abgeschlossen',
+    mastery_mastered: 'Gemeistert',
+    skip_step: 'Überspringen',
+    next_step: 'Weiter',
+    complete: 'Abgeschlossen!',
+    practice_guided: 'Spiele den Akkord — die richtigen Tasten sind hervorgehoben.',
+    practice_free: 'Jetzt ohne Hilfe! Nur der Akkordname ist sichtbar.',
+    practice_hint: 'Lösung zeigen',
+    practice_correct: 'Richtig!',
+    practice_streak: '{count}× richtig in Folge',
+    practice_next_chord: 'Nächster Akkord…',
+    challenge_intro: 'Speed-Drill: Spiele {quality} als Shell Voicing in allen 12 Tonarten.',
+    challenge_go: 'Los!',
+    challenge_result: 'Durchschnitt: {avg}ms pro Akkord',
+    challenge_pass: 'Bestanden! Lektion abgeschlossen.',
+    challenge_retry: 'Noch nicht geschafft — unter {threshold}ms zum Bestehen.',
+    challenge_retry_btn: 'Nochmal',
+    listen: 'Anhören',
+    level_beginner: 'Einsteiger',
+    level_intermediate: 'Fortgeschritten',
+    level_advanced: 'Profi',
+  },
+
+  course: {
+    shell: {
+      title: 'Shell Voicings verstehen',
+      subtitle: 'Die 3-Noten-Methode',
+      description: 'Lerne, wie du jeden Septakkord mit nur 3 Noten spielst: Grundton, Terz und Septime.',
+      mod1: {
+        title: 'Die Grundakkorde',
+      },
+      maj7: {
+        title: 'Dur-Septakkord (Maj7)',
+        subtitle: 'Grundton + große Terz + große Septime',
+        theory: 'Ein Maj7 Shell Voicing besteht aus 3 Noten:\n\n• **Grundton** (Root) — Bestimmt den Akkord-Buchstaben\n• **Große Terz** (Major 3rd) — 4 Halbtöne über dem Grundton\n• **Große Septime** (Major 7th) — 11 Halbtöne über dem Grundton\n\nBeispiel: **Cmaj7** = C + E + B',
+      },
+      dom7: {
+        title: 'Dominant-Septakkord (7)',
+        subtitle: 'Grundton + große Terz + kleine Septime',
+        theory: 'Ein Dominant 7 Shell Voicing besteht aus 3 Noten:\n\n• **Grundton** (Root)\n• **Große Terz** (Major 3rd) — 4 Halbtöne über dem Grundton\n• **Kleine Septime** (Minor 7th) — 10 Halbtöne über dem Grundton\n\nBeispiel: **C7** = C + E + Bb\n\nDer Unterschied zum Maj7: Die Septime ist einen Halbton tiefer.',
+      },
+      m7: {
+        title: 'Moll-Septakkord (m7)',
+        subtitle: 'Grundton + kleine Terz + kleine Septime',
+        theory: 'Ein m7 Shell Voicing besteht aus 3 Noten:\n\n• **Grundton** (Root)\n• **Kleine Terz** (Minor 3rd) — 3 Halbtöne über dem Grundton\n• **Kleine Septime** (Minor 7th) — 10 Halbtöne über dem Grundton\n\nBeispiel: **Cm7** = C + Eb + Bb\n\nDer Unterschied zum Dom7: Die Terz ist einen Halbton tiefer.',
+      },
+    },
+    ultimate: {
+      title: 'Ultimate Plan',
+      subtitle: 'Von Null auf Meister',
+      description: 'Der komplette Lernpfad: alle Akkordtypen, alle Voicings, alle Tonarten. 8 Module — vom ersten Septakkord bis zu Altered Dominants.',
+      mod1: { title: 'Grundlagen: Die 3 Hauptakkorde' },
+      mod2: { title: 'Shell Voicings' },
+      mod3: { title: 'Sext- & Sonderakkorde' },
+      mod4: { title: 'Erweiterte Akkorde (9th)' },
+      mod5: { title: 'Full & Half-Shell Voicings' },
+      mod6: { title: 'Rootless Voicings' },
+      mod7: { title: 'Umkehrungen' },
+      mod8: { title: 'Altered & Advanced' },
+      // ─── Modul 1: Grundlagen ─────────────────────────────────────
+      'fund-maj7': {
+        title: 'Dur-Septakkord (Maj7)',
+        subtitle: 'Grundstellung',
+        theory: 'Der **Maj7** ist der warme, stabile Klang in Jazz und Pop.\n\n• **Grundton** — bestimmt den Buchstaben\n• **Große Terz** — 4 Halbtöne höher\n• **Quinte** — 7 Halbtöne höher\n• **Große Septime** — 11 Halbtöne höher\n\nBeispiel: **CMaj7** = C + E + G + B\n\nSpiele den Akkord von unten nach oben — das ist die Grundstellung.',
+      },
+      'fund-dom7': {
+        title: 'Dominant-Septakkord (7)',
+        subtitle: 'Grundstellung',
+        theory: 'Der **Dominant 7** erzeugt Spannung — er will sich auflösen.\n\n• **Grundton**\n• **Große Terz** — 4 Halbtöne\n• **Quinte** — 7 Halbtöne\n• **Kleine Septime** — 10 Halbtöne\n\nBeispiel: **G7** = G + B + D + F\n\nDer Unterschied zum Maj7: Die Septime ist einen Halbton tiefer (10 statt 11 HT).',
+      },
+      'fund-m7': {
+        title: 'Moll-Septakkord (m7)',
+        subtitle: 'Grundstellung',
+        theory: 'Der **m7** ist der sanfte, melancholische Akkord.\n\n• **Grundton**\n• **Kleine Terz** — 3 Halbtöne\n• **Quinte** — 7 Halbtöne\n• **Kleine Septime** — 10 Halbtöne\n\nBeispiel: **Dm7** = D + F + A + C\n\nkleine Terz + kleine Septime = Moll-Charakter.',
+      },
+      // ─── Modul 2: Shell Voicings ────────────────────────────────
+      'shell-maj7': {
+        title: 'Maj7 Shell',
+        subtitle: 'Grundton + Terz + Septime',
+        theory: 'Shell Voicing = nur die 3 wichtigsten Töne:\n\n• **Grundton** — Identität\n• **Terz** — Dur oder Moll?\n• **Septime** — Groß oder klein?\n\nDie Quinte fällt weg — sie bestimmt nicht den Charakter.\n\nBeispiel: **CMaj7 Shell** = C + E + B',
+      },
+      'shell-dom7': {
+        title: 'Dom7 Shell',
+        subtitle: 'Grundton + Terz + ♭7',
+        theory: 'Beim Dominant-Shell ändert sich nur die Septime:\n\n• **Grundton**\n• **Große Terz** — wie beim Maj7\n• **Kleine Septime** — einen Halbton tiefer als beim Maj7\n\nBeispiel: **C7 Shell** = C + E + Bb\n\nMerke: Die Terz bleibt gleich, nur die 7 wandert.',
+      },
+      'shell-m7': {
+        title: 'm7 Shell',
+        subtitle: 'Grundton + ♭3 + ♭7',
+        theory: 'Beim Moll-Shell ändert sich die Terz:\n\n• **Grundton**\n• **Kleine Terz** — einen Halbton tiefer als bei Dur\n• **Kleine Septime** — wie beim Dom7\n\nBeispiel: **Dm7 Shell** = D + F + C\n\n3 Shells beherrschen = 80% aller Jazz-Standards begleiten können.',
+      },
+      // ─── Modul 3: Sextakkorde & Sonderakkorde ──────────────────
+      'sixth-6': {
+        title: 'Dur-Sextakkord (6)',
+        subtitle: 'Alternative zum Maj7',
+        theory: 'Der **6er-Akkord** ersetzt die Septime durch eine Sexte:\n\n• R – 3 – 5 – 6\n\nKlingt heller und offener als Maj7. Oft als Tonika-Akkord in älteren Jazz-Standards.\n\nBeispiel: **C6** = C + E + G + A',
+      },
+      'sixth-m6': {
+        title: 'Moll-Sextakkord (m6)',
+        subtitle: 'Moll + große Sexte',
+        theory: 'Der **m6** kombiniert Moll-Terz mit großer Sexte:\n\n• R – ♭3 – 5 – 6\n\nHäufig als Moll-Tonika. Die Sexte gibt dem Akkord eine besondere Farbe.\n\nBeispiel: **Am6** = A + C + E + F#',
+      },
+      'sixth-m7b5': {
+        title: 'Halbvermindert (m7♭5)',
+        subtitle: 'Typisch als ii in Moll',
+        theory: 'Der **halbverminderte** Akkord (ø7):\n\n• R – ♭3 – ♭5 – ♭7\n\nWie m7, aber mit verminderter Quinte. Wichtig in Moll-ii-V-I\n(z.B. Bø7 → E7 → Am).\n\nBeispiel: **Bm7♭5** = B + D + F + A',
+      },
+      'sixth-dim7': {
+        title: 'Vermindert (dim7)',
+        subtitle: 'Symmetrischer Aufbau',
+        theory: 'Der **dim7** besteht nur aus kleinen Terzen:\n\n• R – ♭3 – ♭5 – °7 (= 0, 3, 6, 9 HT)\n\nSymmetrisch: Jeder der 4 Töne kann Grundton sein. Nur 3 verschiedene dim7-Akkorde existieren!\n\nBeispiel: **Bdim7** = B + D + F + Ab',
+      },
+      // ─── Modul 4: Erweiterte Akkorde ────────────────────────────
+      'ninth-maj9': {
+        title: 'Dur-Nonenakkord (Maj9)',
+        subtitle: 'Maj7 + None',
+        theory: 'Der **Maj9** erweitert den Maj7 um die None (= 2. Stufe):\n\n• R – 3 – 5 – 7 – 9\n\nDie None fügt Farbe hinzu ohne die Stabilität zu ändern. Lush und modern.\n\nBeispiel: **CMaj9** = C + E + G + B + D',
+      },
+      'ninth-9': {
+        title: 'Dominant-Nonenakkord (9)',
+        subtitle: 'Dom7 + None',
+        theory: 'Der **Dom9** erweitert den Dominant 7:\n\n• R – 3 – 5 – ♭7 – 9\n\nMehr Farbe als ein reiner Dom7. Standard im Blues, Funk und Soul.\n\nBeispiel: **G9** = G + B + D + F + A',
+      },
+      'ninth-m9': {
+        title: 'Moll-Nonenakkord (m9)',
+        subtitle: 'm7 + None',
+        theory: 'Der **m9** erweitert den m7:\n\n• R – ♭3 – 5 – ♭7 – 9\n\nWeicher als m7 mit zusätzlicher Färbung. Typisch als ii-Akkord in ii-V-I.\n\nBeispiel: **Dm9** = D + F + A + C + E',
+      },
+      'ninth-69': {
+        title: 'Sext-Nonen-Akkord (6/9)',
+        subtitle: 'Offener Schlussklang',
+        theory: 'Der **6/9** kombiniert Sexte und None ohne Septime:\n\n• R – 3 – 5 – 6 – 9\n\nSchwebender, offener Klang. Oft als Schlussakkord in Bossa Nova und Cool Jazz.\n\nBeispiel: **C6/9** = C + E + G + A + D',
+      },
+      // ─── Modul 5: Full & Half-Shell ─────────────────────────────
+      'full-maj7': {
+        title: 'Maj7 Full Voicing',
+        subtitle: 'R – 7 – 3 – 5',
+        theory: 'Das **Full Voicing** arrangiert alle 4 Töne in Jazz-typischer Reihenfolge:\n\n• **Grundton** unten\n• **Septime** darüber\n• **Terz** in der Mitte\n• **Quinte** oben\n\nKlingt voll und warm. Die Septime direkt über dem Grundton erzeugt einen engen Halbton.\n\nBeispiel: **CMaj7 Full** = C + B + E + G',
+      },
+      'full-dom7': {
+        title: 'Dom7 Full Voicing',
+        subtitle: 'R – ♭7 – 3 – 5',
+        theory: 'Full Voicing für Dominant 7:\n\n• R – ♭7 – 3 – 5\n\nDer Ganzton zwischen Grundton und kleiner Septime klingt offener als beim Maj7.\n\nBeispiel: **C7 Full** = C + Bb + E + G',
+      },
+      'full-m7': {
+        title: 'm7 Full Voicing',
+        subtitle: 'R – ♭7 – ♭3 – 5',
+        theory: 'Full Voicing für Moll 7:\n\n• R – ♭7 – ♭3 – 5\n\nKleine Terz und kleine Septime in Kombination = weicher Moll-Klang.\n\nBeispiel: **Dm7 Full** = D + C + F + A',
+      },
+      'hshell-maj7': {
+        title: 'Half-Shell Voicing',
+        subtitle: '3 – R – 7',
+        theory: 'Das **Half-Shell Voicing** dreht die Shell-Formel um:\n\n• **Terz** unten\n• **Grundton** in der Mitte\n• **Septime** oben\n\nSehr kompakt — die Töne liegen eng beieinander. Ideal für die linke Hand.\n\nBeispiel: **CMaj7 Half-Shell** = E + C + B',
+      },
+      // ─── Modul 6: Rootless Voicings ─────────────────────────────
+      'rla-maj7': {
+        title: 'Rootless A — Maj7',
+        subtitle: '3 – 5 – 7 – 9',
+        theory: 'Rootless Voicing Typ A (Bill Evans Style):\n\nDer **Grundton fällt weg** — den spielt der Bassist.\n\n• 3 – 5 – 7 – 9\n\nDie None (9th) ersetzt den Root. Die Hand bleibt in mittlerer Lage.\n\nBeispiel: **CMaj7 RL-A** = E + G + B + D',
+      },
+      'rla-dom7': {
+        title: 'Rootless A — Dom7',
+        subtitle: '3 – 5 – ♭7 – 9',
+        theory: 'Rootless A für Dominant 7:\n\n• 3 – 5 – ♭7 – 9\n\nDer Tritonus (3 → ♭7) bleibt erhalten — die Spannung ist voll da.\n\nBeispiel: **C7 RL-A** = E + G + Bb + D',
+      },
+      'rla-m7': {
+        title: 'Rootless A — m7',
+        subtitle: '♭3 – 5 – ♭7 – 9',
+        theory: 'Rootless A für Moll 7:\n\n• ♭3 – 5 – ♭7 – 9\n\nDie kleine Terz unten definiert den Moll-Charakter auch ohne Grundton.\n\nBeispiel: **Dm7 RL-A** = F + A + C + E',
+      },
+      'rlb-maj7': {
+        title: 'Rootless B — Maj7',
+        subtitle: '7 – 9 – 3 – 5',
+        theory: 'Rootless Voicing Typ B — komplementär zu Typ A:\n\n• 7 – 9 – 3 – 5\n\nDie Septime ist jetzt unten. Beim Wechsel A→B bewegt sich die Hand minimal.\n\nBeispiel: **CMaj7 RL-B** = B + D + E + G',
+      },
+      'rlb-dom7': {
+        title: 'Rootless B — Dom7',
+        subtitle: '♭7 – 9 – 3 – 5',
+        theory: 'Rootless B für Dominant 7:\n\n• ♭7 – 9 – 3 – 5\n\nDie kleine Septime unten, Terz oben. Ideal im Wechsel mit Rootless A.\n\nBeispiel: **C7 RL-B** = Bb + D + E + G',
+      },
+      'rlb-m7': {
+        title: 'Rootless B — m7',
+        subtitle: '♭7 – 9 – ♭3 – 5',
+        theory: 'Rootless B für Moll 7:\n\n• ♭7 – 9 – ♭3 – 5\n\nDie kleine Septime unten, kleine Terz in der Mitte.\n\nBeispiel: **Dm7 RL-B** = C + E + F + A',
+      },
+      // ─── Modul 7: Umkehrungen ───────────────────────────────────
+      'inv1-maj7': {
+        title: '1. Umkehrung — Maj7',
+        subtitle: 'Terz im Bass',
+        theory: 'Die **1. Umkehrung** rotiert den untersten Ton nach oben:\n\n• 3 – 5 – 7 – R\n\nDie Terz ist jetzt der tiefste Ton. Nützlich für engere Stimmführung.\n\nBeispiel: **CMaj7/E** = E + G + B + C',
+      },
+      'inv2-maj7': {
+        title: '2. Umkehrung — Maj7',
+        subtitle: 'Quinte im Bass',
+        theory: 'In der **2. Umkehrung** liegt die Quinte unten:\n\n• 5 – 7 – R – 3\n\nMittlere Lage — verbindet Grundstellung und höhere Inversions.\n\nBeispiel: **CMaj7/G** = G + B + C + E',
+      },
+      'inv3-maj7': {
+        title: '3. Umkehrung — Maj7',
+        subtitle: 'Septime im Bass',
+        theory: 'In der **3. Umkehrung** liegt die Septime unten:\n\n• 7 – R – 3 – 5\n\nKlingt hell und offen. Die Septime löst sich natürlich nach unten auf.\n\nBeispiel: **CMaj7/B** = B + C + E + G',
+      },
+      // ─── Modul 8: Altered & Advanced ────────────────────────────
+      'adv-7s9': {
+        title: 'Dominant #9 (Hendrix)',
+        subtitle: 'Der Purple-Haze-Sound',
+        theory: 'Der **7#9** — auch "Hendrix-Akkord" genannt:\n\n• R – 3 – 5 – ♭7 – #9\n\nDie #9 ist enharmonisch identisch mit der kleinen Terz (♭3). Große Terz + #9 gleichzeitig = maximale Reibung.\n\nBeispiel: **E7#9** = E + G# + B + D + G',
+      },
+      'adv-7b9': {
+        title: 'Dominant ♭9',
+        subtitle: 'Spannung pur',
+        theory: 'Der **7b9** ist extrem spannungsreich:\n\n• R – 3 – 5 – ♭7 – ♭9\n\nDie ♭9 erzeugt einen Halbton über dem Grundton. Typisch über der Halbton-Ganzton-Skala.\n\nBeispiel: **G7♭9** = G + B + D + F + Ab',
+      },
+      'adv-lyd': {
+        title: 'Lydisch (Maj7#11)',
+        subtitle: 'Schwebend und modern',
+        theory: 'Der **Maj7#11** erzeugt den lydischen Klang:\n\n• R – 3 – 5 – 7 – #11\n\nDie #11 (= übermäßige Quarte) hebt den Akkord in eine schwebende Klangwelt. Typisch für modale Jazz-Stücke.\n\nBeispiel: **CMaj7#11** = C + E + G + B + F#',
+      },
+      'adv-m11': {
+        title: 'Moll 11 (m11)',
+        subtitle: 'Modaler Moll-Klang',
+        theory: 'Der **m11** erweitert den m9 um die Undezime:\n\n• R – ♭3 – 5 – ♭7 – 9 – 11\n\n6 Töne! Die 11 (= Quarte) verstärkt den modalen, dorischen Charakter.\n\nBeispiel: **Dm11** = D + F + A + C + E + G',
+      },
+      'adv-13': {
+        title: 'Dominant 13 (13)',
+        subtitle: 'Big-Band Farbe',
+        theory: 'Der **13er-Akkord** ist der farbenreichste Dominantakkord:\n\n• R – 3 – 5 – ♭7 – 9 – 13\n\nDie Tredezime (= Sexte in höherer Oktave) gibt dem Akkord einen vollen, warmen Klang. Standard in Big-Band-Arrangements.\n\nBeispiel: **G13** = G + B + D + F + A + E',
+      },
+    },
+  },
+
+  explain: {
+    title: 'So funktioniert es',
+    close: 'Verstanden',
+    listen: 'Anhören',
+    voicing_label: 'Voicing',
+    chord_label: 'Akkord',
+    notes_label: 'Noten',
+    formula_label: 'Formel',
+    quality: {
+      Maj7: {
+        title: 'Dur-Septakkord (Maj7)',
+        desc: '4 Töne: Grundton, **große Terz** (4 HT), **Quinte** (7 HT), **große Septime** (11 HT). Klingt hell und stabil — typisch für Tonika-Akkorde.',
+      },
+      '7': {
+        title: 'Dominant-Septakkord (7)',
+        desc: '4 Töne: Grundton, **große Terz** (4 HT), **Quinte** (7 HT), **kleine Septime** (10 HT). Der Tritonus zwischen Terz und Septime erzeugt Spannung → will sich auflösen.',
+      },
+      m7: {
+        title: 'Moll-Septakkord (m7)',
+        desc: '4 Töne: Grundton, **kleine Terz** (3 HT), **Quinte** (7 HT), **kleine Septime** (10 HT). Weicher, melancholischer Klang — häufig als ii-Akkord.',
+      },
+      '6': {
+        title: 'Dur-Sextakkord (6)',
+        desc: '4 Töne: Grundton, **große Terz** (4 HT), **Quinte** (7 HT), **Sexte** (9 HT). Alternative zur Maj7 mit hellerem, offenerem Klang.',
+      },
+      m6: {
+        title: 'Moll-Sextakkord (m6)',
+        desc: '4 Töne: Grundton, **kleine Terz** (3 HT), **Quinte** (7 HT), **Sexte** (9 HT). Häufig in Moll-Tonika-Funktionen.',
+      },
+      Maj9: {
+        title: 'Dur-Nonen-Septakkord (Maj9)',
+        desc: '5 Töne: Maj7 + **None** (14 HT). Die None ergänzt Farbe ohne die Stabilität des Maj7 zu verändern. Lush und modern.',
+      },
+      '9': {
+        title: 'Dominant-Nonenakkord (9)',
+        desc: '5 Töne: Dom7 + **None** (14 HT). Erweitert den Dominantklang mit mehr Farbe. Standard im Blues und Funk.',
+      },
+      m9: {
+        title: 'Moll-Nonenakkord (m9)',
+        desc: '5 Töne: m7 + **None** (14 HT). Weicher als m7, mit zusätzlicher Färbung durch die None. Typisch für ii-V-I.',
+      },
+      '6/9': {
+        title: 'Sext-Nonen-Akkord (6/9)',
+        desc: '5 Töne: Grundton, Terz, Quinte, **Sexte** (9 HT), **None** (14 HT). Schwebender, offener Klang — oft als Schlussakkord.',
+      },
+      'Maj7#11': {
+        title: 'Lydischer Akkord (Maj7#11)',
+        desc: '5 Töne: Maj7 + **überm. Undezime** (18 HT). Die #11 erzeugt den lydischen Klang — schwebend und modern.',
+      },
+      '7#9': {
+        title: 'Dominant #9 (Hendrix-Akkord)',
+        desc: '5 Töne: Dom7 + **überm. None** (15 HT). Große Terz + #9 (= kleine Terz höher) erzeugen Reibung — der "Purple Haze"-Sound.',
+      },
+      '7b9': {
+        title: 'Dominant b9',
+        desc: '5 Töne: Dom7 + **kleine None** (13 HT). Sehr spannungsreich — typisch über verminderter Skala (HW-dim).',
+      },
+      m11: {
+        title: 'Moll-Undezimakkord (m11)',
+        desc: '6 Töne: m9 + **Undezime** (17 HT). Sehr offener, schwebender Klang. Die Quarte/11 verstärkt den modalen Charakter.',
+      },
+      '13': {
+        title: 'Dominant-Tredezimakkord (13)',
+        desc: '6 Töne: Dom9 + **Tredezime** (21 HT). Voller, farbiger Dominantklang — häufig in Big-Band-Arrangements.',
+      },
+      m7b5: {
+        title: 'Halbvermindert (m7♭5)',
+        desc: '4 Töne: Grundton, **kleine Terz** (3 HT), **verminderte Quinte** (6 HT), **kleine Septime** (10 HT). Typisch als vii° in Dur oder ii in Moll.',
+      },
+      dim7: {
+        title: 'Vermindert (dim7)',
+        desc: '4 Töne: Grundton, **kleine Terz** (3 HT), **verminderte Quinte** (6 HT), **verminderte Septime** (9 HT). Symmetrischer Aufbau — jeder Ton kann Grundton sein.',
+      },
+    },
+    root: {
+      title: 'Grundstellung',
+      desc: 'Alle Akkordtöne von unten nach oben, beginnend mit dem Grundton. Die vollständige Darstellung des Akkords.',
+      formula: 'Root – 3rd – 5th – 7th',
+    },
+    shell: {
+      title: 'Shell Voicing',
+      desc: 'Nur 3 Noten: Grundton, Terz und Septime. Die Quinte fällt weg — sie bestimmt nicht den Charakter. Ideal für Begleitung, weil klanglich offen.',
+      formula: 'Root – 3rd – 7th',
+    },
+    'half-shell': {
+      title: 'Half-Shell Voicing',
+      desc: 'Terz und Septime umschließen den Grundton. Sehr kompaktes Voicing — oft auf 2 Tasten verteilt mit kleinstem Abstand.',
+      formula: '3rd – Root – 7th',
+    },
+    full: {
+      title: 'Volle Besetzung',
+      desc: 'Alle 4 Töne in Jazz-typischer Reihenfolge: Grundton unten, dann Septime, Terz, Quinte. Klingt voll und warm.',
+      formula: 'Root – 7th – 3rd – 5th',
+    },
+    'rootless-a': {
+      title: 'Rootless Voicing Typ A',
+      desc: 'Ohne Grundton — der kommt vom Bassisten. 4 Noten: Terz, Quinte, Septime, None. Typisches Linke-Hand-Voicing.',
+      formula: '3rd – 5th – 7th – 9th',
+    },
+    'rootless-b': {
+      title: 'Rootless Voicing Typ B',
+      desc: 'Ergänzung zu Typ A mit anderer Notenreihenfolge. Septime unten. Zusammen mit Typ A ermöglicht minimale Handbewegung bei Akkordwechseln.',
+      formula: '7th – 9th – 3rd – 5th',
+    },
+    'inversion-1': {
+      title: '1. Umkehrung',
+      desc: 'Die Terz ist der tiefste Ton. Alle anderen Töne darüber. Nützlich für engere Stimmführung zum nächsten Akkord.',
+      formula: '3rd – 5th – 7th – Root',
+    },
+    'inversion-2': {
+      title: '2. Umkehrung',
+      desc: 'Die Quinte ist der tiefste Ton. Mittlere Lage — verbindet Grundstellung und höhere Umkehrungen.',
+      formula: '5th – 7th – Root – 3rd',
+    },
+    'inversion-3': {
+      title: '3. Umkehrung',
+      desc: 'Die Septime ist der tiefste Ton. Höchste Lage — klingt hell und offen. Natürliche Auflösung nach unten.',
+      formula: '7th – Root – 3rd – 5th',
+    },
+  },
 };

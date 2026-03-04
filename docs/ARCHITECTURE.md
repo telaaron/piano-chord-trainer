@@ -203,12 +203,13 @@ navigator.requestMIDIAccess()
   → MIDIInput.onmidimessage
     → Note On (144) / Note Off (128)
       → activeNotes Set
-        → checkChordLenient(expected, active)
+        → checkChord(expected, active)
           → { correct, accuracy, matched, missing, extra }
 ```
 
-- **Lenient Matching:** Pitch-Class-basiert (Oktave egal), Extra-Noten erlaubt
-- **Strict Matching:** Exakte Übereinstimmung
+- **Strict Matching (default):** Pitch-Class-basiert (Oktave egal), Extra-Noten NICHT erlaubt — nur exakt die erwarteten Pitch-Classes werden akzeptiert
+- **Lenient Matching (legacy):** Extra-Noten erlaubt, nur fehlende zählen als Fehler
+- **Bass-Matching (Inversions):** Strict + niedrigste Note muss korrekte Bass-Note sein
 - Callbacks: `onNotes`, `onConnection`, `onDevices`
 - Auto-Reconnect bei Device-Removal
 
@@ -270,7 +271,7 @@ Die Haupt-Spiellogik lebt in `/train/+page.svelte` (785 Zeilen):
 
 **MIDI-Flow** (wenn aktiv):
 1. Spieler drückt Tasten → `activeNotes` Update
-2. `checkChordLenient()` vergleicht mit Erwartung
+2. `checkChord()` vergleicht Pitch-Classes strikt (keine Extra-Noten erlaubt)
 3. Grün/Rot-Feedback auf Keyboard-Overlay
 4. Bei Korrektheit → 400ms Delay → Auto-Advance
 

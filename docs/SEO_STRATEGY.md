@@ -24,12 +24,12 @@ Trag jazzchords.app als Alternative zu etablierten Tools ein:
 4. Jeder Eintrag generiert einen dofollow Link
 
 **Checklist:**
-- [ ] AlternativeTo Listing erstellt
-- [ ] Screenshot hochgeladen
-- [ ] Listing für Pianogroove
-- [ ] Listing für musictheory.net
-- [ ] Listing für EarMaster
-- [ ] Listing für Anytune
+- [x] AlternativeTo Listing erstellt
+- [x] Screenshot hochgeladen
+- [x] Listing für Pianogroove
+- [x] Listing für musictheory.net
+- [x] Listing für EarMaster
+- [x] Listing für Anytune
 
 ---
 
@@ -42,7 +42,7 @@ Web MIDI + automatisiertes Feedback = "AI-assisted learning" für diese Verzeich
 - [futuretools.io/submit-a-tool](https://futuretools.io/submit-a-tool)
 
 **Checklist:**
-- [ ] FutureTools Submission
+- [x] FutureTools Submission
 
 ---
 

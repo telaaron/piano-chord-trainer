@@ -37,6 +37,10 @@ export class MidiService {
 	private _debounceMs = 30;
 	private _noteTimers = new Map<number, ReturnType<typeof setTimeout>>();
 
+	// Guard against concurrent init() calls
+	private _initPromise: Promise<boolean> | null = null;
+	private _destroyed = false;
+
 	// Callbacks
 	private onNoteChange: NoteCallback | null = null;
 	private onConnectionChange: ConnectionCallback | null = null;
@@ -80,19 +84,51 @@ export class MidiService {
 
 	// ─── Lifecycle ──────────────────────────────────────────────
 
-	/** Request MIDI access. Returns true if API is available. */
+	/** Request MIDI access. Returns true if API is available.
+	 *  Safe to call multiple times — concurrent calls share the same promise,
+	 *  and re-calling after a successful init reuses the existing MIDIAccess. */
 	async init(): Promise<boolean> {
 		if (typeof navigator === 'undefined' || !navigator.requestMIDIAccess) {
 			this.setState('unsupported');
 			return false;
 		}
 
+		// Reuse existing access if still valid (e.g. called from setupGame after onMount already inited)
+		if (this.access && !this._destroyed) {
+			this.refreshDeviceList();
+			if (this._devices.length > 0 && !this._selectedDeviceId) {
+				this.selectDevice(this._devices[0].id);
+			}
+			return true;
+		}
+
+		// Deduplicate concurrent init() calls
+		if (this._initPromise) return this._initPromise;
+
+		this._initPromise = this._doInit();
+		try {
+			return await this._initPromise;
+		} finally {
+			this._initPromise = null;
+		}
+	}
+
+	private async _doInit(): Promise<boolean> {
+		this._destroyed = false;
 		this.setState('connecting');
 
 		try {
 			this.access = await navigator.requestMIDIAccess({ sysex: false });
+
+			// Guard: init may have been called and then destroy() fired while awaiting
+			if (this._destroyed) {
+				this.access = null;
+				return false;
+			}
+
+			this.access.onstatechange = (e) => this.handleStateChange(e as MIDIConnectionEvent);
 			this.refreshDeviceList();
-				this.access.onstatechange = (e) => this.handleStateChange(e as MIDIConnectionEvent);
+
 			// Auto-select first device if available
 			if (this._devices.length > 0 && !this._selectedDeviceId) {
 				this.selectDevice(this._devices[0].id);
@@ -130,11 +166,13 @@ export class MidiService {
 
 	/** Clean up everything */
 	destroy(): void {
+		this._destroyed = true;
 		this.detachListeners();
 		this._activeNotes.clear();
 		this._noteTimers.forEach((t) => clearTimeout(t));
 		this._noteTimers.clear();
 		this.access = null;
+		this._initPromise = null;
 		this.setState('disconnected');
 	}
 
@@ -204,7 +242,7 @@ export class MidiService {
 	 * `expectedBassNote` is the note name that should be on the bottom (e.g. "E" for 1st inversion of C).
 	 */
 	checkChordWithBass(expectedNotes: string[], expectedBassNote: string): ChordMatchResult {
-		const result = this.checkChordLenient(expectedNotes);
+		const result = this.checkChord(expectedNotes);
 
 		if (!result.correct || this._activeNotes.size === 0) return result;
 

@@ -191,7 +191,7 @@
 		if (!isPlaying || isPaused || !currentData || !midiEnabled) return;
 		if (countInBeats < 4) return; // Still counting in
 
-		const result = midi.checkChordLenient(currentData.voicing);
+		const result = midi.checkChord(currentData.voicing);
 		midiMatchResult = result;
 
 		if (result.accuracy > chordBestAccuracy) {

@@ -143,6 +143,8 @@ export interface SavedSettings {
 	totalChords: number;
 	progressionMode: ProgressionMode;
 	midiEnabled: boolean;
+	/** Input mode: none, midi, or microphone — replaces midiEnabled */
+	inputMode?: 'none' | 'midi' | 'microphone';
 	/** 0-based degree indices for custom progression mode */
 	customDegrees?: number[];
 }
@@ -369,4 +371,59 @@ export function analyzeChordTrends(history: SessionResult[]): ChordTrend[] {
 	// Sort by most improved (largest negative change first)
 	trends.sort((a, b) => a.changePercent - b.changePercent);
 	return trends;
+}
+
+// ─── Voicing-aware weak-spot analysis ───────────────────────
+
+export interface WeakSpot {
+	/** Root note, e.g. "Db" */
+	root: string;
+	/** Voicing type used, e.g. "shell" */
+	voicing: VoicingType;
+	/** Average ms across all appearances with this voicing */
+	avgMs: number;
+	/** Number of times this root appeared with this voicing */
+	count: number;
+}
+
+/**
+ * Analyze weak spots considering both root AND voicing.
+ *
+ * The insight: "Db is slow" isn't specific enough.
+ * "Db half-shell is 9.2s while Db shell is 2.1s" tells us
+ * the problem is the voicing pattern in that key, not the key itself.
+ *
+ * Groups all chord timings by root+voicing, returns sorted slowest-first.
+ */
+export function analyzeWeakSpots(history: SessionResult[], limit = 5): WeakSpot[] {
+	const byKey = new Map<string, { root: string; voicing: VoicingType; totalMs: number; count: number }>();
+
+	for (const session of history) {
+		if (!session.chordTimings) continue;
+		const v = session.settings.voicing;
+		for (const ct of session.chordTimings) {
+			const key = `${ct.root}|${v}`;
+			const existing = byKey.get(key);
+			if (existing) {
+				existing.totalMs += ct.durationMs;
+				existing.count++;
+			} else {
+				byKey.set(key, { root: ct.root, voicing: v, totalMs: ct.durationMs, count: 1 });
+			}
+		}
+	}
+
+	const result: WeakSpot[] = [];
+	for (const data of byKey.values()) {
+		if (data.count < 2) continue; // Need at least 2 data points
+		result.push({
+			root: data.root,
+			voicing: data.voicing,
+			avgMs: data.totalMs / data.count,
+			count: data.count,
+		});
+	}
+
+	result.sort((a, b) => b.avgMs - a.avgMs);
+	return result.slice(0, limit);
 }
