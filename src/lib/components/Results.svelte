@@ -76,7 +76,7 @@
 	}: Props = $props();
 </script>
 
-<div class="card p-6 sm:p-8 max-w-3xl mx-auto text-center space-y-6">
+<div class="card p-6 sm:p-8 w-full max-w-4xl mx-auto text-center space-y-6">
 	<!-- Trophy -->
 	<div>
 		<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--primary-muted)] mb-4">

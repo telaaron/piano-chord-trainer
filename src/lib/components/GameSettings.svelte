@@ -133,6 +133,7 @@
 				width="52"
 				height="52"
 				loading="lazy"
+				class="suggested-icon"
 				style="width:52px; height:52px; mix-blend-mode:lighten; object-fit:contain; flex-shrink:0; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));"
 			/>
 			<div class="flex-1 min-w-0">
@@ -148,52 +149,50 @@
 		<!-- ── Practice Plans Grid ── -->
 	<div>
 		<h3 class="text-sm font-medium text-[var(--text-muted)] mb-3">{t('settings.all_plans')}</h3>
-		<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+		<div class="plan-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
 			{#each PRACTICE_PLANS.filter((p) => p.id !== suggested.id) as plan}
 				{#if plan.id === 'voice-leading-flow'}
-					<!-- Voice Leading Flow: special card with inline mode selector -->
+					<!-- Voice Leading Flow: full-width card spanning all 3 columns with mode sub-cards -->
 					<div
-						class="card p-4 text-left transition-all duration-200 relative col-span-2 sm:col-span-3"
-						style="border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
+						class="vl-flow-card card text-left transition-all duration-200 relative"
+						style="grid-column: 1 / -1; border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
 					>
-						<div class="absolute top-2 right-2 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
+						<div class="absolute top-3 right-3 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
 							{t('settings.difficulty_' + plan.level)}
 						</div>
-						<div class="flex items-center gap-3 mb-3">
+						<!-- Header: icon + name -->
+						<div class="flex items-center gap-3 p-4 pb-3">
 							<img src="/elements/icons/{PLAN_ICON[plan.id]}.webp" alt="{t(plan.name)}" width="44" height="44"
 								loading="lazy" style="width:44px; height:44px; mix-blend-mode:lighten; object-fit:contain; flex-shrink:0; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));" />
-							<div>
-								<div class="font-semibold text-sm">{t(plan.name)}</div>
-								<div class="text-xs text-[var(--text-dim)] mt-0.5">{t(plan.tagline)}</div>
-							</div>
+							<div class="font-semibold text-sm">{t(plan.name)}</div>
 						</div>
-						<!-- Mode sub-buttons — each starts the plan with that mode -->
-						<div class="grid grid-cols-3 gap-2">
+						<!-- 3 equal mode sub-cards -->
+						<div class="grid grid-cols-3 gap-3 px-4 pb-4">
 							{#each (['guided', 'find-inversion', 'free'] as VoiceLeadingMode[]) as mode}
 								{@const cfg = VL_MODE_CONFIG[mode]}
 								<button
-									class="p-2.5 rounded-[var(--radius)] border text-left transition-all cursor-pointer {vlMode === mode ? 'border-[var(--primary)] bg-[var(--primary-muted)]' : 'border-[var(--border)] hover:border-[var(--border-hover)]'}"
+									class="vl-mode-btn flex flex-col items-start p-3 rounded-[var(--radius)] border cursor-pointer transition-all text-left hover:scale-105 hover:z-10 {vlMode === mode ? 'border-[var(--primary)] bg-[var(--primary-muted)]' : 'border-[var(--border)] hover:border-[var(--border-hover)]'}"
 									onclick={() => { vlMode = mode; onstartplan(plan); }}
 								>
-									<div class="text-base mb-1">{cfg.icon}</div>
-									<div class="text-xs font-semibold {vlMode === mode ? 'text-[var(--primary)]' : ''}">{cfg.label}</div>
-									<div class="text-[10px] text-[var(--text-dim)] mt-0.5 leading-snug hidden sm:block">{cfg.desc}</div>
+									<span class="vl-mode-icon text-2xl mb-2 leading-none">{cfg.icon}</span>
+									<span class="vl-mode-label text-xs font-bold {vlMode === mode ? 'text-[var(--primary)]' : ''} mb-1">{cfg.label}</span>
+									<span class="text-[10px] text-[var(--text-dim)] leading-snug">{cfg.desc}</span>
 								</button>
 							{/each}
 						</div>
 					</div>
 				{:else}
 					<button
-						class="card p-4 text-left cursor-pointer transition-all duration-200 group relative hover:z-10 hover:scale-105 hover:border-[var(--border-hover)]"
-						style="border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
-						onclick={() => onstartplan(plan)}
-					>
-						<div class="absolute top-2 right-2 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
-							{t('settings.difficulty_' + plan.level)}
-						</div>
-						<img src="/elements/icons/{PLAN_ICON[plan.id]}.webp" alt="{t(plan.name)}" width="56" height="56"
-							loading="lazy" style="width:56px; height:56px; mix-blend-mode:lighten; object-fit:contain; margin-bottom:0.5rem; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));" />
-						<div class="font-semibold text-sm group-hover:text-[var(--primary)] transition-colors">{t(plan.name)}</div>
+					class="plan-card card p-4 text-left cursor-pointer transition-all duration-200 group relative hover:z-10 hover:scale-105 hover:border-[var(--border-hover)]"
+					style="border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
+					onclick={() => onstartplan(plan)}
+				>
+					<div class="absolute top-2 right-2 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
+						{t('settings.difficulty_' + plan.level)}
+					</div>
+					<img src="/elements/icons/{PLAN_ICON[plan.id]}.webp" alt="{t(plan.name)}" width="56" height="56"
+						loading="lazy" class="plan-icon" style="width:56px; height:56px; mix-blend-mode:lighten; object-fit:contain; margin-bottom:0.5rem; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));" />
+					<div class="plan-name font-semibold text-sm group-hover:text-[var(--primary)] transition-colors">{t(plan.name)}</div>
 						<div class="absolute inset-x-0 bottom-0 translate-y-full pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
 							<div class="rounded-[var(--radius)] border border-[var(--border-hover)] bg-[var(--bg-card,#1a1a1a)] p-3 shadow-xl"
 								style="box-shadow: 0 8px 32px rgba(0,0,0,0.6), {LEVEL_CONFIG[plan.level].shadow};">
@@ -209,4 +208,75 @@
 
 </div>
 
+<style>
+	/* ── iPad / large touch: native app feel ─────────────── */
+	@media (hover: none) and (pointer: coarse) and (min-width: 768px) {
+		/* 3-column grid, larger gap */
+		.plan-grid {
+			gap: 1rem;
+		}
 
+		/* Taller, more padded plan cards */
+		.plan-card {
+			padding: 1.25rem !important;
+			min-height: 150px;
+		}
+
+		/* Bigger icons */
+		.plan-icon {
+			width: 76px !important;
+			height: 76px !important;
+			margin-bottom: 0.75rem !important;
+		}
+
+		/* Larger card name text */
+		.plan-name {
+			font-size: 1rem !important;
+			font-weight: 700;
+		}
+
+		/* Disable hover scale on touch */
+		.plan-card:hover {
+			transform: none !important;
+		}
+		.plan-card:active {
+			transform: scale(0.97) !important;
+		}
+
+		/* Bigger suggested plan icon */
+		.suggested-icon {
+			width: 72px !important;
+			height: 72px !important;
+		}
+
+		/* Voice leading mode sub-cards */
+		.vl-mode-btn {
+			padding: 1rem !important;
+		}
+		.vl-mode-icon {
+			font-size: 2rem !important;
+			margin-bottom: 0.75rem !important;
+		}
+		.vl-mode-label {
+			font-size: 0.875rem !important;
+		}
+		.vl-mode-btn span:last-child {
+			font-size: 0.75rem !important;
+		}
+		.vl-mode-btn:hover {
+			transform: none !important;
+		}
+		.vl-mode-btn:active {
+			transform: scale(0.97) !important;
+		}
+		/* VL header icon */
+		.vl-flow-card .flex img {
+			width: 56px !important;
+			height: 56px !important;
+		}
+		.vl-flow-card .flex .font-semibold {
+			font-size: 1rem !important;
+			font-weight: 700 !important;
+		}
+	}
+</style>

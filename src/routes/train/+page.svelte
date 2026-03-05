@@ -1446,12 +1446,12 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<main class="flex-1 py-8 sm:py-12 px-4" style="background: radial-gradient(
+<main class="train-page flex-1 py-4 px-3 xl:py-6 xl:px-8" style="background: radial-gradient(
   ellipse 80% 40% at 50% 0%,
   rgba(251, 146, 60, 0.04) 0%,
   transparent 70%
 ), linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #12100c 70%, var(--bg) 100%);">
-	<div class="max-w-4xl mx-auto">
+	<div class="w-full">
 		<!-- ─────── Setup Screen ─────── -->
 		{#if screen === 'setup'}
 			<div in:fade={{ duration: 200, delay: 100 }}>
@@ -1475,17 +1475,17 @@
 						}}
 					/>
 				{:else}
-					<div class="dashboard-header">
-						<div class="dashboard-top">
-							<div class="greeting-streak">
-								<span class="greeting">{greeting}!</span>
-								<div class="streak-inline">
+					<div class="flex flex-col gap-2.5 px-4 py-3.5 bg-white/[0.03] border border-white/[0.07] rounded-[14px] mb-5">
+						<div class="flex justify-between items-center">
+							<div class="flex items-center gap-4">
+								<span class="text-[1.05rem] font-bold text-white">{greeting}!</span>
+								<div class="flex items-center gap-[5px] text-[0.85rem] text-[#fb923c] font-semibold">
 									<img src="/elements/images/streak-flame.webp" width="18" height="18" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
-									<span class="streak-num">{streak.current}</span>
-									<span class="streak-label">day streak</span>
+									<span>{streak.current}</span>
+									<span class="text-[#666] font-normal">day streak</span>
 								</div>
 							</div>
-							<div class="midi-pill" class:connected={midiState === 'connected' && midiDevices.length > 0}>
+							<div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.72rem] {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[rgba(74,222,128,0.1)] text-[#4ade80]' : 'bg-white/5 text-[#555]'}">
 								<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
 								<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : 'No MIDI'}</span>
 							</div>
@@ -1494,9 +1494,9 @@
 				{/if}
 
 				<!-- Two-column layout -->
-				<div class="train-layout">
+				<div class="train-layout grid grid-cols-1 min-[901px]:grid-cols-[1fr_360px] min-[1100px]:grid-cols-[1fr_400px] gap-6 min-[1100px]:gap-8 items-start">
 					<!-- Left: Recommended plan + Plans grid -->
-					<div class="train-main">
+					<div class="flex flex-col gap-5 min-w-0 max-[900px]:order-1">
 						<GameSettings
 							bind:difficulty
 							bind:notation
@@ -1520,7 +1520,7 @@
 					</div>
 
 					<!-- Right: Progress + Custom Progression + Custom Settings -->
-					<div class="train-sidebar">
+					<div class="flex flex-col gap-4 max-[900px]:order-2">
 						<ProgressDashboard />
 
 						<!-- Custom Progression -->
@@ -1591,12 +1591,12 @@
 				role="presentation"
 			></div>
 			<div
-				class="settings-modal"
+				class="fixed left-0 right-0 bottom-0 z-50 max-h-[88vh] bg-[var(--bg-card,#1c1a17)] rounded-t-[20px] border-t border-[var(--border)] flex flex-col overflow-hidden min-[600px]:left-1/2 min-[600px]:right-auto min-[600px]:w-[560px] min-[600px]:-translate-x-1/2"
 				transition:fly={{ y: 500, duration: 340, opacity: 1 }}
 				role="dialog"
 				aria-modal="true"
 			>
-				<div class="settings-modal-header">
+				<div class="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] shrink-0">
 					<h2 class="text-base font-bold">{t('settings.custom_settings')}</h2>
 					<button
 						class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-muted)] transition-colors text-2xl leading-none cursor-pointer text-[var(--text-dim)] hover:text-[var(--text)]"
@@ -1604,7 +1604,7 @@
 						aria-label="Schließen"
 					>×</button>
 				</div>
-				<div class="settings-modal-body space-y-6">
+				<div class="overflow-y-auto p-5 pb-[max(20px,env(safe-area-inset-bottom))] flex-1 space-y-6">
 					<button
 						class="w-full h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
 						onclick={() => { settingsOpen = false; settingsOpenedFromScreen = null; startGame(); }}
@@ -1977,7 +1977,7 @@
 
 			<!-- Exercise info panel -->
 			{#if showExerciseInfo}
-				<div class="max-w-3xl mx-auto mb-6 p-4 rounded-[var(--radius)] border border-[var(--primary)]/30 bg-[var(--primary-muted)]/50" transition:fly={{ y: -10, duration: 200 }}>
+				<div class="mb-6 p-4 rounded-[var(--radius)] border border-[var(--primary)]/30 bg-[var(--primary-muted)]/50" transition:fly={{ y: -10, duration: 200 }}>
 					<div class="flex items-start justify-between gap-4">
 						<div class="space-y-2">
 							<h3 class="font-semibold text-[var(--primary)]">{t('settings.voicing_' + voicing.replace(/-/g, '_'))}</h3>
@@ -1992,7 +1992,7 @@
 				</div>
 			{/if}
 
-			<div class="max-w-5xl mx-auto space-y-6">
+			<div class="w-full space-y-6">
 				<!-- Input status bar -->
 				{#if inputMode === 'midi'}
 					<div class="flex items-center justify-between">
@@ -2358,7 +2358,7 @@
 				</div>
 			</div>
 
-			<div class="max-w-5xl mx-auto space-y-6">
+			<div class="w-full space-y-6">
 				<!-- Input status -->
 				{#if inputMode === 'midi'}
 					<MidiStatus
@@ -2537,7 +2537,7 @@
 		{#if screen === 'finished'}
 			<div in:scale={{ start: 0.95, duration: 300, delay: 50 }} style="transform-origin: center top">
 			<!-- Back button -->
-			<div class="max-w-4xl mx-auto mb-4">
+			<div class="mb-4">
 				<button
 					class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
 					onclick={resetToSetup}
@@ -2620,136 +2620,15 @@
 {/if}
 
 <style>
-	.dashboard-header {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		padding: 14px 16px;
-		background: rgba(255,255,255,0.03);
-		border: 1px solid rgba(255,255,255,0.07);
-		border-radius: 14px;
-		margin-bottom: 20px;
-	}
-
-	.dashboard-top {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.greeting-streak {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.greeting {
-		font-size: 1.05rem;
-		font-weight: 700;
-		color: #fff;
-	}
-
-	.streak-inline {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		font-size: 0.85rem;
-		color: #fb923c;
-		font-weight: 600;
-	}
-
-	.streak-label {
-		color: #666;
-		font-weight: 400;
-	}
-
-	.midi-pill {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 4px 12px;
-		border-radius: 999px;
-		font-size: 0.72rem;
-		background: rgba(255,255,255,0.05);
-		color: #555;
-	}
-	.midi-pill.connected {
-		background: rgba(74,222,128,0.1);
-		color: #4ade80;
-	}
-
-	/* Two-column layout */
-	.train-layout {
-		display: grid;
-		grid-template-columns: 1fr 360px;
-		gap: 24px;
-		align-items: start;
-	}
-
-	@media (min-width: 1100px) {
+	/* Touch devices (iPad): maximum screen real-estate */
+	@media (hover: none) and (pointer: coarse) and (min-width: 768px) {
+		.train-page {
+			padding: 1rem;
+		}
 		.train-layout {
-			grid-template-columns: 1fr 400px;
-			gap: 32px;
+			grid-template-columns: 1fr 320px;
+			gap: 1rem;
 		}
-	}
-
-	.train-main {
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
-		min-width: 0;
-	}
-
-	.train-sidebar {
-		display: flex;
-		flex-direction: column;
-		gap: 16px;
-	}
-
-	@media (max-width: 900px) {
-		.train-layout {
-			grid-template-columns: 1fr;
-		}
-		.train-main { order: 1; }
-		.train-sidebar { order: 2; }
-	}
-
-	/* Settings modal */
-	.settings-modal {
-		position: fixed;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 50;
-		max-height: 88vh;
-		background: var(--bg-card, #1c1a17);
-		border-radius: 20px 20px 0 0;
-		border-top: 1px solid var(--border);
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-	}
-	@media (min-width: 600px) {
-		.settings-modal {
-			left: 50%;
-			right: auto;
-			width: 560px;
-			transform: translateX(-50%);
-		}
-	}
-	.settings-modal-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 16px 20px;
-		border-bottom: 1px solid var(--border);
-		flex-shrink: 0;
-	}
-	.settings-modal-body {
-		overflow-y: auto;
-		padding: 20px;
-		padding-bottom: max(20px, env(safe-area-inset-bottom));
-		flex: 1;
 	}
 
 	/* Shake animation for wrong guess */

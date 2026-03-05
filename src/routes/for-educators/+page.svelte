@@ -89,17 +89,7 @@
 			aria-hidden="true"
 			loading="eager"
 			fetchpriority="high"
-			class="educators-hero-bg-image"
-			style="
-				position: absolute;
-				inset: 0;
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-				object-position: center 20%;
-				z-index: 0;
-				opacity: 0.5;
-			"
+			class="absolute inset-0 w-full h-full object-cover object-[center_20%] max-md:object-center z-0 opacity-50"
 		/>
 
 		<!-- Gradient overlay -->
@@ -362,12 +352,3 @@
 		</section>
 	</div>
 </main>
-
-<style>
-	/* Hero background image mobile adjustment */
-	@media (max-width: 768px) {
-		.educators-hero-bg-image {
-			object-position: center center !important;
-		}
-	}
-</style>

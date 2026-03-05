@@ -66,13 +66,13 @@
 {#if visible && current}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="celebration-overlay" transition:fade={{ duration: 200 }} onclick={handleDismissAll}>
+	<div class="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 backdrop-blur-[4px] p-5" transition:fade={{ duration: 200 }} onclick={handleDismissAll}>
 		<!-- Confetti -->
 		{#if current.type === 'level-up' || current.type === 'streak-milestone'}
-			<div class="confetti-container">
+			<div class="absolute inset-0 overflow-hidden pointer-events-none">
 				{#each confettiPieces as piece}
 					<div
-						class="confetti"
+						class="confetti absolute rounded-[2px]"
 						style="
 							left: {piece.x}%;
 							background: {piece.color};
@@ -89,33 +89,33 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			class="celebration-card"
+			class="border border-white/10 rounded-2xl py-8 px-7 text-center max-w-[340px] w-full"
 			transition:scale={{ duration: 300, start: 0.8 }}
 			style="background: {currentConfig.bg}; box-shadow: 0 0 40px {currentConfig.glow};"
 			onclick={(e) => e.stopPropagation()}
 		>
-			<div class="celebration-emoji">{currentConfig.emoji}</div>
-			<h2 class="celebration-title">
+			<div class="celebration-emoji text-5xl mb-3">{currentConfig.emoji}</div>
+			<h2 class="text-xl font-extrabold text-[var(--text,#fff)] m-0 mb-1.5">
 				{t(current.titleKey, current.titleParams) || current.title}
 			</h2>
 			{#if current.subtitle}
-				<p class="celebration-subtitle">
+				<p class="text-[0.85rem] text-[var(--text-muted,#888)] m-0 mb-4">
 					{t(current.subtitleKey || '', current.subtitleParams) || current.subtitle}
 				</p>
 			{/if}
 
 			{#if current.xpGained > 0}
-				<div class="xp-toast">+{current.xpGained} XP</div>
+				<div class="xp-toast inline-block py-1 px-3.5 rounded-full bg-orange-400/15 text-orange-400 text-[0.8rem] font-bold mb-5">+{current.xpGained} XP</div>
 			{/if}
 
-			<button class="celebration-btn" onclick={handleNext}>
+			<button class="block w-full py-2.5 px-5 border-none rounded-[var(--radius,8px)] bg-[#fb923c] text-black text-[0.85rem] font-bold cursor-pointer transition-all duration-200 hover:bg-[#f59e0b] hover:-translate-y-px" onclick={handleNext}>
 				{hasMore ? t('habit.celebration_next') || 'Next' : t('habit.celebration_continue') || 'Continue'}
 			</button>
 
 			{#if celebrations.length > 1}
-				<div class="celebration-dots">
+				<div class="flex justify-center gap-1.5 mt-3.5">
 					{#each celebrations as _, i}
-						<div class="dot" class:active={i === currentIndex} class:done={i < currentIndex}></div>
+						<div class="w-1.5 h-1.5 rounded-full transition-all duration-200 {i === currentIndex ? 'bg-[#fb923c] scale-[1.3]' : i < currentIndex ? 'bg-[rgba(251,146,60,0.4)]' : 'bg-white/15'}"></div>
 					{/each}
 				</div>
 			{/if}
@@ -124,28 +124,7 @@
 {/if}
 
 <style>
-	.celebration-overlay {
-		position: fixed;
-		inset: 0;
-		z-index: 1000;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: rgba(0, 0, 0, 0.7);
-		backdrop-filter: blur(4px);
-		padding: 20px;
-	}
-
-	.confetti-container {
-		position: absolute;
-		inset: 0;
-		overflow: hidden;
-		pointer-events: none;
-	}
-
 	.confetti {
-		position: absolute;
-		border-radius: 2px;
 		animation: confetti-fall 2.5s ease-in forwards;
 	}
 
@@ -160,18 +139,7 @@
 		}
 	}
 
-	.celebration-card {
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 16px;
-		padding: 32px 28px;
-		text-align: center;
-		max-width: 340px;
-		width: 100%;
-	}
-
 	.celebration-emoji {
-		font-size: 3rem;
-		margin-bottom: 12px;
 		animation: bounce 0.6s ease-out;
 	}
 
@@ -181,28 +149,7 @@
 		60% { transform: translateY(-6px); }
 	}
 
-	.celebration-title {
-		font-size: 1.25rem;
-		font-weight: 800;
-		color: var(--text, #fff);
-		margin: 0 0 6px;
-	}
-
-	.celebration-subtitle {
-		font-size: 0.85rem;
-		color: var(--text-muted, #888);
-		margin: 0 0 16px;
-	}
-
 	.xp-toast {
-		display: inline-block;
-		padding: 4px 14px;
-		border-radius: 999px;
-		background: rgba(251, 146, 60, 0.15);
-		color: #fb923c;
-		font-size: 0.8rem;
-		font-weight: 700;
-		margin-bottom: 20px;
 		animation: xp-pop 0.4s ease-out;
 	}
 
@@ -210,48 +157,5 @@
 		0% { transform: scale(0.5); opacity: 0; }
 		70% { transform: scale(1.1); }
 		100% { transform: scale(1); opacity: 1; }
-	}
-
-	.celebration-btn {
-		display: block;
-		width: 100%;
-		padding: 10px 20px;
-		border: none;
-		border-radius: var(--radius, 8px);
-		background: #fb923c;
-		color: #000;
-		font-size: 0.85rem;
-		font-weight: 700;
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-
-	.celebration-btn:hover {
-		background: #f59e0b;
-		transform: translateY(-1px);
-	}
-
-	.celebration-dots {
-		display: flex;
-		justify-content: center;
-		gap: 6px;
-		margin-top: 14px;
-	}
-
-	.dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.15);
-		transition: all 0.2s;
-	}
-
-	.dot.active {
-		background: #fb923c;
-		transform: scale(1.3);
-	}
-
-	.dot.done {
-		background: rgba(251, 146, 60, 0.4);
 	}
 </style>

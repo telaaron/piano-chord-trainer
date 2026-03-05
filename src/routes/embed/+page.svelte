@@ -424,87 +424,87 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
-<main class="embed-widget" aria-label="Chord Trainer Practice Widget">
+<main class="w-full min-h-dvh bg-(--bg) text-(--text) font-sans flex flex-col" aria-label="Chord Trainer Practice Widget">
 	<!-- ── Setup Screen ──────────────────────────────────────── -->
 	{#if screen === 'setup'}
-		<div class="setup-screen">
-			<div class="setup-inner">
+		<div class="flex-1 flex items-center justify-center p-6">
+			<div class="text-center max-w-90 w-full">
 				<!-- Logo mark -->
-				<div class="setup-icon" aria-hidden="true">🎹</div>
+				<div class="text-[2.5rem] mb-3 block" aria-hidden="true">🎹</div>
 
-				<h1 class="setup-title">{t('embed.setup_title')}</h1>
+				<h1 class="text-2xl font-bold mb-1 text-(--text)">{t('embed.setup_title')}</h1>
 
 				{#if presetLabel}
-					<p class="setup-preset-label">{presetLabel}</p>
+					<p class="text-sm text-(--text-muted) mb-4 font-medium">{presetLabel}</p>
 				{/if}
 
-				<div class="setup-meta">
-					<span class="meta-badge">{t(VOICING_KEYS[config.voicing])}</span>
-					<span class="meta-badge">{t(PROGRESSION_KEYS[config.progressionMode])}</span>
-					<span class="meta-badge">{config.chords} {t('embed.stat_chords')}</span>
-					<span class="meta-badge">{t(DIFFICULTY_KEYS[config.difficulty])}</span>
+				<div class="flex flex-wrap gap-2 justify-center mb-5">
+					<span class="text-[0.7rem] font-semibold uppercase tracking-[0.06em] py-[0.2rem] px-[0.6rem] rounded-full bg-(--primary-muted) text-(--primary) border border-[color-mix(in_srgb,var(--primary)_30%,transparent)]">{t(VOICING_KEYS[config.voicing])}</span>
+					<span class="text-[0.7rem] font-semibold uppercase tracking-[0.06em] py-[0.2rem] px-[0.6rem] rounded-full bg-(--primary-muted) text-(--primary) border border-[color-mix(in_srgb,var(--primary)_30%,transparent)]">{t(PROGRESSION_KEYS[config.progressionMode])}</span>
+					<span class="text-[0.7rem] font-semibold uppercase tracking-[0.06em] py-[0.2rem] px-[0.6rem] rounded-full bg-(--primary-muted) text-(--primary) border border-[color-mix(in_srgb,var(--primary)_30%,transparent)]">{config.chords} {t('embed.stat_chords')}</span>
+					<span class="text-[0.7rem] font-semibold uppercase tracking-[0.06em] py-[0.2rem] px-[0.6rem] rounded-full bg-(--primary-muted) text-(--primary) border border-[color-mix(in_srgb,var(--primary)_30%,transparent)]">{t(DIFFICULTY_KEYS[config.difficulty])}</span>
 				</div>
 
 				{#if midiState === 'connected' && midiHasDevice}
-					<p class="setup-midi-status connected">{t('embed.midi_connected')}</p>
+					<p class="text-[0.8rem] text-(--accent-green) mb-6">{t('embed.midi_connected')}</p>
 				{:else if midiState === 'connecting'}
-					<p class="setup-midi-status">{t('embed.connecting')}</p>
+					<p class="text-[0.8rem] text-(--text-muted) mb-6">{t('embed.connecting')}</p>
 				{:else}
-					<p class="setup-hint">{@html t('embed.setup_hint')}</p>
+					<p class="text-sm text-(--text-muted) leading-[1.6] mb-6">{@html t('embed.setup_hint')}</p>
 				{/if}
 
-				<button class="btn-start" onclick={startGame}>
+				<button class="inline-flex items-center justify-center py-3 px-8 rounded-lg bg-(--primary) text-(--primary-text,#fff) font-bold text-base cursor-pointer border-none transition-[background] duration-150 w-full max-w-55 hover:bg-(--primary-hover)" onclick={startGame}>
 					{t('embed.start_drill')}
 				</button>
 
-				<p class="setup-shortcut">{@html t('embed.or_press_space')}</p>
+				<p class="mt-3 text-xs text-(--text-dim)">{@html t('embed.or_press_space')}</p>
 			</div>
 		</div>
 	{/if}
 
 	<!-- ── Playing Screen ────────────────────────────────────── -->
 	{#if screen === 'playing'}
-		<div class="playing-screen">
+		<div class="flex-1 flex flex-col min-h-dvh">
 			<!-- Top bar -->
-			<div class="top-bar">
-				<div class="top-bar-left">
-					<span class="voicing-label">{t(VOICING_KEYS[config.voicing])}</span>
+			<div class="flex items-center justify-between py-[0.6rem] px-4 border-b border-(--border) shrink-0 max-[480px]:py-2 max-[480px]:px-3">
+				<div class="flex items-center gap-2 min-w-20">
+					<span class="text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-(--text-dim)">{t(VOICING_KEYS[config.voicing])}</span>
 					{#if midiState === 'connected' && midiHasDevice}
-						<span class="midi-dot" title={t('embed.midi_connected')} aria-label={t('embed.midi_connected')}>●</span>
+						<span class="text-[0.5rem] text-(--accent-green) leading-none" title={t('embed.midi_connected')} aria-label={t('embed.midi_connected')}>●</span>
 					{/if}
 				</div>
-				<div class="top-bar-center">
-					<span class="timer" aria-live="off">{formatTime(elapsedMs)}</span>
+				<div class="flex-1 flex justify-center">
+					<span class="font-mono text-[1.1rem] font-bold text-(--text) tracking-[0.04em] max-[480px]:text-[0.95rem]" aria-live="off">{formatTime(elapsedMs)}</span>
 				</div>
-				<div class="top-bar-right">
-					<span class="chord-counter">{currentIdx + 1} / {totalChords}</span>
+				<div class="flex items-center gap-2 min-w-20 justify-end">
+					<span class="text-xs text-(--text-muted) tabular-nums">{currentIdx + 1} / {totalChords}</span>
 				</div>
 			</div>
 
 			<!-- Progress bar -->
-			<div class="progress-track" role="progressbar" aria-valuenow={currentIdx} aria-valuemax={totalChords}>
-				<div class="progress-fill" style="width: {progressPct}%"></div>
+			<div class="h-0.75 bg-(--wood-dark) shrink-0" role="progressbar" aria-valuenow={currentIdx} aria-valuemax={totalChords}>
+				<div class="h-full bg-linear-to-r from-(--primary) to-(--accent-amber) transition-[width] duration-400 ease-in-out" style="width: {progressPct}%"></div>
 			</div>
 
 			<!-- Chord display -->
-			<div class="chord-area" class:streak-glow={streakGlow}>
+			<div class="flex-1 flex items-center justify-center p-4 min-h-0" class:streak-glow={streakGlow}>
 				{#if !timerStarted}
-					<div class="chord-start-hint">
-						<p class="hint-label">{t('embed.ready')}</p>
-						<button class="btn-begin" onclick={beginTimer}>{t('embed.begin')}</button>
-						<p class="hint-sub">{@html t('embed.or_press_space')}</p>
+					<div class="text-center">
+						<p class="text-[0.9rem] text-(--text-muted) mb-3">{t('embed.ready')}</p>
+						<button class="inline-flex items-center justify-center py-[0.6rem] px-7 rounded-lg bg-(--primary) text-(--primary-text,#fff) font-bold text-[0.95rem] cursor-pointer border-none transition-[background] duration-150 hover:bg-(--primary-hover)" onclick={beginTimer}>{t('embed.begin')}</button>
+						<p class="mt-2 text-xs text-(--text-dim)">{@html t('embed.or_press_space')}</p>
 					</div>
 				{:else}
-					<div class="chord-display"
+					<div class="chord-display text-center py-4 px-2 rounded-lg transition-[background] duration-150"
 						class:chord-correct={midiMatchResult?.correct}
 						class:chord-wrong={midiMatchResult && !midiMatchResult.correct && midiActiveNotes.size > 0}>
-						<div class="chord-name" aria-live="polite">
+						<div class="chord-name text-[clamp(3rem,12vw,5.5rem)] font-extrabold leading-none text-(--text) tracking-[-0.02em] transition-[color] duration-150 max-[480px]:text-[clamp(2.5rem,16vw,4rem)]" aria-live="polite">
 							{currentData?.chord ?? ''}
 						</div>
 						{#if currentData?.voicing && currentData.voicing.length > 0}
-							<div class="chord-voicing">{currentData.voicing.join(' – ')}</div>
+							<div class="mt-[0.4rem] text-sm text-(--text-muted) tracking-[0.02em]">{currentData.voicing.join(' – ')}</div>
 						{:else if currentData}
-							<div class="chord-voicing" style="color: var(--text-dim)">{t('embed.no_voicing')}</div>
+							<div class="mt-[0.4rem] text-sm tracking-[0.02em]" style="color: var(--text-dim)">{t('embed.no_voicing')}</div>
 						{/if}
 						{#if streak >= STREAK_THRESHOLD}
 							<div class="streak-badge">{t('embed.streak', { count: streak })}</div>
@@ -514,7 +514,7 @@
 			</div>
 
 			<!-- Piano keyboard -->
-			<div class="piano-wrap">
+			<div class="px-2 shrink-0">
 				<PianoKeyboard
 					chordData={currentData}
 					accidentalPref="both"
@@ -526,17 +526,17 @@
 			</div>
 
 			<!-- Actions -->
-			<div class="action-bar">
-				<button class="btn-secondary" onclick={resetToSetup} title={t('embed.back_to_setup_title')}>
+			<div class="flex items-center justify-between gap-3 py-3 px-4 border-t border-(--border) shrink-0">
+				<button class="py-[0.65rem] px-4 rounded-lg bg-transparent text-(--text-dim) text-[0.8rem] cursor-pointer border border-(--border) transition-[color,border-color] duration-150 hover:text-(--text-muted) hover:border-(--border-hover)" onclick={resetToSetup} title={t('embed.back_to_setup_title')}>
 					{t('embed.back_to_setup')}
 				</button>
 				{#if timerStarted && currentData}
-					<button class="btn-secondary" onclick={() => { showExplain = true; }} title={t('explain.title')}>
+					<button class="py-[0.65rem] px-4 rounded-lg bg-transparent text-(--text-dim) text-[0.8rem] cursor-pointer border border-(--border) transition-[color,border-color] duration-150 hover:text-(--text-muted) hover:border-(--border-hover)" onclick={() => { showExplain = true; }} title={t('explain.title')}>
 						?
 					</button>
 				{/if}
 				{#if timerStarted}
-					<button class="btn-next" onclick={nextChord}>
+					<button class="flex-1 max-w-45 py-[0.65rem] px-5 rounded-lg bg-(--primary) text-(--primary-text,#fff) font-bold text-[0.9rem] cursor-pointer border-none transition-[background] duration-150 hover:bg-(--primary-hover)" onclick={nextChord}>
 						{currentIdx < totalChords - 1 ? t('embed.next') : t('embed.finish')}
 					</button>
 				{/if}
@@ -546,48 +546,48 @@
 
 	<!-- ── Finished Screen ────────────────────────────────────── -->
 	{#if screen === 'finished'}
-		<div class="results-screen">
-			<div class="results-inner">
-				<div class="results-icon" aria-hidden="true">✓</div>
-				<h2 class="results-title">{t('embed.session_complete')}</h2>
+		<div class="flex-1 flex items-center justify-center p-6">
+			<div class="text-center max-w-90 w-full">
+				<div class="w-12 h-12 rounded-full bg-[color-mix(in_srgb,var(--accent-green)_15%,transparent)] border-2 border-(--accent-green) text-(--accent-green) text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">✓</div>
+				<h2 class="text-xl font-bold mb-5 text-(--text)">{t('embed.session_complete')}</h2>
 
-				<div class="results-stats">
-					<div class="stat">
-						<div class="stat-value">{totalChords}</div>
-						<div class="stat-label">{t('embed.stat_chords')}</div>
+				<div class="grid grid-cols-[repeat(auto-fit,minmax(80px,1fr))] gap-3 mb-6 p-4 bg-(--bg-card) border border-(--border) rounded-lg">
+					<div class="text-center">
+						<div class="text-xl font-extrabold text-(--primary) tabular-nums">{totalChords}</div>
+						<div class="text-[0.65rem] uppercase tracking-[0.06em] text-(--text-dim) mt-[0.15rem]">{t('embed.stat_chords')}</div>
 					</div>
-					<div class="stat">
-						<div class="stat-value">{formatTime(endTime - startTime)}</div>
-						<div class="stat-label">{t('embed.stat_total_time')}</div>
+					<div class="text-center">
+						<div class="text-xl font-extrabold text-(--primary) tabular-nums">{formatTime(endTime - startTime)}</div>
+						<div class="text-[0.65rem] uppercase tracking-[0.06em] text-(--text-dim) mt-[0.15rem]">{t('embed.stat_total_time')}</div>
 					</div>
-					<div class="stat">
-						<div class="stat-value">{(avgMs / 1000).toFixed(1)}s</div>
-						<div class="stat-label">{t('embed.stat_avg')}</div>
+					<div class="text-center">
+						<div class="text-xl font-extrabold text-(--primary) tabular-nums">{(avgMs / 1000).toFixed(1)}s</div>
+						<div class="text-[0.65rem] uppercase tracking-[0.06em] text-(--text-dim) mt-[0.15rem]">{t('embed.stat_avg')}</div>
 					</div>
 					{#if midiTotalAttempts > 0}
-						<div class="stat">
-							<div class="stat-value">{midiAccuracy}%</div>
-							<div class="stat-label">{t('embed.stat_accuracy')}</div>
+						<div class="text-center">
+							<div class="text-xl font-extrabold text-(--primary) tabular-nums">{midiAccuracy}%</div>
+							<div class="text-[0.65rem] uppercase tracking-[0.06em] text-(--text-dim) mt-[0.15rem]">{t('embed.stat_accuracy')}</div>
 						</div>
 					{/if}
 					{#if bestStreak >= STREAK_THRESHOLD}
-						<div class="stat">
-							<div class="stat-value">🔥 {bestStreak}</div>
-							<div class="stat-label">{t('embed.stat_best_streak')}</div>
+						<div class="text-center">
+							<div class="text-xl font-extrabold text-(--primary) tabular-nums">🔥 {bestStreak}</div>
+							<div class="text-[0.65rem] uppercase tracking-[0.06em] text-(--text-dim) mt-[0.15rem]">{t('embed.stat_best_streak')}</div>
 						</div>
 					{/if}
 				</div>
 
-				<div class="results-actions">
-					<button class="btn-start" onclick={startGame}>
+				<div class="flex flex-col items-center gap-3">
+					<button class="inline-flex items-center justify-center py-3 px-8 rounded-lg bg-(--primary) text-(--primary-text,#fff) font-bold text-base cursor-pointer border-none transition-[background] duration-150 w-full max-w-55 hover:bg-(--primary-hover)" onclick={startGame}>
 						{t('embed.play_again')}
 					</button>
-					<a class="results-link" href="/train" target="_top">
+					<a class="text-[0.8rem] text-(--text-muted) no-underline transition-[color] duration-150 hover:text-(--primary)" href="/train" target="_top">
 						{t('embed.full_trainer')}
 					</a>
 				</div>
 
-				<p class="results-brand">{t('embed.brand')}</p>
+				<p class="mt-5 text-[0.7rem] text-(--text-dim) tracking-[0.04em]">{t('embed.brand')}</p>
 			</div>
 		</div>
 	{/if}
@@ -602,96 +602,8 @@
 {/if}
 
 <style>
-	/* ── Root widget ─────────────────────────────────────────── */
-	.embed-widget {
-		width: 100%;
-		min-height: 100dvh;
-		background: var(--bg);
-		color: var(--text);
-		font-family: var(--font-sans);
-		display: flex;
-		flex-direction: column;
-	}
-
-	/* ── Setup ───────────────────────────────────────────────── */
-	.setup-screen {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 1.5rem;
-	}
-
-	.setup-inner {
-		text-align: center;
-		max-width: 360px;
-		width: 100%;
-	}
-
-	.setup-icon {
-		font-size: 2.5rem;
-		margin-bottom: 0.75rem;
-		display: block;
-	}
-
-	.setup-title {
-		font-size: 1.5rem;
-		font-weight: 700;
-		margin-bottom: 0.25rem;
-		color: var(--text);
-	}
-
-	.setup-preset-label {
-		font-size: 0.85rem;
-		color: var(--text-muted);
-		margin-bottom: 1rem;
-		font-weight: 500;
-	}
-
-	.setup-meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		justify-content: center;
-		margin-bottom: 1.25rem;
-	}
-
-	.meta-badge {
-		font-size: 0.7rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		padding: 0.2rem 0.6rem;
-		border-radius: 999px;
-		background: var(--primary-muted);
-		color: var(--primary);
-		border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
-	}
-
-	.setup-hint {
-		font-size: 0.85rem;
-		color: var(--text-muted);
-		line-height: 1.6;
-		margin-bottom: 1.5rem;
-	}
-
-	.setup-midi-status {
-		font-size: 0.8rem;
-		color: var(--text-muted);
-		margin-bottom: 1.5rem;
-	}
-
-	.setup-midi-status.connected {
-		color: var(--accent-green);
-	}
-
-	.setup-shortcut {
-		margin-top: 0.75rem;
-		font-size: 0.75rem;
-		color: var(--text-dim);
-	}
-
-	kbd {
+	/* -- Kept: element selector used in @html content -- */
+	:global(kbd) {
 		font-family: var(--font-mono);
 		font-size: 0.7rem;
 		padding: 0.1rem 0.35rem;
@@ -701,219 +613,20 @@
 		color: var(--text-muted);
 	}
 
-	/* ── Buttons ─────────────────────────────────────────────── */
-	.btn-start {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.75rem 2rem;
-		border-radius: var(--radius-lg);
-		background: var(--primary);
-		color: var(--primary-text, #fff);
-		font-weight: 700;
-		font-size: 1rem;
-		cursor: pointer;
-		border: none;
-		transition: background 0.15s;
-		width: 100%;
-		max-width: 220px;
-	}
-
-	.btn-start:hover {
-		background: var(--primary-hover);
-	}
-
-	.btn-begin {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.6rem 1.75rem;
-		border-radius: var(--radius-lg);
-		background: var(--primary);
-		color: var(--primary-text, #fff);
-		font-weight: 700;
-		font-size: 0.95rem;
-		cursor: pointer;
-		border: none;
-		transition: background 0.15s;
-	}
-
-	.btn-begin:hover {
-		background: var(--primary-hover);
-	}
-
-	.btn-next {
-		flex: 1;
-		max-width: 180px;
-		padding: 0.65rem 1.25rem;
-		border-radius: var(--radius-lg);
-		background: var(--primary);
-		color: var(--primary-text, #fff);
-		font-weight: 700;
-		font-size: 0.9rem;
-		cursor: pointer;
-		border: none;
-		transition: background 0.15s;
-	}
-
-	.btn-next:hover {
-		background: var(--primary-hover);
-	}
-
-	.btn-secondary {
-		padding: 0.65rem 1rem;
-		border-radius: var(--radius-lg);
-		background: transparent;
-		color: var(--text-dim);
-		font-size: 0.8rem;
-		cursor: pointer;
-		border: 1px solid var(--border);
-		transition: color 0.15s, border-color 0.15s;
-	}
-
-	.btn-secondary:hover {
-		color: var(--text-muted);
-		border-color: var(--border-hover);
-	}
-
-	/* ── Playing screen ──────────────────────────────────────── */
-	.playing-screen {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		min-height: 100dvh;
-	}
-
-	/* Top bar */
-	.top-bar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0.6rem 1rem;
-		border-bottom: 1px solid var(--border);
-		flex-shrink: 0;
-	}
-
-	.top-bar-left,
-	.top-bar-right {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		min-width: 80px;
-	}
-
-	.top-bar-right {
-		justify-content: flex-end;
-	}
-
-	.top-bar-center {
-		flex: 1;
-		display: flex;
-		justify-content: center;
-	}
-
-	.voicing-label {
-		font-size: 0.7rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--text-dim);
-	}
-
-	.midi-dot {
-		font-size: 0.5rem;
-		color: var(--accent-green);
-		line-height: 1;
-	}
-
-	.timer {
-		font-family: var(--font-mono);
-		font-size: 1.1rem;
-		font-weight: 700;
-		color: var(--text);
-		letter-spacing: 0.04em;
-	}
-
-	.chord-counter {
-		font-size: 0.75rem;
-		color: var(--text-muted);
-		font-variant-numeric: tabular-nums;
-	}
-
-	/* Progress */
-	.progress-track {
-		height: 3px;
-		background: var(--wood-dark);
-		flex-shrink: 0;
-	}
-
-	.progress-fill {
-		height: 100%;
-		background: linear-gradient(90deg, var(--primary), var(--accent-amber));
-		transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-
-	/* Chord area */
-	.chord-area {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 1rem;
-		min-height: 0;
-	}
-
-	.chord-start-hint {
-		text-align: center;
-	}
-
-	.hint-label {
-		font-size: 0.9rem;
-		color: var(--text-muted);
-		margin-bottom: 0.75rem;
-	}
-
-	.hint-sub {
-		margin-top: 0.5rem;
-		font-size: 0.75rem;
-		color: var(--text-dim);
-	}
-
-	.chord-display {
-		text-align: center;
-		padding: 1rem 0.5rem;
-		border-radius: var(--radius-lg);
-		transition: background 0.15s;
-	}
-
-	.chord-display.chord-correct {
+	/* -- Kept: conditional chord state classes -- */
+	.chord-correct {
 		background: color-mix(in srgb, var(--accent-green) 12%, transparent);
 	}
 
-	.chord-display.chord-wrong {
+	.chord-wrong {
 		background: color-mix(in srgb, var(--accent-red) 10%, transparent);
 	}
 
-	.chord-name {
-		font-size: clamp(3rem, 12vw, 5.5rem);
-		font-weight: 800;
-		line-height: 1;
-		color: var(--text);
-		letter-spacing: -0.02em;
-		transition: color 0.15s;
-	}
-
-	.chord-display.chord-correct .chord-name {
+	.chord-correct .chord-name {
 		color: var(--accent-green);
 	}
 
-	.chord-voicing {
-		margin-top: 0.4rem;
-		font-size: 0.85rem;
-		color: var(--text-muted);
-		letter-spacing: 0.02em;
-	}
-
+	/* -- Kept: animation classes referencing keyframes -- */
 	.streak-badge {
 		margin-top: 0.5rem;
 		font-size: 0.75rem;
@@ -922,7 +635,7 @@
 		animation: streakPulse 0.4s ease;
 	}
 
-	.chord-area.streak-glow {
+	.streak-glow {
 		animation: glowFlash 1.2s ease forwards;
 	}
 
@@ -937,128 +650,5 @@
 		20% { box-shadow: inset 0 0 40px color-mix(in srgb, var(--accent-amber) 15%, transparent); }
 		100% { box-shadow: 0 0 0 0 transparent; }
 	}
-
-	/* Piano */
-	.piano-wrap {
-		padding: 0 0.5rem;
-		flex-shrink: 0;
-	}
-
-	/* Action bar */
-	.action-bar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.75rem;
-		padding: 0.75rem 1rem;
-		border-top: 1px solid var(--border);
-		flex-shrink: 0;
-	}
-
-	/* ── Results ─────────────────────────────────────────────── */
-	.results-screen {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 1.5rem;
-	}
-
-	.results-inner {
-		text-align: center;
-		max-width: 360px;
-		width: 100%;
-	}
-
-	.results-icon {
-		width: 3rem;
-		height: 3rem;
-		border-radius: 50%;
-		background: color-mix(in srgb, var(--accent-green) 15%, transparent);
-		border: 2px solid var(--accent-green);
-		color: var(--accent-green);
-		font-size: 1.25rem;
-		font-weight: 700;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin: 0 auto 1rem;
-	}
-
-	.results-title {
-		font-size: 1.35rem;
-		font-weight: 700;
-		margin-bottom: 1.25rem;
-		color: var(--text);
-	}
-
-	.results-stats {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-		gap: 0.75rem;
-		margin-bottom: 1.5rem;
-		padding: 1rem;
-		background: var(--bg-card);
-		border: 1px solid var(--border);
-		border-radius: var(--radius-lg);
-	}
-
-	.stat {
-		text-align: center;
-	}
-
-	.stat-value {
-		font-size: 1.4rem;
-		font-weight: 800;
-		color: var(--primary);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.stat-label {
-		font-size: 0.65rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--text-dim);
-		margin-top: 0.15rem;
-	}
-
-	.results-actions {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.results-link {
-		font-size: 0.8rem;
-		color: var(--text-muted);
-		text-decoration: none;
-		transition: color 0.15s;
-	}
-
-	.results-link:hover {
-		color: var(--primary);
-	}
-
-	.results-brand {
-		margin-top: 1.25rem;
-		font-size: 0.7rem;
-		color: var(--text-dim);
-		letter-spacing: 0.04em;
-	}
-
-	/* ── Responsive: narrow iframes (400–500px) ─────────────── */
-	@media (max-width: 480px) {
-		.chord-name {
-			font-size: clamp(2.5rem, 16vw, 4rem);
-		}
-
-		.top-bar {
-			padding: 0.5rem 0.75rem;
-		}
-
-		.timer {
-			font-size: 0.95rem;
-		}
-	}
 </style>
+

@@ -86,34 +86,34 @@
 	const activeGoals = $derived(profile.activeGoals.filter((g) => !g.completedAt));
 </script>
 
-<div class="habit-dashboard">
+<div class="habit-dashboard flex flex-col gap-3.5 max-sm:gap-3.25 p-[16px_18px_18px] max-sm:p-[14px_14px_16px] rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-[rgba(255,255,255,0.07)] mb-5">
 	<!-- Header row -->
-	<div class="dash-top">
-		<div class="dash-left">
-			<div class="greeting-row">
-				<span class="greeting">{greeting}!</span>
-				<span class="rank-pill">{t(levelInfo.titleKey)}</span>
+	<div class="flex items-start justify-between">
+		<div class="flex flex-col gap-1.25">
+			<div class="flex items-center gap-2">
+				<span class="greeting text-base max-sm:text-[1.1rem] font-bold text-(--text,#fff) tracking-[-0.01em]">{greeting}!</span>
+				<span class="rank-pill text-[0.6rem] max-sm:text-[0.68rem] font-semibold text-[#fb923c] uppercase tracking-[0.06em] bg-[rgba(251,146,60,0.12)] border border-[rgba(251,146,60,0.22)] rounded-full py-0.5 px-1.75 max-sm:px-2">{t(levelInfo.titleKey)}</span>
 			</div>
-			<div class="streak-level-row">
-				<div class="streak-inline">
+			<div class="flex items-center gap-1.75">
+				<div class="flex items-center gap-0.75">
 					<img src="/elements/images/streak-flame.webp" width="14" height="14" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
-					<span class="streak-num">{streak.current}</span>
-					<span class="streak-days">{streak.current === 1 ? 'Tag' : 'Tage'}</span>
+					<span class="streak-num text-[0.82rem] max-sm:text-[0.9rem] font-bold text-[#fb923c]">{streak.current}</span>
+					<span class="streak-days text-[0.68rem] max-sm:text-[0.75rem] text-[rgba(251,146,60,0.6)] font-medium">{streak.current === 1 ? 'Tag' : 'Tage'}</span>
 				</div>
-				<span class="dot-sep">·</span>
+				<span class="text-[0.7rem] text-[rgba(255,255,255,0.15)]">·</span>
 				<LevelBadge totalXP={profile.totalXP} compact />
 			</div>
 		</div>
-		<div class="midi-pill" class:connected={midiConnected}>
+		<div class="midi-pill flex items-center gap-1.25 py-1 px-2.5 rounded-full text-[0.65rem] font-medium border {midiConnected ? 'bg-[rgba(74,222,128,0.08)] border-[rgba(74,222,128,0.2)] text-[#4ade80]' : 'bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.3)]'}">
 			<img src="/elements/images/midi-connect.webp" width="12" height="12" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
 			<span>{midiConnected ? 'MIDI ✓' : 'No MIDI'}</span>
 		</div>
 	</div>
 
 	<!-- Daily Progress ring + motivation + week -->
-	<div class="daily-section">
+	<div class="flex items-center gap-4">
 		<!-- Ring -->
-		<div class="daily-ring-area">
+		<div class="daily-ring-area relative shrink-0 w-15.5 h-15.5 max-sm:w-17.5 max-sm:h-17.5 max-sm:[&_svg]:w-17.5 max-sm:[&_svg]:h-17.5">
 			<svg viewBox="0 0 {RING_SIZE} {RING_SIZE}" width={RING_SIZE} height={RING_SIZE} style="display:block">
 				<circle
 					cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RING_RADIUS}
@@ -129,27 +129,27 @@
 					transform="rotate(-90 {RING_SIZE / 2} {RING_SIZE / 2})"
 				/>
 			</svg>
-			<div class="ring-label">
+			<div class="absolute inset-0 flex flex-col items-center justify-center gap-0 leading-none">
 				{#if dailyProgress.goalMet}
-					<span class="ring-check">✓</span>
+					<span class="text-[1.3rem] text-[#4ade80] font-bold">✓</span>
 				{:else}
-					<span class="ring-num">{Math.floor(dailyProgress.practicedMinutes)}</span>
-					<span class="ring-denom">/{dailyProgress.goalMinutes}m</span>
+					<span class="ring-num text-[1.1rem] max-sm:text-[1.2rem] font-extrabold text-[#fb923c] tabular-nums leading-none">{Math.floor(dailyProgress.practicedMinutes)}</span>
+					<span class="ring-denom text-[0.6rem] max-sm:text-[0.65rem] text-[rgba(255,255,255,0.3)] font-medium mt-px">/{dailyProgress.goalMinutes}m</span>
 				{/if}
 			</div>
 		</div>
 
 		<!-- Right: motivation + week strip -->
-		<div class="daily-info">
-			<p class="motivation-text" style="color: {motivationColor}">
+		<div class="flex-1 flex flex-col gap-2.25 min-w-0">
+			<p class="motivation-text m-0 text-[0.78rem] max-sm:text-[0.88rem] font-semibold leading-[1.3] transition-colors duration-400 ease-in-out whitespace-nowrap max-sm:whitespace-normal overflow-hidden text-ellipsis" style="color: {motivationColor}">
 				{motivation.emoji}&nbsp;{t(motivation.messageKey, motivation.messageParams)}
 			</p>
 
-			<div class="week-strip">
-				<div class="week-dots">
+			<div class="flex items-center justify-between gap-2.5">
+				<div class="week-dots flex gap-1.75 max-sm:gap-2">
 					{#each dayLabels as label, i}
-						<div class="day-col">
-							<span class="day-label" class:day-today={isToday(i)}>{label}</span>
+						<div class="flex flex-col items-center gap-1">
+							<span class="day-label text-[0.58rem] max-sm:text-[0.64rem] uppercase tracking-[0.02em] font-medium {isToday(i) ? 'text-[#fb923c]' : 'text-[rgba(255,255,255,0.28)]'}">{label}</span>
 							{#if isToday(i) && !weekDots[i]}
 								<svg viewBox="0 0 16 16" width="16" height="16" style="display:block;overflow:visible">
 									<circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="2" />
@@ -163,14 +163,14 @@
 									/>
 								</svg>
 							{:else}
-								<div class="day-dot" class:practiced={weekDots[i]} class:today={isToday(i)}></div>
+								<div class="day-dot w-3 h-3 max-sm:w-3.25 max-sm:h-3.25 rounded-full border-[1.5px] transition-all duration-300 ease-in-out {weekDots[i] ? 'bg-[#4ade80] border-[#4ade80] shadow-[0_0_8px_rgba(74,222,128,0.4)]' : isToday(i) ? 'bg-[rgba(255,255,255,0.05)] border-[rgba(251,146,60,0.5)]' : 'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.09)]'}"></div>
 							{/if}
 						</div>
 					{/each}
 				</div>
-				<div class="week-xp">
-					<span class="xp-num">+{profile.weeklyXP}</span>
-					<span class="xp-lbl">XP {t('habit.this_week') || 'this week'}</span>
+				<div class="flex flex-col items-end gap-px shrink-0">
+					<span class="xp-num text-[0.82rem] max-sm:text-[0.9rem] font-bold text-[#fb923c] tabular-nums">+{profile.weeklyXP}</span>
+					<span class="xp-lbl text-[0.6rem] max-sm:text-[0.62rem] text-[rgba(255,255,255,0.25)] whitespace-nowrap">XP {t('habit.this_week') || 'this week'}</span>
 				</div>
 			</div>
 		</div>
@@ -178,9 +178,9 @@
 
 	<!-- Goals -->
 	{#if activeGoals.length > 0}
-		<div class="goals-section">
-			<span class="goals-title">🎯 {t('habit.your_goals') || 'Your Goals'}</span>
-			<div class="goals-list">
+		<div class="flex flex-col gap-1.75">
+			<span class="goals-title text-[0.68rem] max-sm:text-[0.74rem] font-semibold text-[rgba(255,255,255,0.35)] uppercase tracking-[0.06em]">🎯 {t('habit.your_goals') || 'Your Goals'}</span>
+			<div class="flex flex-col gap-1.5">
 				{#each activeGoals.slice(0, 2) as goal (goal.id)}
 					<GoalCard {goal} />
 				{/each}
@@ -189,128 +189,18 @@
 	{/if}
 
 	<!-- Quick Start CTA -->
-	<button class="quick-start" onclick={() => onquickstart(quickSuggestion)}>
-		<span class="qs-icon">{quickSuggestion.icon}</span>
-		<div class="qs-text">
-			<span class="qs-title">{t(quickSuggestion.titleKey, quickSuggestion.titleParams) || quickSuggestion.title}</span>
-			<span class="qs-meta">{quickSuggestion.minutes} min · {t(quickSuggestion.descriptionKey, quickSuggestion.descriptionParams) || quickSuggestion.description}</span>
+	<button class="quick-start flex items-center gap-3 p-[11px_14px] max-sm:p-[12px_14px] bg-[rgba(251,146,60,0.07)] border border-[rgba(251,146,60,0.18)] rounded-lg cursor-pointer w-full text-left text-inherit font-[inherit] hover:bg-[rgba(251,146,60,0.13)] hover:border-[rgba(251,146,60,0.32)] hover:-translate-y-px active:translate-y-0" style="transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease" onclick={() => onquickstart(quickSuggestion)}>
+		<span class="qs-icon text-[1.1rem] max-sm:text-[1.2rem] shrink-0">{quickSuggestion.icon}</span>
+		<div class="flex-1 flex flex-col gap-0.5 min-w-0">
+			<span class="qs-title text-[0.78rem] max-sm:text-[0.85rem] font-bold text-(--text,#fff) whitespace-nowrap overflow-hidden text-ellipsis">{t(quickSuggestion.titleKey, quickSuggestion.titleParams) || quickSuggestion.title}</span>
+			<span class="qs-meta text-[0.62rem] max-sm:text-[0.68rem] text-[rgba(255,255,255,0.38)] whitespace-nowrap overflow-hidden text-ellipsis">{quickSuggestion.minutes} min · {t(quickSuggestion.descriptionKey, quickSuggestion.descriptionParams) || quickSuggestion.description}</span>
 		</div>
-		<span class="qs-cta">Start →</span>
+		<span class="qs-cta text-[0.72rem] max-sm:text-[0.78rem] font-bold text-[#fb923c] shrink-0 tracking-[0.02em]">Start →</span>
 	</button>
 </div>
 
 <style>
-	.habit-dashboard {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-		padding: 16px 18px 18px;
-		border-radius: 10px;
-		background: rgba(255, 255, 255, 0.025);
-		border: 1px solid rgba(255, 255, 255, 0.07);
-		margin-bottom: 20px;
-	}
-
-	/* ── Header ────────────────────────────────── */
-	.dash-top {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-	}
-
-	.dash-left {
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-	}
-
-	.greeting-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.greeting {
-		font-size: 1rem;
-		font-weight: 700;
-		color: var(--text, #fff);
-		letter-spacing: -0.01em;
-	}
-
-	.rank-pill {
-		font-size: 0.6rem;
-		font-weight: 600;
-		color: #fb923c;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		background: rgba(251, 146, 60, 0.12);
-		border: 1px solid rgba(251, 146, 60, 0.22);
-		border-radius: 999px;
-		padding: 2px 7px;
-	}
-
-	.streak-level-row {
-		display: flex;
-		align-items: center;
-		gap: 7px;
-	}
-
-	.streak-inline {
-		display: flex;
-		align-items: center;
-		gap: 3px;
-	}
-
-	.streak-num {
-		font-size: 0.82rem;
-		font-weight: 700;
-		color: #fb923c;
-	}
-
-	.streak-days {
-		font-size: 0.68rem;
-		color: rgba(251, 146, 60, 0.6);
-		font-weight: 500;
-	}
-
-	.dot-sep {
-		color: rgba(255, 255, 255, 0.15);
-		font-size: 0.7rem;
-	}
-
-	.midi-pill {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		padding: 4px 10px;
-		border-radius: 999px;
-		font-size: 0.65rem;
-		font-weight: 500;
-		background: rgba(255, 255, 255, 0.04);
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		color: rgba(255, 255, 255, 0.3);
-	}
-
-	.midi-pill.connected {
-		background: rgba(74, 222, 128, 0.08);
-		border-color: rgba(74, 222, 128, 0.2);
-		color: #4ade80;
-	}
-
-	/* ── Daily progress section ────────────────── */
-	.daily-section {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.daily-ring-area {
-		position: relative;
-		flex-shrink: 0;
-		width: 62px;
-		height: 62px;
-	}
-
+	/* SVG stroke transitions — no Tailwind equivalent */
 	.ring-arc {
 		stroke: #fb923c;
 		transition: stroke-dashoffset 0.9s cubic-bezier(0.4, 0, 0.2, 1);
@@ -320,313 +210,106 @@
 		stroke: #4ade80;
 	}
 
-	.ring-label {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0;
-		line-height: 1;
-	}
-
-	.ring-check {
-		font-size: 1.3rem;
-		color: #4ade80;
-		font-weight: 700;
-	}
-
-	.ring-num {
-		font-size: 1.1rem;
-		font-weight: 800;
-		color: #fb923c;
-		font-variant-numeric: tabular-nums;
-		line-height: 1;
-	}
-
-	.ring-denom {
-		font-size: 0.6rem;
-		color: rgba(255, 255, 255, 0.3);
-		font-weight: 500;
-		margin-top: 1px;
-	}
-
-	.daily-info {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 9px;
-		min-width: 0;
-	}
-
-	.motivation-text {
-		margin: 0;
-		font-size: 0.78rem;
-		font-weight: 600;
-		line-height: 1.3;
-		transition: color 0.4s ease;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	/* ── Week strip ────────────────────────────── */
-	.week-strip {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 10px;
-	}
-
-	.week-dots {
-		display: flex;
-		gap: 7px;
-	}
-
-	.day-col {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 4px;
-	}
-
-	.day-label {
-		font-size: 0.58rem;
-		color: rgba(255, 255, 255, 0.28);
-		text-transform: uppercase;
-		letter-spacing: 0.02em;
-		font-weight: 500;
-	}
-
-	.day-label.day-today {
-		color: #fb923c;
-	}
-
 	.mini-arc {
 		stroke: #fb923c;
 		transition: stroke-dashoffset 0.6s ease-out;
 	}
 
-	.day-dot {
-		width: 12px;
-		height: 12px;
-		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.05);
-		border: 1.5px solid rgba(255, 255, 255, 0.09);
-		transition: all 0.3s ease;
-	}
-
-	.day-dot.practiced {
-		background: #4ade80;
-		border-color: #4ade80;
-		box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
-	}
-
-	.day-dot.today:not(.practiced) {
-		border-color: rgba(251, 146, 60, 0.5);
-	}
-
-	.week-xp {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 1px;
-		flex-shrink: 0;
-	}
-
-	.xp-num {
-		font-size: 0.82rem;
-		font-weight: 700;
-		color: #fb923c;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.xp-lbl {
-		font-size: 0.6rem;
-		color: rgba(255, 255, 255, 0.25);
-		white-space: nowrap;
-	}
-
-	/* ── Goals ─────────────────────────────────── */
-	.goals-section {
-		display: flex;
-		flex-direction: column;
-		gap: 7px;
-	}
-
-	.goals-title {
-		font-size: 0.68rem;
-		font-weight: 600;
-		color: rgba(255, 255, 255, 0.35);
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-	}
-
-	.goals-list {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	/* ── Quick Start CTA ────────────────────────── */
-	.quick-start {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 11px 14px;
-		background: rgba(251, 146, 60, 0.07);
-		border: 1px solid rgba(251, 146, 60, 0.18);
-		border-radius: 8px;
-		cursor: pointer;
-		transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
-		width: 100%;
-		text-align: left;
-		color: inherit;
-		font-family: inherit;
-	}
-
-	.quick-start:hover {
-		background: rgba(251, 146, 60, 0.13);
-		border-color: rgba(251, 146, 60, 0.32);
-		transform: translateY(-1px);
-	}
-
-	.quick-start:active {
-		transform: translateY(0);
-	}
-
-	.qs-icon {
-		font-size: 1.1rem;
-		flex-shrink: 0;
-	}
-
-	.qs-text {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		min-width: 0;
-	}
-
-	.qs-title {
-		font-size: 0.78rem;
-		font-weight: 700;
-		color: var(--text, #fff);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.qs-meta {
-		font-size: 0.62rem;
-		color: rgba(255, 255, 255, 0.38);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.qs-cta {
-		font-size: 0.72rem;
-		font-weight: 700;
-		color: #fb923c;
-		flex-shrink: 0;
-		letter-spacing: 0.02em;
-	}
-
-	/* ── Mobile ────────────────────────────────── */
-	@media (max-width: 640px) {
+	/* ── iPad / large touch devices: scale up for native feel ── */
+	@media (hover: none) and (pointer: coarse) and (min-width: 768px) {
 		.habit-dashboard {
-			padding: 14px 14px 16px;
-			gap: 13px;
+			padding: 22px 24px 24px;
+			gap: 18px;
 		}
 
 		.greeting {
-			font-size: 1.1rem;
+			font-size: 1.35rem;
 		}
 
 		.rank-pill {
-			font-size: 0.68rem;
-			padding: 2px 8px;
+			font-size: 0.76rem;
+			padding: 3px 10px;
 		}
 
 		.streak-num {
-			font-size: 0.9rem;
+			font-size: 1.05rem;
 		}
 
 		.streak-days {
-			font-size: 0.75rem;
-		}
-
-		/* Let motivation text wrap instead of clip */
-		.motivation-text {
-			font-size: 0.88rem;
-			white-space: normal;
-		}
-
-		.daily-ring-area {
-			width: 70px;
-			height: 70px;
-		}
-
-		/* CSS overrides SVG width/height HTML attributes via the cascade */
-		.daily-ring-area svg {
-			width: 70px;
-			height: 70px;
-		}
-
-		.ring-num {
-			font-size: 1.2rem;
-		}
-
-		.ring-denom {
-			font-size: 0.65rem;
-		}
-
-		.day-label {
-			font-size: 0.64rem;
-		}
-
-		.day-dot {
-			width: 13px;
-			height: 13px;
-		}
-
-		.week-dots {
-			gap: 8px;
-		}
-
-		.xp-num {
-			font-size: 0.9rem;
-		}
-
-		.xp-lbl {
-			font-size: 0.62rem;
-		}
-
-		.goals-title {
-			font-size: 0.74rem;
-		}
-
-		.quick-start {
-			padding: 12px 14px;
-			gap: 12px;
-		}
-
-		.qs-icon {
-			font-size: 1.2rem;
-		}
-
-		.qs-title {
 			font-size: 0.85rem;
 		}
 
-		.qs-meta {
+		.motivation-text {
+			font-size: 1rem;
+		}
+
+		.daily-ring-area {
+			width: 80px;
+			height: 80px;
+		}
+
+		.daily-ring-area svg {
+			width: 80px;
+			height: 80px;
+		}
+
+		.ring-num {
+			font-size: 1.4rem;
+		}
+
+		.ring-denom {
+			font-size: 0.72rem;
+		}
+
+		.day-label {
 			font-size: 0.68rem;
 		}
 
-		.qs-cta {
+		.day-dot {
+			width: 15px;
+			height: 15px;
+		}
+
+		.week-dots {
+			gap: 10px;
+		}
+
+		.xp-num {
+			font-size: 1rem;
+		}
+
+		.xp-lbl {
+			font-size: 0.68rem;
+		}
+
+		.goals-title {
+			font-size: 0.8rem;
+		}
+
+		.midi-pill {
 			font-size: 0.78rem;
+			padding: 5px 13px;
+		}
+
+		.quick-start {
+			padding: 14px 18px;
+			gap: 14px;
+		}
+
+		.qs-icon {
+			font-size: 1.4rem;
+		}
+
+		.qs-title {
+			font-size: 0.95rem;
+		}
+
+		.qs-meta {
+			font-size: 0.75rem;
+		}
+
+		.qs-cta {
+			font-size: 0.85rem;
 		}
 	}
 </style>

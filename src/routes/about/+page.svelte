@@ -23,29 +23,32 @@
 	<meta name="twitter:image:alt" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
 </svelte:head>
 
-<div class="about-page">
+<div class="flex-1">
 
 	<!-- ── 1. Hero ── -->
-	<section class="about-hero">
+	<section class="relative min-h-[60vh] overflow-hidden flex items-end">
 		<img
 			src="/elements/about/hero-keys-closeup.webp"
 			alt=""
 			aria-hidden="true"
 			loading="eager"
 			fetchpriority="high"
-			class="about-hero-bg"
+			class="absolute inset-0 w-full h-full object-cover object-[center_60%] z-0 opacity-[0.55]"
 		/>
-		<div class="about-hero-overlay"></div>
-		<div class="about-hero-content">
-			<p class="about-eyebrow">{t('about.eyebrow')}</p>
-			<h1 class="about-hero-h1">
+		<div
+			class="absolute inset-0 z-[1]"
+			style="background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 60%, var(--bg) 100%)"
+		></div>
+		<div class="relative z-[2] w-full text-center px-6 pb-[60px]">
+			<p class="text-orange-400 text-[0.85rem] tracking-[0.12em] uppercase mb-4">{t('about.eyebrow')}</p>
+			<h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-white max-w-[700px] mx-auto leading-[1.15]">
 				{@html t('about.h1')}
 			</h1>
 		</div>
 	</section>
 
 	<!-- ── 2. Story ── -->
-	<section class="about-story">
+	<section class="about-story max-w-[680px] mx-auto py-20 px-6 flex flex-col gap-6 text-[1.05rem] leading-[1.8] text-[var(--text-muted,rgba(255,255,255,0.7))]">
 		<p>
 			{@html t('about.p1')}
 		</p>
@@ -58,19 +61,19 @@
 	</section>
 
 	<!-- ── 3. Company block ── -->
-	<section class="about-company">
-		<div class="company-col">
-			<p class="col-label">{t('about.company_title')}</p>
-			<p class="col-body">
+	<section class="max-w-[680px] mx-auto pt-12 px-6 pb-20 border-t border-[rgba(255,255,255,0.08)] grid grid-cols-2 gap-10 max-[560px]:grid-cols-1 max-[560px]:gap-8">
+		<div>
+			<p class="text-orange-400 text-xs uppercase tracking-[0.1em] mb-2.5">{t('about.company_title')}</p>
+			<p class="text-[0.9rem] leading-[1.8] text-[var(--text-muted,rgba(255,255,255,0.6))]">
 				{@html t('about.company_address')}
 			</p>
 		</div>
-		<div class="company-col">
-			<p class="col-label">{t('about.contact_title')}</p>
-			<p class="col-body">
-				<a href="mailto:info@jazzchords.app">info@jazzchords.app</a><br>
-				<a href="/impressum">{t('nav.impressum')}</a><br>
-				<a href="/privacy">{t('nav.privacy')}</a>
+		<div>
+			<p class="text-orange-400 text-xs uppercase tracking-[0.1em] mb-2.5">{t('about.contact_title')}</p>
+			<p class="text-[0.9rem] leading-[1.8] text-[var(--text-muted,rgba(255,255,255,0.6))]">
+				<a href="mailto:info@jazzchords.app" class="text-[var(--text-muted,rgba(255,255,255,0.6))] underline underline-offset-[3px] transition-colors duration-150 hover:text-white">info@jazzchords.app</a><br>
+				<a href="/impressum" class="text-[var(--text-muted,rgba(255,255,255,0.6))] underline underline-offset-[3px] transition-colors duration-150 hover:text-white">{t('nav.impressum')}</a><br>
+				<a href="/privacy" class="text-[var(--text-muted,rgba(255,255,255,0.6))] underline underline-offset-[3px] transition-colors duration-150 hover:text-white">{t('nav.privacy')}</a>
 			</p>
 		</div>
 	</section>
@@ -78,125 +81,9 @@
 </div>
 
 <style>
-	.about-page {
-		flex: 1;
-	}
-
-	/* ── Hero ── */
-	.about-hero {
-		position: relative;
-		min-height: 60vh;
-		overflow: hidden;
-		display: flex;
-		align-items: flex-end;
-	}
-
-	.about-hero-bg {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		object-position: center 60%;
-		z-index: 0;
-		opacity: 0.55;
-	}
-
-	.about-hero-overlay {
-		position: absolute;
-		inset: 0;
-		z-index: 1;
-		background: linear-gradient(
-			to bottom,
-			rgba(0,0,0,0.1) 0%,
-			rgba(0,0,0,0.4) 60%,
-			var(--bg) 100%
-		);
-	}
-
-	.about-hero-content {
-		position: relative;
-		z-index: 2;
-		width: 100%;
-		text-align: center;
-		padding: 0 24px 60px;
-	}
-
-	.about-eyebrow {
-		color: #fb923c;
-		font-size: 0.85rem;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		margin-bottom: 16px;
-	}
-
-	.about-hero-h1 {
-		font-size: clamp(2rem, 5vw, 3.5rem);
-		font-weight: 700;
-		color: #fff;
-		max-width: 700px;
-		margin: 0 auto;
-		line-height: 1.15;
-	}
-
-	/* ── Story ── */
-	.about-story {
-		max-width: 680px;
-		margin: 0 auto;
-		padding: 80px 24px;
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-		font-size: 1.05rem;
-		line-height: 1.8;
-		color: var(--text-muted, rgba(255,255,255,0.7));
-	}
-
-	.about-story .accent {
+	/* Needed for {@html} injected content */
+	.about-story :global(.accent) {
 		color: #fb923c;
 		font-weight: 600;
-	}
-
-	/* ── Company block ── */
-	.about-company {
-		max-width: 680px;
-		margin: 0 auto;
-		padding: 48px 24px 80px;
-		border-top: 1px solid rgba(255,255,255,0.08);
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 40px;
-	}
-
-	.col-label {
-		color: #fb923c;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		margin-bottom: 10px;
-	}
-
-	.col-body {
-		font-size: 0.9rem;
-		line-height: 1.8;
-		color: var(--text-muted, rgba(255,255,255,0.6));
-	}
-
-	.col-body a {
-		color: var(--text-muted, rgba(255,255,255,0.6));
-		text-decoration: underline;
-		text-underline-offset: 3px;
-		transition: color 0.15s;
-	}
-
-	.col-body a:hover {
-		color: #fff;
-	}
-
-	@media (max-width: 560px) {
-		.about-company {
-			grid-template-columns: 1fr;
-			gap: 32px;
-		}
 	}
 </style>

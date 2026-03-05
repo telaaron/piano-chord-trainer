@@ -58,7 +58,7 @@
 
 <main class="flex-1" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">
 	<!-- Hero -->
-	<section style="position: relative; overflow: hidden;">
+	<section class="relative overflow-hidden">
 		<!-- Background image -->
 		<img
 			src="/elements/open-studio/hero-2am-piano.webp"
@@ -66,34 +66,14 @@
 			aria-hidden="true"
 			loading="eager"
 			fetchpriority="high"
-			class="hero-bg-image"
-			style="
-				position: absolute;
-				inset: 0;
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-				object-position: center 30%;
-				z-index: 0;
-				opacity: 0.45;
-			"
+			class="absolute inset-0 w-full h-full object-cover object-[center_30%] z-0 opacity-[0.45] max-md:object-[70%_center]"
 		/>
 
 		<!-- Gradient overlay -->
-		<div style="
-			position: absolute;
-			inset: 0;
-			z-index: 1;
-			background: linear-gradient(
-				to bottom,
-				rgba(0,0,0,0.15) 0%,
-				rgba(0,0,0,0.55) 50%,
-				var(--bg) 100%
-			);
-		"></div>
+		<div class="absolute inset-0 z-1" style="background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 50%, var(--bg) 100%)"></div>
 
 		<!-- Content -->
-		<div class="max-w-4xl mx-auto px-4 py-20 sm:py-28 text-center" style="position: relative; z-index: 2;">
+		<div class="max-w-4xl mx-auto px-4 py-20 sm:py-28 text-center relative z-2">
 			<div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-xs text-[var(--text-muted)] tracking-wide uppercase">
 				{t('open_studio.badge')}
 			</div>
@@ -189,57 +169,57 @@
 				<span class="block mt-1 text-sm text-[var(--text-dim)]">{t('open_studio.platform_preview')}</span>
 			</p>
 
-			<div class="os-mock">
+			<div class="rounded-xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.6)] border border-[rgba(109,76,65,0.3)]">
 				<!-- Browser Chrome -->
-				<div class="os-browser-bar">
-					<div class="os-dots"><span></span><span></span><span></span></div>
-					<div class="os-url-bar">
-						<span class="os-lock">🔒</span>
+				<div class="bg-[#2b2b2b] px-3 py-[0.6rem] flex items-center gap-3">
+					<div class="flex gap-[0.35rem]"><span class="w-2.75 h-2.75 rounded-full bg-[#ff5f57]"></span><span class="w-2.75 h-2.75 rounded-full bg-[#ffbd2e]"></span><span class="w-2.75 h-2.75 rounded-full bg-[#28c840]"></span></div>
+					<div class="flex-1 bg-[#3a3a3a] px-3 py-[0.35rem] rounded-md text-[0.8rem] text-[#ccc] flex items-center gap-[0.4rem]">
+						<span class="text-[0.65rem]">🔒</span>
 						app.openstudiojazz.com
 					</div>
 				</div>
 
 				<!-- OS Top Nav -->
-				<div class="os-topnav">
-					<img src="/mock-content/open-studio-logo.png" alt="Open Studio" class="os-logo-img"
+				<div class="bg-[#0D0D0D] px-6 py-3 flex items-center justify-between border-b border-[#e5e5e5]">
+					<img src="/mock-content/open-studio-logo.png" alt="Open Studio" class="h-6"
 						width="160" height="32" loading="lazy" />
-					<div class="os-nav-links">
-						<span class="os-nav-link">
-							<span class="os-nav-icon">◎</span> Courses
+					<div class="flex gap-6 max-md:hidden">
+						<span class="text-[0.8rem] text-[#555] flex items-center gap-[0.3rem] cursor-default">
+							<span class="text-[0.7rem]">◎</span> Courses
 						</span>
-						<span class="os-nav-link">
-							<span class="os-nav-icon">⦿</span> Live Sessions
+						<span class="text-[0.8rem] text-[#555] flex items-center gap-[0.3rem] cursor-default">
+							<span class="text-[0.7rem]">⦿</span> Live Sessions
 						</span>
-						<span class="os-nav-link">
-							<span class="os-nav-icon">👥</span> The Hang
+						<span class="text-[0.8rem] text-[#555] flex items-center gap-[0.3rem] cursor-default">
+							<span class="text-[0.7rem]">👥</span> The Hang
 						</span>
 					</div>
-					<div class="os-nav-right">
+					<div class="flex items-center gap-3 max-md:hidden">
 						<Bookmark size={18} class="text-[#999]" />
 						<User size={18} class="text-[#999]" />
 					</div>
 				</div>
 
 				<!-- OS Content Area -->
-				<div class="os-content">
+				<div class="bg-white pb-6">
 					<!-- Breadcrumb -->
-					<div class="os-breadcrumb">
+					<div class="px-6 py-3 flex justify-between items-center text-[0.85rem] text-[#333]">
 						<span>← Harmony Games Unlimited</span>
-						<span class="os-chapters">☰ View Chapters</span>
+						<span class="text-[0.8rem] text-[#555] border border-[#ddd] px-3 py-[0.35rem] rounded-md cursor-default">☰ View Chapters</span>
 					</div>
 
 					<!-- Video Thumbnail -->
-					<div class="os-video">
-						<img src="/mock-content/thumbnail.png" alt="ii-V-I Progression — Jazz fundamentals drill" class="os-video-img"
+					<div class="mx-6 rounded-lg overflow-hidden relative bg-black">
+						<img src="/mock-content/thumbnail.png" alt="ii-V-I Progression — Jazz fundamentals drill" class="w-full h-auto block"
 							width="960" height="540" loading="lazy" />
 						<!-- Video Controls Bar -->
-						<div class="os-video-controls">
-							<div class="os-play-btn">▶</div>
-							<div class="os-video-info">
-								<span class="os-video-title">ii-V-I Progression · Speed Drill</span>
-								<span class="os-video-time">0:00 / 14:18</span>
+						<div class="bg-black/85 px-3 py-2 flex items-center gap-3 text-xs text-[#ccc]">
+							<div class="w-7 h-7 bg-[#4da6ff] rounded-full flex items-center justify-center text-white text-[0.65rem] shrink-0">▶</div>
+							<div class="flex flex-col gap-[0.1rem] flex-1">
+								<span class="font-semibold text-white text-[0.8rem]">ii-V-I Progression · Speed Drill</span>
+								<span class="text-[0.7rem] text-[#999]">0:00 / 14:18</span>
 							</div>
-							<div class="os-video-right">
+							<div class="flex gap-3 text-[0.7rem] text-[#999] max-md:hidden">
 								<span>100%</span>
 								<span>⊖ ⊕</span>
 								<span>↻ Loop</span>
@@ -248,48 +228,48 @@
 					</div>
 
 					<!-- Tabs — with our new "Practice" tab -->
-					<div class="os-tabs">
-						<span class="os-tab">Overview</span>
-						<span class="os-tab">Materials</span>
-						<span class="os-tab">Shortcuts</span>
-						<span class="os-tab os-tab-active">Practice ✨</span>
+					<div class="flex gap-0 border-b border-[#e5e5e5] px-6 mt-6">
+						<span class="px-4 py-3 text-[0.85rem] text-[#888] border-b-2 border-transparent cursor-default">Overview</span>
+						<span class="px-4 py-3 text-[0.85rem] text-[#888] border-b-2 border-transparent cursor-default">Materials</span>
+						<span class="px-4 py-3 text-[0.85rem] text-[#888] border-b-2 border-transparent cursor-default">Shortcuts</span>
+						<span class="px-4 py-3 text-[0.85rem] border-b-2 cursor-default text-[#1a1a1a] border-b-[#1a1a1a] font-semibold">Practice ✨</span>
 					</div>
 
 					<!-- Chord Trainer Embedded -->
-					<div class="os-trainer-embed">
-						<div class="os-trainer-badge">Preview · Chord Trainer Integration</div>
+					<div class="m-6 bg-[#f8f8f8] border-2 border-[#004E89] rounded-xl p-6 relative">
+						<div class="absolute top-[-0.6rem] left-5 bg-[#004E89] text-white text-[0.65rem] font-bold px-2 py-[0.15rem] rounded uppercase tracking-[0.04em]">Preview · Chord Trainer Integration</div>
 
-						<div class="os-trainer-top">
-							<span class="os-trainer-status">🎹 MIDI Connected</span>
-							<span class="os-trainer-meta">ii-V-I Progression · All Keys</span>
-							<span class="os-trainer-timer">1:47</span>
+						<div class="flex justify-between items-center mb-5 pb-3 border-b border-[rgba(0,78,137,0.2)] text-[0.8rem]">
+							<span class="text-[#00a86b] font-semibold">🎹 MIDI Connected</span>
+							<span class="text-[#666]">ii-V-I Progression · All Keys</span>
+							<span class="text-xl font-bold text-[#004E89]" style="font-family: var(--font-mono)">1:47</span>
 						</div>
 
-						<div class="os-trainer-chord">
-							<div class="os-chord-name">Dm7</div>
-							<div class="os-chord-type">Shell Voicing (D – F – C)</div>
+						<div class="text-center mb-5">
+							<div class="text-[2.75rem] font-extrabold text-[#004E89] leading-none mb-1">Dm7</div>
+							<div class="text-[0.9rem] text-[#333]">Shell Voicing (D – F – C)</div>
 						</div>
 
 						<!-- Piano Keys -->
-						<div class="os-piano">
+						<div class="flex justify-center items-start h-22.5 gap-px mb-5 px-4 relative max-md:px-0">
 							{#each Array(15) as _, i}
 								{@const isBlack = [1, 3, 6, 8, 10, 13].includes(i)}
 								{@const isActive = [2, 5, 12].includes(i)}
 								<div
-									class="os-key"
-									class:os-key-black={isBlack}
-									class:os-key-white={!isBlack}
+									class="rounded-b {isBlack ? 'w-5.5 h-14.5 bg-[#1a1410] border border-[#3e2723] -mx-3 z-2 relative max-md:w-4 max-md:-mx-2.25' : 'w-8.5 h-22.5 bg-[#f5f3ee] border border-[#c8c4ba] max-md:w-6.5'}"
 									class:os-key-active={isActive}
+									class:os-key-white={!isBlack}
+									class:os-key-black={isBlack}
 								></div>
 							{/each}
 						</div>
 
-						<div class="os-trainer-footer">
+						<div class="flex items-center gap-3 text-[0.8rem] text-(--text-muted)">
 							<span>Chord 8 / 20</span>
-							<div class="os-progress-track">
-								<div class="os-progress-bar" style="width: 40%"></div>
+							<div class="flex-1 h-1.25 bg-[rgba(109,76,65,0.2)] rounded-[3px] overflow-hidden">
+								<div class="h-full rounded-[3px]" style="width: 40%; background: linear-gradient(90deg, var(--primary), var(--accent-amber))"></div>
 							</div>
-							<span class="os-trainer-accuracy">Accuracy: 94%</span>
+							<span class="text-(--accent-green) font-semibold">Accuracy: 94%</span>
 						</div>
 					</div>
 
@@ -299,16 +279,16 @@
 
 		<!-- Benefits as annotation OUTSIDE the mock -->
 		<div class="max-w-5xl mx-auto">
-			<div class="os-embed-benefits">
-				<div class="os-benefit-item">
+			<div class="grid grid-cols-3 gap-6 bg-[rgba(232,118,59,0.05)] px-6 py-10 mt-6 rounded-lg max-md:grid-cols-1">
+				<div class="flex items-center gap-3 text-[0.9rem] text-(--text) font-medium">
 					<CheckCircle size={20} class="text-[#00a86b]" />
 					<span>{t('open_studio.benefits_1')}</span>
 				</div>
-				<div class="os-benefit-item">
+				<div class="flex items-center gap-3 text-[0.9rem] text-(--text) font-medium">
 					<CheckCircle size={20} class="text-[#00a86b]" />
 					<span>{t('open_studio.benefits_2')}</span>
 				</div>
-				<div class="os-benefit-item">
+				<div class="flex items-center gap-3 text-[0.9rem] text-(--text) font-medium">
 					<CheckCircle size={20} class="text-[#00a86b]" />
 					<span>{t('open_studio.benefits_3')}</span>
 				</div>
@@ -484,306 +464,7 @@
 </main>
 
 <style>
-	/* ── Open Studio Mock ─────────────────────────────── */
-	/* Matches the real app.openstudiojazz.com UI exactly */
-
-	.os-mock {
-		border-radius: 12px;
-		overflow: hidden;
-		box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
-		border: 1px solid rgba(109, 76, 65, 0.3);
-	}
-
-	/* Browser chrome */
-	.os-browser-bar {
-		background: #2b2b2b;
-		padding: 0.6rem 0.75rem;
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.os-dots {
-		display: flex;
-		gap: 0.35rem;
-	}
-
-	.os-dots span {
-		width: 11px;
-		height: 11px;
-		border-radius: 50%;
-	}
-
-	.os-dots span:nth-child(1) { background: #ff5f57; }
-	.os-dots span:nth-child(2) { background: #ffbd2e; }
-	.os-dots span:nth-child(3) { background: #28c840; }
-
-	.os-url-bar {
-		flex: 1;
-		background: #3a3a3a;
-		padding: 0.35rem 0.75rem;
-		border-radius: 6px;
-		font-size: 0.8rem;
-		color: #ccc;
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-
-	.os-lock {
-		font-size: 0.65rem;
-	}
-
-	/* OS Top Navigation — white bar, dark text */
-	.os-topnav {
-		background: #0D0D0D;
-		padding: 0.75rem 1.5rem;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		border-bottom: 1px solid #e5e5e5;
-	}
-
-
-	.os-nav-links {
-		display: flex;
-		gap: 1.5rem;
-	}
-
-	.os-nav-link {
-		font-size: 0.8rem;
-		color: #555;
-		display: flex;
-		align-items: center;
-		gap: 0.3rem;
-		cursor: default;
-	}
-
-	.os-nav-icon {
-		font-size: 0.7rem;
-	}
-
-	.os-nav-right {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.os-logo-img {
-		height: 24px;
-	}
-
-	/* OS Content — white background */
-	.os-content {
-		background: #ffffff;
-		padding: 0 0 1.5rem 0;
-	}
-
-	.os-breadcrumb {
-		padding: 0.75rem 1.5rem;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 0.85rem;
-		color: #333;
-	}
-
-	.os-chapters {
-		font-size: 0.8rem;
-		color: #555;
-		border: 1px solid #ddd;
-		padding: 0.35rem 0.75rem;
-		border-radius: 6px;
-		cursor: default;
-	}
-
-	/* Video area — real thumbnail */
-	.os-video {
-		margin: 0 1.5rem;
-		border-radius: 8px;
-		overflow: hidden;
-		position: relative;
-		background: #000;
-	}
-
-	.os-video-img {
-		width: 100%;
-		height: auto;
-		display: block;
-	}
-
-	.os-video-controls {
-		background: rgba(0, 0, 0, 0.85);
-		padding: 0.5rem 0.75rem;
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		font-size: 0.75rem;
-		color: #ccc;
-	}
-
-	.os-play-btn {
-		width: 28px;
-		height: 28px;
-		background: #4da6ff;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: white;
-		font-size: 0.65rem;
-		flex-shrink: 0;
-	}
-
-	.os-video-info {
-		display: flex;
-		flex-direction: column;
-		gap: 0.1rem;
-		flex: 1;
-	}
-
-	.os-video-title {
-		font-weight: 600;
-		color: #fff;
-		font-size: 0.8rem;
-	}
-
-	.os-video-time {
-		font-size: 0.7rem;
-		color: #999;
-	}
-
-	.os-video-right {
-		display: flex;
-		gap: 0.75rem;
-		font-size: 0.7rem;
-		color: #999;
-	}
-
-	/* Tabs — matching OS tab style */
-	.os-tabs {
-		display: flex;
-		gap: 0;
-		border-bottom: 1px solid #e5e5e5;
-		padding: 0 1.5rem;
-		margin-top: 1.5rem;
-	}
-
-	.os-tab {
-		padding: 0.75rem 1rem;
-		font-size: 0.85rem;
-		color: #888;
-		border-bottom: 2px solid transparent;
-		cursor: default;
-	}
-
-	.os-tab-active {
-		color: #1a1a1a;
-		border-bottom-color: #1a1a1a;
-		font-weight: 600;
-	}
-
-	/* Embedded Chord Trainer inside OS */
-	.os-trainer-embed {
-		margin: 1.5rem;
-		background: #f8f8f8;
-		border: 2px solid #004E89;
-		border-radius: 12px;
-		padding: 1.5rem;
-		position: relative;
-	}
-
-	.os-trainer-badge {
-		position: absolute;
-		top: -0.6rem;
-		left: 1.25rem;
-		background: #004E89;
-		color: white;
-		font-size: 0.65rem;
-		font-weight: 700;
-		padding: 0.15rem 0.5rem;
-		border-radius: 4px;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-
-	.os-trainer-top {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 1.25rem;
-		padding-bottom: 0.75rem;
-		border-bottom: 1px solid rgba(0, 78, 137, 0.2);
-		font-size: 0.8rem;
-	}
-
-	.os-trainer-status {
-		color: #00a86b;
-		font-weight: 600;
-	}
-
-	.os-trainer-meta {
-		color: #666;
-	}
-
-	.os-trainer-timer {
-		font-family: var(--font-mono);
-		font-size: 1.25rem;
-		font-weight: 700;
-		color: #004E89;
-	}
-
-	.os-trainer-chord {
-		text-align: center;
-		margin-bottom: 1.25rem;
-	}
-
-	.os-chord-name {
-		font-size: 2.75rem;
-		font-weight: 800;
-		color: #004E89;
-		line-height: 1;
-		margin-bottom: 0.25rem;
-	}
-
-	.os-chord-type {
-		font-size: 0.9rem;
-		color: #333;
-	}
-
-	/* Mini piano inside the embed */
-	.os-piano {
-		display: flex;
-		justify-content: center;
-		align-items: flex-start;
-		height: 90px;
-		gap: 1px;
-		margin-bottom: 1.25rem;
-		padding: 0 1rem;
-		position: relative;
-	}
-
-	.os-key {
-		border-radius: 0 0 4px 4px;
-	}
-
-	.os-key-white {
-		width: 34px;
-		height: 90px;
-		background: #f5f3ee;
-		border: 1px solid #c8c4ba;
-	}
-
-	.os-key-black {
-		width: 22px;
-		height: 58px;
-		background: #1a1410;
-		border: 1px solid #3e2723;
-		margin: 0 -12px;
-		z-index: 2;
-		position: relative;
-	}
-
+	/* Active piano key highlights — kept in CSS for compound selector support */
 	.os-key-active.os-key-white {
 		background: var(--accent-gold) !important;
 		box-shadow: 0 0 14px var(--accent-gold);
@@ -792,88 +473,5 @@
 	.os-key-active.os-key-black {
 		background: var(--accent-amber) !important;
 		box-shadow: 0 0 10px var(--accent-amber);
-	}
-
-	.os-trainer-footer {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		font-size: 0.8rem;
-		color: var(--text-muted);
-	}
-
-	.os-progress-track {
-		flex: 1;
-		height: 5px;
-		background: rgba(109, 76, 65, 0.2);
-		border-radius: 3px;
-		overflow: hidden;
-	}
-
-	.os-progress-bar {
-		height: 100%;
-		background: linear-gradient(90deg, var(--primary), var(--accent-amber));
-		border-radius: 3px;
-	}
-
-	.os-trainer-accuracy {
-		color: var(--accent-green);
-		font-weight: 600;
-	}
-
-	/* Benefits as annotation outside mock */
-	.os-embed-benefits {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1.5rem;
-		background: rgba(232, 118, 59, 0.05);
-		padding: 2.5rem 1.5rem;
-		margin-top: 1.5rem;
-		border-radius: 8px;
-	}
-
-	.os-benefit-item {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		font-size: 0.9rem;
-		color: var(--text);
-		font-weight: 500;
-	}
-
-	/* ── Mobile ───────────────────────────────────────── */
-	@media (max-width: 768px) {
-		.hero-bg-image {
-			object-position: 70% center !important;
-		}
-
-		.os-nav-links {
-			display: none;
-		}
-
-		.os-nav-right {
-			display: none;
-		}
-
-		.os-piano {
-			padding: 0;
-		}
-
-		.os-key-white {
-			width: 26px;
-		}
-
-		.os-key-black {
-			width: 16px;
-			margin: 0 -9px;
-		}
-
-		.os-video-right {
-			display: none;
-		}
-
-		.os-embed-benefits {
-			grid-template-columns: 1fr;
-		}
 	}
 </style>

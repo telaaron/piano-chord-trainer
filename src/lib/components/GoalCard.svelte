@@ -38,187 +38,79 @@
 	const color = $derived(GOAL_COLORS[goal.type] || '#fb923c');
 </script>
 
-<div class="goal-card" class:completed={isCompleted} style="--goal-color: {color}">
-	<div class="goal-header">
-		<span class="goal-icon">{goal.icon}</span>
-		<div class="goal-title-block">
-			<span class="goal-title">{t(goal.titleKey, goal.titleParams) || goal.title}</span>
+<div
+	class="goal-card bg-white/[0.03] border border-[color:var(--border,#222)] border-l-[3px]
+		rounded-[var(--radius,8px)] py-2 px-3 transition-all duration-200 ease-in-out
+		hover:bg-white/[0.05] hover:border-[color:var(--goal-color)] hover:border-l-[color:var(--goal-color)]
+		max-sm:py-2.5
+		{isCompleted ? 'opacity-60 border-l-[color:var(--accent-green,#4ade80)]' : 'border-l-[color:var(--goal-color)]'}"
+	style="--goal-color: {color}"
+>
+	<div class="flex items-start gap-2 mb-1.5">
+		<span class="goal-icon text-[0.85rem] shrink-0 mt-px max-sm:text-base">{goal.icon}</span>
+		<div class="flex flex-col gap-px flex-1 min-w-0">
+			<span class="goal-title text-xs font-semibold text-[var(--text,#fff)] min-w-0 max-sm:text-[0.85rem]">{t(goal.titleKey, goal.titleParams) || goal.title}</span>
 			{#if goal.descriptionKey}
-				<span class="goal-desc">{t(goal.descriptionKey, goal.descriptionParams)}</span>
+				<span class="goal-desc text-[0.6rem] text-white/[0.32] whitespace-nowrap overflow-hidden text-ellipsis max-sm:text-[0.68rem] max-sm:whitespace-normal max-sm:line-clamp-2">{t(goal.descriptionKey, goal.descriptionParams)}</span>
 			{/if}
 		</div>
 		{#if isCompleted}
-			<span class="goal-done">✓</span>
+			<span class="text-[var(--accent-green,#4ade80)] font-bold text-[0.85rem] max-sm:text-[0.95rem]">✓</span>
 		{/if}
 	</div>
 
-	<div class="goal-progress-row">
-		<div class="goal-bar">
-			<div class="goal-fill" style="width: {progressPct}%"></div>
+	<div class="flex items-center gap-2">
+		<div class="goal-bar flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden max-sm:h-[5px]">
+			<div class="h-full bg-[var(--goal-color)] rounded-full transition-[width] duration-[0.8s] ease-out" style="width: {progressPct}%"></div>
 		</div>
 		{#if progressPct === 0 && !isCompleted}
-			<span class="goal-new">New</span>
+			<span class="goal-new text-[0.6rem] text-[var(--text-muted,#888)] font-medium uppercase tracking-[0.03em] min-w-[28px] text-right shrink-0 max-sm:text-[0.62rem]">New</span>
 		{:else}
-			<span class="goal-pct">{progressPct}%</span>
+			<span class="goal-pct text-[0.6rem] text-[var(--goal-color)] font-semibold tabular-nums min-w-[28px] text-right shrink-0 max-sm:text-[0.65rem]">{progressPct}%</span>
 		{/if}
-		<span class="goal-xp">+{goal.xpReward} XP</span>
+		<span class="goal-xp text-[0.6rem] text-[var(--text-dim,#666)] font-medium shrink-0 max-sm:text-[0.65rem]">+{goal.xpReward} XP</span>
 	</div>
 </div>
 
 <style>
-	.goal-card {
-		background: rgba(255, 255, 255, 0.03);
-		border: 1px solid var(--border, #222);
-		border-left: 3px solid var(--goal-color);
-		border-radius: var(--radius, 8px);
-		padding: 8px 12px;
-		transition: all 0.2s ease;
-	}
-
-	.goal-card:hover {
-		background: rgba(255, 255, 255, 0.05);
-		border-color: var(--goal-color);
-	}
-
-	.goal-card.completed {
-		opacity: 0.6;
-		border-left-color: var(--accent-green, #4ade80);
-	}
-
-	.goal-header {
-		display: flex;
-		align-items: flex-start;
-		gap: 8px;
-		margin-bottom: 6px;
-	}
-
-	.goal-icon {
-		font-size: 0.85rem;
-		flex-shrink: 0;
-		margin-top: 1px;
-	}
-
-	.goal-title-block {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-		flex: 1;
-		min-width: 0;
-	}
-
-	.goal-title {
-		font-size: 0.75rem;
-		font-weight: 600;
-		color: var(--text, #fff);
-		min-width: 0;
-	}
-
-	.goal-desc {
-		font-size: 0.6rem;
-		color: rgba(255, 255, 255, 0.32);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.goal-done {
-		color: var(--accent-green, #4ade80);
-		font-weight: 700;
-		font-size: 0.85rem;
-	}
-
-	.goal-progress-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.goal-bar {
-		flex: 1;
-		height: 4px;
-		background: rgba(255, 255, 255, 0.06);
-		border-radius: 999px;
-		overflow: hidden;
-	}
-
-	.goal-fill {
-		height: 100%;
-		background: var(--goal-color);
-		border-radius: 999px;
-		transition: width 0.8s ease-out;
-	}
-
-	.goal-pct {
-		font-size: 0.6rem;
-		color: var(--goal-color);
-		font-weight: 600;
-		font-variant-numeric: tabular-nums;
-		min-width: 28px;
-		text-align: right;
-		flex-shrink: 0;
-	}
-
-	.goal-new {
-		font-size: 0.6rem;
-		color: var(--text-muted, #888);
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
-		min-width: 28px;
-		text-align: right;
-		flex-shrink: 0;
-	}
-
-	.goal-xp {
-		font-size: 0.6rem;
-		color: var(--text-dim, #666);
-		font-weight: 500;
-		flex-shrink: 0;
-	}
-
-	/* ── Mobile ─────────────────────────────────── */
-	@media (max-width: 640px) {
+	/* ── iPad / large touch ─────────────────────── */
+	@media (hover: none) and (pointer: coarse) and (min-width: 768px) {
 		.goal-card {
-			padding: 10px 12px;
+			padding: 14px 16px;
 		}
 
 		.goal-icon {
-			font-size: 1rem;
+			font-size: 1.1rem;
 		}
 
 		.goal-title {
-			font-size: 0.85rem;
+			font-size: 1rem;
+			font-weight: 600;
 		}
 
-		/* Allow description to show 2 lines instead of clipping */
 		.goal-desc {
-			font-size: 0.68rem;
+			font-size: 0.8rem;
 			white-space: normal;
 			overflow: hidden;
 			display: -webkit-box;
 			-webkit-line-clamp: 2;
 			-webkit-box-orient: vertical;
-			text-overflow: unset;
-		}
-
-		.goal-done {
-			font-size: 0.95rem;
 		}
 
 		.goal-bar {
-			height: 5px;
+			height: 6px;
 		}
 
 		.goal-pct {
-			font-size: 0.65rem;
+			font-size: 0.8rem;
 		}
 
 		.goal-new {
-			font-size: 0.62rem;
+			font-size: 0.78rem;
 		}
 
 		.goal-xp {
-			font-size: 0.65rem;
+			font-size: 0.8rem;
 		}
 	}
 </style>
