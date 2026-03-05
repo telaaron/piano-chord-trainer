@@ -1992,7 +1992,7 @@
 				</div>
 			{/if}
 
-			<div class="max-w-3xl mx-auto space-y-6">
+			<div class="max-w-5xl mx-auto space-y-6">
 				<!-- Input status bar -->
 				{#if inputMode === 'midi'}
 					<div class="flex items-center justify-between">
@@ -2358,7 +2358,7 @@
 				</div>
 			</div>
 
-			<div class="max-w-3xl mx-auto space-y-6">
+			<div class="max-w-5xl mx-auto space-y-6">
 				<!-- Input status -->
 				{#if inputMode === 'midi'}
 					<MidiStatus
@@ -2537,7 +2537,7 @@
 		{#if screen === 'finished'}
 			<div in:scale={{ start: 0.95, duration: 300, delay: 50 }} style="transform-origin: center top">
 			<!-- Back button -->
-			<div class="max-w-2xl mx-auto mb-4">
+			<div class="max-w-4xl mx-auto mb-4">
 				<button
 					class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
 					onclick={resetToSetup}
@@ -2681,9 +2681,16 @@
 	/* Two-column layout */
 	.train-layout {
 		display: grid;
-		grid-template-columns: 1fr 340px;
-		gap: 20px;
+		grid-template-columns: 1fr 360px;
+		gap: 24px;
 		align-items: start;
+	}
+
+	@media (min-width: 1100px) {
+		.train-layout {
+			grid-template-columns: 1fr 400px;
+			gap: 32px;
+		}
 	}
 
 	.train-main {
@@ -2699,7 +2706,7 @@
 		gap: 16px;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 900px) {
 		.train-layout {
 			grid-template-columns: 1fr;
 		}

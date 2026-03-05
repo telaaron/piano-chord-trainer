@@ -511,8 +511,8 @@
 			height: 100%;
 			object-fit: cover;
 			object-position: center center;
-			opacity: 0.15;
-			filter: brightness(0.8) contrast(1.2) blur(1px);
+			opacity: 0.80;
+			filter: brightness(0.8) contrast(1.2);
 		}
 
 		.subtitle {
