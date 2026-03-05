@@ -159,7 +159,7 @@
 	}
 
 	.goal-new {
-		font-size: 0.55rem;
+		font-size: 0.6rem;
 		color: var(--text-muted, #888);
 		font-weight: 500;
 		text-transform: uppercase;
@@ -170,9 +170,55 @@
 	}
 
 	.goal-xp {
-		font-size: 0.55rem;
-		color: var(--text-dim, #444);
+		font-size: 0.6rem;
+		color: var(--text-dim, #666);
 		font-weight: 500;
 		flex-shrink: 0;
+	}
+
+	/* ── Mobile ─────────────────────────────────── */
+	@media (max-width: 640px) {
+		.goal-card {
+			padding: 10px 12px;
+		}
+
+		.goal-icon {
+			font-size: 1rem;
+		}
+
+		.goal-title {
+			font-size: 0.85rem;
+		}
+
+		/* Allow description to show 2 lines instead of clipping */
+		.goal-desc {
+			font-size: 0.68rem;
+			white-space: normal;
+			overflow: hidden;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			text-overflow: unset;
+		}
+
+		.goal-done {
+			font-size: 0.95rem;
+		}
+
+		.goal-bar {
+			height: 5px;
+		}
+
+		.goal-pct {
+			font-size: 0.65rem;
+		}
+
+		.goal-new {
+			font-size: 0.62rem;
+		}
+
+		.goal-xp {
+			font-size: 0.65rem;
+		}
 	}
 </style>

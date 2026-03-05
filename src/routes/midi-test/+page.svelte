@@ -435,8 +435,8 @@
 						class:bg-red-500={micLevel >= 0.9}
 						style="width: {micLevel * 100}%"
 					></div>
-				<!-- threshold marker at 3% (energyThreshold 0.006 / normalisation 0.2) -->
-				<div class="absolute inset-y-0 w-px bg-[var(--text-dim)] opacity-50" style="left: 3%"></div>
+				<!-- threshold marker at 2% (energyThreshold 0.004 / normalisation 0.2) -->
+					<div class="absolute inset-y-0 w-px bg-[var(--text-dim)] opacity-50" style="left: 2%"></div>
 				</div>
 				{#if micLevel === 0}
 					<p class="text-xs text-amber-400">Kein Signal — falsches Mikrofon ausgewählt?</p>

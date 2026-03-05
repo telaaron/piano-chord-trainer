@@ -70,6 +70,7 @@ export class AudioInputService {
 	private source: MediaStreamAudioSourceNode | null = null;
 	private analyser: AnalyserNode | null = null;
 	private processor: ScriptProcessorNode | null = null;
+	private preamp: GainNode | null = null;
 	private silentGain: GainNode | null = null;
 
 	// Ring buffer: last ~2 seconds of raw PCM audio
@@ -91,7 +92,7 @@ export class AudioInputService {
 	private analysisTimer: ReturnType<typeof setInterval> | null = null;
 
 	// Energy detection
-	private energyThreshold = 0.006;
+	private energyThreshold = 0.004;
 	private silenceFrames = 0;
 	private readonly silenceFramesThreshold = 4; // 4 cycles × 1.2s = ~5s of silence before clearing
 	private hadEnergyOnce = false;
@@ -143,12 +144,15 @@ export class AudioInputService {
 		this.setState('requesting');
 
 		try {
-			// Request microphone — disable browser audio processing for clean signal
+			// Request microphone.
+			// autoGainControl:true lets iOS/Android hardware normalize mic level
+			// (critical for iPad and quiet-mic devices). We add a software preamp
+			// on top as a second layer of boost.
 			this.stream = await navigator.mediaDevices.getUserMedia({
 				audio: {
 					echoCancellation: false,
 					noiseSuppression: false,
-					autoGainControl: false,
+					autoGainControl: true,
 				},
 			});
 
@@ -166,11 +170,19 @@ export class AudioInputService {
 			// Connect microphone source
 			this.source = this.audioContext.createMediaStreamSource(this.stream);
 
+			// Software preamp: 3× gain boost.
+			// Compensates for quiet-mic devices (iPad, external mics without AGC
+			// hardware). Both the level analyser and the ring buffer see the
+			// boosted signal so basic-pitch gets adequate amplitude too.
+			this.preamp = this.audioContext.createGain();
+			this.preamp.gain.value = 3;
+			this.source.connect(this.preamp);
+
 			// AnalyserNode for RMS energy monitoring
 			this.analyser = this.audioContext.createAnalyser();
 			this.analyser.fftSize = 2048;
 			this.analyser.smoothingTimeConstant = 0.3;
-			this.source.connect(this.analyser);
+			this.preamp.connect(this.analyser);
 
 			// ScriptProcessorNode for raw audio capture into ring buffer
 			// Connect through a silent gain node to prevent mic feedback
@@ -178,7 +190,7 @@ export class AudioInputService {
 			this.silentGain = this.audioContext.createGain();
 			this.silentGain.gain.value = 0;
 
-			this.source.connect(this.processor);
+			this.preamp.connect(this.processor);
 			this.processor.connect(this.silentGain);
 			this.silentGain.connect(this.audioContext.destination);
 
@@ -502,6 +514,11 @@ export class AudioInputService {
 			this.processor.onaudioprocess = null;
 			this.processor.disconnect();
 			this.processor = null;
+		}
+
+		if (this.preamp) {
+			this.preamp.disconnect();
+			this.preamp = null;
 		}
 
 		if (this.source) {

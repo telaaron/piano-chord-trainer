@@ -443,7 +443,7 @@
 	}
 
 	.xp-lbl {
-		font-size: 0.55rem;
+		font-size: 0.6rem;
 		color: rgba(255, 255, 255, 0.25);
 		white-space: nowrap;
 	}
@@ -532,5 +532,101 @@
 		color: #fb923c;
 		flex-shrink: 0;
 		letter-spacing: 0.02em;
+	}
+
+	/* ── Mobile ────────────────────────────────── */
+	@media (max-width: 640px) {
+		.habit-dashboard {
+			padding: 14px 14px 16px;
+			gap: 13px;
+		}
+
+		.greeting {
+			font-size: 1.1rem;
+		}
+
+		.rank-pill {
+			font-size: 0.68rem;
+			padding: 2px 8px;
+		}
+
+		.streak-num {
+			font-size: 0.9rem;
+		}
+
+		.streak-days {
+			font-size: 0.75rem;
+		}
+
+		/* Let motivation text wrap instead of clip */
+		.motivation-text {
+			font-size: 0.88rem;
+			white-space: normal;
+		}
+
+		.daily-ring-area {
+			width: 70px;
+			height: 70px;
+		}
+
+		/* CSS overrides SVG width/height HTML attributes via the cascade */
+		.daily-ring-area svg {
+			width: 70px;
+			height: 70px;
+		}
+
+		.ring-num {
+			font-size: 1.2rem;
+		}
+
+		.ring-denom {
+			font-size: 0.65rem;
+		}
+
+		.day-label {
+			font-size: 0.64rem;
+		}
+
+		.day-dot {
+			width: 13px;
+			height: 13px;
+		}
+
+		.week-dots {
+			gap: 8px;
+		}
+
+		.xp-num {
+			font-size: 0.9rem;
+		}
+
+		.xp-lbl {
+			font-size: 0.62rem;
+		}
+
+		.goals-title {
+			font-size: 0.74rem;
+		}
+
+		.quick-start {
+			padding: 12px 14px;
+			gap: 12px;
+		}
+
+		.qs-icon {
+			font-size: 1.2rem;
+		}
+
+		.qs-title {
+			font-size: 0.85rem;
+		}
+
+		.qs-meta {
+			font-size: 0.68rem;
+		}
+
+		.qs-cta {
+			font-size: 0.78rem;
+		}
 	}
 </style>
