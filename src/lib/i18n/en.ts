@@ -325,6 +325,8 @@ export const en = {
   landing: {
     hero_title: 'Master Jazz Piano Voicings in All 12 Keys',
     hero_title_html: '<span class="gradient-text">Master Jazz Piano</span> <span class="white-text">Voicings in All 12 Keys</span>',
+    hero_title_line1: 'Master Jazz Piano',
+    hero_title_line2: 'Voicings in All 12 Keys',
     hero_subtitle: 'Speed training that builds muscle memory. See a chord, play it, get faster. Shell voicings, rootless, ii-V-I — through every key.',
     hero_subtitle_mobile: 'See a chord, play it, get faster — through all 12 keys.',
     badge: 'MIDI · Audio · Progress Tracking',

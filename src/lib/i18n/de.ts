@@ -327,6 +327,8 @@ export const de = {
   landing: {
     hero_title: 'Trainiere Jazz-Piano-Voicings in allen 12 Tonarten',
     hero_title_html: '<span class="gradient-text">Trainiere Jazz-Piano-Voicings</span> <span class="white-text">in allen 12 Tonarten</span>',
+    hero_title_line1: 'Trainiere Jazz-Piano-Voicings',
+    hero_title_line2: 'in allen 12 Tonarten',
     hero_subtitle: 'Speed-Training für das Muskelgedächtnis. Akkord sehen, spielen, schneller werden. Shell Voicings, Rootless, ii-V-I — durch alle Tonarten.',
     hero_subtitle_mobile: 'Akkord sehen, spielen, schneller werden — durch alle 12 Tonarten.',
     badge: 'MIDI · Audio · Übe-Statistik',

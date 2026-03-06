@@ -165,7 +165,8 @@
 
 		<!-- Titles -->
 		<h1 class="text-[clamp(3rem,5vw,4.5rem)] font-extrabold leading-[1.1] mb-6">
-			{@html t('landing.hero_title_html')}
+			<span class="gradient-text">{t('landing.hero_title_line1')}</span>
+			<span class="white-text">{t('landing.hero_title_line2')}</span>
 		</h1>
 
 		<p class="text-xl leading-[1.6] text-(--text-muted) max-w-125 mb-10 max-[968px]:hidden">
