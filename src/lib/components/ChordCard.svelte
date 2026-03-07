@@ -47,11 +47,11 @@
 		</div>
 		{#if vlMode === 'find-inversion' && voicingTypeHint}
 			<div class="mt-2 text-sm text-[var(--accent-amber)] font-medium">
-				🔍 {voicingTypeHint} — finde die engste Umkehrung
+				{t('ui.vl_find_inversion', { voicing: voicingTypeHint })}
 			</div>
 		{:else if vlMode === 'free'}
 			<div class="mt-2 text-sm text-[var(--accent-purple)] font-medium">
-				🎹 Beliebiges Voicing — minimale Bewegung
+				{t('ui.vl_free')}
 			</div>
 		{/if}
 	{/if}

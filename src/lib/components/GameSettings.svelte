@@ -67,10 +67,10 @@
 		onstartplan,
 	}: Props = $props();
 
-	const VL_MODE_CONFIG: Record<VoiceLeadingMode, { label: string; desc: string; icon: string }> = {
-		guided:          { label: 'Nachspielen',       desc: 'Keyboard zeigt die optimale Umkehrung — spiele sie nach', icon: '👁️' },
-		'find-inversion': { label: 'Umkehrung finden',  desc: 'Finde die nächste Umkehrung selbst via MIDI',            icon: '🔍' },
-		free:            { label: 'Frei',               desc: 'Beliebige Voicing — bewertet nach Bewegungsdistanz',     icon: '🎹' },
+	const VL_MODE_CONFIG: Record<VoiceLeadingMode, { labelKey: string; descKey: string; icon: string }> = {
+		guided:          { labelKey: 'ui.vl_guided_label', descKey: 'ui.vl_guided_desc', icon: '👁️' },
+		'find-inversion': { labelKey: 'ui.vl_find_label',  descKey: 'ui.vl_find_desc',   icon: '🔍' },
+		free:            { labelKey: 'ui.vl_free_label',   descKey: 'ui.vl_free_desc',    icon: '🎹' },
 	};
 
 	let suggested: PracticePlan = $state(PRACTICE_PLANS[0]);
@@ -175,8 +175,8 @@
 									onclick={() => { vlMode = mode; onstartplan(plan); }}
 								>
 									<span class="vl-mode-icon text-2xl mb-2 leading-none">{cfg.icon}</span>
-									<span class="vl-mode-label text-xs font-bold {vlMode === mode ? 'text-[var(--primary)]' : ''} mb-1">{cfg.label}</span>
-									<span class="text-[10px] text-[var(--text-dim)] leading-snug">{cfg.desc}</span>
+									<span class="vl-mode-label text-xs font-bold {vlMode === mode ? 'text-[var(--primary)]' : ''} mb-1">{t(cfg.labelKey)}</span>
+									<span class="text-[10px] text-[var(--text-dim)] leading-snug">{t(cfg.descKey)}</span>
 								</button>
 							{/each}
 						</div>

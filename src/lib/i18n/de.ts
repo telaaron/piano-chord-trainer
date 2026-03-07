@@ -187,6 +187,12 @@ export const de = {
     avg_timing: '⌀ Timing',
     ear_score: 'Gehör-Punktzahl',
     vl_mode: 'Stimmführungs-Modus',
+    play_again: '🔄 Nochmal spielen',
+    back_to_setup: '← Zurück zum Menü',
+    all_chords: 'Alle Akkorde mit Voicings',
+    avg_movement: '⌀ Bewegung',
+    optimal: 'Optimal',
+    semitones_short: 'Halbtöne',
   },
 
   plans: {
@@ -631,6 +637,21 @@ export const de = {
     results_weakest_chords: 'Schwierige Akkorde',
     results_weak_desc: 'Diese Akkorde wurden oft verpasst — Fokus darauf!',
     results_detail_last: 'Details (letzter Durchlauf)',
+
+    // Voice Leading card hints
+    vl_find_inversion: '🔍 {voicing} — finde die engste Umkehrung',
+    vl_free: '🎹 Beliebiges Voicing — minimale Bewegung',
+
+    // Lesson MIDI hint
+    lesson_click_hint: 'Tasten klicken zum Spielen · MIDI-Keyboard für Eingabe verbinden',
+
+    // VL mode labels (GameSettings)
+    vl_guided_label: 'Nachspielen',
+    vl_guided_desc: 'Keyboard zeigt die optimale Umkehrung — spiele sie nach',
+    vl_find_label: 'Umkehrung finden',
+    vl_find_desc: 'Finde die nächste Umkehrung selbst via MIDI',
+    vl_free_label: 'Frei',
+    vl_free_desc: 'Beliebiges Voicing — bewertet nach Bewegungsdistanz',
   },
 
   voicing_info: {
@@ -931,6 +952,11 @@ export const de = {
     level_beginner: 'Einsteiger',
     level_intermediate: 'Fortgeschritten',
     level_advanced: 'Profi',
+    global_continue: 'Dort weitermachen, wo du aufgehört hast',
+    global_continue_sub: '{course} — {lesson}',
+    quick_test: 'Kann ich schon',
+    quick_test_desc: 'Zeig, dass du es kannst — spiele nur die Übung.',
+    quick_test_success: 'Beweis erbracht! Lektion abgehakt.',
   },
 
   course: {
@@ -978,7 +1004,7 @@ export const de = {
       'fund-dom7': {
         title: 'Dominant-Septakkord (7)',
         subtitle: 'Grundstellung',
-        theory: 'Der **Dominant 7** erzeugt Spannung — er will sich auflösen.\n\n• **Grundton**\n• **Große Terz** — 4 Halbtöne\n• **Quinte** — 7 Halbtöne\n• **Kleine Septime** — 10 Halbtöne\n\nBeispiel: **G7** = G + B + D + F\n\nDer Unterschied zum Maj7: Die Septime ist einen Halbton tiefer (10 statt 11 HT).',
+        theory: 'Der **Dominant 7** erzeugt Spannung — er will sich auflösen.\n\n• **Grundton**\n• **Große Terz** — 4 Halbtöne\n• **Quinte** — 7 Halbtöne\n• **Kleine Septime** — 10 Halbtöne\n\nBeispiel: **G7** = G + B + D + F\n\nDer Unterschied zum Maj7: Die Septime ist einen Halbton tiefer (10 statt 11 Halbtöne).',
       },
       'fund-m7': {
         title: 'Moll-Septakkord (m7)',
@@ -1020,7 +1046,7 @@ export const de = {
       'sixth-dim7': {
         title: 'Vermindert (dim7)',
         subtitle: 'Symmetrischer Aufbau',
-        theory: 'Der **dim7** besteht nur aus kleinen Terzen:\n\n• R – ♭3 – ♭5 – °7 (= 0, 3, 6, 9 HT)\n\nSymmetrisch: Jeder der 4 Töne kann Grundton sein. Nur 3 verschiedene dim7-Akkorde existieren!\n\nBeispiel: **Bdim7** = B + D + F + Ab',
+        theory: 'Der **dim7** besteht nur aus kleinen Terzen:\n\n• R – ♭3 – ♭5 – °7 (= 0, 3, 6, 9 Halbtöne)\n\nSymmetrisch: Jeder der 4 Töne kann Grundton sein. Nur 3 verschiedene dim7-Akkorde existieren!\n\nBeispiel: **Bdim7** = B + D + F + Ab',
       },
       // ─── Modul 4: Erweiterte Akkorde ────────────────────────────
       'ninth-maj9': {
@@ -1138,6 +1164,116 @@ export const de = {
         theory: 'Der **13er-Akkord** ist der farbenreichste Dominantakkord:\n\n• R – 3 – 5 – ♭7 – 9 – 13\n\nDie Tredezime (= Sexte in höherer Oktave) gibt dem Akkord einen vollen, warmen Klang. Standard in Big-Band-Arrangements.\n\nBeispiel: **G13** = G + B + D + F + A + E',
       },
     },
+    // ─── Intervals Course ─────────────────────────────────────
+    intervals: {
+      title: 'Intervalle verstehen',
+      subtitle: 'Das Fundament der Harmonielehre',
+      description: 'Lerne alle musikalischen Intervalle — von der Sekunde bis zur Tredezime. Verstehe, wie Akkorde aufgebaut sind.',
+      mod1: { title: 'Terzen & Tritonus' },
+      mod2: { title: 'Quinten & Sexten' },
+      mod3: { title: 'Septimen' },
+      mod4: { title: 'Erweiterte Intervalle' },
+      major_minor_3rd: {
+        title: 'Große & kleine Terz',
+        subtitle: 'Dur vs. Moll — der entscheidende Unterschied',
+        theory: 'Die **Terz** ist das wichtigste Intervall:\n\n• **Große Terz** (Major 3rd) = 4 Halbtöne → bestimmt Dur-Charakter\n• **Kleine Terz** (Minor 3rd) = 3 Halbtöne → bestimmt Moll-Charakter\n\nBeispiel: C → E = große Terz (Dur)\nC → Eb = kleine Terz (Moll)\n\nJeder Akkord enthält eine Terz — sie sagt dir, ob es Dur oder Moll ist.',
+      },
+      tritone: {
+        title: 'Der Tritonus',
+        subtitle: '6 Halbtöne — die Spannung im Dominantakkord',
+        theory: 'Der **Tritonus** teilt die Oktave exakt in zwei Hälften:\n\n• 6 Halbtöne = übermäßige Quarte / verminderte Quinte\n\nIm **Dominant-Septakkord** (z.B. G7) bilden Terz und Septime einen Tritonus:\nB → F = 6 Halbtöne\n\nDiese Spannung will sich auflösen — nach C (der Tonika). Das ist die Grundlage aller funktionalen Harmonie.',
+      },
+      perfect_5th: {
+        title: 'Die reine Quinte',
+        subtitle: '7 Halbtöne — stabil und offen',
+        theory: 'Die **reine Quinte** (Perfect 5th) = 7 Halbtöne:\n\n• Klingt offen und stabil\n• Grundlage für Power Chords (Rock)\n• In Shell-Voicings oft weggelassen — weil sie den Charakter nicht bestimmt\n\nBeispiel: C → G = reine Quinte\n\nDer Quintenzirkel basiert auf diesem Intervall — jede Tonart ist eine Quinte von der nächsten entfernt.',
+      },
+      dim5_aug5: {
+        title: 'Verminderte & übermäßige Quinte',
+        subtitle: '♭5 und #5 — die Farbtöne',
+        theory: '**Verminderte Quinte** (♭5) = 6 Halbtöne\n→ Gleich wie der Tritonus! Im **m7♭5** (halbvermindert) enthalten.\n\n**Übermäßige Quinte** (#5) = 8 Halbtöne\n→ Klingt schwebend. Im augmentierten Dreiklang enthalten.\n\nBeispiel:\nC → Gb = verminderte Quinte\nC → G# = übermäßige Quinte\n\nDiese Intervalle erzeugen Farbe und Spannung.',
+      },
+      major_6th: {
+        title: 'Die große Sexte',
+        subtitle: '9 Halbtöne — Wärme und Offenheit',
+        theory: 'Die **große Sexte** = 9 Halbtöne:\n\n• Im 6er-Akkord (z.B. C6 = C + E + G + A)\n• Ersetzt oft die Septime für einen offeneren Klang\n• Enharmonisch gleich mit der verminderten Septime\n\nBeispiel: C → A = große Sexte\n\nIn Jazz-Standards werden Schlussakkorde oft als 6 oder 6/9 gespielt statt als Maj7.',
+      },
+      minor_7th: {
+        title: 'Die kleine Septime',
+        subtitle: '10 Halbtöne — Blues & Dominantklang',
+        theory: 'Die **kleine Septime** (♭7) = 10 Halbtöne:\n\n• In **Dom7** und **m7** Akkorden\n• Gibt dem Akkord "Farbe" und Tiefe\n• Zusammen mit der großen Terz → Dominant-Spannung\n• Zusammen mit der kleinen Terz → Moll-Charakter\n\nBeispiel: C → Bb = kleine Septime\n\nDie kleine Septime ist DAS Jazz-Intervall.',
+      },
+      major_7th: {
+        title: 'Die große Septime',
+        subtitle: '11 Halbtöne — hell und modern',
+        theory: 'Die **große Septime** = 11 Halbtöne:\n\n• Im **Maj7** Akkord enthalten\n• Nur 1 Halbton unter der Oktave → klingt "nah am Grundton"\n• Erzeugt einen hellen, modernen, leicht dissonanten Klang\n\nBeispiel: C → B = große Septime\n\nDer Unterschied zur kleinen Septime ist nur 1 Halbton — aber der Klangcharakter ändert sich komplett!',
+      },
+      ninths: {
+        title: 'Die None (9th)',
+        subtitle: '14 Halbtöne — Farbe über der Oktave',
+        theory: 'Die **None** = Oktave + große Sekunde = 14 Halbtöne:\n\n• Erweitert Septakkorde zu Nonenakkorden (Maj9, 9, m9)\n• Klingt farbenreich und modern\n• In Rootless Voicings ersetzt die 9 oft den Grundton\n\nBeispiel: C → D (nächste Oktave) = große None\n\n♭9 = 13 Halbtöne → sehr spannungsreich (Dominant ♭9)\n#9 = 15 Halbtöne → der Hendrix-Sound',
+      },
+      elevenths: {
+        title: 'Undezime & Tredezime (11th & 13th)',
+        subtitle: 'Die oberen Erweiterungen',
+        theory: '**Undezime (11th)** = Oktave + Quarte = 17 Halbtöne\n→ In m11: modaler, dorischer Charakter\n→ #11: lydischer Klang (Maj7#11)\n\n**Tredezime (13th)** = Oktave + Sexte = 21 Halbtöne\n→ In 13: voller Big-Band-Sound\n→ Farbe ohne Auflösungsdrang\n\nDiese Intervalle werden nur in erweiterten Akkorden verwendet. Sie bestimmen den "Geschmack" — nicht die Grundfunktion.',
+      },
+    },
+    // ─── Scale Degrees Course ────────────────────────────────
+    degrees: {
+      title: 'Stufentheorie',
+      subtitle: 'Akkorde in ihrer Funktion verstehen',
+      description: 'Lerne die 7 Stufen der Dur-Tonleiter und wie Akkorde zusammenhängen: Tonika, Subdominante, Dominante und die wichtigsten Verbindungen.',
+      mod1: { title: 'Die Tonika-Familie' },
+      mod2: { title: 'Die Subdominante' },
+      mod3: { title: 'Die Dominante' },
+      mod4: { title: 'Verbindungen' },
+      I_maj7: {
+        title: 'Stufe I — Maj7 (Tonika)',
+        subtitle: 'Das Zuhause — Ruhe und Auflösung',
+        theory: 'Die **I. Stufe** (Tonika) ist das harmonische Zentrum:\n\n• In C-Dur: **CMaj7**\n• Funktion: Stabilität, Ruhe, Auflösung\n• Alle Spannung löst sich hierhin auf\n\nRömische Ziffer: **I** = Dur-Septakkord auf der 1. Stufe\n\nWenn du in einem Jazz-Standard "nach Hause" gehst, landest du immer auf der I.',
+      },
+      vi_m7: {
+        title: 'Stufe vi — m7 (Tonika-Stellvertreter)',
+        subtitle: 'Die Moll-Variante der Tonika',
+        theory: 'Die **vi. Stufe** vertritt die Tonika in Moll:\n\n• In C-Dur: **Am7**\n• Funktion: Tonika-Stellvertreter ("relative minor")\n• Kann die I ersetzen, z.B. im Turnaround: I – vi – ii – V\n\nRömische Ziffer: **vi** (klein = Moll)\n\nDie vi ist der Startpunkt der parallelen Moll-Tonart (C-Dur ↔ A-Moll).',
+      },
+      iii_m7: {
+        title: 'Stufe iii — m7 (Mediane)',
+        subtitle: 'Zwischen Tonika und Dominante',
+        theory: 'Die **iii. Stufe** steht zwischen Tonika und Dominante:\n\n• In C-Dur: **Em7**\n• Funktion: Schwacher Tonika-Stellvertreter\n• Beginnt oft erweiterte Turnarounds: iii – vi – ii – V\n\nRömische Ziffer: **iii** (klein = Moll)\n\nDie iii wird seltener als eigenständiger Akkord genutzt, aber ist wichtig in Sequenzen.',
+      },
+      IV_maj7: {
+        title: 'Stufe IV — Maj7 (Subdominante)',
+        subtitle: 'Bewegung weg von der Tonika',
+        theory: 'Die **IV. Stufe** (Subdominante) erzeugt Bewegung:\n\n• In C-Dur: **FMaj7**\n• Funktion: Weg von der Tonika, aber noch keine Spannung\n• Plagal-Kadenz: IV → I ("Amen-Kadenz")\n\nRömische Ziffer: **IV** = Dur-Septakkord\n\nDie IV ist das Gegenstück zur V — sie bewegt sich "weg", die V zieht "zurück".',
+      },
+      ii_m7: {
+        title: 'Stufe ii — m7 (Subdominant-Stellvertreter)',
+        subtitle: 'Der wichtigste Moll-Akkord im Jazz',
+        theory: 'Die **ii. Stufe** ist der Star des Jazz:\n\n• In C-Dur: **Dm7**\n• Funktion: Subdominante (Stellvertreter der IV)\n• Leitet zur Dominante über: **ii → V → I**\n\nRömische Ziffer: **ii** (klein = Moll)\n\nDie ii-V-I ist DIE wichtigste Verbindung im Jazz. Die ii ersetzt die IV fast überall.',
+      },
+      V_7: {
+        title: 'Stufe V — Dom7 (Dominante)',
+        subtitle: 'Spannung — will zurück zur Tonika',
+        theory: 'Die **V. Stufe** (Dominante) erzeugt maximale Spannung:\n\n• In C-Dur: **G7**\n• Funktion: Spannung → Auflösung zur I\n• Enthält den Tritonus (B–F), der sich nach C–E auflöst\n\nRömische Ziffer: **V** = Dominant-Septakkord\n\nDie Kadenz V → I ist das Fundament westlicher Musik. Im Jazz fast immer als ii – V – I.',
+      },
+      vii_m7b5: {
+        title: 'Stufe vii° — m7♭5 (Dominante-Stellvertreter)',
+        subtitle: 'Halbvermindert — selten, aber wichtig',
+        theory: 'Die **vii. Stufe** ist halbvermindert:\n\n• In C-Dur: **Bm7♭5** (Bø7)\n• Funktion: Dominante-Stellvertreter\n• Enthält den gleichen Tritonus wie V7 (B–F)\n• In Moll: ii-Akkord (z.B. Bø7 → E7 → Am)\n\nRömische Ziffer: **vii°** (halbvermindert)\n\nDie vii° wird selten allein verwendet, ist aber zentral in Moll-ii-V-I Verbindungen.',
+      },
+      iiVI: {
+        title: 'Die ii-V-I Verbindung',
+        subtitle: 'Das Herzstück des Jazz',
+        theory: 'Die **ii-V-I** ist die wichtigste harmonische Verbindung:\n\n• In C: **Dm7 → G7 → CMaj7**\n• ii = Subdominante (Vorbereitung)\n• V = Dominante (Spannung)\n• I = Tonika (Auflösung)\n\nJeder Jazz-Standard enthält ii-V-I Verbindungen — oft in verschiedenen Tonarten.\n\n**Übe Shell Voicings** für ii-V-I: Die Töne bewegen sich minimal zwischen den Akkorden.',
+      },
+      turnaround: {
+        title: 'Der Turnaround (I-vi-ii-V)',
+        subtitle: 'Zurück zum Anfang',
+        theory: 'Der **Turnaround** führt vom Ende zurück zum Anfang:\n\n• In C: **CMaj7 → Am7 → Dm7 → G7**\n• I → vi: Tonika zu Moll-Stellvertreter\n• vi → ii: Quinte abwärts (Sequenz)\n• ii → V: Quinte abwärts (Kadenz-Vorbereitung)\n• V → I: Auflösung (nächster Chorus)\n\nJeder Schritt geht eine Quinte abwärts — das stärkste harmonische Prinzip.',
+      },
+    },
   },
 
   explain: {
@@ -1148,70 +1284,97 @@ export const de = {
     chord_label: 'Akkord',
     notes_label: 'Noten',
     formula_label: 'Formel',
+    plays_label: 'Spielt',
+    dropped_tone: 'Wird im Voicing weggelassen',
+    bridge: '**{voicing}** spielt **{kept} von {total}** Akkordtönen. Weggelassen: **{dropped}** — diese Töne bestimmen nicht den harmonischen Charakter und werden für ein schlankeres Voicing geopfert.',
+    glossary_toggle: 'Was bedeuten die Kürzel?',
+    glossary: {
+      R: 'Grundton (Root)',
+      b2: 'Kleine Sekunde',
+      '2': 'Große Sekunde',
+      b3: 'Kleine Terz (Moll)',
+      '3': 'Große Terz (Dur)',
+      '4': 'Reine Quarte',
+      s4: 'Übermäßige Quarte (#4)',
+      dim5: 'Verminderte Quinte (°5)',
+      b5: 'Verminderte Quinte (♭5)',
+      '5': 'Reine Quinte',
+      s5: 'Übermäßige Quinte (#5)',
+      dim7: 'Verminderte Septime (°7)',
+      '6': 'Große Sexte',
+      b7: 'Kleine Septime (♭7)',
+      '7': 'Große Septime',
+      b9: 'Kleine None (♭9)',
+      '9': 'Große None',
+      s9: 'Übermäßige None (#9)',
+      '11': 'Reine Undezime',
+      s11: 'Übermäßige Undezime (#11)',
+      '13': 'Große Tredezime',
+    },
     quality: {
       Maj7: {
         title: 'Dur-Septakkord (Maj7)',
-        desc: '4 Töne: Grundton, **große Terz** (4 HT), **Quinte** (7 HT), **große Septime** (11 HT). Klingt hell und stabil — typisch für Tonika-Akkorde.',
+        desc: '4 Töne: Grundton, **große Terz** (4 Halbtöne), **Quinte** (7 Halbtöne), **große Septime** (11 Halbtöne). Klingt hell und stabil — typisch für Tonika-Akkorde.',
       },
       '7': {
         title: 'Dominant-Septakkord (7)',
-        desc: '4 Töne: Grundton, **große Terz** (4 HT), **Quinte** (7 HT), **kleine Septime** (10 HT). Der Tritonus zwischen Terz und Septime erzeugt Spannung → will sich auflösen.',
+        desc: '4 Töne: Grundton, **große Terz** (4 Halbtöne), **Quinte** (7 Halbtöne), **kleine Septime** (10 Halbtöne). Der Tritonus zwischen Terz und Septime erzeugt Spannung → will sich auflösen.',
       },
       m7: {
         title: 'Moll-Septakkord (m7)',
-        desc: '4 Töne: Grundton, **kleine Terz** (3 HT), **Quinte** (7 HT), **kleine Septime** (10 HT). Weicher, melancholischer Klang — häufig als ii-Akkord.',
+        desc: '4 Töne: Grundton, **kleine Terz** (3 Halbtöne), **Quinte** (7 Halbtöne), **kleine Septime** (10 Halbtöne). Weicher, melancholischer Klang — häufig als ii-Akkord.',
       },
       '6': {
         title: 'Dur-Sextakkord (6)',
-        desc: '4 Töne: Grundton, **große Terz** (4 HT), **Quinte** (7 HT), **Sexte** (9 HT). Alternative zur Maj7 mit hellerem, offenerem Klang.',
+        desc: '4 Töne: Grundton, **große Terz** (4 Halbtöne), **Quinte** (7 Halbtöne), **Sexte** (9 Halbtöne). Alternative zur Maj7 mit hellerem, offenerem Klang.',
       },
       m6: {
         title: 'Moll-Sextakkord (m6)',
-        desc: '4 Töne: Grundton, **kleine Terz** (3 HT), **Quinte** (7 HT), **Sexte** (9 HT). Häufig in Moll-Tonika-Funktionen.',
+        desc: '4 Töne: Grundton, **kleine Terz** (3 Halbtöne), **Quinte** (7 Halbtöne), **Sexte** (9 Halbtöne). Häufig in Moll-Tonika-Funktionen.',
       },
       Maj9: {
         title: 'Dur-Nonen-Septakkord (Maj9)',
-        desc: '5 Töne: Maj7 + **None** (14 HT). Die None ergänzt Farbe ohne die Stabilität des Maj7 zu verändern. Lush und modern.',
+        desc: '5 Töne: Maj7 + **None** (14 Halbtöne). Die None ergänzt Farbe ohne die Stabilität des Maj7 zu verändern. Lush und modern.',
       },
       '9': {
         title: 'Dominant-Nonenakkord (9)',
-        desc: '5 Töne: Dom7 + **None** (14 HT). Erweitert den Dominantklang mit mehr Farbe. Standard im Blues und Funk.',
+        desc: '5 Töne: Dom7 + **None** (14 Halbtöne). Erweitert den Dominantklang mit mehr Farbe. Standard im Blues und Funk.',
       },
       m9: {
         title: 'Moll-Nonenakkord (m9)',
-        desc: '5 Töne: m7 + **None** (14 HT). Weicher als m7, mit zusätzlicher Färbung durch die None. Typisch für ii-V-I.',
+        desc: '5 Töne: m7 + **None** (14 Halbtöne). Weicher als m7, mit zusätzlicher Färbung durch die None. Typisch für ii-V-I.',
       },
       '6/9': {
         title: 'Sext-Nonen-Akkord (6/9)',
-        desc: '5 Töne: Grundton, Terz, Quinte, **Sexte** (9 HT), **None** (14 HT). Schwebender, offener Klang — oft als Schlussakkord.',
+        desc: '5 Töne: Grundton, Terz, Quinte, **Sexte** (9 Halbtöne), **None** (14 Halbtöne). Schwebender, offener Klang — oft als Schlussakkord.',
       },
       'Maj7#11': {
         title: 'Lydischer Akkord (Maj7#11)',
-        desc: '5 Töne: Maj7 + **überm. Undezime** (18 HT). Die #11 erzeugt den lydischen Klang — schwebend und modern.',
+        desc: '5 Töne: Maj7 + **überm. Undezime** (18 Halbtöne). Die #11 erzeugt den lydischen Klang — schwebend und modern.',
       },
       '7#9': {
         title: 'Dominant #9 (Hendrix-Akkord)',
-        desc: '5 Töne: Dom7 + **überm. None** (15 HT). Große Terz + #9 (= kleine Terz höher) erzeugen Reibung — der "Purple Haze"-Sound.',
+        desc: '5 Töne: Dom7 + **überm. None** (15 Halbtöne). Große Terz + #9 (= kleine Terz höher) erzeugen Reibung — der "Purple Haze"-Sound.',
       },
       '7b9': {
         title: 'Dominant b9',
-        desc: '5 Töne: Dom7 + **kleine None** (13 HT). Sehr spannungsreich — typisch über verminderter Skala (HW-dim).',
+        desc: '5 Töne: Dom7 + **kleine None** (13 Halbtöne). Sehr spannungsreich — typisch über verminderter Skala (HW-dim).',
       },
       m11: {
         title: 'Moll-Undezimakkord (m11)',
-        desc: '6 Töne: m9 + **Undezime** (17 HT). Sehr offener, schwebender Klang. Die Quarte/11 verstärkt den modalen Charakter.',
+        desc: '6 Töne: m9 + **Undezime** (17 Halbtöne). Sehr offener, schwebender Klang. Die Quarte/11 verstärkt den modalen Charakter.',
       },
       '13': {
         title: 'Dominant-Tredezimakkord (13)',
-        desc: '6 Töne: Dom9 + **Tredezime** (21 HT). Voller, farbiger Dominantklang — häufig in Big-Band-Arrangements.',
+        desc: '6 Töne: Dom9 + **Tredezime** (21 Halbtöne). Voller, farbiger Dominantklang — häufig in Big-Band-Arrangements.',
       },
       m7b5: {
         title: 'Halbvermindert (m7♭5)',
-        desc: '4 Töne: Grundton, **kleine Terz** (3 HT), **verminderte Quinte** (6 HT), **kleine Septime** (10 HT). Typisch als vii° in Dur oder ii in Moll.',
+        desc: '4 Töne: Grundton, **kleine Terz** (3 Halbtöne), **verminderte Quinte** (6 Halbtöne), **kleine Septime** (10 Halbtöne). Typisch als vii° in Dur oder ii in Moll.',
       },
       dim7: {
         title: 'Vermindert (dim7)',
-        desc: '4 Töne: Grundton, **kleine Terz** (3 HT), **verminderte Quinte** (6 HT), **verminderte Septime** (9 HT). Symmetrischer Aufbau — jeder Ton kann Grundton sein.',
+        desc: '4 Töne: Grundton, **kleine Terz** (3 Halbtöne), **verminderte Quinte** (6 Halbtöne), **verminderte Septime** (9 Halbtöne). Symmetrischer Aufbau — jeder Ton kann Grundton sein.',
       },
     },
     root: {

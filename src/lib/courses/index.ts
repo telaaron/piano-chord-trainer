@@ -1,9 +1,11 @@
 // Course registry — all available courses
 import { shellVoicingsCourse } from './shell-voicings';
 import { ultimatePlanCourse } from './ultimate-plan';
+import { intervalsCourse } from './intervals';
+import { scaleDegreesCourse } from './scale-degrees';
 import type { Course } from '$lib/engine/courses';
 
-export const ALL_COURSES: Course[] = [ultimatePlanCourse, shellVoicingsCourse];
+export const ALL_COURSES: Course[] = [intervalsCourse, shellVoicingsCourse, scaleDegreesCourse, ultimatePlanCourse];
 
 export function getCourse(id: string): Course | undefined {
 	return ALL_COURSES.find((c) => c.id === id);

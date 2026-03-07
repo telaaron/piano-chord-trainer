@@ -33,10 +33,45 @@
 	);
 	const chordFormula = $derived(getChordFormula(chordData.type));
 
+	// ─── Visual diff: which chord tones are kept vs dropped ────
+	const droppedIntervals = $derived(
+		chordFormula.filter((iv) => !intervalLabels.includes(iv)),
+	);
+	const keptCount = $derived(intervalLabels.length);
+	const totalCount = $derived(chordFormula.length);
+	const isReduced = $derived(keptCount < totalCount);
+
 	const displayData = $derived<ChordWithNotes>({
 		...chordData,
 		voicing: voicingNotes,
 	});
+
+	// ─── Glossary for interval symbols ─────────────────────────
+	const INTERVAL_GLOSSARY: Record<string, string> = {
+		'R': 'explain.glossary.R',
+		'♭2': 'explain.glossary.b2',
+		'2': 'explain.glossary.2',
+		'♭3': 'explain.glossary.b3',
+		'3': 'explain.glossary.3',
+		'4': 'explain.glossary.4',
+		'♯4': 'explain.glossary.s4',
+		'°5': 'explain.glossary.dim5',
+		'♭5': 'explain.glossary.b5',
+		'5': 'explain.glossary.5',
+		'♯5': 'explain.glossary.s5',
+		'°7': 'explain.glossary.dim7',
+		'6': 'explain.glossary.6',
+		'♭7': 'explain.glossary.b7',
+		'7': 'explain.glossary.7',
+		'♭9': 'explain.glossary.b9',
+		'9': 'explain.glossary.9',
+		'♯9': 'explain.glossary.s9',
+		'11': 'explain.glossary.11',
+		'♯11': 'explain.glossary.s11',
+		'13': 'explain.glossary.13',
+	};
+
+	let showGlossary = $state(false);
 
 	// ─── Audio ─────────────────────────────────────────────────
 	function listen() {
@@ -96,10 +131,18 @@
 					<span class="text-xs font-semibold text-[var(--accent-gold)] uppercase tracking-wide">{t('explain.chord_label')}</span>
 					<span class="text-sm font-bold text-[var(--text)]">{qualityTitle}</span>
 				</div>
-				<div class="flex items-center gap-2 flex-wrap">
+				<!-- Visual formula with diff: kept tones bright, dropped tones dimmed -->
+				<div class="flex items-center gap-1.5 flex-wrap">
 					<span class="text-xs text-[var(--text-dim)]">{t('explain.formula_label')}</span>
-					<span class="text-sm font-mono text-[var(--text)] bg-[var(--bg-muted)] px-2.5 py-1 rounded-md">
-						{chordFormula.join(' – ')}
+					<span class="text-sm font-mono bg-[var(--bg-muted)] px-2.5 py-1 rounded-md flex items-center gap-1">
+						{#each chordFormula as iv, i}
+							{#if i > 0}<span class="text-[var(--text-dim)]">–</span>{/if}
+							{#if droppedIntervals.includes(iv)}
+								<span class="line-through opacity-40 text-[var(--text-dim)]" title={t('explain.dropped_tone')}>{iv}</span>
+							{:else}
+								<span class="text-[var(--text)]">{iv}</span>
+							{/if}
+						{/each}
 					</span>
 				</div>
 				<p class="text-sm leading-relaxed text-[var(--text-muted)]">
@@ -107,6 +150,16 @@
 					{@html fmt(qualityDesc)}
 				</p>
 			</div>
+
+			<!-- Bridge: why the voicing drops notes -->
+			{#if isReduced}
+				<div class="bg-[var(--bg-muted)] rounded-lg px-4 py-3 border-l-3 border-[var(--primary)]">
+					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html fmt(t('explain.bridge', { total: String(totalCount), kept: String(keptCount), dropped: droppedIntervals.join(', '), voicing: voicingTitle }))}
+					</p>
+				</div>
+			{/if}
 
 			<!-- Divider -->
 			<div class="border-t border-[var(--border)]/20"></div>
@@ -118,7 +171,7 @@
 					<span class="text-sm font-bold text-[var(--text)]">{voicingTitle}</span>
 				</div>
 				<div class="flex items-center gap-2 flex-wrap">
-					<span class="text-xs text-[var(--text-dim)]">{t('explain.formula_label')}</span>
+					<span class="text-xs text-[var(--text-dim)]">{t('explain.plays_label')}</span>
 					<span class="text-sm font-mono text-[var(--primary)] bg-[var(--primary-muted)] px-2.5 py-1 rounded-md">
 						{intervalLabels.join(' – ')}
 					</span>
@@ -133,7 +186,7 @@
 			<div>
 				<div class="flex items-center justify-between mb-2">
 					<span class="text-xs text-[var(--text-dim)]">
-						{voicingNotes.map((n, i) => n).join(' – ')}
+						{voicingNotes.join(' – ')}
 						<span class="text-[var(--text-muted)] ml-1">({intervalLabels.join(' – ')})</span>
 					</span>
 					<button
@@ -149,6 +202,29 @@
 					accidentalPref="sharps"
 					mini={true}
 				/>
+			</div>
+
+			<!-- Beginner glossary toggle -->
+			<div>
+				<button
+					onclick={() => showGlossary = !showGlossary}
+					class="text-xs text-[var(--text-dim)] hover:text-[var(--text-muted)] transition-colors flex items-center gap-1"
+				>
+					<span class="text-sm">{showGlossary ? '▾' : '▸'}</span>
+					{t('explain.glossary_toggle')}
+				</button>
+				{#if showGlossary}
+					<div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs bg-[var(--bg-muted)] rounded-lg p-3">
+						{#each [...new Set([...chordFormula, ...intervalLabels])] as iv}
+							{#if INTERVAL_GLOSSARY[iv]}
+								<div class="flex items-center gap-2">
+									<span class="font-mono font-bold text-[var(--primary)] w-6 text-right">{iv}</span>
+									<span class="text-[var(--text-muted)]">{t(INTERVAL_GLOSSARY[iv])}</span>
+								</div>
+							{/if}
+						{/each}
+					</div>
+				{/if}
 			</div>
 		</div>
 

@@ -1,6 +1,10 @@
 {
   "name": "JazzChords Trainer",
   "short_name": "JazzChords",
+  "description": "Master jazz piano voicings in all 12 keys. Speed training with MIDI recognition, ii-V-I progressions, and progress tracking.",
+  "start_url": "/",
+  "scope": "/",
+  "lang": "en",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +19,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#0a0908",
+  "background_color": "#0a0908",
   "display": "standalone"
 }

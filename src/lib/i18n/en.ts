@@ -185,6 +185,12 @@ export const en = {
     avg_timing: 'Avg. Timing',
     ear_score: 'Ear Score',
     vl_mode: 'Voice Leading Mode',
+    play_again: '🔄 Play Again',
+    back_to_setup: '← Back to Setup',
+    all_chords: 'All Chords with Voicings',
+    avg_movement: 'Avg. Movement',
+    optimal: 'Optimal',
+    semitones_short: 'semitones',
   },
 
   plans: {
@@ -641,6 +647,21 @@ export const en = {
     results_weakest_chords: 'Weakest Chords',
     results_weak_desc: 'These chords were often missed — focus on them!',
     results_detail_last: 'Detail (last loop)',
+
+    // Voice Leading card hints
+    vl_find_inversion: '🔍 {voicing} — find the closest inversion',
+    vl_free: '🎹 Any voicing — minimum movement',
+
+    // Lesson MIDI hint
+    lesson_click_hint: 'Click keys to play · Connect MIDI for keyboard input',
+
+    // VL mode labels (GameSettings)
+    vl_guided_label: 'Follow along',
+    vl_guided_desc: 'Keyboard shows the optimal inversion — play it back',
+    vl_find_label: 'Find inversion',
+    vl_find_desc: 'Find the closest inversion yourself via MIDI',
+    vl_free_label: 'Free',
+    vl_free_desc: 'Any voicing — scored by movement distance',
   },
 
   midi: {
@@ -929,6 +950,11 @@ export const en = {
     level_beginner: 'Beginner',
     level_intermediate: 'Intermediate',
     level_advanced: 'Advanced',
+    global_continue: 'Pick up where you left off',
+    global_continue_sub: '{course} — {lesson}',
+    quick_test: 'I know this',
+    quick_test_desc: 'Prove it — just do the practice exercise.',
+    quick_test_success: 'Proven! Lesson complete.',
   },
 
   course: {
@@ -975,7 +1001,7 @@ export const en = {
       'fund-dom7': {
         title: 'Dominant 7th (7)',
         subtitle: 'Root Position',
-        theory: 'The **Dominant 7** creates tension — it wants to resolve.\n\n• **Root**\n• **Major 3rd** — 4 semitones\n• **5th** — 7 semitones\n• **Minor 7th** — 10 semitones\n\nExample: **G7** = G + B + D + F\n\nDifference from Maj7: The seventh is one semitone lower (10 instead of 11 st).',
+        theory: 'The **Dominant 7** creates tension — it wants to resolve.\n\n• **Root**\n• **Major 3rd** — 4 semitones\n• **5th** — 7 semitones\n• **Minor 7th** — 10 semitones\n\nExample: **G7** = G + B + D + F\n\nDifference from Maj7: The seventh is one semitone lower (10 instead of 11 semitones).',
       },
       'fund-m7': {
         title: 'Minor 7th (m7)',
@@ -1015,7 +1041,7 @@ export const en = {
       'sixth-dim7': {
         title: 'Diminished 7th (dim7)',
         subtitle: 'Symmetric structure',
-        theory: 'The **dim7** is built entirely from minor thirds:\n\n• R – ♭3 – ♭5 – °7 (= 0, 3, 6, 9 st)\n\nSymmetric: Any of the 4 notes can be the root. Only 3 distinct dim7 chords exist!\n\nExample: **Bdim7** = B + D + F + Ab',
+        theory: 'The **dim7** is built entirely from minor thirds:\n\n• R – ♭3 – ♭5 – °7 (= 0, 3, 6, 9 semitones)\n\nSymmetric: Any of the 4 notes can be the root. Only 3 distinct dim7 chords exist!\n\nExample: **Bdim7** = B + D + F + Ab',
       },
       'ninth-maj9': {
         title: 'Major 9th (Maj9)',
@@ -1128,6 +1154,116 @@ export const en = {
         theory: 'The **13th chord** is the most colorful dominant chord:\n\n• R – 3 – 5 – ♭7 – 9 – 13\n\nThe 13th (= 6th in a higher octave) gives the chord a full, warm sound. Standard in big band arrangements.\n\nExample: **G13** = G + B + D + F + A + E',
       },
     },
+    // ─── Intervals Course ─────────────────────────────────────
+    intervals: {
+      title: 'Understanding Intervals',
+      subtitle: 'The foundation of music theory',
+      description: 'Learn all musical intervals — from seconds to thirteenths. Understand how chords are built from the ground up.',
+      mod1: { title: 'Thirds & Tritone' },
+      mod2: { title: 'Fifths & Sixths' },
+      mod3: { title: 'Sevenths' },
+      mod4: { title: 'Extended Intervals' },
+      major_minor_3rd: {
+        title: 'Major & Minor 3rd',
+        subtitle: 'Major vs. minor — the defining difference',
+        theory: 'The **third** is the most important interval:\n\n• **Major 3rd** = 4 semitones → defines major character\n• **Minor 3rd** = 3 semitones → defines minor character\n\nExample: C → E = major 3rd (major)\nC → Eb = minor 3rd (minor)\n\nEvery chord contains a third — it tells you whether it\'s major or minor.',
+      },
+      tritone: {
+        title: 'The Tritone',
+        subtitle: '6 semitones — the tension in dominant chords',
+        theory: 'The **tritone** divides the octave exactly in half:\n\n• 6 semitones = augmented 4th / diminished 5th\n\nIn a **dominant 7th chord** (e.g. G7), the 3rd and 7th form a tritone:\nB → F = 6 semitones\n\nThis tension wants to resolve — to C (the tonic). This is the foundation of all functional harmony.',
+      },
+      perfect_5th: {
+        title: 'The Perfect 5th',
+        subtitle: '7 semitones — stable and open',
+        theory: 'The **perfect 5th** = 7 semitones:\n\n• Sounds open and stable\n• Foundation for power chords (rock)\n• Often dropped in shell voicings — because it doesn\'t define the character\n\nExample: C → G = perfect 5th\n\nThe circle of fifths is based on this interval — each key is one fifth from the next.',
+      },
+      dim5_aug5: {
+        title: 'Diminished & Augmented 5th',
+        subtitle: '♭5 and #5 — the color tones',
+        theory: '**Diminished 5th** (♭5) = 6 semitones\n→ Same as the tritone! Found in **m7♭5** (half-diminished).\n\n**Augmented 5th** (#5) = 8 semitones\n→ Floating sound. Found in augmented triads.\n\nExample:\nC → Gb = diminished 5th\nC → G# = augmented 5th\n\nThese intervals create color and tension.',
+      },
+      major_6th: {
+        title: 'The Major 6th',
+        subtitle: '9 semitones — warmth and openness',
+        theory: 'The **major 6th** = 9 semitones:\n\n• In the 6th chord (e.g. C6 = C + E + G + A)\n• Often replaces the 7th for a more open sound\n• Enharmonically the same as the diminished 7th\n\nExample: C → A = major 6th\n\nIn jazz standards, ending chords are often played as 6 or 6/9 instead of Maj7.',
+      },
+      minor_7th: {
+        title: 'The Minor 7th',
+        subtitle: '10 semitones — blues & dominant sound',
+        theory: 'The **minor 7th** (♭7) = 10 semitones:\n\n• In **Dom7** and **m7** chords\n• Gives the chord "color" and depth\n• Together with a major 3rd → dominant tension\n• Together with a minor 3rd → minor character\n\nExample: C → Bb = minor 7th\n\nThe minor 7th is THE jazz interval.',
+      },
+      major_7th: {
+        title: 'The Major 7th',
+        subtitle: '11 semitones — bright and modern',
+        theory: 'The **major 7th** = 11 semitones:\n\n• Found in **Maj7** chords\n• Just 1 semitone below the octave → sounds "close to the root"\n• Creates a bright, modern, slightly dissonant sound\n\nExample: C → B = major 7th\n\nThe difference from the minor 7th is just 1 semitone — but the character changes completely!',
+      },
+      ninths: {
+        title: 'The 9th',
+        subtitle: '14 semitones — color above the octave',
+        theory: 'The **9th** = octave + major 2nd = 14 semitones:\n\n• Extends 7th chords into 9th chords (Maj9, 9, m9)\n• Sounds colorful and modern\n• In rootless voicings, the 9th often replaces the root\n\nExample: C → D (next octave) = major 9th\n\n♭9 = 13 semitones → very tense (Dominant ♭9)\n#9 = 15 semitones → the Hendrix sound',
+      },
+      elevenths: {
+        title: '11th & 13th',
+        subtitle: 'The upper extensions',
+        theory: '**11th** = octave + 4th = 17 semitones\n→ In m11: modal, Dorian character\n→ #11: Lydian sound (Maj7#11)\n\n**13th** = octave + 6th = 21 semitones\n→ In 13: full big band sound\n→ Color without need to resolve\n\nThese intervals are only used in extended chords. They add "flavor" — not the basic function.',
+      },
+    },
+    // ─── Scale Degrees Course ────────────────────────────────
+    degrees: {
+      title: 'Scale Degree Theory',
+      subtitle: 'Understand chords by their function',
+      description: 'Learn the 7 degrees of the major scale and how chords relate: tonic, subdominant, dominant, and the most important progressions.',
+      mod1: { title: 'The Tonic Family' },
+      mod2: { title: 'The Subdominant' },
+      mod3: { title: 'The Dominant' },
+      mod4: { title: 'Progressions' },
+      I_maj7: {
+        title: 'Degree I — Maj7 (Tonic)',
+        subtitle: 'Home — rest and resolution',
+        theory: 'The **I degree** (tonic) is the harmonic center:\n\n• In C major: **CMaj7**\n• Function: Stability, rest, resolution\n• All tension resolves here\n\nRoman numeral: **I** = major 7th chord on the 1st degree\n\nWhen you "come home" in a jazz standard, you always land on the I.',
+      },
+      vi_m7: {
+        title: 'Degree vi — m7 (Tonic Sub)',
+        subtitle: 'The minor version of the tonic',
+        theory: 'The **vi degree** substitutes the tonic in minor:\n\n• In C major: **Am7**\n• Function: Tonic substitute ("relative minor")\n• Can replace the I, e.g. in turnarounds: I – vi – ii – V\n\nRoman numeral: **vi** (lowercase = minor)\n\nThe vi is the starting point of the relative minor key (C major ↔ A minor).',
+      },
+      iii_m7: {
+        title: 'Degree iii — m7 (Mediant)',
+        subtitle: 'Between tonic and dominant',
+        theory: 'The **iii degree** sits between tonic and dominant:\n\n• In C major: **Em7**\n• Function: Weak tonic substitute\n• Often starts extended turnarounds: iii – vi – ii – V\n\nRoman numeral: **iii** (lowercase = minor)\n\nThe iii is rarely used as a standalone chord, but is important in sequences.',
+      },
+      IV_maj7: {
+        title: 'Degree IV — Maj7 (Subdominant)',
+        subtitle: 'Movement away from the tonic',
+        theory: 'The **IV degree** (subdominant) creates motion:\n\n• In C major: **FMaj7**\n• Function: Away from tonic, but not yet tension\n• Plagal cadence: IV → I ("Amen cadence")\n\nRoman numeral: **IV** = major 7th chord\n\nThe IV is the counterpart to the V — it moves "away", the V pulls "back".',
+      },
+      ii_m7: {
+        title: 'Degree ii — m7 (Subdominant Sub)',
+        subtitle: 'The most important minor chord in jazz',
+        theory: 'The **ii degree** is the star of jazz:\n\n• In C major: **Dm7**\n• Function: Subdominant (substitute for IV)\n• Leads to the dominant: **ii → V → I**\n\nRoman numeral: **ii** (lowercase = minor)\n\nThe ii-V-I is THE most important progression in jazz. The ii replaces the IV almost everywhere.',
+      },
+      V_7: {
+        title: 'Degree V — Dom7 (Dominant)',
+        subtitle: 'Tension — wants to return to the tonic',
+        theory: 'The **V degree** (dominant) creates maximum tension:\n\n• In C major: **G7**\n• Function: Tension → resolution to I\n• Contains the tritone (B–F), which resolves to C–E\n\nRoman numeral: **V** = dominant 7th chord\n\nThe V → I cadence is the foundation of Western music. In jazz, almost always as ii – V – I.',
+      },
+      vii_m7b5: {
+        title: 'Degree vii° — m7♭5 (Dominant Sub)',
+        subtitle: 'Half-diminished — rare but important',
+        theory: 'The **vii degree** is half-diminished:\n\n• In C major: **Bm7♭5** (Bø7)\n• Function: Dominant substitute\n• Contains the same tritone as V7 (B–F)\n• In minor: ii chord (e.g. Bø7 → E7 → Am)\n\nRoman numeral: **vii°** (half-diminished)\n\nThe vii° is rarely used alone, but is central to minor ii-V-I progressions.',
+      },
+      iiVI: {
+        title: 'The ii-V-I Progression',
+        subtitle: 'The heartbeat of jazz',
+        theory: 'The **ii-V-I** is the most important harmonic progression:\n\n• In C: **Dm7 → G7 → CMaj7**\n• ii = Subdominant (preparation)\n• V = Dominant (tension)\n• I = Tonic (resolution)\n\nEvery jazz standard contains ii-V-I progressions — often in different keys.\n\n**Practice shell voicings** for ii-V-I: The notes move minimally between chords.',
+      },
+      turnaround: {
+        title: 'The Turnaround (I-vi-ii-V)',
+        subtitle: 'Back to the beginning',
+        theory: 'The **turnaround** leads from the end back to the beginning:\n\n• In C: **CMaj7 → Am7 → Dm7 → G7**\n• I → vi: Tonic to minor substitute\n• vi → ii: Down a fifth (sequence)\n• ii → V: Down a fifth (cadence prep)\n• V → I: Resolution (next chorus)\n\nEach step goes down a fifth — the strongest harmonic principle.',
+      },
+    },
   },
 
   explain: {
@@ -1138,70 +1274,97 @@ export const en = {
     chord_label: 'Chord',
     notes_label: 'Notes',
     formula_label: 'Formula',
+    plays_label: 'Plays',
+    dropped_tone: 'Omitted in this voicing',
+    bridge: '**{voicing}** plays **{kept} of {total}** chord tones. Omitted: **{dropped}** — these tones don\'t define the harmonic character and are dropped for a leaner voicing.',
+    glossary_toggle: 'What do these symbols mean?',
+    glossary: {
+      R: 'Root',
+      b2: 'Minor 2nd (flat 2)',
+      '2': 'Major 2nd',
+      b3: 'Minor 3rd (flat 3)',
+      '3': 'Major 3rd',
+      '4': 'Perfect 4th',
+      s4: 'Augmented 4th (#4)',
+      dim5: 'Diminished 5th (°5)',
+      b5: 'Diminished 5th (♭5)',
+      '5': 'Perfect 5th',
+      s5: 'Augmented 5th (#5)',
+      dim7: 'Diminished 7th (°7)',
+      '6': 'Major 6th',
+      b7: 'Minor 7th (♭7)',
+      '7': 'Major 7th',
+      b9: 'Minor 9th (♭9)',
+      '9': 'Major 9th',
+      s9: 'Augmented 9th (#9)',
+      '11': 'Perfect 11th',
+      s11: 'Augmented 11th (#11)',
+      '13': 'Major 13th',
+    },
     quality: {
       Maj7: {
         title: 'Major 7th (Maj7)',
-        desc: '4 notes: root, **major 3rd** (4 st), **5th** (7 st), **major 7th** (11 st). Bright and stable — typical tonic chord.',
+        desc: '4 notes: root, **major 3rd** (4 semitones), **5th** (7 semitones), **major 7th** (11 semitones). Bright and stable — typical tonic chord.',
       },
       '7': {
         title: 'Dominant 7th (7)',
-        desc: '4 notes: root, **major 3rd** (4 st), **5th** (7 st), **minor 7th** (10 st). The tritone between 3rd and 7th creates tension → wants to resolve.',
+        desc: '4 notes: root, **major 3rd** (4 semitones), **5th** (7 semitones), **minor 7th** (10 semitones). The tritone between 3rd and 7th creates tension → wants to resolve.',
       },
       m7: {
         title: 'Minor 7th (m7)',
-        desc: '4 notes: root, **minor 3rd** (3 st), **5th** (7 st), **minor 7th** (10 st). Soft, melancholic — commonly used as the ii chord.',
+        desc: '4 notes: root, **minor 3rd** (3 semitones), **5th** (7 semitones), **minor 7th** (10 semitones). Soft, melancholic — commonly used as the ii chord.',
       },
       '6': {
         title: 'Major 6th (6)',
-        desc: '4 notes: root, **major 3rd** (4 st), **5th** (7 st), **6th** (9 st). Alternative to Maj7 with a brighter, more open sound.',
+        desc: '4 notes: root, **major 3rd** (4 semitones), **5th** (7 semitones), **6th** (9 semitones). Alternative to Maj7 with a brighter, more open sound.',
       },
       m6: {
         title: 'Minor 6th (m6)',
-        desc: '4 notes: root, **minor 3rd** (3 st), **5th** (7 st), **6th** (9 st). Common in minor tonic functions.',
+        desc: '4 notes: root, **minor 3rd** (3 semitones), **5th** (7 semitones), **6th** (9 semitones). Common in minor tonic functions.',
       },
       Maj9: {
         title: 'Major 9th (Maj9)',
-        desc: '5 notes: Maj7 + **9th** (14 st). The 9th adds color without changing the Maj7 stability. Lush and modern.',
+        desc: '5 notes: Maj7 + **9th** (14 semitones). The 9th adds color without changing the Maj7 stability. Lush and modern.',
       },
       '9': {
         title: 'Dominant 9th (9)',
-        desc: '5 notes: Dom7 + **9th** (14 st). Extends the dominant sound with more color. Standard in blues and funk.',
+        desc: '5 notes: Dom7 + **9th** (14 semitones). Extends the dominant sound with more color. Standard in blues and funk.',
       },
       m9: {
         title: 'Minor 9th (m9)',
-        desc: '5 notes: m7 + **9th** (14 st). Softer than m7, with extra color from the 9th. Typical for ii-V-I.',
+        desc: '5 notes: m7 + **9th** (14 semitones). Softer than m7, with extra color from the 9th. Typical for ii-V-I.',
       },
       '6/9': {
         title: 'Six-Nine (6/9)',
-        desc: '5 notes: root, 3rd, 5th, **6th** (9 st), **9th** (14 st). Floating, open sound — often used as an ending chord.',
+        desc: '5 notes: root, 3rd, 5th, **6th** (9 semitones), **9th** (14 semitones). Floating, open sound — often used as an ending chord.',
       },
       'Maj7#11': {
         title: 'Lydian Chord (Maj7#11)',
-        desc: '5 notes: Maj7 + **#11** (18 st). The #11 creates the Lydian sound — floating and modern.',
+        desc: '5 notes: Maj7 + **#11** (18 semitones). The #11 creates the Lydian sound — floating and modern.',
       },
       '7#9': {
         title: 'Dominant #9 (Hendrix Chord)',
-        desc: '5 notes: Dom7 + **#9** (15 st). Major 3rd + #9 (= minor 3rd higher) create friction — the "Purple Haze" sound.',
+        desc: '5 notes: Dom7 + **#9** (15 semitones). Major 3rd + #9 (= minor 3rd higher) create friction — the "Purple Haze" sound.',
       },
       '7b9': {
         title: 'Dominant b9',
-        desc: '5 notes: Dom7 + **♭9** (13 st). Very tense — typically used over the half-whole diminished scale.',
+        desc: '5 notes: Dom7 + **♭9** (13 semitones). Very tense — typically used over the half-whole diminished scale.',
       },
       m11: {
         title: 'Minor 11th (m11)',
-        desc: '6 notes: m9 + **11th** (17 st). Very open, floating sound. The 4th/11th reinforces modal character.',
+        desc: '6 notes: m9 + **11th** (17 semitones). Very open, floating sound. The 4th/11th reinforces modal character.',
       },
       '13': {
         title: 'Dominant 13th (13)',
-        desc: '6 notes: Dom9 + **13th** (21 st). Full, colorful dominant sound — common in big band arrangements.',
+        desc: '6 notes: Dom9 + **13th** (21 semitones). Full, colorful dominant sound — common in big band arrangements.',
       },
       m7b5: {
         title: 'Half-Diminished (m7♭5)',
-        desc: '4 notes: root, **minor 3rd** (3 st), **diminished 5th** (6 st), **minor 7th** (10 st). Typical as vii° in major or ii in minor.',
+        desc: '4 notes: root, **minor 3rd** (3 semitones), **diminished 5th** (6 semitones), **minor 7th** (10 semitones). Typical as vii° in major or ii in minor.',
       },
       dim7: {
         title: 'Diminished 7th (dim7)',
-        desc: '4 notes: root, **minor 3rd** (3 st), **diminished 5th** (6 st), **diminished 7th** (9 st). Symmetric structure — any note can be the root.',
+        desc: '4 notes: root, **minor 3rd** (3 semitones), **diminished 5th** (6 semitones), **diminished 7th** (9 semitones). Symmetric structure — any note can be the root.',
       },
     },
     root: {

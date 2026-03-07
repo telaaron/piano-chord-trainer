@@ -16,6 +16,30 @@
 		progressMap = map;
 	});
 
+	// ─── Global "continue where you left off" ──────────────────
+	const globalContinue = $derived.by(() => {
+		let best: { course: Course; lessonId: string; lessonTitle: string; lastActivity: number } | null = null;
+		for (const course of ALL_COURSES) {
+			const progress = progressMap[course.id];
+			if (!progress) continue;
+			const percent = courseCompletionPercent(progress);
+			if (percent === 0 || percent === 100) continue; // skip untouched or finished
+			const next = getNextLesson(course, progress);
+			if (!next) continue;
+			// find the lesson title
+			let lessonTitle = '';
+			for (const mod of course.modules) {
+				const lesson = mod.lessons.find((l) => l.id === next.lessonId);
+				if (lesson) { lessonTitle = t(lesson.titleKey); break; }
+			}
+			const latest = progress.lastActivityAt || 0;
+			if (!best || latest > best.lastActivity) {
+				best = { course, lessonId: next.lessonId, lessonTitle, lastActivity: latest };
+			}
+		}
+		return best;
+	});
+
 	function masteryIcon(mastery: MasteryLevel): string {
 		switch (mastery) {
 			case 'none': return '○';
@@ -51,6 +75,23 @@
 		<h1 class="text-2xl sm:text-3xl font-bold text-[var(--text)]">{t('learn.title')}</h1>
 		<p class="mt-2 text-[var(--text-muted)] text-sm sm:text-base">{t('learn.subtitle')}</p>
 	</div>
+
+	<!-- Global "Continue where you left off" -->
+	{#if globalContinue}
+		<a
+			href="/learn/{globalContinue.course.id}/{globalContinue.lessonId}"
+			class="flex items-center gap-4 mb-8 p-4 sm:p-5 rounded-xl border border-[var(--primary)]/40 bg-[var(--primary-muted)] hover:bg-[var(--primary-muted)]/80 transition-colors"
+		>
+			<span class="text-2xl">▶</span>
+			<div class="flex-1 min-w-0">
+				<span class="text-sm font-bold text-[var(--primary)] block">{t('learn.global_continue')}</span>
+				<span class="text-xs text-[var(--text-muted)] block truncate mt-0.5">
+					{t('learn.global_continue_sub', { course: t(globalContinue.course.titleKey), lesson: globalContinue.lessonTitle })}
+				</span>
+			</div>
+			<span class="text-[var(--primary)] text-lg shrink-0">→</span>
+		</a>
+	{/if}
 
 	<!-- Course Cards -->
 	<div class="space-y-6">

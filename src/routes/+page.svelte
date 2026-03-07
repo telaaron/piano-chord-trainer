@@ -187,7 +187,7 @@
 				{t('landing.cta_start')}
 				<span class="arrow">→</span>
 			</a>
-			<a href="/learn" class="py-3.5 px-6 rounded-xl text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-(--wood-dark) text-(--text) border border-(--wood-light) hover:bg-(--wood-light) hover:border-(--accent-gold) max-[968px]:hidden">
+			<a href="/learn" class="py-3.5 px-6 rounded-xl text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-(--wood-dark) text-(--text) border border-(--wood-light) hover:bg-(--wood-light) hover:border-(--accent-gold) max-[968px]:py-2.5 max-[968px]:px-4 max-[968px]:text-sm">
 				{t('landing.cta_learn')}
 			</a>
 			<a href="/for-educators" class="py-3.5 px-6 rounded-xl text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-(--wood-dark) text-(--text) border border-(--wood-light) hover:bg-(--wood-light) hover:border-(--accent-gold) max-[968px]:hidden">

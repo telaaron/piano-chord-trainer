@@ -137,12 +137,12 @@
 				<div class="font-semibold text-[var(--primary)] capitalize">{vlModeActive}</div>
 			</div>
 			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
-				<div class="text-xs text-[var(--text-muted)] mb-1">⌀ Bewegung</div>
-				<div class="font-semibold text-[var(--accent-amber)]">{vlAvgMovement} HT</div>
+				<div class="text-xs text-[var(--text-muted)] mb-0.5">{t('results.avg_movement')}</div>
+				<div class="font-semibold text-[var(--accent-amber)]">{vlAvgMovement} {t('results.semitones_short')}</div>
 			</div>
 			{#if vlModeActive === 'find-inversion'}
 				<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
-					<div class="text-xs text-[var(--text-muted)] mb-1">Optimal</div>
+					<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.optimal')}</div>
 					<div class="font-semibold text-[var(--accent-green)]">{vlOptimalCount}/{vlTotalChords}</div>
 				</div>
 			{/if}
@@ -155,13 +155,13 @@
 			class="flex-1 h-11 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text)] font-medium hover:bg-[var(--bg-muted)] transition-colors cursor-pointer"
 			onclick={onrestart}
 		>
-			🔄 Play Again
+			{t('results.play_again')}
 		</button>
 		<button
 			class="flex-1 h-11 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-medium hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
 			onclick={onreset}
 		>
-			← Back to Setup
+			{t('results.back_to_setup')}
 		</button>
 	</div>
 
@@ -169,7 +169,7 @@
 	{#if chordsWithNotes.length > 0}
 		<details class="text-left" open>
 			<summary class="cursor-pointer text-sm font-semibold hover:text-[var(--primary)] mb-4">
-				All Chords with Voicings
+				{t('results.all_chords')}
 			</summary>
 			<div class="mt-4 space-y-3 max-h-[28rem] overflow-y-auto pr-1">
 				{#each chordsWithNotes as cd, i}

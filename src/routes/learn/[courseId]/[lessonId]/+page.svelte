@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import { t } from '$lib/i18n';
 	import { getLesson } from '$lib/courses';
-	import { getLessonProgress, completeStep, recordAttempt } from '$lib/services/course-progress';
+	import { getLessonProgress, completeStep, recordAttempt, skipLesson } from '$lib/services/course-progress';
 	import { getChordNotes, getVoicingNotes, noteToSemitone } from '$lib/engine';
 	import type { ChordWithNotes } from '$lib/engine';
 	import type { MasteryLevel, TheoryStep, PracticeStep, ChallengeStep, ChordSpec } from '$lib/engine/courses';
@@ -52,6 +52,39 @@
 	let challengeAvgMs = $state(0);
 	let challengePassed = $state(false);
 	let challengeKeys = $state<string[]>([]);
+
+	// ─── Quick-test mode ("Kann ich schon") ───────────────────
+	let quickTestMode = $state(false);
+	let quickTestDone = $state(false);
+
+	/** Enter quick-test: skip theory, jump to practice. If practice completed → mark lesson done. */
+	function enterQuickTest() {
+		if (!lesson || !course) return;
+		quickTestMode = true;
+		// Find practice step index
+		const practiceIdx = lesson.steps.findIndex((s) => s.type === 'practice');
+		if (practiceIdx >= 0) {
+			// Complete theory steps silently
+			for (let i = 0; i < practiceIdx; i++) {
+				completeStep(course, lessonId, i);
+			}
+			goToStep(practiceIdx);
+		} else {
+			// No practice step — just skip the whole lesson
+			skipLesson(course, lessonId);
+			quickTestDone = true;
+		}
+	}
+
+	/** Called when practice pool is completed in quick-test mode */
+	function finishQuickTest() {
+		if (!course || !lesson) return;
+		// Complete all remaining steps
+		for (let i = 0; i < lesson.steps.length; i++) {
+			completeStep(course, lessonId, i);
+		}
+		quickTestDone = true;
+	}
 
 	// ─── Derived chord data ───────────────────────────────────────
 
@@ -183,6 +216,7 @@
 					// All chords done without help
 					setTimeout(() => {
 						practicePoolComplete = true;
+						if (quickTestMode) finishQuickTest();
 					}, 600);
 				}
 			}
@@ -390,7 +424,39 @@
 			<p class="text-sm text-[var(--text-muted)] mt-1">{t(lesson.subtitleKey)}</p>
 		</div>
 
+		<!-- Quick-test success overlay -->
+		{#if quickTestDone}
+			<div class="card p-8 text-center space-y-4 mb-6">
+				<span class="text-4xl">✓</span>
+				<p class="text-lg font-bold text-[var(--accent-green)]">{t('learn.quick_test_success')}</p>
+				<a
+					href="/learn/{courseId}"
+					class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-medium text-sm hover:bg-[var(--primary-hover)] transition-colors"
+				>
+					{t('learn.back_to_course')}
+				</a>
+			</div>
+		{/if}
+
+		<!-- "Kann ich schon" quick-test button (only if lesson not started and not in quick-test) -->
+		{#if !quickTestMode && !quickTestDone}
+			{@const progress = getLessonProgress(course, lessonId)}
+			{@const mastery = progress?.mastery ?? 'none'}
+			{#if mastery === 'none'}
+				<div class="mb-6 flex items-center gap-3">
+					<button
+						onclick={enterQuickTest}
+						class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--accent-amber)] transition-colors"
+					>
+						⚡ {t('learn.quick_test')}
+					</button>
+					<span class="text-xs text-[var(--text-dim)]">{t('learn.quick_test_desc')}</span>
+				</div>
+			{/if}
+		{/if}
+
 		<!-- Step tabs -->
+		{#if !quickTestDone}
 		<div class="flex gap-1 mb-8">
 			{#each lesson.steps as step, i (i)}
 				<button
@@ -635,9 +701,10 @@
 		{:else}
 			<div class="mt-4 text-center text-xs text-[var(--text-dim)]">
 				{#if currentStep?.type !== 'theory'}
-					Click keys to play · Connect MIDI for keyboard input
+					{t('ui.lesson_click_hint')}
 				{/if}
 			</div>
 		{/if}
+		{/if}<!-- end !quickTestDone -->
 	</main>
 {/if}

@@ -11,6 +11,8 @@ if (browser) {
   if (stored && (stored === 'en' || stored === 'de')) {
     userLocale = stored;
   }
+  // Sync <html lang> with active locale
+  document.documentElement.lang = userLocale;
 }
 
 export const translations = {
