@@ -236,6 +236,14 @@
 		addMidiLog('connection', `Selected: ${midiDevices.find((d) => d.id === id)?.name ?? id}`);
 	}
 
+	function hideMidiDevice(id: string) {
+		const name = midiDevices.find((d) => d.id === id)?.name ?? id;
+		midi.hideDevice(id);
+		midiDevices = [...midi.devices];
+		midiSelectedDeviceId = midi.selectedDeviceId;
+		addMidiLog('info', `Hidden: ${name}`);
+	}
+
 	function toggleMidiSound() {
 		midiSoundEnabled = !midiSoundEnabled;
 		midiSoundEngine.enabled = midiSoundEnabled;
@@ -331,17 +339,23 @@
 				<div class="space-y-2">
 					<p class="text-xs text-[var(--text-dim)] uppercase tracking-wide">{t('midi_test.devices_label')} ({midiDevices.length})</p>
 					{#each midiDevices as device}
-						<button
-							class="block w-full text-left px-4 py-2.5 rounded-[var(--radius-sm)] border transition-all cursor-pointer
-								{device.id === midiSelectedDeviceId
-									? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--text)]'
-									: 'border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)]'}"
-							onclick={() => selectMidiDevice(device.id)}
-						>
-							<span class="font-medium">{device.name}</span>
-							<span class="text-xs text-[var(--text-dim)] ml-2">{t('midi_test.id_label')}: {device.id}</span>
-							{#if device.id === midiSelectedDeviceId}<span class="text-xs text-[var(--primary)] ml-2">● {t('midi_test.active_label')}</span>{/if}
-						</button>
+						<div class="flex items-center gap-2">
+							<button
+								class="flex-1 text-left px-4 py-2.5 rounded-[var(--radius-sm)] border transition-all cursor-pointer
+									{device.id === midiSelectedDeviceId
+										? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--text)]'
+										: 'border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)]'}"
+								onclick={() => selectMidiDevice(device.id)}
+							>
+								<span class="font-medium">{device.name}</span>
+								{#if device.id === midiSelectedDeviceId}<span class="text-xs text-[var(--primary)] ml-2">● {t('midi_test.active_label')}</span>{/if}
+							</button>
+							<button
+								class="p-2 rounded-[var(--radius-sm)] text-[var(--text-dim)] hover:text-[var(--accent-red,#ef4444)] hover:bg-[var(--accent-red,#ef4444)]/10 transition-colors"
+								onclick={() => hideMidiDevice(device.id)}
+								title={t('midi_test.hide_device')}
+							>✕</button>
+						</div>
 					{/each}
 				</div>
 			{/if}
@@ -355,9 +369,9 @@
 							: 'bg-[var(--bg)] text-[var(--text-muted)] border border-[var(--border)] hover:border-[var(--border-hover)]'}"
 					onclick={toggleMidiSound}
 				>
-					🔊 {t(midiSoundEnabled ? 'midi_sound_on' : 'midi_sound_off')}
+					🔊 {t(midiSoundEnabled ? 'settings.midi_sound_on' : 'settings.midi_sound_off')}
 				</button>
-				<span class="text-xs text-[var(--text-dim)]">{t('midi_sound_desc')}</span>
+				<span class="text-xs text-[var(--text-dim)]">{t('settings.midi_sound_desc')}</span>
 			</div>
 		</section>
 

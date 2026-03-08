@@ -5,7 +5,7 @@
 	import { t } from '$lib/i18n';
 	import { getLesson } from '$lib/courses';
 	import { getLessonProgress, completeStep, recordAttempt, skipLesson } from '$lib/services/course-progress';
-	import { getChordNotes, getVoicingNotes, noteToSemitone, CHORD_NOTATIONS, VOICING_LABELS, getVoicingIntervalLabels } from '$lib/engine';
+	import { getChordNotes, getVoicingNotes, noteToSemitone, getNoteName, CHORD_NOTATIONS, VOICING_LABELS, getVoicingIntervalLabels } from '$lib/engine';
 	import type { ChordWithNotes } from '$lib/engine';
 	import type { MasteryLevel, TheoryStep, PracticeStep, ChallengeStep, ChordSpec, IntervalSpec } from '$lib/engine/courses';
 	import { MASTERY_THRESHOLD_MS } from '$lib/engine/courses';
@@ -119,28 +119,67 @@
 			: null,
 	);
 
-	const practicePool = $derived(
-		currentStep?.type === 'practice' 
-			? (currentStep as PracticeStep).chordPool 
+	// ─── Practice: chord vs interval pools ────────────────────────
+	const practiceChordPool = $derived(
+		currentStep?.type === 'practice'
+			? (currentStep as PracticeStep).chordPool ?? []
 			: [],
 	);
 
+	const practiceIntervalPool = $derived(
+		currentStep?.type === 'practice'
+			? (currentStep as PracticeStep).intervalPool ?? []
+			: [],
+	);
+
+	const practiceIsInterval = $derived(practiceIntervalPool.length > 0);
+	const practicePoolSize = $derived(practiceIsInterval ? practiceIntervalPool.length : practiceChordPool.length);
+
 	const practiceCurrentSpec = $derived(
-		practicePool.length > 0 ? practicePool[practiceChordIndex % practicePool.length] : null,
+		!practiceIsInterval && practiceChordPool.length > 0
+			? practiceChordPool[practiceChordIndex % practiceChordPool.length]
+			: null,
+	);
+
+	const practiceCurrentInterval = $derived(
+		practiceIsInterval && practiceIntervalPool.length > 0
+			? practiceIntervalPool[practiceChordIndex % practiceIntervalPool.length]
+			: null,
 	);
 
 	const practiceChordData = $derived(
-		practiceCurrentSpec ? buildChordData(practiceCurrentSpec) : null,
+		practiceIsInterval
+			? practiceCurrentInterval ? buildIntervalData(practiceCurrentInterval) : null
+			: practiceCurrentSpec ? buildChordData(practiceCurrentSpec) : null,
+	);
+
+	// ─── Challenge: chord vs interval ─────────────────────────────
+	const challengeIsInterval = $derived(
+		currentStep?.type === 'challenge' && (currentStep as ChallengeStep).intervalSemitones !== undefined,
 	);
 
 	const challengeCurrentSpec = $derived<ChordSpec | null>(
-		currentStep?.type === 'challenge' && challengeStarted && challengeIndex < challengeKeys.length
+		currentStep?.type === 'challenge' && challengeStarted && challengeIndex < challengeKeys.length && !challengeIsInterval
 			? { root: challengeKeys[challengeIndex], quality: (currentStep as ChallengeStep).quality, voicing: (currentStep as ChallengeStep).voicing }
 			: null,
 	);
 
+	const challengeCurrentInterval = $derived<IntervalSpec | null>(
+		challengeIsInterval && challengeStarted && challengeIndex < challengeKeys.length
+			? (() => {
+				const step = currentStep as ChallengeStep;
+				const root = challengeKeys[challengeIndex];
+				const rootSt = noteToSemitone(root);
+				const target = getNoteName(rootSt, step.intervalSemitones!, 'flats');
+				return { root, target, label: step.intervalLabel!, semitones: step.intervalSemitones! };
+			})()
+			: null,
+	);
+
 	const challengeChordData = $derived(
-		challengeCurrentSpec ? buildChordData(challengeCurrentSpec) : null,
+		challengeIsInterval
+			? challengeCurrentInterval ? buildIntervalData(challengeCurrentInterval) : null
+			: challengeCurrentSpec ? buildChordData(challengeCurrentSpec) : null,
 	);
 
 	// Active chord data for the keyboard (whichever step is active)
@@ -229,7 +268,7 @@
 				}, 800);
 			} else if (practicePhase === 'free') {
 				practiceFreeCorrectSet = new Set([...practiceFreeCorrectSet, practiceChordIndex]);
-				if (practiceFreeCorrectSet.size >= practicePool.length) {
+				if (practiceFreeCorrectSet.size >= practicePoolSize) {
 					// All chords done without help
 					setTimeout(() => {
 						practicePoolComplete = true;
@@ -241,7 +280,7 @@
 			// Advance to next chord after short delay
 			if (!practicePoolComplete) {
 				setTimeout(() => {
-					practiceChordIndex = (practiceChordIndex + 1) % practicePool.length;
+					practiceChordIndex = (practiceChordIndex + 1) % practicePoolSize;
 					practiceCorrect = false;
 					practiceShowHint = false;
 					midiMatchResult = null;
@@ -490,7 +529,7 @@
 		</div>
 
 		<!-- Step content -->
-		<div class="card p-5 sm:p-8">
+		<div class="card p-5 sm:p-8 min-h-[28rem]">
 			<!-- ═══ THEORY STEP ═══ -->
 			{#if currentStep?.type === 'theory'}
 				{@const step = currentStep as TheoryStep}
@@ -602,12 +641,19 @@
 						{/if}
 					</div>
 
-					<!-- Current chord name -->
+					<!-- Current chord / interval name -->
 					{#if practiceChordData && !practicePoolComplete}
 						<div class="text-center">
-							<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
-								{practiceChordData.chord}
-							</span>
+							{#if practiceIsInterval && practiceCurrentInterval}
+								<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
+									{practiceCurrentInterval.root} → {practiceCurrentInterval.target}
+								</span>
+								<p class="text-xs text-[var(--text-dim)] mt-1">{practiceCurrentInterval.label} · {practiceCurrentInterval.semitones} {t('learn.semitones')}</p>
+							{:else}
+								<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
+									{practiceChordData.chord}
+								</span>
+							{/if}
 							{#if practiceCorrect}
 								<p class="text-sm text-[var(--accent-green)] mt-2 font-medium">
 									{t('learn.practice_correct')}
@@ -677,15 +723,27 @@
 					{#if !challengeStarted}
 						<!-- Pre-challenge intro -->
 						<div class="text-center space-y-4 py-6">
-							<p class="text-lg font-medium text-[var(--text)]">
-								{CHORD_NOTATIONS.standard[step.quality] ?? step.quality}
-								<span class="text-sm font-normal text-[var(--text-muted)] ml-1">
-									{VOICING_LABELS[step.voicing] ?? step.voicing}
-								</span>
-							</p>
-							<p class="text-sm text-[var(--text-muted)]">
-								{t('learn.challenge_intro', { quality: CHORD_NOTATIONS.standard[step.quality] ?? step.quality, voicing: VOICING_LABELS[step.voicing] ?? step.voicing, count: String(step.keys.length), threshold: String(step.masteryThresholdMs) })}
-							</p>
+							{#if challengeIsInterval}
+								<p class="text-lg font-medium text-[var(--text)]">
+									{step.intervalLabel}
+									<span class="text-sm font-normal text-[var(--text-muted)] ml-1">
+										({step.intervalSemitones} {t('learn.semitones')})
+									</span>
+								</p>
+								<p class="text-sm text-[var(--text-muted)]">
+									{t('learn.challenge_interval_intro', { label: step.intervalLabel!, count: String(step.keys.length), threshold: String(step.masteryThresholdMs) })}
+								</p>
+							{:else}
+								<p class="text-lg font-medium text-[var(--text)]">
+									{CHORD_NOTATIONS.standard[step.quality] ?? step.quality}
+									<span class="text-sm font-normal text-[var(--text-muted)] ml-1">
+										{VOICING_LABELS[step.voicing] ?? step.voicing}
+									</span>
+								</p>
+								<p class="text-sm text-[var(--text-muted)]">
+									{t('learn.challenge_intro', { quality: CHORD_NOTATIONS.standard[step.quality] ?? step.quality, voicing: VOICING_LABELS[step.voicing] ?? step.voicing, count: String(step.keys.length), threshold: String(step.masteryThresholdMs) })}
+								</p>
+							{/if}
 							<button
 								onclick={startChallenge}
 								class="px-8 py-3 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-bold text-lg hover:bg-[var(--primary-hover)] transition-colors"
@@ -710,7 +768,7 @@
 							<!-- Average time display -->
 							<div class="inline-flex items-baseline gap-2">
 								<span class="text-4xl font-bold text-[var(--text)] tabular-nums">{challengeAvgMs}</span>
-								<span class="text-sm text-[var(--text-muted)]">ms / {t('learn.challenge_per_chord')}</span>
+								<span class="text-sm text-[var(--text-muted)]">ms / {challengeIsInterval ? t('learn.challenge_per_interval') : t('learn.challenge_per_chord')}</span>
 							</div>
 
 							{#if challengePassed && challengeAvgMs < MASTERY_THRESHOLD_MS}
@@ -793,9 +851,15 @@
 
 						{#if challengeChordData}
 							<div class="text-center">
-								<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
-									{challengeChordData.chord}
-								</span>
+								{#if challengeIsInterval && challengeCurrentInterval}
+									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
+										{challengeCurrentInterval.root} → {challengeCurrentInterval.target}
+									</span>
+								{:else}
+									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
+										{challengeChordData.chord}
+									</span>
+								{/if}
 							</div>
 
 							<PianoKeyboard

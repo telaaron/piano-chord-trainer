@@ -41,6 +41,17 @@ type ConnectionCallback = (state: MidiConnectionState) => void;
 type DeviceListCallback = (devices: MidiDevice[]) => void;
 type DisconnectToastCallback = (deviceName: string) => void;
 
+const MIDI_DEVICE_KEY = 'midi-selected-device';
+const MIDI_HIDDEN_KEY = 'midi-hidden-devices';
+
+/** Known virtual / system MIDI port name patterns to auto-hide. */
+const VIRTUAL_PORT_PATTERNS = [
+	/^session \d+$/i,           // macOS IAC Driver default ports
+	/^iac driver/i,             // macOS IAC Driver
+	/^midi through port/i,      // Linux ALSA virtual port
+	/^microsoft gs wavetable/i, // Windows built-in synth
+];
+
 export class MidiService {
 	private access: MIDIAccess | null = null;
 	/** Currently held MIDI note numbers (0–127) */
@@ -48,6 +59,7 @@ export class MidiService {
 	private _state: MidiConnectionState = 'disconnected';
 	private _devices: MidiDevice[] = [];
 	private _selectedDeviceId: string | null = null;
+	private _hiddenDeviceIds = new Set<string>();
 
 	// Debounce note-off events to avoid accidental double-triggers
 	private _debounceMs = 30;
@@ -81,6 +93,10 @@ export class MidiService {
 
 	get selectedDeviceId(): string | null {
 		return this._selectedDeviceId;
+	}
+
+	get hiddenDeviceIds(): ReadonlySet<string> {
+		return this._hiddenDeviceIds;
 	}
 
 	// ─── Event registration ────────────────────────────────────
@@ -151,6 +167,18 @@ export class MidiService {
 		this._destroyed = false;
 		this.setState('connecting');
 
+		// Restore hidden device list
+		try {
+			const raw = localStorage.getItem(MIDI_HIDDEN_KEY);
+			if (raw) this._hiddenDeviceIds = new Set(JSON.parse(raw));
+		} catch { /* noop */ }
+
+		// Restore last selected device
+		try {
+			const saved = localStorage.getItem(MIDI_DEVICE_KEY);
+			if (saved) this._selectedDeviceId = saved;
+		} catch { /* noop */ }
+
 		try {
 			this.access = await navigator.requestMIDIAccess({ sysex: false });
 
@@ -163,8 +191,10 @@ export class MidiService {
 			this.access.onstatechange = (e) => this.handleStateChange(e as MIDIConnectionEvent);
 			this.refreshDeviceList();
 
-			// Auto-select first device if available
-			if (this._devices.length > 0 && !this._selectedDeviceId) {
+			// Restore saved device or auto-select first available
+			if (this._selectedDeviceId && this._devices.find((d) => d.id === this._selectedDeviceId)) {
+				this.selectDevice(this._selectedDeviceId);
+			} else if (this._devices.length > 0) {
 				this.selectDevice(this._devices[0].id);
 			} else {
 				this.setState('connected');
@@ -189,6 +219,9 @@ export class MidiService {
 		this.detachListeners();
 		this._selectedDeviceId = deviceId;
 
+		// Persist selection
+		try { localStorage.setItem(MIDI_DEVICE_KEY, deviceId); } catch { /* noop */ }
+
 		if (!this.access) return;
 
 		const input = this.access.inputs.get(deviceId);
@@ -196,6 +229,40 @@ export class MidiService {
 			input.onmidimessage = (e) => this.handleMessage(e);
 			this.setState('connected');
 		}
+	}
+
+	/** Hide a device (remove from visible list). Persisted in localStorage. */
+	hideDevice(deviceId: string): void {
+		this._hiddenDeviceIds.add(deviceId);
+		try {
+			localStorage.setItem(MIDI_HIDDEN_KEY, JSON.stringify([...this._hiddenDeviceIds]));
+		} catch { /* noop */ }
+
+		// If the hidden device was selected, clear selection
+		if (this._selectedDeviceId === deviceId) {
+			this.detachListeners();
+			this._selectedDeviceId = null;
+			try { localStorage.removeItem(MIDI_DEVICE_KEY); } catch { /* noop */ }
+		}
+
+		// Refresh so callbacks see the new filtered list
+		this.refreshDeviceList();
+	}
+
+	/** Unhide a device */
+	unhideDevice(deviceId: string): void {
+		this._hiddenDeviceIds.delete(deviceId);
+		try {
+			localStorage.setItem(MIDI_HIDDEN_KEY, JSON.stringify([...this._hiddenDeviceIds]));
+		} catch { /* noop */ }
+		this.refreshDeviceList();
+	}
+
+	/** Unhide all devices */
+	unhideAll(): void {
+		this._hiddenDeviceIds.clear();
+		try { localStorage.removeItem(MIDI_HIDDEN_KEY); } catch { /* noop */ }
+		this.refreshDeviceList();
 	}
 
 	/** Clean up everything */
@@ -362,9 +429,14 @@ export class MidiService {
 
 		const newDevices: MidiDevice[] = [];
 		this.access.inputs.forEach((input) => {
+			// Skip hidden devices
+			if (this._hiddenDeviceIds.has(input.id)) return;
+			// Skip known virtual / system ports
+			const name = input.name || '';
+			if (VIRTUAL_PORT_PATTERNS.some((p) => p.test(name))) return;
 			newDevices.push({
 				id: input.id,
-				name: input.name || `MIDI Input ${input.id}`,
+				name: name || `MIDI Input ${input.id}`,
 			});
 		});
 

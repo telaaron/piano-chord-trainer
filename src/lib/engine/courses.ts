@@ -38,7 +38,9 @@ export interface TheoryStep {
 export interface PracticeStep {
 	type: 'practice';
 	/** Chord pool for guided → free practice */
-	chordPool: ChordSpec[];
+	chordPool?: ChordSpec[];
+	/** Interval pool for guided → free practice (alternative to chordPool) */
+	intervalPool?: IntervalSpec[];
 	/** How many correct in a row before hints are removed */
 	guidedCount: number;
 }
@@ -53,6 +55,10 @@ export interface ChallengeStep {
 	keys: string[];
 	/** Average ms per chord to pass */
 	masteryThresholdMs: number;
+	/** If set, drill pure intervals instead of chords */
+	intervalSemitones?: number;
+	/** Label for the interval being drilled */
+	intervalLabel?: string;
 }
 
 export type LessonStep = TheoryStep | PracticeStep | ChallengeStep;

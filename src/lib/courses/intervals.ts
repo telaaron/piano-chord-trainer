@@ -1,10 +1,20 @@
 // Intervals course — learn to recognize and play musical intervals
-// Teaches intervals through chord construction: from 2nds to 13ths
+// Pure interval training: theory shows 2 notes, practice/challenge drills intervals across keys
 
-import type { Course } from '$lib/engine/courses';
+import type { Course, IntervalSpec } from '$lib/engine/courses';
+import { noteToSemitone, getNoteName } from '$lib/engine/notes';
 
 const ALL_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 const EASY_KEYS = ['C', 'F', 'Bb', 'Eb'];
+
+/** Generate interval pool: for each root, build { root, target, label, semitones } */
+function ivPool(roots: string[], semitones: number, label: string): IntervalSpec[] {
+	return roots.map((root) => {
+		const rootSt = noteToSemitone(root);
+		const target = getNoteName(rootSt, semitones, 'flats');
+		return { root, target, label, semitones };
+	});
+}
 
 export const intervalsCourse: Course = {
 	id: 'intervals',
@@ -31,9 +41,9 @@ export const intervalsCourse: Course = {
 						},
 						{
 							type: 'practice',
-							chordPool: [
-								...EASY_KEYS.map((root) => ({ root, quality: 'Maj7' as const, voicing: 'root' as const })),
-								...EASY_KEYS.map((root) => ({ root, quality: 'm7' as const, voicing: 'root' as const })),
+							intervalPool: [
+								...ivPool(EASY_KEYS, 4, 'Maj 3rd'),
+								...ivPool(EASY_KEYS, 3, 'min 3rd'),
 							],
 							guidedCount: 4,
 						},
@@ -43,6 +53,8 @@ export const intervalsCourse: Course = {
 							quality: 'Maj7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4000,
+							intervalSemitones: 4,
+							intervalLabel: 'Maj 3rd',
 						},
 					],
 				},
@@ -58,15 +70,17 @@ export const intervalsCourse: Course = {
 						},
 						{
 							type: 'practice',
-							chordPool: EASY_KEYS.map((root) => ({ root, quality: '7' as const, voicing: 'shell' as const })),
+							intervalPool: ivPool(EASY_KEYS, 6, 'Tritone'),
 							guidedCount: 3,
 						},
 						{
 							type: 'challenge',
-							voicing: 'shell',
+							voicing: 'root',
 							quality: '7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4000,
+							intervalSemitones: 6,
+							intervalLabel: 'Tritone',
 						},
 					],
 				},
@@ -89,7 +103,7 @@ export const intervalsCourse: Course = {
 						},
 						{
 							type: 'practice',
-							chordPool: EASY_KEYS.map((root) => ({ root, quality: 'Maj7' as const, voicing: 'root' as const })),
+							intervalPool: ivPool(EASY_KEYS, 7, 'P5'),
 							guidedCount: 3,
 						},
 						{
@@ -98,6 +112,8 @@ export const intervalsCourse: Course = {
 							quality: 'Maj7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4000,
+							intervalSemitones: 7,
+							intervalLabel: 'P5',
 						},
 					],
 				},
@@ -113,7 +129,10 @@ export const intervalsCourse: Course = {
 						},
 						{
 							type: 'practice',
-							chordPool: EASY_KEYS.map((root) => ({ root, quality: 'm7b5' as const, voicing: 'root' as const })),
+							intervalPool: [
+								...ivPool(EASY_KEYS, 6, '♭5'),
+								...ivPool(EASY_KEYS, 8, '#5'),
+							],
 							guidedCount: 3,
 						},
 						{
@@ -122,6 +141,8 @@ export const intervalsCourse: Course = {
 							quality: 'm7b5',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4500,
+							intervalSemitones: 6,
+							intervalLabel: '♭5',
 						},
 					],
 				},
@@ -137,10 +158,7 @@ export const intervalsCourse: Course = {
 						},
 						{
 							type: 'practice',
-							chordPool: [
-								...EASY_KEYS.map((root) => ({ root, quality: '6' as const, voicing: 'root' as const })),
-								...EASY_KEYS.map((root) => ({ root, quality: 'm6' as const, voicing: 'root' as const })),
-							],
+							intervalPool: ivPool(EASY_KEYS, 9, 'Maj 6th'),
 							guidedCount: 3,
 						},
 						{
@@ -149,6 +167,8 @@ export const intervalsCourse: Course = {
 							quality: '6',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4000,
+							intervalSemitones: 9,
+							intervalLabel: 'Maj 6th',
 						},
 					],
 				},
@@ -171,10 +191,7 @@ export const intervalsCourse: Course = {
 						},
 						{
 							type: 'practice',
-							chordPool: [
-								...EASY_KEYS.map((root) => ({ root, quality: '7' as const, voicing: 'root' as const })),
-								...EASY_KEYS.map((root) => ({ root, quality: 'm7' as const, voicing: 'root' as const })),
-							],
+							intervalPool: ivPool(EASY_KEYS, 10, '♭7'),
 							guidedCount: 3,
 						},
 						{
@@ -183,6 +200,8 @@ export const intervalsCourse: Course = {
 							quality: '7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4000,
+							intervalSemitones: 10,
+							intervalLabel: '♭7',
 						},
 					],
 				},
@@ -198,7 +217,7 @@ export const intervalsCourse: Course = {
 						},
 						{
 							type: 'practice',
-							chordPool: EASY_KEYS.map((root) => ({ root, quality: 'Maj7' as const, voicing: 'root' as const })),
+							intervalPool: ivPool(EASY_KEYS, 11, 'Maj 7th'),
 							guidedCount: 3,
 						},
 						{
@@ -207,6 +226,8 @@ export const intervalsCourse: Course = {
 							quality: 'Maj7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 3500,
+							intervalSemitones: 11,
+							intervalLabel: 'Maj 7th',
 						},
 					],
 				},
@@ -229,10 +250,7 @@ export const intervalsCourse: Course = {
 						},
 						{
 							type: 'practice',
-							chordPool: [
-								...EASY_KEYS.map((root) => ({ root, quality: 'Maj9' as const, voicing: 'root' as const })),
-								...EASY_KEYS.map((root) => ({ root, quality: '9' as const, voicing: 'root' as const })),
-							],
+							intervalPool: ivPool(EASY_KEYS, 2, '9th'),
 							guidedCount: 3,
 						},
 						{
@@ -241,6 +259,8 @@ export const intervalsCourse: Course = {
 							quality: '9',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4500,
+							intervalSemitones: 2,
+							intervalLabel: '9th',
 						},
 					],
 				},
@@ -256,9 +276,9 @@ export const intervalsCourse: Course = {
 						},
 						{
 							type: 'practice',
-							chordPool: [
-								...EASY_KEYS.map((root) => ({ root, quality: 'm11' as const, voicing: 'root' as const })),
-								...EASY_KEYS.map((root) => ({ root, quality: '13' as const, voicing: 'root' as const })),
+							intervalPool: [
+								...ivPool(EASY_KEYS, 5, '11th'),
+								...ivPool(EASY_KEYS, 9, '13th'),
 							],
 							guidedCount: 3,
 						},
@@ -268,6 +288,8 @@ export const intervalsCourse: Course = {
 							quality: '13',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4500,
+							intervalSemitones: 5,
+							intervalLabel: '11th',
 						},
 					],
 				},
