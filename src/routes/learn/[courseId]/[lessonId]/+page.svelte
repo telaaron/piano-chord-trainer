@@ -5,9 +5,10 @@
 	import { t } from '$lib/i18n';
 	import { getLesson } from '$lib/courses';
 	import { getLessonProgress, completeStep, recordAttempt, skipLesson } from '$lib/services/course-progress';
-	import { getChordNotes, getVoicingNotes, noteToSemitone } from '$lib/engine';
+	import { getChordNotes, getVoicingNotes, noteToSemitone, CHORD_NOTATIONS, VOICING_LABELS, getVoicingIntervalLabels } from '$lib/engine';
 	import type { ChordWithNotes } from '$lib/engine';
-	import type { MasteryLevel, TheoryStep, PracticeStep, ChallengeStep, ChordSpec } from '$lib/engine/courses';
+	import type { MasteryLevel, TheoryStep, PracticeStep, ChallengeStep, ChordSpec, IntervalSpec } from '$lib/engine/courses';
+	import { MASTERY_THRESHOLD_MS } from '$lib/engine/courses';
 	import { playChord } from '$lib/services/audio';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import { MidiService } from '$lib/services/midi';
@@ -90,15 +91,31 @@
 
 	/** Build ChordWithNotes for a ChordSpec */
 	function buildChordData(spec: ChordSpec): ChordWithNotes {
-		const notes = getChordNotes(spec.root, spec.quality, 'sharps');
-		const voicing = getVoicingNotes(notes, spec.voicing, spec.root, 'sharps');
-		const display = `${spec.root}${spec.quality === 'maj7' ? 'Maj7' : spec.quality === '7' ? '7' : spec.quality === 'm7' ? 'm7' : spec.quality}`;
+		const notes = getChordNotes(spec.root, spec.quality, 'flats');
+		const voicing = getVoicingNotes(notes, spec.voicing, spec.root, 'flats');
+		const display = `${spec.root}${CHORD_NOTATIONS.standard[spec.quality] ?? spec.quality}`;
 		return { chord: display, root: spec.root, type: spec.quality, notes, voicing };
 	}
 
+	/** Build ChordWithNotes for a pure interval (2 notes) */
+	function buildIntervalData(iv: IntervalSpec): ChordWithNotes {
+		const display = `${iv.root} → ${iv.target}`;
+		const notes = [iv.root, iv.target];
+		return { chord: display, root: iv.root, type: '', notes, voicing: notes };
+	}
+
+	/** Is the current theory step an interval (not a chord)? */
+	const theoryIsInterval = $derived(
+		currentStep?.type === 'theory' && !!(currentStep as TheoryStep).exampleInterval,
+	);
+
 	const theoryChord = $derived(
 		currentStep?.type === 'theory'
-			? buildChordData((currentStep as TheoryStep).exampleChord)
+			? (currentStep as TheoryStep).exampleInterval
+				? buildIntervalData((currentStep as TheoryStep).exampleInterval!)
+				: (currentStep as TheoryStep).exampleChord
+					? buildChordData((currentStep as TheoryStep).exampleChord!)
+					: null
 			: null,
 	);
 
@@ -171,7 +188,7 @@
 	// ─── Theory actions ───────────────────────────────────────────
 	function playTheoryChord() {
 		if (theoryChord) {
-			playChord(theoryChord.voicing.map((n) => n + '4'));
+			playChord(theoryChord.voicing);
 		}
 	}
 
@@ -477,7 +494,63 @@
 			<!-- ═══ THEORY STEP ═══ -->
 			{#if currentStep?.type === 'theory'}
 				{@const step = currentStep as TheoryStep}
+				{@const isInterval = theoryIsInterval}
+				{@const voicingLabels = theoryChord && !isInterval && step.exampleChord ? getVoicingIntervalLabels(theoryChord.voicing, step.exampleChord.root, step.exampleChord.quality) : []}
 				<div class="space-y-6">
+					<!-- Header card -->
+					{#if theoryChord}
+						<div class="rounded-xl bg-[var(--surface-alt,var(--surface))]/60 border border-[var(--border)]/40 p-4 sm:p-5">
+							<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+								<div>
+									{#if isInterval && step.exampleInterval}
+										<!-- Interval display: root → target with semitones -->
+										<span class="text-2xl sm:text-3xl font-bold text-[var(--text)]">{step.exampleInterval.root} → {step.exampleInterval.target}</span>
+										<span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-[var(--accent-amber)]/15 text-[var(--accent-amber)] font-medium">
+											{step.exampleInterval.semitones} {t('learn.semitones')}
+										</span>
+									{:else}
+										<!-- Chord display -->
+										<span class="text-2xl sm:text-3xl font-bold text-[var(--text)]">{theoryChord.chord}</span>
+										{#if step.exampleChord}
+											<span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-[var(--primary)]/15 text-[var(--primary)] font-medium">
+												{VOICING_LABELS[step.exampleChord.voicing] ?? step.exampleChord.voicing}
+											</span>
+										{/if}
+									{/if}
+								</div>
+								<button 
+									onclick={playTheoryChord}
+									class="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--border-hover)] transition-colors self-start sm:self-auto"
+								>
+									🔊 {t('learn.listen')}
+								</button>
+							</div>
+							<!-- Note pills -->
+							{#if isInterval && step.exampleInterval}
+								<div class="flex flex-wrap gap-1.5 mt-3">
+									<span class="text-xs px-2 py-1 rounded-md bg-[var(--border)]/30 text-[var(--text-muted)] font-mono">
+										{step.exampleInterval.root}
+										<span class="text-[var(--text-dim)] ml-0.5">({t('learn.interval_root')})</span>
+									</span>
+									<span class="text-[var(--text-dim)] self-center">→</span>
+									<span class="text-xs px-2 py-1 rounded-md bg-[var(--border)]/30 text-[var(--text-muted)] font-mono">
+										{step.exampleInterval.target}
+										<span class="text-[var(--text-dim)] ml-0.5">({step.exampleInterval.label})</span>
+									</span>
+								</div>
+							{:else if voicingLabels.length > 0}
+								<div class="flex flex-wrap gap-1.5 mt-3">
+									{#each theoryChord.voicing as note, i}
+										<span class="text-xs px-2 py-1 rounded-md bg-[var(--border)]/30 text-[var(--text-muted)] font-mono">
+											{note}
+											<span class="text-[var(--text-dim)] ml-0.5">({voicingLabels[i] ?? ''})</span>
+										</span>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					{/if}
+
 					<!-- Theory text -->
 					<div class="prose prose-invert max-w-none text-sm sm:text-base leading-relaxed text-[var(--text-muted)]">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -486,23 +559,15 @@
 
 					<!-- Interactive keyboard -->
 					{#if theoryChord}
-						<div class="mt-4">
+						<div class="mt-2">
 							<PianoKeyboard
 								chordData={theoryChord}
 								showVoicing={true}
-								accidentalPref="sharps"
+								accidentalPref="flats"
 								midiActiveNotes={midiActiveNotes}
 								midiExpectedPitchClasses={expectedPCs}
 								midiEnabled={midiEnabled}
 							/>
-						</div>
-						<div class="flex gap-3 mt-4">
-							<button 
-								onclick={playTheoryChord}
-								class="px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--border-hover)] transition-colors"
-							>
-								🔊 {t('learn.listen')}
-							</button>
 						</div>
 					{/if}
 
@@ -554,7 +619,7 @@
 						<PianoKeyboard
 							chordData={showKeyHighlights ? practiceChordData : null}
 							showVoicing={showKeyHighlights}
-							accidentalPref="sharps"
+							accidentalPref="flats"
 							midiActiveNotes={midiActiveNotes}
 							midiExpectedPitchClasses={expectedPCs}
 							midiEnabled={midiEnabled || true}
@@ -612,8 +677,14 @@
 					{#if !challengeStarted}
 						<!-- Pre-challenge intro -->
 						<div class="text-center space-y-4 py-6">
+							<p class="text-lg font-medium text-[var(--text)]">
+								{CHORD_NOTATIONS.standard[step.quality] ?? step.quality}
+								<span class="text-sm font-normal text-[var(--text-muted)] ml-1">
+									{VOICING_LABELS[step.voicing] ?? step.voicing}
+								</span>
+							</p>
 							<p class="text-sm text-[var(--text-muted)]">
-								{t('learn.challenge_intro', { quality: step.quality })}
+								{t('learn.challenge_intro', { quality: CHORD_NOTATIONS.standard[step.quality] ?? step.quality, voicing: VOICING_LABELS[step.voicing] ?? step.voicing, count: String(step.keys.length), threshold: String(step.masteryThresholdMs) })}
 							</p>
 							<button
 								onclick={startChallenge}
@@ -636,20 +707,70 @@
 					{:else if challengeFinished}
 						<!-- Results -->
 						<div class="text-center space-y-4 py-6">
-							<p class="text-lg text-[var(--text)]">
-								{t('learn.challenge_result', { avg: String(challengeAvgMs) })}
-							</p>
-							{#if challengePassed}
-								<p class="text-[var(--accent-green)] font-medium">
-									✓ {t('learn.challenge_pass')}
-								</p>
+							<!-- Average time display -->
+							<div class="inline-flex items-baseline gap-2">
+								<span class="text-4xl font-bold text-[var(--text)] tabular-nums">{challengeAvgMs}</span>
+								<span class="text-sm text-[var(--text-muted)]">ms / {t('learn.challenge_per_chord')}</span>
+							</div>
+
+							{#if challengePassed && challengeAvgMs < MASTERY_THRESHOLD_MS}
+								<!-- MASTERED! -->
+								<div class="space-y-2">
+									<p class="text-[var(--accent-green)] font-bold text-lg">
+										⭐ {t('learn.challenge_mastered')}
+									</p>
+									<p class="text-sm text-[var(--text-muted)]">
+										{t('learn.challenge_mastered_sub', { threshold: String(MASTERY_THRESHOLD_MS) })}
+									</p>
+								</div>
 								<button
 									onclick={nextStep}
 									class="px-6 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-medium hover:bg-[var(--primary-hover)] transition-colors"
 								>
 									{t('learn.next_step')} →
 								</button>
+
+							{:else if challengePassed}
+								{@const masteryProgress = Math.min(100, Math.max(5, Math.round(((step.masteryThresholdMs - challengeAvgMs) / (step.masteryThresholdMs - MASTERY_THRESHOLD_MS)) * 100)))}
+								<!-- Passed but not mastered -->
+								<div class="space-y-2">
+									<p class="text-[var(--accent-green)] font-medium">
+										✓ {t('learn.challenge_pass')}
+									</p>
+									<!-- Mastery encouragement -->
+									<div class="rounded-lg bg-[var(--border)]/15 border border-[var(--border)]/30 p-3 mt-3">
+										<p class="text-sm text-[var(--text-muted)]">
+											{t('learn.challenge_mastery_hint', { threshold: String(MASTERY_THRESHOLD_MS), current: String(challengeAvgMs) })}
+										</p>
+										<!-- Progress bar toward mastery -->
+										<div class="mt-2 h-1.5 rounded-full bg-[var(--border)]/30 overflow-hidden">
+											<div 
+												class="h-full rounded-full bg-[var(--accent-amber)] transition-all"
+												style="width: {masteryProgress}%"
+											></div>
+										</div>
+										<p class="text-xs text-[var(--text-dim)] mt-1 tabular-nums">
+											{challengeAvgMs}ms → {MASTERY_THRESHOLD_MS}ms
+										</p>
+									</div>
+								</div>
+								<div class="flex flex-col sm:flex-row gap-3 justify-center">
+									<button
+										onclick={nextStep}
+										class="px-6 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-medium hover:bg-[var(--primary-hover)] transition-colors"
+									>
+										{t('learn.next_step')} →
+									</button>
+									<button
+										onclick={startChallenge}
+										class="px-6 py-2.5 rounded-lg border border-[var(--accent-amber)]/50 text-[var(--accent-amber)] font-medium hover:bg-[var(--accent-amber)]/10 transition-colors"
+									>
+										⭐ {t('learn.challenge_try_mastery')}
+									</button>
+								</div>
+
 							{:else}
+								<!-- Failed -->
 								<p class="text-[var(--accent-amber)]">
 									{t('learn.challenge_retry', { threshold: String(step.masteryThresholdMs) })}
 								</p>
@@ -680,7 +801,7 @@
 							<PianoKeyboard
 								chordData={null}
 								showVoicing={false}
-								accidentalPref="sharps"
+								accidentalPref="flats"
 								midiActiveNotes={midiActiveNotes}
 								midiExpectedPitchClasses={expectedPCs}
 								midiEnabled={midiEnabled || true}

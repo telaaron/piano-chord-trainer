@@ -70,7 +70,6 @@ export class AudioInputService {
 	private source: MediaStreamAudioSourceNode | null = null;
 	private analyser: AnalyserNode | null = null;
 	private processor: ScriptProcessorNode | null = null;
-	private preamp: GainNode | null = null;
 	private silentGain: GainNode | null = null;
 
 	// Ring buffer: last ~2 seconds of raw PCM audio
@@ -92,10 +91,17 @@ export class AudioInputService {
 	private analysisTimer: ReturnType<typeof setInterval> | null = null;
 
 	// Energy detection
-	private energyThreshold = 0.004;
+	private energyThreshold = 0.0013;
 	private silenceFrames = 0;
-	private readonly silenceFramesThreshold = 4; // 4 cycles × 1.2s = ~5s of silence before clearing
+	private readonly silenceFramesThreshold = 4; // 4 cycles × 0.8s = ~3s of silence before clearing
 	private hadEnergyOnce = false;
+
+	// Audio output suppression — prevents mic from detecting its own audio output
+	private _suppressUntil = 0;
+
+	// Adaptive level normalization for display (getLevel())
+	// Tracks the recent peak RMS so the meter auto-calibrates to the mic.
+	private levelPeakRMS = 0.03; // starting floor — prevents noise looking huge at startup
 
 	// Callbacks
 	private onNoteChange: NoteCallback | null = null;
@@ -122,6 +128,24 @@ export class AudioInputService {
 		this.onStateChange = cb;
 	}
 
+	/**
+	 * Suppress detection for the given duration.
+	 * Use this when audio playback starts — prevents the microphone
+	 * from hearing its own speakers and self-triggering chord matches.
+	 *
+	 * @param durationMs  How long to mute detection (default: 2500ms — enough for
+	 *                    a chord to ring out + ML inference latency)
+	 */
+	suppress(durationMs = 2500): void {
+		this._suppressUntil = Date.now() + durationMs;
+		// Clear any currently detected notes immediately so a previously
+		// matched chord doesn't linger during the suppression window.
+		if (this._activeNotes.size > 0) {
+			this._activeNotes = new Set<number>();
+			this.onNoteChange?.(this._activeNotes);
+		}
+	}
+
 	// ─── Lifecycle ──────────────────────────────────────────────
 
 	/**
@@ -146,8 +170,7 @@ export class AudioInputService {
 		try {
 			// Request microphone.
 			// autoGainControl:true lets iOS/Android hardware normalize mic level
-			// (critical for iPad and quiet-mic devices). We add a software preamp
-			// on top as a second layer of boost.
+			// (critical for iPad and quiet-mic devices).
 			this.stream = await navigator.mediaDevices.getUserMedia({
 				audio: {
 					echoCancellation: false,
@@ -167,22 +190,16 @@ export class AudioInputService {
 				await this.audioContext.resume();
 			}
 
-			// Connect microphone source
+			// Connect microphone source — use the native signal level as-is.
+			// No software preamp; let the browser's autoGainControl handle
+			// hardware-level normalisation (iPad, external mics, etc.).
 			this.source = this.audioContext.createMediaStreamSource(this.stream);
-
-			// Software preamp: 3× gain boost.
-			// Compensates for quiet-mic devices (iPad, external mics without AGC
-			// hardware). Both the level analyser and the ring buffer see the
-			// boosted signal so basic-pitch gets adequate amplitude too.
-			this.preamp = this.audioContext.createGain();
-			this.preamp.gain.value = 3;
-			this.source.connect(this.preamp);
 
 			// AnalyserNode for RMS energy monitoring
 			this.analyser = this.audioContext.createAnalyser();
 			this.analyser.fftSize = 2048;
 			this.analyser.smoothingTimeConstant = 0.3;
-			this.preamp.connect(this.analyser);
+			this.source.connect(this.analyser);
 
 			// ScriptProcessorNode for raw audio capture into ring buffer
 			// Connect through a silent gain node to prevent mic feedback
@@ -190,7 +207,7 @@ export class AudioInputService {
 			this.silentGain = this.audioContext.createGain();
 			this.silentGain.gain.value = 0;
 
-			this.preamp.connect(this.processor);
+			this.source.connect(this.processor);
 			this.processor.connect(this.silentGain);
 			this.silentGain.connect(this.audioContext.destination);
 
@@ -262,13 +279,31 @@ export class AudioInputService {
 	}
 
 	/**
-	 * Returns current mic input level as a 0–1 float (RMS, normalised).
-	 * Useful for level-meter UI. Returns 0 when not listening.
+	 * Returns current mic input level as a 0–1 float for UI display.
+	 *
+	 * Uses an adaptive peak follower so the meter auto-calibrates to the
+	 * microphone's actual output level:
+	 *   - Fast attack: peak rises quickly when you play
+	 *   - Very slow decay: peak holds for ~60 s, then drifts down during silence
+	 *   - Normalises so "typical peak playing" ≈ 60 % on the meter
+	 *
+	 * This way a loud Mac condenser and a quiet iPad mic both show useful levels.
 	 */
 	getLevel(): number {
 		const raw = this.getRMSEnergy();
-		// RMS rarely exceeds 0.2 for loud speech/instrument; clamp to [0,1]
-		return Math.min(raw / 0.2, 1);
+
+		// Attack: move 12 % toward new value per call (~60 fps → 0.3 s to reach 85 %)
+		// Decay:  0.02 % drop per call → half-life ≈ 57 s (holds the reference long)
+		if (raw > this.levelPeakRMS) {
+			this.levelPeakRMS = raw * 0.12 + this.levelPeakRMS * 0.88;
+		} else {
+			this.levelPeakRMS = this.levelPeakRMS * 0.9998;
+		}
+
+		// Normalise: use a floor of 0.01 so ambient noise near 0 stays small.
+		// Scale × 0.6 so playing at peak level ≈ 60 % (leaves headroom visible).
+		const norm = Math.max(this.levelPeakRMS, 0.01);
+		return Math.min((raw / norm) * 0.6, 1);
 	}
 
 	/** Compute RMS energy from the AnalyserNode's time-domain data */
@@ -290,6 +325,9 @@ export class AudioInputService {
 	private async analyzeLoop(): Promise<void> {
 		// Don't overlap analyses
 		if (this.isAnalyzing || !this.audioContext) return;
+
+		// Suppressed — audio playback is active, skip to avoid self-detection
+		if (Date.now() < this._suppressUntil) return;
 
 		const energy = this.getRMSEnergy();
 
@@ -516,11 +554,6 @@ export class AudioInputService {
 			this.processor = null;
 		}
 
-		if (this.preamp) {
-			this.preamp.disconnect();
-			this.preamp = null;
-		}
-
 		if (this.source) {
 			this.source.disconnect();
 			this.source = null;
@@ -545,6 +578,7 @@ export class AudioInputService {
 
 		this._activeNotes = new Set<number>();
 		this.hadEnergyOnce = false;
+		this.levelPeakRMS = 0.03;
 		this.isAnalyzing = false;
 		this.silenceFrames = 0;
 		this.ringWriteIndex = 0;
