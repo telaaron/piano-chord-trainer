@@ -1,148 +1,208 @@
 # Chord Trainer – Musiktheorie-Referenz
 
-Technisches Wissen das man braucht um den Code zu verstehen, ohne Musiktheorie-Studium.
+> Erklaert die musiktheoretischen Konzepte hinter der App.
+> **Stand:** Maerz 2026
 
 ---
 
-## Grundlagen
+## Chromatische Skala
 
-### Chromatic Scale (12 Halbtöne)
+12 Halbtoene pro Oktave. Jeder Ton hat einen Index (Semitone):
+
 ```
-Index:  0    1    2    3    4    5    6    7    8    9   10   11
-Sharp:  C    C#   D    D#   E    F    F#   G    G#   A    A#   B
-Flat:   C    Db   D    Eb   E    F    Gb   G    Ab   A    Bb   B
+C=0  C#/Db=1  D=2  D#/Eb=3  E=4  F=5  F#/Gb=6  G=7  G#/Ab=8  A=9  A#/Bb=10  B=11
 ```
 
-Ein Halbton (semitone) = kleinster Abstand auf dem Klavier. C→C# = 1, C→D = 2, C→E = 4.
+Die App unterstuetzt zwei Schreibweisen:
+- **Sharps:** C, C#, D, D#, E, F, F#, G, G#, A, A#, B
+- **Flats:** C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B
 
-### Enharmonics
-Gleicher Ton, verschiedene Namen: `C# = Db`, `D# = Eb`, `F# = Gb`, `G# = Ab`, `A# = Bb`.
+Plus eine enharmonische Zuordnung (z.B. C# = Db).
 
-Achtung: `E# = F` und `Cb = B` existieren in der Musiktheorie, werden aber hier NICHT verwendet (zu verwirrend, praxis-irrelevant für unseren Anwendungsfall).
+---
 
-### Deutsche vs. Internationale Notation
-```
-International:  C  D  E  F  G  A  B   Bb
-Deutsch:        C  D  E  F  G  A  H   B
-```
-In Deutschland heißt die Note B → H, und Bb → B. Das verwirrt international Studierende massiv. Unser Tool unterstützt beide Systeme.
+## Intervalle
+
+Ein Intervall ist der Abstand zwischen zwei Toenen, gemessen in Halbtoenen:
+
+| Halbtoene | Intervall-Name | Kurzform |
+|-----------|---------------|----------|
+| 0 | Unisono (Prime) | P1 |
+| 1 | Kleine Sekunde | m2 |
+| 2 | Grosse Sekunde | M2 |
+| 3 | Kleine Terz | m3 |
+| 4 | Grosse Terz | M3 |
+| 5 | Reine Quarte | P4 |
+| 6 | Tritonus | TT |
+| 7 | Reine Quinte | P5 |
+| 8 | Kleine Sexte | m6 |
+| 9 | Grosse Sexte | M6 |
+| 10 | Kleine Septime | m7 |
+| 11 | Grosse Septime | M7 |
+| 12 | Oktave | P8 |
+
+### Intervalle in der App
+
+Der Intervall-Kurs trainiert die Faehigkeit, Intervalle auf dem Klavier zu finden:
+
+- **IntervalSpec:** Definition eines Intervalls mit Root, Target, Label und Semitones
+- **3-Phasen-Lernen:**
+  - **Guided:** Beide Noten (Root + Target) sind auf dem Keyboard angezeigt
+  - **Find:** Nur der Root ist sichtbar + der Intervall-Name → Student muss die Ziel-Note selbst finden
+  - **Mastery:** Ohne Hilfe, Pool fehlerfrei durchspielen
 
 ---
 
 ## Akkord-Aufbau
 
-Ein Akkord = mehrere Noten gleichzeitig, definiert durch **Intervalle** (Abstände in Halbtönen vom Root).
+Ein Akkord besteht aus Intervallen uebereinander, gemessen vom Grundton (Root):
 
-### Basis-Intervalle
-```
-Name              Halbtöne    Beispiel (von C)
-Minor 2nd         1           C → Db
-Major 2nd         2           C → D
-Minor 3rd         3           C → Eb
-Major 3rd         4           C → E
-Perfect 4th       5           C → F
-Tritone           6           C → F#/Gb
-Perfect 5th       7           C → G
-Minor 6th         8           C → Ab
-Major 6th         9           C → A
-Minor 7th         10          C → Bb
-Major 7th         11          C → B
-Octave            12          C → C'
-Major 9th         14          C → D' (Octave + Major 2nd)
-#9th              15          C → D#' (Octave + Minor 3rd)
-b9th              13          C → Db' (Octave + Minor 2nd)
-#11th             18          C → F#' (Octave + Tritone)
-13th              21          C → A' (Octave + Major 6th)
-```
+### Die 16 Akkord-Typen
 
-### Unsere Akkord-Typen
-```
-Akkord        Intervalle              Noten (Root = C)
-Maj7          [0, 4, 7, 11]          C  E  G  B
-7 (Dom7)      [0, 4, 7, 10]          C  E  G  Bb
-m7            [0, 3, 7, 10]          C  Eb G  Bb
-6             [0, 4, 7, 9]           C  E  G  A
-m6            [0, 3, 7, 9]           C  Eb G  A
-Maj9          [0, 4, 7, 11, 14]      C  E  G  B  D'
-9             [0, 4, 7, 10, 14]      C  E  G  Bb D'
-m9            [0, 3, 7, 10, 14]      C  Eb G  Bb D'
-6/9           [0, 4, 7, 9, 14]       C  E  G  A  D'
-Maj7#11       [0, 4, 7, 11, 18]      C  E  G  B  F#'
-7#9           [0, 4, 7, 10, 15]      C  E  G  Bb D#'
-7b9           [0, 4, 7, 10, 13]      C  E  G  Bb Db'
-m11           [0, 3, 7, 10, 14, 17]  C  Eb G  Bb D' F'
-13            [0, 4, 7, 10, 14, 21]  C  E  G  Bb D' A'
-m7b5 (ø7)    [0, 3, 6, 10]          C  Eb Gb Bb
-dim7 (°7)    [0, 3, 6, 9]           C  Eb Gb A     (vollvermindert)
-```
+| Qualitaet | Intervalle | Funktion |
+|-----------|-----------|----------|
+| Maj7 | 0-4-7-11 | Tonika (Dur) |
+| 7 | 0-4-7-10 | Dominante |
+| m7 | 0-3-7-10 | Subdominante/Tonika (Moll) |
+| m7b5 | 0-3-6-10 | Halbvermindert (Locrian) |
+| dim7 | 0-3-6-9 | Vollvermindert |
+| 6 | 0-4-7-9 | Tonika-Variante |
+| m6 | 0-3-7-9 | Moll-Tonika-Variante |
+| Maj9 | 0-4-7-11-14 | Erweiterter Dur |
+| 9 | 0-4-7-10-14 | Erweiterte Dominante |
+| m9 | 0-3-7-10-14 | Erweiterter Moll |
+| 6/9 | 0-4-7-9-14 | Erweiterte Tonika |
+| Maj7#11 | 0-4-7-11-18 | Lydisch |
+| 7#9 | 0-4-7-10-15 | Hendrix-Akkord |
+| 7b9 | 0-4-7-10-13 | Alterierte Dominante |
+| m11 | 0-3-7-10-14-17 | Moll mit 11 |
+| 13 | 0-4-7-10-14-21 | Dominante mit 13 |
 
 ---
 
 ## Voicings
 
-"Voicing" = welche Noten man tatsächlich spielt und in welcher Reihenfolge/Lage.
+Ein Voicing bestimmt, WELCHE Toene eines Akkords gespielt werden und in welcher Lage:
 
-### Root Position
-Alle Noten in Grundstellung: Root unten, dann aufwärts gestapelt.
-```
-CMaj7 Root: C - E - G - B
-```
+### Shell Voicing (3 Noten)
+- Root + 3rd + 7th
+- Beispiel: CMaj7 Shell = C + E + B
+- Reduziert auf den Kern: Grundton und die zwei Toene, die die Qualitaet definieren (Terz und Septime)
+- Ideal fuer Begleitung in der linken Hand
 
-### Shell Voicing
-Nur Root + 3rd + 7th. Die 5th wird weggelassen (ist harmonisch am wenigsten wichtig).
-```
-CMaj7 Shell: C - E - B          [indices: 0, 1, 3]
-```
-**Warum Shell?** Die 3rd bestimmt ob Dur/Moll. Die 7th bestimmt den Charakter (Major 7th vs. Dominant 7th vs. Minor 7th). Die 5th ist fast immer "perfect" und sagt wenig aus.
+### Half-Shell (2 Noten)
+- 3rd + 7th (ohne Root)
+- Der Bass spielt den Grundton, Pianist braucht ihn nicht
+- Guide Tones: Die zwei wichtigsten Toene jedes Akkords
 
-### Half Shell
-3rd ins Bass (tiefste Note), dann Root, dann 7th. Invertierung für smootheres Voice Leading.
-```
-CMaj7 Half Shell: E - C - B     [indices: 1, 0, 3]
-```
+### Root Position (alle Noten)
+- Alle Akkordtoene in Grundstellung
+- Lernformat, praktisch wenig verwendet im Jazz
 
 ### Full Voicing
-Offene Lage: Root - höchste Note - 3rd - 5th. Jazz-typischer "spread".
-```
-CMaj7 Full: C - B - E - G       [indices: 0, last, 1, 2]
-```
+- Alle Erweiterungen (9, 11, 13 etc.)
+- Dichter Klang, alle verfuegbaren Toene
+
+### Rootless A und B
+- Fortgeschrittene linke-Hand-Voicings ohne Grundton
+- **A-Form:** 3-5-7-9
+- **B-Form:** 7-9-3-5
+- Standard in Combo-Spiel (Bass uebernimmt Root)
+
+### Inversions (1, 2, 3)
+- Umkehrungen: verschiedene Toene als tiefstem Ton
+- Wichtig fuer Voice Leading
 
 ---
 
-## 2-5-1 Progression
+## Stufenakkorde (Scale Degrees)
 
-Die wichtigste Akkordverbindung im Jazz. "Take it through all 12 keys" ist THE Übung.
+Jede Tonleiter erzeugt 7 diatonische Akkorde:
 
-### Aufbau
-In der Tonart C-Dur:
+### Dur-Tonleiter
+
+| Stufe | Roemisch | Qualitaet | Beispiel (C-Dur) |
+|-------|----------|-----------|------------------|
+| I | I | Maj7 | CMaj7 |
+| II | ii | m7 | Dm7 |
+| III | iii | m7 | Em7 |
+| IV | IV | Maj7 | FMaj7 |
+| V | V | 7 | G7 |
+| VI | vi | m7 | Am7 |
+| VII | vii | m7b5 | Bm7b5 |
+
+Gross = Dur, klein = Moll (roemische Ziffern).
+
+---
+
+## Progressionen
+
+### ii-V-I (die wichtigste Jazz-Progression)
+
 ```
-Stufe II:  Dm7    (D Moll 7)
-Stufe V:   G7     (G Dominant 7)
-Stufe I:   CMaj7  (C Major 7)
+ii (m7) → V (7) → I (Maj7)
 ```
 
-### Durch alle 12 Keys
+Beispiel in C-Dur: Dm7 → G7 → CMaj7
+
+Die App uebt diese Progression in allen 12 Tonarten, sortiert nach dem Quartenzirkel:
+C → F → Bb → Eb → Ab → Db → Gb → B → E → A → D → G
+
+### I-vi-ii-V (Turnaround)
+
 ```
-Key  | ii       | V        | I
-C    | Dm7      | G7       | CMaj7
-F    | Gm7      | C7       | FMaj7
-Bb   | Cm7      | F7       | BbMaj7
-Eb   | Fm7      | Bb7      | EbMaj7
-Ab   | Bbm7     | Eb7      | AbMaj7
-Db   | Ebm7     | Ab7      | DbMaj7
-Gb   | Abm7     | Db7      | GbMaj7
-B    | C#m7     | F#7      | BMaj7
-E    | F#m7     | B7       | EMaj7
-A    | Bm7      | E7       | AMaj7
-D    | Em7      | A7       | DMaj7
-G    | Am7      | D7       | GMaj7
+I (Maj7) → vi (m7) → ii (m7) → V (7)
 ```
 
-Das folgt dem **Quartenzirkel** (Cycle of 4ths): C → F → Bb → Eb → ...
+32-taktige Jazz-Standardform basiert auf dieser Kadenz.
 
-### Implementation Hinweis
-Für den 2-5-1 Mode braucht man:
-1. Eine Funktion die für jede Tonart die 3 Akkorde berechnet
-2. Die Reihenfolge der Keys (Quartenzirkel oder chromatisch)
-3. Die Möglichkeit durch alle Keys zu rotieren
-4. Voicing-Wechsel innerhalb einer Progression (Shell für ii, Full für V, etc.)
+### Quartenzirkel (Cycle of 4ths)
+
+```
+C → F → Bb → Eb → Ab → Db → Gb → B → E → A → D → G → C
+```
+
+Jeder Ton ist eine reine Quarte (5 Halbtoene) hoeher als der vorherige.
+Fundamentales Uebungs-Pattern: gleicher Akkord-Typ in allen 12 Keys.
+
+---
+
+## Voice Leading
+
+Stimmfuehrung minimiert die Bewegung zwischen Akkorden:
+
+- **Common Tones** bleiben auf derselben Taste (Pitch Class)
+- **Neue Toene** bewegen sich zum naechsten verfuegbaren Ton
+- Ziel: moeglichst wenig Finger bewegen
+
+Beispiel: Dm7 Shell (D-F-C) → G7 Shell (G-F-B)
+- F bleibt (Common Tone)
+- D → (loslassen), C → B (1 Halbton runter)
+- → G (neuer Ton)
+
+Die App zeigt Common Tones in Gold und neue Toene in Blau.
+
+---
+
+## Spaced Repetition fuer Akkorde
+
+Basiert auf dem SM-2-Algorithmus:
+- Gut gekonnt → Intervall vergroessern (1 → 2 → 4 → 7 → 14 → 30 Tage)
+- Schlecht gekonnt → Intervall zuruecksetzen auf 1 Tag
+- Ease-Faktor (1.3–2.5) wird pro Akkord trackt
+
+---
+
+## Mastery-Kriterien
+
+| Bewertung | Kriterium |
+|-----------|----------|
+| A (Mastered) | Durchschnitt unter Mastery-Threshold (z.B. 2000ms) |
+| B | Unter 3000ms |
+| C | Unter 4000ms |
+| D | Unter 5000ms |
+| F | Ueber 5000ms |
+
+---
+
+*Zuletzt aktualisiert: Maerz 2026*

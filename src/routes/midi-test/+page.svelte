@@ -25,6 +25,7 @@
 	let midiSelectedDeviceId: string | null = $state(null);
 	let midiActiveNotes: Set<number> = $state(new Set());
 	let midiSoundEnabled = $state(midiSoundEngine.enabled);
+	let midiHiddenCount = $state(0);
 
 	// ─── Mic state ───────────────────────────────────────────────
 	const audioInput = new AudioInputService();
@@ -204,6 +205,7 @@
 		});
 		midi.onDevices((devices) => {
 			midiDevices = [...devices];
+			midiHiddenCount = midi.hiddenDeviceIds.size;
 			if (devices.length > 0) {
 				midiSelectedDeviceId = midi.selectedDeviceId;
 				midiSoundEnabled = midiSoundEngine.setDevice(midiSelectedDeviceId);
@@ -240,8 +242,17 @@
 		const name = midiDevices.find((d) => d.id === id)?.name ?? id;
 		midi.hideDevice(id);
 		midiDevices = [...midi.devices];
+		midiHiddenCount = midi.hiddenDeviceIds.size;
 		midiSelectedDeviceId = midi.selectedDeviceId;
 		addMidiLog('info', `Hidden: ${name}`);
+	}
+
+	function unhideAllDevices() {
+		midi.unhideAll();
+		midiHiddenCount = 0;
+		midiDevices = [...midi.devices];
+		midiSelectedDeviceId = midi.selectedDeviceId;
+		addMidiLog('info', 'All hidden devices restored');
 	}
 
 	function toggleMidiSound() {
@@ -357,6 +368,14 @@
 							>✕</button>
 						</div>
 					{/each}
+					{#if midiHiddenCount > 0}
+						<button
+							class="w-full text-xs text-[var(--text-dim)] hover:text-[var(--text-muted)] py-1.5 px-2 rounded border border-dashed border-[var(--border)] hover:border-[var(--border-hover)] transition-colors cursor-pointer"
+							onclick={unhideAllDevices}
+						>
+							{t('midi_test.hidden_count', { n: midiHiddenCount })} — {t('midi_test.unhide_all')}
+						</button>
+					{/if}
 				</div>
 			{/if}
 

@@ -1,177 +1,217 @@
-# Chord Trainer – Contributing & Konventionen
+# Chord Trainer – Contributing Guide
 
-> Regeln und Muster für alle, die am Code arbeiten.
+> Alles was ein Entwickler braucht um produktiv beizutragen.
+> **Stand:** Maerz 2026
 
 ---
 
-## Setup
+## Schnellstart
 
 ```bash
-# Voraussetzungen: Node.js 18+, pnpm
+git clone [repo-url]
+cd chord-trainer
 pnpm install
-pnpm dev          # → http://localhost:5173 (oder 5174)
+pnpm dev          # http://localhost:5173
+pnpm test         # Vitest
+pnpm check        # svelte-check
 ```
-
-### Verfügbare Scripts
-
-| Script | Zweck |
-|--------|-------|
-| `pnpm dev` | Dev-Server starten |
-| `pnpm build` | Production Build |
-| `pnpm preview` | Production Build lokal testen |
-| `pnpm check` | TypeScript + Svelte Type-Checking |
 
 ---
 
-## Code-Konventionen
+## Verzeichnisstruktur
 
-### Svelte 5 — Strikt Runes
+```
+src/lib/
+  engine/          Pure TS, keine Browser-Abhaengigkeiten
+    notes.ts         Chromatische Skala, Noten-Utilities
+    chords.ts        16 Akkord-Typen, Difficulty-Pools
+    voicings.ts      9 Voicing-Berechnungen
+    keyboard.ts      Keyboard-Layout und Key-Mapping
+    progressions.ts  Progression-Generatoren
+    voice-leading.ts Stimmfuehrungs-Analyse
+    adaptive.ts      Adaptive Difficulty
+    habits.ts        XP, Levels, Goals, Spaced Repetition
+    courses.ts       Typsystem fuer Kurse
+    plans.ts         Uebungsplaene
+    custom-progressions.ts  Custom Progressions
+    index.ts         Barrel Export
+    *.test.ts        4 Test-Dateien (notes, chords, voicings, habits)
 
-```svelte
-<!-- STATE -->
-let count = $state(0);
-let items = $state<string[]>([]);
+  courses/         Kurs-Definitionen (statisches TS)
+    index.ts         Registry (ALL_COURSES, getCourse, getLesson)
+    intervals.ts     Intervall-Kurs (9 Lektionen)
+    shell-voicings.ts  Shell-Voicing-Kurs
+    scale-degrees.ts   Stufenakkord-Kurs
+    ultimate-plan.ts   Gesamtkurs
 
-<!-- DERIVED -->
-const doubled = $derived(count * 2);
+  services/        Browser-APIs + Seiteneffekte
+    audio.ts         Tone.js Synthese
+    midi.ts          Web MIDI API + Device Management
+    audio-input.ts   Mikrofon Pitch-Detection
+    midi-sound.ts    MIDI Audio Output
+    course-progress.ts  Kurs-Fortschritt (localStorage)
+    habits.ts        Habit-Profil (localStorage)
+    progress.ts      Session-History (localStorage)
+    theme.ts         Theme-Persistenz
 
-<!-- PROPS -->
-let { name, onclick }: Props = $props();
-let { value = $bindable() }: Props = $props();
+  i18n/            Internationalisierung
+    index.ts         t()-Funktion, Locale-Detection
+    de.ts            Deutsche Uebersetzungen (~1470 Keys)
+    en.ts            Englische Uebersetzungen (~1460 Keys)
 
-<!-- EVENTS → Callback Props (NICHT on:click) -->
-<button onclick={handler}>
+  components/      18 Svelte 5 Komponenten
+  utils/           Hilfsfunktionen (format.ts)
 
-<!-- CHILDREN (NICHT <slot>) -->
-import type { Snippet } from 'svelte';
-interface Props { children?: Snippet; }
-{#if children}{@render children()}{/if}
-
-<!-- EFFECTS -->
-$effect(() => {
-  // Seiteneffekte hier
-  return () => { /* cleanup */ };
-});
+src/routes/        12 SvelteKit-Routen
 ```
 
-**Verboten in diesem Projekt:**
-- `$:` (Legacy reactive declarations)
-- `on:click` / `on:change` (Legacy event syntax)
-- `<slot>` / `<slot name="...">` (Legacy slot syntax)
-- `createEventDispatcher()` (Legacy event dispatch)
+---
+
+## Konventionen
 
 ### TypeScript
+- Strict Mode, 0 Errors
+- Keine `any` — explizite Typen oder Inferenz
+- Interfaces fuer Daten, Types fuer Unions
+- Engine-Module exportieren pure Funktionen + Konstanten
 
-- Strict mode aktiv
-- `$state<UnionType>()` für korrekte Narrowing bei String Unions
-- Interfaces statt `type` für Objekt-Shapes wo sinnvoll
-- Explizite Return-Types für exportierte Funktionen
+### Svelte 5
+- **$state** fuer lokalen State
+- **$derived** fuer berechnete Werte
+- **$props** fuer Component Props
+- **$effect** fuer Seiteneffekte (sparsam)
+- Keine Stores (Svelte 4 Pattern)
 
-### Tailwind 4
+### CSS / Tailwind
+- Tailwind 4 Utility-Classes
+- CSS Custom Properties fuer Theme-Variablen
+- `data-theme` auf `<html>` fuer Theming
+- Responsive: sm:, md:, lg: Breakpoints
 
-```css
-/* app.css — Einziger Import */
-@import 'tailwindcss';
-
-/* Theme via CSS Custom Properties */
-:root {
-  --primary: #e8763b;
-  --bg: #0a0908;
-  /* ... */
-}
-
-/* Components nutzen Arbitrary Values */
-<div class="bg-[var(--primary)] text-[var(--text)]">
-```
-
-**Wichtig:**
-- Keine `tailwind.config.js` — alles über CSS Vars
-- Unlayered CSS (`* { ... }`) überschreibt `@layer utilities` Klassen
-- Hardcoded Farb-Hex in Components vermeiden → immer CSS Vars nutzen
-
-### File-Naming
-
-| Typ | Konvention | Beispiel |
-|-----|-----------|---------|
-| Component | `PascalCase.svelte` | `PianoKeyboard.svelte` |
-| Engine | `camelCase.ts` | `voicings.ts` |
-| Service | `camelCase.ts` | `audio.ts` |
-| Utility | `camelCase.ts` | `format.ts` |
-| Route | SvelteKit Standard | `+page.svelte` |
-
-### Formatierung
-
-- **Tabs** für Indentation (nicht Spaces)
-- **Single Quotes** in TypeScript/Svelte
-- **Trailing Commas** überall
-- Prettier + `prettier-plugin-svelte` für Auto-Format
+### i18n
+- Alle UI-Texte ueber `t('key.path')`
+- Neue Keys in **beiden** Dateien (de.ts + en.ts)
+- Parameter: `t('key', { count: 5 })` → `{count}` wird ersetzt
+- Verschachtelte Objekte: `learn.course.title` → `learn: { course: { title: '...' } }`
 
 ---
 
-## Architektur-Regeln
-
-### Import-Richtung (strikt)
+## Import-Regeln
 
 ```
-Routes  →  Components  →  Services  →  Engine
-  ↕            ↕            ↕
-Utils        Utils        Utils         (←  importiert NICHTS)
+Engine     ←  importiert NICHTS
+Courses    ←  importiert Engine
+Services   ←  importiert Engine
+i18n       ←  importiert NICHTS
+Components ←  importiert Engine, Services, i18n
+Routes     ←  importiert ALLES
+Utils      ←  importiert NICHTS
 ```
 
-- **Engine** importiert nie Services oder Components
-- **Services** importieren nie Components
-- **Components** importieren aus Engine und Services
-- **Routes** importieren aus allem
-
-### Engine = Pure Functions
-
-Module in `src/lib/engine/` dürfen **nicht**:
-- `document`, `window`, `navigator` verwenden
-- Svelte-Imports haben
-- Seiteneffekte ausführen (localStorage, fetch, etc.)
-- DOM-Elemente referenzieren
-
-Sie dürfen **nur**: TypeScript-Typen, pure Berechnungen, Arrays, Objekte.
-
-### Services = Browser-APIs
-
-Module in `src/lib/services/` kapseln Seiteneffekte:
-- `audio.ts` → Tone.js
-- `midi.ts` → Web MIDI API
-- `progress.ts` → localStorage
-- `theme.ts` → DOM (data-attribute)
-
-### Components = UI
-
-Module in `src/lib/components/` sind Svelte 5 Components mit:
-- Props über `$props()` (nie Stores)
-- Events als Callback-Props
-- Keine direkte localStorage/API-Zugriffe (→ über Services)
+**Strikt:** Engine importiert nie Services/Components. Services importieren nie Components.
 
 ---
 
-## Docs-Pflege
+## Tests
 
-| Dokument | Wann aktualisieren |
-|----------|-------------------|
-| [README.md](../README.md) | Bei neuen Features oder Struktur-Änderungen |
-| [PROJECT.md](PROJECT.md) | Bei jedem Release (Changelog + Roadmap) |
-| [FEATURES.md](FEATURES.md) | Bei jedem Feature-Release (gegen Code prüfen!) |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Bei Architektur-Änderungen |
-| [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) | Laufend — neue Fragen/Schulden eintragen |
-| [DECISIONS.md](DECISIONS.md) | Bei jeder nicht-trivialen Architektur-Entscheidung |
-| [BUSINESS.md](BUSINESS.md) | Bei Business-/Pricing-Änderungen |
-| [MUSIC_THEORY.md](MUSIC_THEORY.md) | Bei neuen Akkord-/Voicing-Typen |
+### Ausfuehren
 
-**Goldene Regel:** Docs sagen nur, was der Code auch tut. Im Zweifel Code als Quelle der Wahrheit.
+```bash
+pnpm test          # Einmalig
+pnpm test:watch    # Watch-Mode
+```
+
+### Test-Dateien (4)
+
+| Datei | Tests | Fokus |
+|-------|-------|-------|
+| notes.test.ts | 34 | noteToSemitone, getNoteName, Enharmonics |
+| chords.test.ts | 22 | CHORD_INTERVALS, Difficulty-Pools |
+| voicings.test.ts | 20 | Voicing-Berechnung, PCSets |
+| habits.test.ts | 56 | XP, Levels, Goals, Spaced Repetition |
+
+### Test-Konventionen
+- Vitest mit `describe`/`it`/`expect`
+- Engine-only (keine Browser-Tests)
+- Dateiname: `*.test.ts` neben der Quelldatei
+- Kein Mocking noetig (pure Funktionen)
 
 ---
 
-## Bekannte Dev-Werkzeuge
+## Neuen Kurs hinzufuegen
 
-| Tool | Status | Anmerkung |
-|------|--------|-----------|
-| `vitest` | Installiert, **keine Tests** | Engine-Tests sind die höchste Prio |
-| `eslint` | Installiert, **keine Config** | Flat Config nötig |
-| `prettier` | Installiert | Config sollte vorhanden sein |
-| `svelte-check` | Funktioniert | `pnpm check` |
+1. Erstelle `src/lib/courses/mein-kurs.ts`:
+
+```typescript
+import type { Course } from '$lib/engine/courses';
+
+export const meinKurs: Course = {
+  id: 'mein-kurs',
+  titleKey: 'learn.courses.mein_kurs.title',
+  subtitleKey: 'learn.courses.mein_kurs.subtitle',
+  level: 'beginner',
+  modules: [
+    {
+      titleKey: 'learn.courses.mein_kurs.mod1.title',
+      lessons: [
+        {
+          id: 'lektion-1',
+          titleKey: 'learn.courses.mein_kurs.l1.title',
+          subtitleKey: 'learn.courses.mein_kurs.l1.subtitle',
+          steps: [
+            { type: 'theory', ... },
+            { type: 'practice', ... },
+            { type: 'challenge', ... }
+          ]
+        }
+      ]
+    }
+  ]
+};
+```
+
+2. Registriere in `src/lib/courses/index.ts`
+3. Fuege i18n-Keys in `de.ts` und `en.ts` hinzu
+4. Teste: `pnpm dev` → `/learn/mein-kurs`
+
+---
+
+## Neue Sprache hinzufuegen
+
+1. Erstelle `src/lib/i18n/fr.ts` (kopiere en.ts als Vorlage)
+2. Uebersetze alle Keys
+3. Registriere in `src/lib/i18n/index.ts`:
+   - Import hinzufuegen
+   - Zum translations-Objekt hinzufuegen
+   - Locale-Type erweitern
+4. Locale-Toggle in Layout aktualisieren
+
+---
+
+## Build und Deploy
+
+```bash
+pnpm build        # Erzeugt .svelte-kit/output
+pnpm preview      # Lokale Vorschau des Builds
+```
+
+- **Deploy:** Automatisch via GitHub → Vercel
+- **Adapter:** @sveltejs/adapter-vercel
+- **Checks vor Deploy:** `pnpm check && pnpm test`
+
+---
+
+## Haeufige Aufgaben
+
+| Aufgabe | Befehl / Datei |
+|---------|---------------|
+| Neuen Akkord-Typ | `engine/chords.ts` → CHORD_INTERVALS |
+| Neues Voicing | `engine/voicings.ts` → getVoicingNotes() |
+| Neue Route | `src/routes/pfad/+page.svelte` |
+| Neue Komponente | `src/lib/components/Name.svelte` |
+| i18n-Key | `i18n/de.ts` + `i18n/en.ts` |
+| Test | `engine/name.test.ts` |
+
+---
+
+*Zuletzt aktualisiert: Maerz 2026*

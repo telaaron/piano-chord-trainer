@@ -1,45 +1,54 @@
 # Chord Trainer – Architektur
 
 > Technische Referenz für Entwickler. Was wo lebt, wie Daten fließen, und warum.
+> **Stand:** März 2026 · **Version:** 0.5.0
 
 ---
 
 ## Überblick
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        Browser                              │
-│                                                             │
-│  ┌─────────────┐    ┌──────────────┐    ┌───────────────┐  │
-│  │   Routes     │    │  Components  │    │   Services    │  │
-│  │  (Svelte)    │───▸│  (Svelte 5)  │───▸│  (TypeScript) │  │
-│  │              │    │              │    │               │  │
-│  │ +page.svelte │    │ ChordCard    │    │ audio.ts      │  │
-│  │ /train       │    │ Keyboard     │    │ midi.ts       │  │
-│  │ /for-edu     │    │ Settings     │    │ progress.ts   │  │
-│  │ /open-studio │    │ Results      │    │ theme.ts      │  │
-│  └──────┬───────┘    └──────┬───────┘    └───────┬───────┘  │
-│         │                   │                    │          │
-│         └───────────────────┼────────────────────┘          │
-│                             │                               │
-│                    ┌────────▼────────┐                      │
-│                    │     Engine      │                      │
-│                    │  (Pure TS)      │                      │
-│                    │                 │                      │
-│                    │ notes.ts        │                      │
-│                    │ chords.ts       │                      │
-│                    │ voicings.ts     │                      │
-│                    │ keyboard.ts     │                      │
-│                    │ progressions.ts │                      │
-│                    │ plans.ts        │                      │
-│                    │ custom-prog.ts  │                      │
-│                    └────────┬────────┘                      │
-│                             │                               │
-│                    ┌────────▼────────┐                      │
-│                    │   localStorage  │                      │
-│                    │   (Persistenz)  │                      │
-│                    └─────────────────┘                      │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                           Browser                                │
+│                                                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
+│  │   Routes      │  │  Components  │  │       Services         │ │
+│  │  (SvelteKit)  │─▸│  (Svelte 5)  │─▸│     (TypeScript)       │ │
+│  │               │  │              │  │                        │ │
+│  │ /train        │  │ ChordCard    │  │ audio.ts (Tone.js)     │ │
+│  │ /learn/[…]    │  │ PianoKeyboard│  │ midi.ts  (Web MIDI)    │ │
+│  │ /midi-test    │  │ GameSettings │  │ audio-input.ts (Pitch) │ │
+│  │ /open-studio  │  │ HabitDash    │  │ midi-sound.ts          │ │
+│  │ /for-educators│  │ GoalCard     │  │ progress.ts            │ │
+│  │ /embed        │  │ LevelBadge   │  │ course-progress.ts     │ │
+│  │ /about        │  │ Results      │  │ habits.ts              │ │
+│  │ …             │  │ …(18 total)  │  │ theme.ts               │ │
+│  └──────┬────────┘  └──────┬───────┘  └────────┬───────────────┘ │
+│         │                  │                    │                 │
+│         └──────────────────┼────────────────────┘                 │
+│                            │                                     │
+│  ┌─────────────┐  ┌───────▼────────┐  ┌───────────────────────┐ │
+│  │   Courses   │  │     Engine     │  │        i18n           │ │
+│  │  (Daten)    │  │  (Pure TS)     │  │  (DE + EN)            │ │
+│  │             │  │                │  │                       │ │
+│  │ intervals   │  │ notes.ts       │  │ de.ts (~1470 Keys)    │ │
+│  │ shell-voic. │  │ chords.ts      │  │ en.ts (~1460 Keys)    │ │
+│  │ scale-deg.  │  │ voicings.ts    │  │ index.ts (t()-Helper) │ │
+│  │ ultimate    │  │ keyboard.ts    │  └───────────────────────┘ │
+│  └─────────────┘  │ progressions.ts│                            │
+│                   │ plans.ts       │                            │
+│                   │ custom-prog.ts │                            │
+│                   │ voice-leading  │                            │
+│                   │ adaptive.ts    │                            │
+│                   │ habits.ts      │                            │
+│                   │ courses.ts     │                            │
+│                   └───────┬────────┘                            │
+│                           │                                     │
+│                  ┌────────▼────────┐                            │
+│                  │   localStorage  │                            │
+│                  │   (Persistenz)  │                            │
+│                  └─────────────────┘                            │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ### Schichten
@@ -47,16 +56,18 @@
 | Schicht | Verzeichnis | Verantwortung | Darf importieren von |
 |---------|------------|---------------|---------------------|
 | **Engine** | `src/lib/engine/` | Musiktheorie, Berechnung, pure Funktionen | Nichts (standalone) |
+| **Courses** | `src/lib/courses/` | Kursstruktur, Lektionen, Step-Definitionen | Engine |
 | **Services** | `src/lib/services/` | Browser-APIs, Seiteneffekte | Engine |
-| **Components** | `src/lib/components/` | UI-Darstellung, User Interaction | Engine, Services |
-| **Routes** | `src/routes/` | Seiten, State Machine, Orchestrierung | Engine, Services, Components |
+| **i18n** | `src/lib/i18n/` | Zweisprachige UI-Texte (DE/EN) | Nichts |
+| **Components** | `src/lib/components/` | UI-Darstellung, User Interaction | Engine, Services, i18n |
+| **Routes** | `src/routes/` | Seiten, State Machine, Orchestrierung | Alles |
 | **Utils** | `src/lib/utils/` | Shared Hilfsfunktionen | Nichts |
 
-**Regel:** Engine importiert nie Services oder Components. Services importieren nie Components. Diese Richtung ist strikt.
+**Regel:** Engine importiert nie Services oder Components. Services importieren nie Components.
 
 ---
 
-## Engine (`src/lib/engine/`)
+## Engine (`src/lib/engine/`) — 12 Module + 4 Test-Dateien
 
 Pure TypeScript ohne DOM-Abhängigkeiten. Theoretisch in jedes Framework portierbar.
 
@@ -70,276 +81,232 @@ NOTES_FLATS  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 ```
 
 - `noteToSemitone(note)` — Universaler Lookup: Sharps → Flats → Enharmonic Map → -1
+- `getNoteName(semitone, interval, pref)` — Berechnet Ziel-Note basierend auf Root + Semitone-Offset
 - `getNotePool(pref)` — Gibt das richtige Array zurück (sharps/flats/both)
 - `convertNoteName(note, system)` — B→H, Bb→B für deutsche Notation
 - **Index = Semitone** — C=0, C#/Db=1, ... B=11
 
 ### chords.ts
 
-Definiert 16 Akkord-Typen als Semitone-Intervalle vom Root:
+16 Akkord-Typen als Semitone-Intervalle vom Root:
 
 ```typescript
 CHORD_INTERVALS = {
-  'Maj7':    [0, 4, 7, 11],    // C E G B
-  '7':       [0, 4, 7, 10],    // C E G Bb     (Dominant)
-  'm7':      [0, 3, 7, 10],    // C Eb G Bb
-  'm7b5':    [0, 3, 6, 10],    // C Eb Gb Bb   (Half-diminished)
-  'dim7':    [0, 3, 6, 9],     // C Eb Gb A    (Full diminished)
-  '6':       [0, 4, 7, 9],     // C E G A
-  // ... + m6, Maj9, 9, m9, 6/9, Maj7#11, 7#9, 7b9, m11, 13
+  'Maj7':    [0, 4, 7, 11],
+  '7':       [0, 4, 7, 10],     // Dominant
+  'm7':      [0, 3, 7, 10],
+  'm7b5':    [0, 3, 6, 10],     // Half-diminished
+  'dim7':    [0, 3, 6, 9],
+  '6':       [0, 4, 7, 9],
+  // + m6, Maj9, 9, m9, 6/9, Maj7#11, 7#9, 7b9, m11, 13
 }
 ```
 
-Weitere Exports:
-- `CHORDS_BY_DIFFICULTY` — Pools pro Level (beginner: 5, intermediate: 9, advanced: 14)
-- `CHORD_NOTATIONS` — 3 Display-Systeme (standard/symbols/short) pro Chord
-- `VoicingType` — Union von 9 Voicing-Keys
-- `displayToQuality()` — Reverse-Lookup: Notation → interner Key
+Weitere Exports: `CHORDS_BY_DIFFICULTY`, `CHORD_NOTATIONS` (3 Systeme), `VOICING_LABELS`, `displayToQuality()`.
 
 ### voicings.ts
 
-Berechnet die tatsächlich gespielten Noten für einen Akkord:
-
-```typescript
-getChordNotes(root: string, quality: string): string[]
-// → Alle Noten in Root Position
-
-getVoicingNotes(allNotes: string[], voicingType: VoicingType): string[]
-// → Subset/Rearrangement nach Voicing-Typ
-```
-
-**9 Voicing-Typen:**
-
-| Typ | Indizes | Beispiel (CMaj7: C-E-G-B) | Verwendet für |
-|-----|---------|--------------------------|---------------|
-| `root` | [0,1,2,3] | C-E-G-B | Grundlagen |
-| `shell` | [0,1,3] | C-E-B | Jazz-Combo (R+3+7) |
-| `half-shell` | [1,0,3] | E-C-B | Voice Leading |
-| `full` | [0,last,1,2] | C-B-E-G | Open Spread |
-| `rootless-a` | 3-5-7-9 | E-G-B-D' | Bill Evans Style |
-| `rootless-b` | 7-9-3-5 | B-D'-E-G | Komplementär zu A |
-| `inversion-1` | Rotation um 1 | E-G-B-C' | 3rd im Bass |
-| `inversion-2` | Rotation um 2 | G-B-C'-E' | 5th im Bass |
-| `inversion-3` | Rotation um 3 | B-C'-E'-G' | 7th im Bass |
+Berechnet die tatsächlich gespielten Noten:
+- `getChordNotes()`, `getVoicingNotes()`, `getVoicingIntervalLabels()`
+- `getChordFormula()`, `formatVoicing()`, `getValidPCSets()`
+- **9 Voicing-Typen:** root, shell, half-shell, full, rootless-a, rootless-b, inversion-1/2/3
 
 ### keyboard.ts
 
-Bildet Voicing-Noten auf eine 2-Oktaven-Klaviatur (C3–B4) ab:
-
-- 14 weiße Tasten, 10 schwarze Tasten, 24 chromatische Positionen
-- `getActiveKeyIndices()` — berechnet welche Tasten leuchten
-- Root wird immer in Oktave 1 platziert, andere Noten darüber gestapelt
-- `isRootIndex()` — `(chrIdx % 12) === rootSemitone` (enharmonic-safe)
+Bildet Voicing-Noten auf 2–3-Oktaven-Klaviatur ab:
+- `OCTAVE_CONFIGS`, `computeSessionOctaves()`, `getActiveKeyIndices()`
+- `getKeyboardLayout()`, `isRootIndex()`
 
 ### progressions.ts
 
-Generiert Akkord-Sequenzen für 4 Modi:
+4+ Progressions-Modi: random, 2-5-1, cycle-of-4ths, 1-6-2-5.
+Plus: `MODE_DEGREE_MAP`, `parseCustomDegrees()`, `degreesToLabel()`.
 
-| Modus | Akkorde pro Durchlauf | Logik |
-|-------|----------------------|-------|
-| `random` | N (eingestellt) | Zufällig aus Difficulty-Pool |
-| `2-5-1` | 36 (3 × 12 Keys) | ii-V-I durch Quartenzirkel |
-| `cycle-of-4ths` | 12 | Ein Akkord-Typ durch alle Keys |
-| `1-6-2-5` | 48 (4 × 12 Keys) | I-vi-ii-V Turnaround |
+### voice-leading.ts
 
-### plans.ts
+Stimmführungs-Analyse: `analyzeVoiceLeading()`, `computeVoiceLeadVoicing()`, `getAllRotations()`, `scorePlayerMovement()`, `validateFindInversion()`, `validateFreeVoicing()`.
 
-9 kuratierte Übungspläne mit voreingestellten Settings:
+### adaptive.ts
+
+Adaptives Übungssystem: `analyzePerformance()`, `getWeightedChordPool()`, `pickWeightedChord()`, `getPerformanceSummary()`.
+
+### habits.ts (Engine)
+
+Gamification: XP/Levels (`calculateLevel()`, Level = floor(sqrt(totalXP/50))), Streaks (`getStreakMultiplier()`, 1.0× bis 2.0×), Goals (`generateGoals()`), Spaced Repetition (`updateChordSchedule()`, SM-2-basiert).
+
+### courses.ts (202 Zeilen)
+
+Typsystem für Kurse:
 
 ```typescript
-interface PracticePlan {
-  id: string;
-  name: string;
-  tagline: string;
-  description: string;
-  icon: string;
-  accent: string;
-  settings: Partial<GameSettings>;
-}
+type StepType = 'theory' | 'practice' | 'challenge';
+type MasteryLevel = 'none' | 'started' | 'completed' | 'mastered';
+
+interface Course { id, titleKey, subtitleKey, level, modules }
+interface CourseModule { titleKey, lessons }
+interface Lesson { id, titleKey, subtitleKey, steps }
+type LessonStep = TheoryStep | PracticeStep | ChallengeStep
+
+interface IntervalSpec { root, target, label, semitones }
+interface ChordSpec { root, quality, voicing }
 ```
 
-`suggestPlan(sessionCount)` empfiehlt basierend auf Erfahrung:
-- 0 Sessions → Warm-Up
-- 1–4 Sessions → ii-V-I Deep Dive
-- 5–9 → Speed Run
-- 10+ → Challenge
+### plans.ts / custom-progressions.ts
 
-### custom-progressions.ts
-
-Vollständiger Parser und Evaluator für freie Akkord-Sequenzen:
-
-- **Parser:** `parseChordSymbol("Dm7")` → `{ root: "D", quality: "m7", ... }`
-- **Separatoren:** `|`, `-`, Leerzeichen, Beat-Annotationen `(2)`
-- **7 Presets:** Autumn Leaves, All of Me, Blue Bossa, Rhythm Changes, 12-Bar Blues, So What, Satin Doll
-- **Evaluator:** `evaluateSession()` → Accuracy, Timing-Offsets, schwächste Akkorde pro Loop
-- **CRUD:** localStorage mit max. 50 eigene Progressions
+Übungspläne und Custom-Progression-Editor.
 
 ---
 
-## Services (`src/lib/services/`)
+## Courses (`src/lib/courses/`) — 4 Kurse
 
-Browser-APIs und Seiteneffekte. Alles was `window`, `navigator`, `localStorage` oder externe Libraries braucht.
+| Kurs | Level | Fokus |
+|------|-------|-------|
+| `intervals` | Beginner | Intervall-Erkennung (Terzen, Quarten, Tritone) |
+| `shell-voicings` | Beginner | Root + 3rd + 7th für Maj7, Dom7, m7 |
+| `scale-degrees` | Intermediate | Diatonische Stufenakkorde |
+| `ultimate-plan` | Comprehensive | Beginner-to-Master Gesamtweg |
 
-### audio.ts (Tone.js)
+**Registry:** `ALL_COURSES`, `getCourse(id)`, `getLesson(courseId, lessonId)`.
 
-```
-PolySynth (triangle8)  ──→  playChord(notes)
-                        ──→  playNote(note)
-
-MembraneSynth          ──→  Metronom-Click
-Tone.Transport         ──→  BPM-basiertes Timing
-Tone.Loop              ──→  Beat-Zyklus
-Tone.getDraw()         ──→  UI-Sync für Beat-Indicator
-```
-
-- Oktav-Placement ab Oktave 3 mit natürlicher Spreizung
-- ADSR-Envelope: Attack 0.02, Decay 0.3, Sustain 0.2, Release 1.5
-- Metronom: Akzent auf Beat 1 (0.3 vs 0.15 Velocity)
-
-### midi.ts (Web MIDI API)
+**3-Phasen-Lernmodell:**
 
 ```
-navigator.requestMIDIAccess()
-  → MIDIInput.onmidimessage
-    → Note On (144) / Note Off (128)
-      → activeNotes Set
-        → checkChord(expected, active)
-          → { correct, accuracy, matched, missing, extra }
-```
-
-- **Strict Matching (default):** Pitch-Class-basiert (Oktave egal), Extra-Noten NICHT erlaubt — nur exakt die erwarteten Pitch-Classes werden akzeptiert
-- **Lenient Matching (legacy):** Extra-Noten erlaubt, nur fehlende zählen als Fehler
-- **Bass-Matching (Inversions):** Strict + niedrigste Note muss korrekte Bass-Note sein
-- Callbacks: `onNotes`, `onConnection`, `onDevices`
-- Auto-Reconnect bei Device-Removal
-
-### progress.ts (localStorage)
-
-**4 Storage Keys:**
-
-| Key | Inhalt | Max |
-|-----|--------|-----|
-| `chord-trainer-history` | Session-Array mit Timings | 100 Sessions |
-| `chord-trainer-settings` | Letzte Settings | 1 Objekt |
-| `chord-trainer-streak` | Current/Best/LastDate | 1 Objekt |
-| `chord-trainer-plan-history` | Letzte Plan-IDs | 10 Einträge |
-
-**Analyse-Funktionen:**
-- `analyzeWeakChords()` — Gruppiert Timings nach Root, sortiert langsamste zuerst
-- `analyzeChordTrends()` — Vergleicht letzte 5 vs. ältere 5-15 Sessions
-- `getPersonalBests()` — Keyed: `{difficulty}-{voicing}-{progressionMode}`
-
-### theme.ts
-
-- 2 registrierte Themes: `default`, `openstudio`
-- Anwendung via `data-theme` Attribut auf `<html>`
-- Persistiert in `chord-trainer-theme` localStorage Key
-- ⚠️ **Bekanntes Problem:** Open Studio Theme hat kein CSS (siehe [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md))
-
----
-
-## Game Loop (State Machine)
-
-Die Haupt-Spiellogik lebt in `/train/+page.svelte` (785 Zeilen):
-
-```
-                          ┌─────────────────┐
-                          │                 │
-    ┌──────────┐    start │  ┌──────────┐   │  finish   ┌──────────┐
-    │  setup   │─────────▸│  │ playing  │   │──────────▸│ finished │
-    │          │          │  │          │   │           │          │
-    │ Plans    │          │  │ Timer    │   │           │ Results  │
-    │ Settings │          │  │ Space/↓  │   │           │ Stats    │
-    │ MIDI     │          │  │ MIDI     │   │           │ Restart  │
-    └──────────┘          │  └────┬─────┘   │           └────┬─────┘
-         ▲                │       │         │                │
-         │                │  Verify Mode?   │                │
-         │                │  ┌─────┴──────┐ │                │
-         │                │  │ 'playing'  │ │                │
-         │                │  │ → zeige    │ │                │
-         │                │  │ 'verifying'│ │                │
-         │                │  │ → nächster │ │                │
-         │                │  └────────────┘ │                │
-         │                └─────────────────┘                │
-         │                                                   │
-         └───────────────────────────────────────────────────┘
-                              reset
-```
-
-**Zusätzliche Screens für Custom Progressions:**
-- `custom-editor` → `custom-playing` → `custom-results`
-
-**MIDI-Flow** (wenn aktiv):
-1. Spieler drückt Tasten → `activeNotes` Update
-2. `checkChord()` vergleicht Pitch-Classes strikt (keine Extra-Noten erlaubt)
-3. Grün/Rot-Feedback auf Keyboard-Overlay
-4. Bei Korrektheit → 400ms Delay → Auto-Advance
-
----
-
-## Datenfluss: Akkord-Generierung
-
-```
-GameSettings (User Input)
-  │
-  ▼
-generateChords(settings)          ← progressions.ts / chords.ts
-  │
-  ▼
-ChordWithNotes[]                  ← voicings.ts
-  ├── chord: "BbΔ7"              (Display-Name)
-  ├── root: "Bb"
-  ├── type: "Maj7"               (interner Key)
-  ├── notes: ["Bb","D","F","A"]  (Root Position)
-  └── voicing: ["Bb","D","A"]    (Shell/Full/etc.)
-  │
-  ▼
-PianoKeyboard                     ← keyboard.ts
-  ├── getActiveKeyIndices()       (welche Tasten leuchten)
-  └── isRootIndex()              (Root-Punkt anzeigen)
-  │
-  ▼
-Audio Service                     ← audio.ts
-  └── playChord(voicing)         (Ton abspielen)
+Theory (Verstehen)        Practice (Üben)           Challenge (Meistern)
+┌────────────────┐    ┌─────────────────────┐   ┌─────────────────┐
+│ Erklärung      │    │ Guided (alle Noten) │   │ Speed-Drill     │
+│ Beispiel-Akkord│ →  │ Find (Root + Name)  │ → │ alle Keys       │
+│ Formel + Piano │    │ Free (ohne Hilfe)   │   │ Timer + Mastery │
+└────────────────┘    │ Pool-Shuffle        │   │ Bewertung A–F   │
+                      └─────────────────────┘   └─────────────────┘
 ```
 
 ---
 
-## Component-Hierarchie
+## Services (`src/lib/services/`) — 8 Module
+
+| Service | Technologie | Zweck |
+|---------|------------|-------|
+| `audio.ts` | Tone.js | PolySynth, Metronom, Transport |
+| `midi.ts` | Web MIDI API | Device-Management, Note-Matching, Persistenz |
+| `audio-input.ts` | @spotify/basic-pitch | ML Pitch-Detection via Mikrofon |
+| `midi-sound.ts` | Tone.js | Audio-Output für MIDI-Input |
+| `course-progress.ts` | localStorage | Kurs-Fortschritt |
+| `habits.ts` | localStorage | HabitProfile (XP, Streak, Goals) |
+| `progress.ts` | localStorage | Session-History, Settings, Plans |
+| `theme.ts` | CSS custom props | Theme-Persistenz |
+
+### MIDI Device-Management
+
+- `selectDevice(id)` → persistiert in `localStorage('midi-selected-device')`
+- `hideDevice(id)` / `unhideDevice(id)` / `unhideAll()` → `localStorage('midi-hidden-devices')`
+- `VIRTUAL_PORT_PATTERNS` → Regex-Filter für macOS IAC, MIDI Through, Microsoft GS
+- Auto-Reconnect, Hot-Plug-Support
+
+### MIDI Matching
+
+- **Strict:** Pitch-Class-basiert, keine Extra-Noten
+- **Lenient:** Extra-Noten toleriert
+- **Bass-Matching:** Strict + unterste Note = Bass
+
+---
+
+## localStorage Keys
+
+| Key | Inhalt |
+|-----|--------|
+| `chord-trainer-history` | Session-Array (max 100) |
+| `chord-trainer-settings` | Letzte Settings |
+| `chord-trainer-streak` | Current/Best/LastDate |
+| `chord-trainer-plan-history` | Letzte Plan-IDs (max 10) |
+| `midi-selected-device` | MIDI-Device-ID |
+| `midi-hidden-devices` | JSON-Array versteckter IDs |
+| `chord-trainer-locale` | 'de' oder 'en' |
+| `chord-trainer-courses-*` | Kurs-Fortschritt pro Kurs |
+| `chord-trainer-habit-profile` | XP, Streak, Goals, Schedule |
+| `chord-trainer-theme` | Theme-Name |
+
+---
+
+## i18n (`src/lib/i18n/`)
+
+- **~1460 Keys** pro Sprache (DE/EN)
+- `t(key, params?)` — Punkt-separierter Lookup: `t('nav.home')` → "Startseite"
+- Parameter: `t('midi_test.hidden_count', { n: 3 })` → "3 ausgeblendet"
+- Fallback: EN wenn Key in DE fehlt
+- Locale: `localStorage('chord-trainer-locale')` → `document.documentElement.lang`
+
+---
+
+## Routen (12)
+
+| Route | Zweck |
+|-------|-------|
+| `/` | Landing Page (3D-Video-Hero, Features) |
+| `/train` | Haupt-Trainer (~2700 Zeilen) |
+| `/learn` | Kurs-Browser |
+| `/learn/[courseId]` | Kurs-Detail |
+| `/learn/[courseId]/[lessonId]` | Lektions-Player (~980 Zeilen) |
+| `/midi-test` | MIDI/Mikrofon-Diagnostik |
+| `/embed` | iFrame-Embed-Player |
+| `/for-educators` | B2B Landing Page |
+| `/open-studio` | Open Studio Pitch |
+| `/about` | Über das Projekt |
+| `/privacy` | Datenschutz |
+| `/impressum` | Impressum |
+
+---
+
+## Component-Hierarchie (18)
 
 ```
 +layout.svelte
-├── Nav (Logo, Train, For Educators)
-├── {page content}
-│   └── /train/+page.svelte
-│       ├── GameSettings
-│       │   ├── PracticePlan Grid
-│       │   ├── MidiStatus
-│       │   ├── ProgressDashboard
-│       │   └── Custom Settings (collapsible)
-│       ├── ChordCard
-│       │   └── PianoKeyboard (+ MIDI Overlay)
-│       ├── Results
-│       │   └── PianoKeyboard (mini, per chord)
-│       ├── ProgressionEditor
-│       ├── ProgressionPlayer
-│       │   └── PianoKeyboard
-│       └── ProgressionResults
-└── Footer (hidden on /train)
+├── Nav (Train, Learn, For Educators, Locale Toggle)
+├── /train/+page.svelte
+│   ├── GameSettings
+│   ├── HabitDashboard + GoalCard + LevelBadge + CelebrationOverlay
+│   ├── ChordCard + PianoKeyboard + ExplainPanel
+│   ├── Results + PianoKeyboard (mini)
+│   ├── ProgressionEditor → ProgressionPlayer → ProgressionResults
+│   └── MidiStatus + MidiToast + MicStatus
+├── /learn/[courseId]/[lessonId]/+page.svelte
+│   ├── PianoKeyboard (2–3 Oktaven)
+│   └── MidiStatus
+└── /midi-test/+page.svelte
+    └── PianoKeyboard
 ```
+
+---
+
+## Datenfluss: Lektions-Practice-Loop
+
+```
+Course → Lesson → PracticeStep
+  │
+  ▼
+intervalPool / chordPool
+  │
+  ▼
+practicePhase: 'guided' | 'find' | 'free'
+  │  (shuffled order via practicePoolShuffled[])
+  ▼
+buildIntervalData() / buildChordData()
+  │
+  ▼
+PianoKeyboard (highlights)  ←→  midi.checkChord() → Feedback
+```
+
+**Guided:** Alle Noten sichtbar. **Find:** Nur Root + Name. **Free:** Keine Hilfe.
 
 ---
 
 ## Deployment
 
-```
-Code Push → GitHub → Vercel Auto-Deploy
-                      ├── Build: vite build
-                      ├── Adapter: adapter-vercel
-                      └── Output: Edge-optimized SSR
-```
-
+- **Pipeline:** GitHub → Vercel Auto-Deploy (adapter-vercel)
 - **Domain:** jazzchords.app
-- **SSR:** Aktiv, aber App ist rein client-seitig (kein Server-State)
-- **PWA:** `site.webmanifest` für Add-to-Homescreen
-- **SEO:** `sitemap.xml`, `robots.txt`, Meta-Tags auf jeder Seite
+- **Build:** `vite build` (0 TS errors, 0 svelte-check warnings)
+- **PWA:** `site.webmanifest` + `sw.js` (Service Worker)
+- **SEO:** `sitemap.xml`, `robots.txt`, Meta-Tags pro Seite
+
+---
+
+*Zuletzt aktualisiert: März 2026*

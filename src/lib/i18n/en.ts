@@ -306,6 +306,8 @@ export const en = {
     id_label: 'ID',
     active_label: 'active',
     hide_device: 'Hide device',
+    hidden_count: '{n} hidden',
+    unhide_all: 'Show all',
     live_keyboard: 'Live Keyboard',
     held_notes: 'Held notes:',
     none_press_key: 'None — press a key',

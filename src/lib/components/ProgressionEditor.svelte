@@ -212,7 +212,7 @@
 				/>
 			</div>
 			<div>
-				<label class="text-sm font-medium block mb-2">{t('ui.progression_loops')}</label>
+				<p class="text-sm font-medium block mb-2">{t('ui.progression_loops')}</p>
 				<div class="flex gap-2">
 					{#each [1, 2, 3, 4, 0] as l}
 						<button

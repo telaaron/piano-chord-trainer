@@ -1,25 +1,32 @@
-# Chord Trainer – Open Questions & Tech Debt
+# Chord Trainer – Offene Fragen
 
-> **Last reviewed:** 18. Februar 2026  
-> **Legend:** 🔴 Blocker · 🟡 Should fix · 🟢 Nice to have · ❓ Decision needed
-
-No open items. All resolved — see history below.
+> Punkte die noch geklaert oder entschieden werden muessen.
+> **Stand:** Maerz 2026
 
 ---
 
-## Resolved
+## Produkt
 
-### ✅ No Tests
-- **Resolution:** Created `notes.test.ts`, `chords.test.ts`, `voicings.test.ts` — 70 tests, all passing via `pnpm test`.
+1. **Freemium-Gate Position:** Welche Features genau hinter Pro? Kurse kostenlos halten oder begrenzen?
+2. **Kurs-Reihenfolge:** Sollen Kurse linear freigeschaltet werden oder immer alle verfuegbar?
+3. **Mobile UX:** Click-Piano ist funktional aber nicht ideal fuer Speed-Drills — reicht das oder brauchen wir Touch-Optimierungen?
 
-### ✅ Theme Switcher: openstudio theme removed
-- **Resolution:** Removed `openstudio` ThemeId from `theme.ts`, removed `[data-theme="openstudio"]` CSS block from `app.css`. The `/open-studio` page uses its own scoped `<style>` block.
+## Technik
 
-### ✅ Verify Mode disabled with MIDI
-- **Resolution:** Verify Mode button in `GameSettings.svelte` is greyed out (`opacity-40`, `cursor-not-allowed`, `disabled`) when `midiEnabled` is true.
+4. **Cloud-Sync Architektur:** Supabase vs. eigenes Backend vs. Firebase? Entscheidung steht noch aus.
+5. **Lesson-Context-API Format:** postMessage-Schema fuer B2B-Embed noch nicht spezifiziert.
+6. **Audio-Latenz Mikrofon:** basic-pitch hat ~200ms Latenz — akzeptabel fuer Practice, zu hoch fuer Challenge?
 
-### ✅ Supabase / Cloud Sync
-- **Resolution:** Not a current priority. Documented in `DECISIONS.md` as future-only, pending a full B2C system (accounts + Stripe). Removed from near-term roadmap.
+## Business
 
-### ✅ Open Studio Member Count
-- **Resolution:** Researched live from openstudiojazz.com (Feb 2026). No public member count available. `BUSINESS.md` now uses verifiable facts: $47/mo (annual) / $97/mo (monthly), 18 team members, 27 instructors, 86 courses, 100K+ YouTube subscribers.
+7. **Open Studio Follow-Up:** Naechster Schritt nach dem Pitch — warten oder aktiv nachhaken?
+8. **Product Hunt Timing:** Launch vor oder nach Pro-Tier? (Empfehlung: vor Pro, als Free-Launch)
+
+## QA
+
+9. **Voice Leading + MIDI:** MIDI-Erkennung mit voice-led Voicings noch nicht vollstaendig getestet (siehe QA_CHECKLIST.md)
+10. **In-Time ohne MIDI:** Session endet nie ohne MIDI-Input — automatische Markierung als korrekt oder Done-Button?
+
+---
+
+*Zuletzt aktualisiert: Maerz 2026*

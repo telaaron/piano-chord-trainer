@@ -308,6 +308,8 @@ export const de = {
     id_label: 'ID',
     active_label: 'aktiv',
     hide_device: 'Gerät ausblenden',
+    hidden_count: '{n} ausgeblendet',
+    unhide_all: 'Alle einblenden',
     live_keyboard: 'Live-Keyboard',
     held_notes: 'Gedrückte Noten:',
     none_press_key: 'Keine — drücke eine Taste',

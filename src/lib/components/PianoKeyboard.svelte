@@ -72,6 +72,16 @@
 		flashTimeout = setTimeout(() => { flashPCs = new Set(); }, 200);
 	}
 
+	function handleKeyPress(chrIdx: number, e: KeyboardEvent) {
+		if (!interactive || (e.key !== 'Enter' && e.key !== ' ')) return;
+		e.preventDefault();
+		onKeyClick?.(chrIdx, e.shiftKey);
+		const pc = chrIdx % 12;
+		flashPCs = new Set([pc]);
+		if (flashTimeout) clearTimeout(flashTimeout);
+		flashTimeout = setTimeout(() => { flashPCs = new Set(); }, 200);
+	}
+
 	/** Selected/flash color for interactive ear-training mode */
 	function selectedColor(chrIdx: number, isBlack: boolean): string | null {
 		if (!interactive) return null;
@@ -225,6 +235,9 @@
 					{@const vl = vlColor(chrIdx, false)}
 					{@const sel = selectedColor(chrIdx, false)}
 					<div
+						role="button"
+						tabindex={interactive ? 0 : -1}
+						aria-label={interactive ? `key ${chrIdx}` : undefined}
 						class="flex-1 h-full border-r border-[var(--key-white-border)] last:border-r-0 relative transition-colors duration-100
 						{interactive ? 'cursor-pointer active:brightness-90' : ''}
 						{midi
@@ -239,6 +252,7 @@
 											: 'bg-[var(--primary)]/80'
 										: 'bg-[var(--key-white)] hover:brightness-95'}"
 						onclick={(e) => handleKeyClick(chrIdx, e)}
+						onkeydown={(e) => handleKeyPress(chrIdx, e)}
 					>
 						{#if root}
 							<div class="absolute bottom-2 inset-x-0 flex justify-center">
@@ -257,6 +271,9 @@
 				{@const vl = vlColor(key.idx, true)}
 				{@const sel = selectedColor(key.idx, true)}
 				<div
+				role="button"
+				tabindex={interactive ? 0 : -1}
+				aria-label={interactive ? `key ${key.idx}` : undefined}
 					class="absolute top-0 h-[60%] {mini ? 'w-[5%]' : octaves === 3 ? 'w-[3%]' : 'w-[4.5%]'} -translate-x-1/2 rounded-b-md z-10 shadow-md transition-colors duration-100
 					{interactive ? 'cursor-pointer active:brightness-90' : ''}
 					{midi
@@ -272,6 +289,7 @@
 									: 'bg-gradient-to-b from-[#333] to-[#111] border-x border-b border-black/40'}"
 					style="left: {(key.pos * 100) / whiteKeyCount}%;"
 					onclick={(e) => handleKeyClick(key.idx, e)}
+					onkeydown={(e) => handleKeyPress(key.idx, e)}
 				>
 					{#if root}
 						<div class="absolute bottom-1 inset-x-0 flex justify-center">

@@ -42,6 +42,7 @@
 	let practiceShowHint = $state(false);
 	let practicePoolComplete = $state(false);
 	let practiceFreeCorrectSet = $state<Set<number>>(new Set());
+	let practicePoolShuffled = $state<number[]>([]); // shuffled index order for find/free phase
 
 	// ─── Challenge state ──────────────────────────────────────────
 	let challengeStarted = $state(false);
@@ -142,13 +143,21 @@
 
 	const practiceCurrentSpec = $derived(
 		!practiceIsInterval && practiceChordPool.length > 0
-			? practiceChordPool[practiceChordIndex % practiceChordPool.length]
+			? practiceChordPool[
+					practicePoolShuffled.length > 0
+						? practicePoolShuffled[practiceChordIndex % practicePoolSize]
+						: practiceChordIndex % practiceChordPool.length
+				]
 			: null,
 	);
 
 	const practiceCurrentInterval = $derived(
 		practiceIsInterval && practiceIntervalPool.length > 0
-			? practiceIntervalPool[practiceChordIndex % practiceIntervalPool.length]
+			? practiceIntervalPool[
+					practicePoolShuffled.length > 0
+						? practicePoolShuffled[practiceChordIndex % practicePoolSize]
+						: practiceChordIndex % practiceIntervalPool.length
+				]
 			: null,
 	);
 
@@ -262,6 +271,15 @@
 	}
 
 	// ─── Practice logic ───────────────────────────────────────────
+	function shuffleIndices(n: number): number[] {
+		const arr = Array.from({ length: n }, (_, i) => i);
+		for (let i = arr.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[arr[i], arr[j]] = [arr[j], arr[i]];
+		}
+		return arr;
+	}
+
 	function resetPractice() {
 		practicePhase = 'guided';
 		practiceStreak = 0;
@@ -270,6 +288,7 @@
 		practiceShowHint = false;
 		practicePoolComplete = false;
 		practiceFreeCorrectSet = new Set();
+		practicePoolShuffled = [];
 		midiMatchResult = null;
 	}
 
@@ -295,6 +314,7 @@
 					practiceChordIndex = 0;
 					practiceCorrect = false;
 					practiceFreeCorrectSet = new Set();
+					practicePoolShuffled = shuffleIndices(practicePoolSize);
 					midiMatchResult = null;
 				}, 800);
 			} else if (practicePhase === 'find' || practicePhase === 'free') {
@@ -325,7 +345,6 @@
 	function handlePracticeClick(chrIdx: number) {
 		if (!practiceChordData || practicePoolComplete) return;
 		// Toggle note in active set
-		const pc = chrIdx % 12;
 		const newSet = new Set(midiActiveNotes);
 		// We map chrIdx to a MIDI note number (C4 = 60 base, chrIdx 0 = C)
 		const midiNote = 60 + chrIdx;
@@ -548,10 +567,10 @@
 			{#each lesson.steps as step, i (i)}
 				<button
 					onclick={() => goToStep(i)}
-					class="flex-1 flex flex-col items-center gap-1 py-2.5 px-2 rounded-lg transition-colors text-xs sm:text-sm
+					class="flex-1 flex flex-col items-center gap-1 py-2.5 px-2 rounded-lg transition-colors text-xs sm:text-sm border
 						{i === currentStepIndex 
-							? 'bg-[var(--primary-muted)] border border-[var(--primary)]/40' 
-							: 'hover:bg-[var(--bg-card-hover)]'}"
+							? 'bg-[var(--primary-muted)] border-[var(--primary)]/40' 
+							: 'border-transparent hover:bg-[var(--bg-card-hover)]'}"
 				>
 					<span class="{stepClass(i)} text-lg">{stepIcon(step.type, i)}</span>
 					<span class="{stepClass(i)} font-medium">{stepLabel(step.type)}</span>
