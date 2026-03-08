@@ -35,7 +35,7 @@
 	let midiMatchResult = $state<ChordMatchResult | null>(null);
 
 	// ─── Practice state ───────────────────────────────────────────
-	let practicePhase = $state<'guided' | 'free'>('guided');
+	let practicePhase = $state<'guided' | 'find' | 'free'>('guided');
 	let practiceStreak = $state(0);
 	let practiceChordIndex = $state(0);
 	let practiceCorrect = $state(false);
@@ -102,6 +102,11 @@
 		const display = `${iv.root} → ${iv.target}`;
 		const notes = [iv.root, iv.target];
 		return { chord: display, root: iv.root, type: '', notes, voicing: notes };
+	}
+
+	/** Build ChordWithNotes for root note only (used in find mode) */
+	function buildRootOnlyData(root: string): ChordWithNotes {
+		return { chord: root, root, type: '', notes: [root], voicing: [root] };
 	}
 
 	/** Is the current theory step an interval (not a chord)? */
@@ -182,25 +187,50 @@
 			: challengeCurrentSpec ? buildChordData(challengeCurrentSpec) : null,
 	);
 
-	// Active chord data for the keyboard (whichever step is active)
-	const activeChordData = $derived(
+	// ─── Keyboard display vs validation data ─────────────────────
+	// In "find" mode for intervals: keyboard shows only root highlight,
+	// but MIDI validation checks both root + target.
+
+	/** Keyboard display data: root-only in find/challenge interval mode */
+	const practiceKeyboardData = $derived(
+		practiceIsInterval && practicePhase === 'find' && practiceCurrentInterval && !practiceShowHint && !practiceCorrect
+			? buildRootOnlyData(practiceCurrentInterval.root)
+			: practiceChordData,
+	);
+
+	const challengeKeyboardData = $derived(
+		challengeIsInterval && challengeCurrentInterval
+			? buildRootOnlyData(challengeCurrentInterval.root)
+			: challengeChordData,
+	);
+
+	// Active chord data for the keyboard highlights
+	const activeKeyboardData = $derived(
+		currentStep?.type === 'theory' ? theoryChord
+		: currentStep?.type === 'practice' ? practiceKeyboardData
+		: currentStep?.type === 'challenge' ? challengeKeyboardData
+		: null,
+	);
+
+	// Full data for MIDI validation (always includes all expected notes)
+	const activeFullData = $derived(
 		currentStep?.type === 'theory' ? theoryChord
 		: currentStep?.type === 'practice' ? practiceChordData
 		: currentStep?.type === 'challenge' ? challengeChordData
 		: null,
 	);
 
-	// Expected pitch classes for MIDI overlay
+	// Expected pitch classes for MIDI overlay (always full interval/chord)
 	const expectedPCs = $derived(
-		activeChordData
-			? new Set(activeChordData.voicing.map((n) => noteToSemitone(n)).filter((s) => s !== -1))
+		activeFullData
+			? new Set(activeFullData.voicing.map((n) => noteToSemitone(n)).filter((s) => s !== -1))
 			: new Set<number>(),
 	);
 
 	// Show keyboard highlights?
 	const showKeyHighlights = $derived(
 		currentStep?.type === 'theory'
-		|| (currentStep?.type === 'practice' && (practicePhase === 'guided' || practiceShowHint))
+		|| (currentStep?.type === 'practice' && (practicePhase === 'guided' || practicePhase === 'find' || practiceShowHint))
 	);
 
 	// ─── Step label helpers ───────────────────────────────────────
@@ -257,16 +287,17 @@
 			const guidedCount = currentStep?.type === 'practice' ? (currentStep as PracticeStep).guidedCount : 3;
 
 			if (practicePhase === 'guided' && practiceStreak >= guidedCount) {
-				// Transition to free phase
+				// Transition: intervals → find phase, chords → free phase
+				const nextPhase = practiceIsInterval ? 'find' : 'free';
 				setTimeout(() => {
-					practicePhase = 'free';
+					practicePhase = nextPhase;
 					practiceStreak = 0;
 					practiceChordIndex = 0;
 					practiceCorrect = false;
 					practiceFreeCorrectSet = new Set();
 					midiMatchResult = null;
 				}, 800);
-			} else if (practicePhase === 'free') {
+			} else if (practicePhase === 'find' || practicePhase === 'free') {
 				practiceFreeCorrectSet = new Set([...practiceFreeCorrectSet, practiceChordIndex]);
 				if (practiceFreeCorrectSet.size >= practicePoolSize) {
 					// All chords done without help
@@ -635,35 +666,63 @@
 						{#if practicePoolComplete}
 							<span class="text-[var(--accent-green)] font-medium">✓ {t('learn.complete')}</span>
 						{:else if practicePhase === 'guided'}
-							<p>{t('learn.practice_guided')}</p>
+							<p>{practiceIsInterval ? t('learn.practice_guided_interval') : t('learn.practice_guided')}</p>
+						{:else if practicePhase === 'find'}
+							<p>{t('learn.practice_find')}</p>
 						{:else}
 							<p>{t('learn.practice_free')}</p>
 						{/if}
 					</div>
 
-					<!-- Current chord / interval name -->
+					<!-- Current chord / interval display -->
 					{#if practiceChordData && !practicePoolComplete}
 						<div class="text-center">
 							{#if practiceIsInterval && practiceCurrentInterval}
-								<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
-									{practiceCurrentInterval.root} → {practiceCurrentInterval.target}
-								</span>
-								<p class="text-xs text-[var(--text-dim)] mt-1">{practiceCurrentInterval.label} · {practiceCurrentInterval.semitones} {t('learn.semitones')}</p>
+								{#if practicePhase === 'find'}
+									<!-- FIND MODE: show root + interval name, hide target -->
+									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
+										{practiceCurrentInterval.root}
+									</span>
+									<div class="flex items-center justify-center gap-2 mt-2">
+										<span class="px-3 py-1 rounded-full bg-[var(--accent-amber)]/15 text-[var(--accent-amber)] font-medium text-sm">
+											+ {practiceCurrentInterval.label}
+										</span>
+										<span class="text-xs text-[var(--text-dim)]">
+											({practiceCurrentInterval.semitones} {t('learn.semitones')})
+										</span>
+									</div>
+									{#if practiceCorrect}
+										<p class="text-sm text-[var(--accent-green)] mt-3 font-medium">
+											✓ {practiceCurrentInterval.root} → {practiceCurrentInterval.target}
+										</p>
+									{/if}
+								{:else}
+									<!-- GUIDED MODE: show both notes -->
+									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
+										{practiceCurrentInterval.root} → {practiceCurrentInterval.target}
+									</span>
+									<p class="text-xs text-[var(--text-dim)] mt-1">{practiceCurrentInterval.label} · {practiceCurrentInterval.semitones} {t('learn.semitones')}</p>
+									{#if practiceCorrect}
+										<p class="text-sm text-[var(--accent-green)] mt-2 font-medium">
+											{t('learn.practice_correct')}
+										</p>
+									{/if}
+								{/if}
 							{:else}
 								<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
 									{practiceChordData.chord}
 								</span>
-							{/if}
-							{#if practiceCorrect}
-								<p class="text-sm text-[var(--accent-green)] mt-2 font-medium">
-									{t('learn.practice_correct')}
-								</p>
+								{#if practiceCorrect}
+									<p class="text-sm text-[var(--accent-green)] mt-2 font-medium">
+										{t('learn.practice_correct')}
+									</p>
+								{/if}
 							{/if}
 						</div>
 
 						<!-- Keyboard -->
 						<PianoKeyboard
-							chordData={showKeyHighlights ? practiceChordData : null}
+							chordData={showKeyHighlights ? practiceKeyboardData : null}
 							showVoicing={showKeyHighlights}
 							accidentalPref="flats"
 							midiActiveNotes={midiActiveNotes}
@@ -673,14 +732,16 @@
 							onKeyClick={handleKeyClick}
 						/>
 
-						<!-- Streak / Hint -->
+						<!-- Streak / Hint / Progress -->
 						<div class="flex items-center justify-between text-sm">
 							<span class="text-[var(--text-dim)]">
-								{#if practiceStreak > 0}
+								{#if practicePhase === 'find'}
+									{practiceFreeCorrectSet.size} / {practicePoolSize}
+								{:else if practiceStreak > 0}
 									{t('learn.practice_streak', { count: String(practiceStreak) })}
 								{/if}
 							</span>
-							{#if practicePhase === 'free' && !practiceShowHint}
+							{#if (practicePhase === 'find' || practicePhase === 'free') && !practiceShowHint}
 								<button
 									onclick={() => practiceShowHint = true}
 									class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors"
@@ -853,8 +914,13 @@
 							<div class="text-center">
 								{#if challengeIsInterval && challengeCurrentInterval}
 									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
-										{challengeCurrentInterval.root} → {challengeCurrentInterval.target}
+										{challengeCurrentInterval.root}
 									</span>
+									<div class="flex items-center justify-center gap-2 mt-1">
+										<span class="px-3 py-1 rounded-full bg-[var(--accent-amber)]/15 text-[var(--accent-amber)] font-medium text-sm">
+											+ {challengeCurrentInterval.label}
+										</span>
+									</div>
 								{:else}
 									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
 										{challengeChordData.chord}
@@ -863,8 +929,8 @@
 							</div>
 
 							<PianoKeyboard
-								chordData={null}
-								showVoicing={false}
+								chordData={challengeKeyboardData}
+								showVoicing={challengeIsInterval}
 								accidentalPref="flats"
 								midiActiveNotes={midiActiveNotes}
 								midiExpectedPitchClasses={expectedPCs}
