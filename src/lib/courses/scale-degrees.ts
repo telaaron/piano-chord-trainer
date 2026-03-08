@@ -28,17 +28,17 @@ export const scaleDegreesCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.degrees.I_maj7.theory',
-							exampleChord: { root: 'C', quality: 'maj7', voicing: 'shell' },
+							exampleChord: { root: 'C', quality: 'Maj7', voicing: 'shell' },
 						},
 						{
 							type: 'practice',
-							chordPool: EASY_KEYS.map((r) => ({ root: r, quality: 'maj7' as const, voicing: 'shell' as const })),
+							chordPool: EASY_KEYS.map((r) => ({ root: r, quality: 'Maj7' as const, voicing: 'shell' as const })),
 							guidedCount: 3,
 						},
 						{
 							type: 'challenge',
 							voicing: 'shell',
-							quality: 'maj7',
+							quality: 'Maj7',
 							keys: MEDIUM_KEYS,
 							masteryThresholdMs: 3500,
 						},
@@ -107,17 +107,17 @@ export const scaleDegreesCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.degrees.IV_maj7.theory',
-							exampleChord: { root: 'F', quality: 'maj7', voicing: 'shell' },
+							exampleChord: { root: 'F', quality: 'Maj7', voicing: 'shell' },
 						},
 						{
 							type: 'practice',
-							chordPool: EASY_KEYS.map((r) => ({ root: r, quality: 'maj7' as const, voicing: 'shell' as const })),
+							chordPool: EASY_KEYS.map((r) => ({ root: r, quality: 'Maj7' as const, voicing: 'shell' as const })),
 							guidedCount: 3,
 						},
 						{
 							type: 'challenge',
 							voicing: 'shell',
-							quality: 'maj7',
+							quality: 'Maj7',
 							keys: MEDIUM_KEYS,
 							masteryThresholdMs: 3500,
 						},
@@ -224,7 +224,7 @@ export const scaleDegreesCourse: Course = {
 							chordPool: [
 								...EASY_KEYS.map((r) => ({ root: r, quality: 'm7' as const, voicing: 'shell' as const })),
 								...EASY_KEYS.map((r) => ({ root: r, quality: '7' as const, voicing: 'shell' as const })),
-								...EASY_KEYS.map((r) => ({ root: r, quality: 'maj7' as const, voicing: 'shell' as const })),
+								...EASY_KEYS.map((r) => ({ root: r, quality: 'Maj7' as const, voicing: 'shell' as const })),
 							],
 							guidedCount: 4,
 						},
@@ -245,12 +245,12 @@ export const scaleDegreesCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.degrees.turnaround.theory',
-							exampleChord: { root: 'C', quality: 'maj7', voicing: 'shell' },
+							exampleChord: { root: 'C', quality: 'Maj7', voicing: 'shell' },
 						},
 						{
 							type: 'practice',
 							chordPool: [
-								...EASY_KEYS.map((r) => ({ root: r, quality: 'maj7' as const, voicing: 'shell' as const })),
+								...EASY_KEYS.map((r) => ({ root: r, quality: 'Maj7' as const, voicing: 'shell' as const })),
 								...EASY_KEYS.map((r) => ({ root: r, quality: 'm7' as const, voicing: 'shell' as const })),
 								...EASY_KEYS.map((r) => ({ root: r, quality: '7' as const, voicing: 'shell' as const })),
 							],
@@ -259,7 +259,7 @@ export const scaleDegreesCourse: Course = {
 						{
 							type: 'challenge',
 							voicing: 'shell',
-							quality: 'maj7',
+							quality: 'Maj7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 3500,
 						},

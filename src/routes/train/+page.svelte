@@ -21,6 +21,7 @@
 	import { loadHabitProfile, saveHabitProfile, processSessionHabits, scheduleDailyReminder, scheduleStreakSaver } from '$lib/services/habits';
 	import { MidiService } from '$lib/services/midi';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
+	import { MidiSoundEngine } from '$lib/services/midi-sound';
 	import { AudioInputService } from '$lib/services/audio-input';
 	import type { AudioInputState } from '$lib/services/audio-input';
 	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadHistory, computeStats, type ProgressStats, type StreakData, type ChordTiming } from '$lib/services/progress';
@@ -118,6 +119,14 @@
 	let inputMode: InputMode = $state<InputMode>('none');
 	/** Convenience: true when any real-time input (MIDI or Mic) is active */
 	const inputActive = $derived(inputMode !== 'none');
+
+	/**
+	 * Suppress mic input when playing audio — prevents the microphone from
+	 * hearing the speaker output and self-triggering chord matches.
+	 */
+	function suppressMicForPlayback(): void {
+		if (inputMode === 'microphone') audioInput.suppress(2500);
+	}
 	let streak: StreakData = $state({ current: 0, best: 0, lastDate: '' });
 	let dashStats: ProgressStats = $state(computeStats([]));
 
@@ -134,6 +143,10 @@
 	let metronomeBpm = $state(80);
 	let currentBeat = $state(0);
 	let soundPreset: SoundPreset = $state(getSoundPreset());
+
+	// ─── MIDI Live-Sound Engine ─────────────────────────────────
+	const midiSoundEngine = new MidiSoundEngine();
+	let midiSoundEnabled = $state(midiSoundEngine.enabled);
 
 	// ─── Game state ──────────────────────────────────────────────
 	type Screen = 'setup' | 'playing' | 'finished' | 'custom-editor' | 'custom-playing' | 'custom-results' | 'ear-training';
@@ -476,6 +489,7 @@
 
 		// Play first chord audio
 		if (audioEnabled && chordsWithNotes[0]) {
+			suppressMicForPlayback();
 			playChord(chordsWithNotes[0].voicing).catch(() => {});
 		}
 
@@ -641,6 +655,7 @@
 			playPhase = 'verifying';
 			// Play chord audio when revealing the voicing
 			if (audioEnabled && currentData) {
+				suppressMicForPlayback();
 				playChord(currentData.voicing).catch(() => {});
 			}
 			return;
@@ -668,6 +683,7 @@
 			updateVoiceLeading();
 			// Play chord audio on advance
 			if (audioEnabled && chordsWithNotes[currentIdx]) {
+				suppressMicForPlayback();
 				playChord(chordsWithNotes[currentIdx].voicing).catch(() => {});
 			}
 		} else {
@@ -944,6 +960,7 @@
 
 	function handleMidiSelectDevice(deviceId: string) {
 		midi.selectDevice(deviceId);
+		midiSoundEnabled = midiSoundEngine.setDevice(deviceId);
 	}
 
 	// ─── Audio helpers ───────────────────────────────────────────
@@ -970,6 +987,7 @@
 	/** Re-play current chord audio on demand */
 	function replayChord() {
 		if (currentData) {
+			suppressMicForPlayback();
 			playChord(currentData.voicing);
 		}
 	}
@@ -1086,6 +1104,7 @@
 
 		// Play the first chord audio (player must identify it)
 		if (chordsWithNotes[0]) {
+			suppressMicForPlayback();
 			playChord(chordsWithNotes[0].voicing).catch(() => {});
 		}
 	}
@@ -1117,6 +1136,7 @@
 			currentIdx++;
 			// Play next chord
 			if (chordsWithNotes[currentIdx]) {
+				suppressMicForPlayback();
 				playChord(chordsWithNotes[currentIdx].voicing).catch(() => {});
 			}
 		} else {
@@ -1180,6 +1200,7 @@
 	function handleEarPianoClick(chrIdx: number, shiftKey: boolean) {
 		// Always play the note
 		const noteName = chrIdxToNoteName(chrIdx);
+		suppressMicForPlayback();
 		playNote(noteName, '4n');
 
 		// Determine if this click should toggle selection
@@ -1252,10 +1273,19 @@
 	function changeSoundPreset(preset: SoundPreset) {
 		soundPreset = preset;
 		setSoundPreset(preset);
+		// Sync MIDI sound engine to same preset
+		midiSoundEngine.preset = preset;
 		// Play a preview chord
 		if (currentData) {
+			suppressMicForPlayback();
 			playChord(currentData.voicing).catch(() => {});
 		}
+	}
+
+	/** Toggle MIDI live sound on/off */
+	function toggleMidiSound() {
+		midiSoundEnabled = !midiSoundEnabled;
+		midiSoundEngine.enabled = midiSoundEnabled;
 	}
 
 	// ─── Keyboard shortcut ───────────────────────────────────────
@@ -1375,6 +1405,9 @@
 
 		// MIDI setup — always probe for devices so we can show auto-detection
 		midi.onNotes(handleMidiNotes);
+		midi.onNoteOn((note, velocity) => midiSoundEngine.noteOn(note, velocity));
+		midi.onNoteOff((note) => midiSoundEngine.noteOff(note));
+		midi.onCC((cc, value) => midiSoundEngine.controlChange(cc, value));
 		midi.onConnection((state) => {
 			midiState = state;
 		});
@@ -1382,6 +1415,7 @@
 			midiDevices = [...devices];
 			if (devices.length > 0) {
 				midiSelectedDeviceId = midi.selectedDeviceId;
+				midiSoundEnabled = midiSoundEngine.setDevice(midiSelectedDeviceId);
 				// Auto-switch to MIDI input when a device is detected for the first time
 				if (inputMode === 'none') {
 					inputMode = 'midi';
@@ -1418,6 +1452,7 @@
 			if (autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
 			midi.destroy();
 			audioInput.destroy();
+			midiSoundEngine.dispose();
 			disposeAll();
 			notificationCleanup?.();
 			streakSaverCleanup?.();
@@ -1485,10 +1520,11 @@
 									<span class="text-[#666] font-normal">day streak</span>
 								</div>
 							</div>
-							<div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.72rem] {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[rgba(74,222,128,0.1)] text-[#4ade80]' : 'bg-white/5 text-[#555]'}">
+							<a href="/midi-test?tab=midi" class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.72rem] no-underline hover:opacity-80 transition-opacity {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[rgba(74,222,128,0.1)] text-[#4ade80]' : 'bg-white/5 text-[#555]'}">
 								<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
 								<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : 'No MIDI'}</span>
-							</div>
+								<span class="opacity-50">⚙</span>
+							</a>
 						</div>
 					</div>
 				{/if}
@@ -2007,16 +2043,17 @@
 						<span class="text-xs text-[var(--text-muted)] font-mono min-w-[5rem] text-right">
 							Accuracy: {midiTotalAttempts > 0 ? `${midiAccuracy}%` : '—'}
 						</span>
-						<a href="/midi-test" class="text-xs text-[var(--text-dim)] hover:text-[var(--text-muted)] transition-colors underline underline-offset-2" title="Test your MIDI connection">
-							MIDI Test →
-						</a>
+						<a href="/midi-test?tab=midi" class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors" title={t('nav.midi_test')}>⚙</a>
 					</div>
 				{:else if inputMode === 'microphone'}
-					<MicStatus
-						state={micState}
-						activeNoteCount={midiActiveNotes.size}
-						onConnect={() => audioInput.init()}
-					/>
+					<div class="flex items-center justify-between gap-3">
+						<MicStatus
+							state={micState}
+							activeNoteCount={midiActiveNotes.size}
+							onConnect={() => audioInput.init()}
+						/>
+						<a href="/midi-test?tab=mic" class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors shrink-0" title={t('nav.midi_test')}>⚙</a>
+					</div>
 				{/if}
 
 				<!-- Audio / Metronome / Sound controls -->
@@ -2028,6 +2065,15 @@
 					>
 						{audioEnabled ? '🔊' : '🔇'} {t('ui.audio')}
 					</button>
+					{#if inputMode === 'midi'}
+						<button
+							class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {midiSoundEnabled ? 'border-[var(--accent-green)] bg-[var(--accent-green)]/10 text-[var(--accent-green)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
+							onclick={toggleMidiSound}
+							title={midiSoundEnabled ? t('settings.midi_sound_on') : t('settings.midi_sound_off')}
+						>
+							🎹 {t('settings.midi_sound')}
+						</button>
+					{/if}
 					{#if audioEnabled}
 						<select
 							class="px-2 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text-muted)] text-xs cursor-pointer"
@@ -2179,14 +2225,14 @@
 						<div class="mt-4 text-center">
 							{#if vlValidation.grade === 'optimal'}
 								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Optimal!</span>
-								<div class="text-xs text-[var(--text-muted)] mt-0.5">Bewegung: {vlValidation.playerMovement} Halbtöne</div>
+								<div class="text-xs text-[var(--text-muted)] mt-0.5">{t('ui.vl_movement', { n: vlValidation.playerMovement })}</div>
 							{:else if vlValidation.grade === 'correct'}
 								<span class="text-[var(--accent-amber)] font-semibold">{t('ui.correct_but_not_closest')}</span>
 								<div class="text-xs text-[var(--text-muted)] mt-0.5">
-									Deine Bewegung: {vlValidation.playerMovement} HT — Optimal: {vlValidation.optimalMovement} HT
+									{t('ui.vl_your_movement', { player: vlValidation.playerMovement, optimal: vlValidation.optimalMovement })}
 								</div>
 							{:else}
-								<span class="text-[var(--accent-red)] text-sm">Falsche Töne</span>
+								<span class="text-[var(--accent-red)] text-sm">{t('ui.vl_wrong_notes')}</span>
 							{/if}
 						</div>
 					<!-- Standard match feedback (guided mode / non-VL) -->

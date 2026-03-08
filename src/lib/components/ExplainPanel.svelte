@@ -75,7 +75,7 @@
 
 	// ─── Audio ─────────────────────────────────────────────────
 	function listen() {
-		playChord(voicingNotes.map((n) => n + '4'));
+		playChord(voicingNotes);
 	}
 
 	// ─── Format with basic markdown bold ───────────────────────

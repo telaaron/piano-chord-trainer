@@ -104,10 +104,10 @@
 				<LevelBadge totalXP={profile.totalXP} compact />
 			</div>
 		</div>
-		<div class="midi-pill flex items-center gap-1.25 py-1 px-2.5 rounded-full text-[0.65rem] font-medium border {midiConnected ? 'bg-[rgba(74,222,128,0.08)] border-[rgba(74,222,128,0.2)] text-[#4ade80]' : 'bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.3)]'}">
+		<a href="/midi-test?tab=midi" class="midi-pill flex items-center gap-1.25 py-1 px-2.5 rounded-full text-[0.65rem] font-medium border no-underline hover:opacity-80 transition-opacity {midiConnected ? 'bg-[rgba(74,222,128,0.08)] border-[rgba(74,222,128,0.2)] text-[#4ade80]' : 'bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.3)]'}">
 			<img src="/elements/images/midi-connect.webp" width="12" height="12" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
 			<span>{midiConnected ? 'MIDI ✓' : 'No MIDI'}</span>
-		</div>
+		</a>
 	</div>
 
 	<!-- Daily Progress ring + motivation + week -->

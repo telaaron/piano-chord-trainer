@@ -101,4 +101,10 @@
 			♪ {activeNoteCount}
 		</span>
 	{/if}
+
+	<a
+		href="/midi-test?tab=midi"
+		class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors ml-auto leading-none"
+		title={t('nav.midi_test')}
+	>⚙</a>
 </div>

@@ -14,12 +14,25 @@ export interface ChordSpec {
 	voicing: VoicingType;
 }
 
+export interface IntervalSpec {
+	/** Lower note of the interval */
+	root: string;
+	/** Upper note of the interval */
+	target: string;
+	/** Display label, e.g. 'Große Terz' — provided via i18n in the theory text */
+	label: string;
+	/** Semitone distance */
+	semitones: number;
+}
+
 export interface TheoryStep {
 	type: 'theory';
 	/** i18n key for the theory content, e.g. 'course.shell.maj7.theory' */
 	contentKey: string;
 	/** Example chord to display on the interactive keyboard */
-	exampleChord: ChordSpec;
+	exampleChord?: ChordSpec;
+	/** Pure interval to display (2 notes on keyboard) — alternative to exampleChord */
+	exampleInterval?: IntervalSpec;
 }
 
 export interface PracticeStep {
@@ -103,7 +116,7 @@ export interface CourseProgress {
 
 // ─── Mastery helpers ────────────────────────────────────────
 
-const MASTERY_THRESHOLD_MS = 2000;
+export const MASTERY_THRESHOLD_MS = 2000;
 
 /** Compute mastery level from step progress */
 export function computeMastery(steps: StepProgress[], bestChallengeAvgMs?: number): MasteryLevel {

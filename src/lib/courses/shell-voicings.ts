@@ -26,13 +26,13 @@ export const shellVoicingsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.shell.maj7.theory',
-							exampleChord: { root: 'C', quality: 'maj7', voicing: 'shell' },
+							exampleChord: { root: 'C', quality: 'Maj7', voicing: 'shell' },
 						},
 						{
 							type: 'practice',
 							chordPool: EASY_KEYS.map((root) => ({
 								root,
-								quality: 'maj7',
+								quality: 'Maj7',
 								voicing: 'shell' as const,
 							})),
 							guidedCount: 3,
@@ -40,7 +40,7 @@ export const shellVoicingsCourse: Course = {
 						{
 							type: 'challenge',
 							voicing: 'shell',
-							quality: 'maj7',
+							quality: 'Maj7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 3000,
 						},

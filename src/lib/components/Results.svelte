@@ -74,6 +74,38 @@
 		onrestart,
 		onreset,
 	}: Props = $props();
+
+	// ─── Performance-based recommendation ──────────────────────
+	const secondsPerChord = $derived(elapsedMs / totalChords / 1000);
+
+	const recommendation = $derived.by(() => {
+		// Low MIDI accuracy → focus on correct notes
+		if (midiEnabled && midiAccuracy > 0 && midiAccuracy < 80) {
+			return { icon: '🎯', key: 'results.tip_low_accuracy', link: '' };
+		}
+		// Using root voicing → suggest shell
+		if (voicing === 'root') {
+			return { icon: '🎹', key: 'results.tip_try_shell', link: '' };
+		}
+		// Using shell → suggest rootless
+		if (voicing === 'shell' || voicing === 'half-shell') {
+			return { icon: '🚀', key: 'results.tip_try_rootless', link: '' };
+		}
+		// Slow pace (> 5s per chord)
+		if (secondsPerChord > 5) {
+			return { icon: '🔁', key: 'results.tip_slow_pace', link: '' };
+		}
+		// Fast pace (< 2s per chord) → raise difficulty
+		if (secondsPerChord < 2) {
+			return { icon: '⚡', key: 'results.tip_fast_pace', link: '' };
+		}
+		// Random mode → suggest ii-V-I
+		if (progressionMode === 'random') {
+			return { icon: '🎵', key: 'results.tip_try_progression', link: '' };
+		}
+		// Default: suggest learning
+		return { icon: '📚', key: 'results.tip_explore_course', link: '/learn' };
+	});
 </script>
 
 <div class="card p-6 sm:p-8 w-full max-w-4xl mx-auto text-center space-y-6">
@@ -148,6 +180,22 @@
 			{/if}
 		{/if}
 	</div>
+
+	<!-- Next up recommendation -->
+	{#if recommendation}
+		<div class="bg-[var(--bg-muted)] rounded-[var(--radius-lg)] p-4 text-left flex items-start gap-3 border border-[var(--border)]">
+			<span class="text-2xl shrink-0 mt-0.5">{recommendation.icon}</span>
+			<div>
+				<div class="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-1">{t('results.next_up')}</div>
+				<p class="text-sm text-[var(--text-muted)] leading-relaxed">{t(recommendation.key)}</p>
+				{#if recommendation.link}
+					<a href={recommendation.link} class="inline-block mt-2 text-sm font-semibold text-[var(--primary)] hover:underline">
+						→ {t('landing.cta_learn')}
+					</a>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	<!-- Action buttons -->
 	<div class="flex gap-3">

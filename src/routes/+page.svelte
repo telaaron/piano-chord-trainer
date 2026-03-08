@@ -169,12 +169,17 @@
 			<span class="white-text">{t('landing.hero_title_line2')}</span>
 		</h1>
 
-		<p class="text-xl leading-[1.6] text-(--text-muted) max-w-125 mb-10 max-[968px]:hidden">
+		<p class="text-xl leading-[1.6] text-(--text-muted) max-w-125 mb-4 max-[968px]:hidden">
 			{t('landing.hero_subtitle')}
 		</p>
 
-		<p class="text-xl leading-[1.6] text-(--text-muted) max-w-125 mb-10 hidden max-[968px]:block">
+		<p class="text-xl leading-[1.6] text-(--text-muted) max-w-125 mb-4 hidden max-[968px]:block">
 			{t('landing.hero_subtitle_mobile')}
+		</p>
+
+		<p class="text-sm text-(--text-dim) mb-10 flex items-center gap-1.5 max-[968px]:mb-8">
+			<svg class="w-4 h-4 text-(--accent-green) shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+			{t('landing.hero_no_midi')}
 		</p>
 
 		<!-- CTAs -->

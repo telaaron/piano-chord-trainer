@@ -21,6 +21,9 @@ export interface ChordMatchResult {
 }
 
 type NoteCallback = (activeNotes: Set<number>) => void;
+type NoteOnCallback = (note: number, velocity: number) => void;
+type NoteOffCallback = (note: number) => void;
+type CCCallback = (cc: number, value: number) => void;
 type ConnectionCallback = (state: MidiConnectionState) => void;
 type DeviceListCallback = (devices: MidiDevice[]) => void;
 type DisconnectToastCallback = (deviceName: string) => void;
@@ -43,6 +46,9 @@ export class MidiService {
 
 	// Callbacks
 	private onNoteChange: NoteCallback | null = null;
+	private onNoteOnChange: NoteOnCallback | null = null;
+	private onNoteOffChange: NoteOffCallback | null = null;
+	private onCCChange: CCCallback | null = null;
 	private onConnectionChange: ConnectionCallback | null = null;
 	private onDeviceListChange: DeviceListCallback | null = null;
 	private onDisconnectToast: DisconnectToastCallback | null = null;
@@ -75,6 +81,21 @@ export class MidiService {
 
 	onDevices(cb: DeviceListCallback): void {
 		this.onDeviceListChange = cb;
+	}
+
+	/** Called on each individual Note-On event (for live sound playback) */
+	onNoteOn(cb: NoteOnCallback): void {
+		this.onNoteOnChange = cb;
+	}
+
+	/** Called on each individual Note-Off event (for live sound playback) */
+	onNoteOff(cb: NoteOffCallback): void {
+		this.onNoteOffChange = cb;
+	}
+
+	/** Called on MIDI CC messages (e.g. sustain pedal CC 64) */
+	onCC(cb: CCCallback): void {
+		this.onCCChange = cb;
 	}
 
 	/** Called when a connected device disconnects mid-session */
@@ -284,9 +305,13 @@ export class MidiService {
 				this._noteTimers.delete(note);
 			}
 			this._activeNotes.add(note);
+			this.onNoteOnChange?.(note, velocity);
 			this.onNoteChange?.(this._activeNotes);
 		} else if (status === 0x80 || (status === 0x90 && velocity === 0)) {
-			// Note Off — debounce to avoid rapid re-trigger artifacts
+			// Note Off — fire immediately for sound engine (no debounce needed for release)
+			this.onNoteOffChange?.(note);
+
+			// Debounce for activeNotes set (chord validation) to avoid rapid re-trigger artifacts
 			const existing = this._noteTimers.get(note);
 			if (existing) clearTimeout(existing);
 
@@ -297,6 +322,9 @@ export class MidiService {
 			}, this._debounceMs);
 
 			this._noteTimers.set(note, timer);
+		} else if (status === 0xB0) {
+			// Control Change (CC) — e.g. sustain pedal (CC 64)
+			this.onCCChange?.(note, velocity);  // note = CC number, velocity = value
 		}
 	}
 

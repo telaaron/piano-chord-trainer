@@ -27,12 +27,12 @@ export const intervalsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.intervals.major_minor_3rd.theory',
-							exampleChord: { root: 'C', quality: 'maj7', voicing: 'root' },
+							exampleInterval: { root: 'C', target: 'E', label: 'Maj 3rd', semitones: 4 },
 						},
 						{
 							type: 'practice',
 							chordPool: [
-								...EASY_KEYS.map((root) => ({ root, quality: 'maj7' as const, voicing: 'root' as const })),
+								...EASY_KEYS.map((root) => ({ root, quality: 'Maj7' as const, voicing: 'root' as const })),
 								...EASY_KEYS.map((root) => ({ root, quality: 'm7' as const, voicing: 'root' as const })),
 							],
 							guidedCount: 4,
@@ -40,7 +40,7 @@ export const intervalsCourse: Course = {
 						{
 							type: 'challenge',
 							voicing: 'root',
-							quality: 'maj7',
+							quality: 'Maj7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4000,
 						},
@@ -54,7 +54,7 @@ export const intervalsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.intervals.tritone.theory',
-							exampleChord: { root: 'C', quality: '7', voicing: 'shell' },
+							exampleInterval: { root: 'B', target: 'F', label: 'Tritone', semitones: 6 },
 						},
 						{
 							type: 'practice',
@@ -85,17 +85,17 @@ export const intervalsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.intervals.perfect_5th.theory',
-							exampleChord: { root: 'C', quality: 'maj7', voicing: 'root' },
+							exampleInterval: { root: 'C', target: 'G', label: 'P5', semitones: 7 },
 						},
 						{
 							type: 'practice',
-							chordPool: EASY_KEYS.map((root) => ({ root, quality: 'maj7' as const, voicing: 'root' as const })),
+							chordPool: EASY_KEYS.map((root) => ({ root, quality: 'Maj7' as const, voicing: 'root' as const })),
 							guidedCount: 3,
 						},
 						{
 							type: 'challenge',
 							voicing: 'root',
-							quality: 'maj7',
+							quality: 'Maj7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 4000,
 						},
@@ -109,7 +109,7 @@ export const intervalsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.intervals.dim5_aug5.theory',
-							exampleChord: { root: 'B', quality: 'm7b5', voicing: 'root' },
+							exampleInterval: { root: 'C', target: 'Gb', label: '♭5', semitones: 6 },
 						},
 						{
 							type: 'practice',
@@ -133,7 +133,7 @@ export const intervalsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.intervals.major_6th.theory',
-							exampleChord: { root: 'C', quality: '6', voicing: 'root' },
+							exampleInterval: { root: 'C', target: 'A', label: 'Maj 6th', semitones: 9 },
 						},
 						{
 							type: 'practice',
@@ -167,7 +167,7 @@ export const intervalsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.intervals.minor_7th.theory',
-							exampleChord: { root: 'C', quality: '7', voicing: 'root' },
+							exampleInterval: { root: 'C', target: 'Bb', label: '♭7', semitones: 10 },
 						},
 						{
 							type: 'practice',
@@ -194,17 +194,17 @@ export const intervalsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.intervals.major_7th.theory',
-							exampleChord: { root: 'C', quality: 'maj7', voicing: 'root' },
+							exampleInterval: { root: 'C', target: 'B', label: 'Maj 7th', semitones: 11 },
 						},
 						{
 							type: 'practice',
-							chordPool: EASY_KEYS.map((root) => ({ root, quality: 'maj7' as const, voicing: 'root' as const })),
+							chordPool: EASY_KEYS.map((root) => ({ root, quality: 'Maj7' as const, voicing: 'root' as const })),
 							guidedCount: 3,
 						},
 						{
 							type: 'challenge',
 							voicing: 'root',
-							quality: 'maj7',
+							quality: 'Maj7',
 							keys: ALL_KEYS,
 							masteryThresholdMs: 3500,
 						},
@@ -225,7 +225,7 @@ export const intervalsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.intervals.ninths.theory',
-							exampleChord: { root: 'C', quality: 'Maj9', voicing: 'root' },
+							exampleInterval: { root: 'C', target: 'D', label: 'Maj 9th', semitones: 14 },
 						},
 						{
 							type: 'practice',
@@ -252,7 +252,7 @@ export const intervalsCourse: Course = {
 						{
 							type: 'theory',
 							contentKey: 'course.intervals.elevenths.theory',
-							exampleChord: { root: 'C', quality: '13', voicing: 'root' },
+							exampleInterval: { root: 'C', target: 'F', label: '11th', semitones: 17 },
 						},
 						{
 							type: 'practice',

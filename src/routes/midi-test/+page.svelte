@@ -4,20 +4,27 @@
 	import type { MidiConnectionState, MidiDevice } from '$lib/services/midi';
 	import { AudioInputService } from '$lib/services/audio-input';
 	import type { AudioInputState } from '$lib/services/audio-input';
+	import { MidiSoundEngine } from '$lib/services/midi-sound';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import { NOTES_SHARPS } from '$lib/engine';
 	import { t } from '$lib/i18n';
 
 	// ─── Tab ─────────────────────────────────────────────────────
 	type Tab = 'midi' | 'mic';
-	let activeTab: Tab = $state('midi');
+	let activeTab: Tab = $state(
+		typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'mic'
+			? 'mic'
+			: 'midi'
+	);
 
 	// ─── MIDI state ──────────────────────────────────────────────
 	const midi = new MidiService();
+	const midiSoundEngine = new MidiSoundEngine();
 	let midiState: MidiConnectionState = $state('disconnected');
 	let midiDevices: MidiDevice[] = $state([]);
 	let midiSelectedDeviceId: string | null = $state(null);
 	let midiActiveNotes: Set<number> = $state(new Set());
+	let midiSoundEnabled = $state(midiSoundEngine.enabled);
 
 	// ─── Mic state ───────────────────────────────────────────────
 	const audioInput = new AudioInputService();
@@ -188,6 +195,9 @@
 	// ─── Lifecycle ───────────────────────────────────────────────
 	onMount(() => {
 		midi.onNotes((notes) => { midiActiveNotes = new Set(notes); });
+		midi.onNoteOn((note, velocity) => { midiSoundEngine.noteOn(note, velocity); });
+		midi.onNoteOff((note) => { midiSoundEngine.noteOff(note); });
+		midi.onCC((cc, value) => { midiSoundEngine.controlChange(cc, value); });
 		midi.onConnection((state) => {
 			midiState = state;
 			addMidiLog('connection', `State → ${state}`);
@@ -196,6 +206,7 @@
 			midiDevices = [...devices];
 			if (devices.length > 0) {
 				midiSelectedDeviceId = midi.selectedDeviceId;
+				midiSoundEnabled = midiSoundEngine.setDevice(midiSelectedDeviceId);
 				addMidiLog('info', `Devices: ${devices.map((d) => d.name).join(', ')}`);
 			} else {
 				addMidiLog('info', 'No MIDI devices found');
@@ -213,6 +224,7 @@
 
 		return () => {
 			midi.destroy();
+			midiSoundEngine.dispose();
 			audioInput.destroy();
 		};
 	});
@@ -220,7 +232,13 @@
 	function selectMidiDevice(id: string) {
 		midi.selectDevice(id);
 		midiSelectedDeviceId = id;
+		midiSoundEnabled = midiSoundEngine.setDevice(id);
 		addMidiLog('connection', `Selected: ${midiDevices.find((d) => d.id === id)?.name ?? id}`);
+	}
+
+	function toggleMidiSound() {
+		midiSoundEnabled = !midiSoundEnabled;
+		midiSoundEngine.enabled = midiSoundEnabled;
 	}
 
 	function startMic() {
@@ -327,6 +345,20 @@
 					{/each}
 				</div>
 			{/if}
+
+			<!-- MIDI Sound toggle -->
+			<div class="flex items-center gap-3 pt-2 border-t border-[var(--border)]">
+				<button
+					class="flex items-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] text-sm font-medium transition-colors cursor-pointer
+						{midiSoundEnabled
+							? 'bg-green-600/20 text-green-400 border border-green-600/40 hover:bg-green-600/30'
+							: 'bg-[var(--bg)] text-[var(--text-muted)] border border-[var(--border)] hover:border-[var(--border-hover)]'}"
+					onclick={toggleMidiSound}
+				>
+					🔊 {t(midiSoundEnabled ? 'midi_sound_on' : 'midi_sound_off')}
+				</button>
+				<span class="text-xs text-[var(--text-dim)]">{t('midi_sound_desc')}</span>
+			</div>
 		</section>
 
 		<!-- Live Piano -->
