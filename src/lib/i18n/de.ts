@@ -133,7 +133,7 @@ export const de = {
     input_mode_midi_sub: 'USB-Keyboard · Auto-Wechsel',
     input_mode_mic: 'Mikrofon',
     input_mode_mic_sub: 'Audio-Erkennung · iPad kompatibel',
-    input_mode_note: 'MIDI benötigt Chrome/Edge Desktop. Mikrofon funktioniert überall inkl. iOS.',
+    input_mode_note: 'MIDI benötigt Chrome/Edge Desktop oder «Web MIDI Browser» auf iPad. Mikrofon funktioniert überall.',
     midi_sound: 'MIDI-Sound',
     midi_sound_desc: 'Töne abspielen bei MIDI-Eingabe — nützlich wenn dein Keyboard keinen eigenen Sound hat.',
     midi_sound_off: 'Dein Keyboard hat eigene Lautsprecher',
@@ -145,7 +145,7 @@ export const de = {
     on_off_off: 'Aus',
     midi_on_sub: 'Auto-Wechsel',
     midi_off_sub: 'Leertaste zum weiter',
-    midi_note: 'Web MIDI benötigt Chrome/Edge Desktop. Nicht auf iOS.',
+    midi_note: 'Web MIDI benötigt Chrome/Edge Desktop oder «Web MIDI Browser» App auf iPad.',
 
     midi_input: 'MIDI-Eingang',
     midi_enabled: 'Aktiviert',
@@ -696,6 +696,9 @@ export const de = {
     step_by_step: 'Schritt-für-Schritt Anleitung →',
     connect_keyboard_title: 'MIDI-Keyboard verbinden?',
     connect_keyboard_desc: 'Schließe ein USB-Keyboard für automatische Akkorderkennung an (Chrome/Edge)',
+    ipad_hint: 'Safari unterstützt kein MIDI',
+    ipad_open_app: '«Web MIDI Browser» öffnen (kostenlos im App Store)',
+    ipad_info: 'Safari auf iPad/iPhone unterstützt kein Web MIDI. Öffne jazzchords.app in der kostenlosen App «Web MIDI Browser» — damit erkennt die Seite dein angeschlossenes MIDI-Keyboard.',
   },
 
   mic: {

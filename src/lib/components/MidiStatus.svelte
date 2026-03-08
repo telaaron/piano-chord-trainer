@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { MidiConnectionState, MidiDevice } from '$lib/services/midi';
+	import { isIOSorIPadOS } from '$lib/services/midi';
 	import { t } from '$lib/i18n';
 
 	interface Props {
@@ -20,6 +21,8 @@
 		onConnect,
 	}: Props = $props();
 
+	const isiOS = isIOSorIPadOS();
+
 	const stateLabel = $derived(
 		state === 'connected'
 			? devices.length > 0
@@ -28,7 +31,9 @@
 			: state === 'connecting'
 				? t('midi.connecting')
 				: state === 'unsupported'
-					? t('midi.unsupported')
+					? isiOS
+						? t('midi.ipad_hint')
+						: t('midi.unsupported')
 					: state === 'denied'
 						? t('midi.permission_denied')
 						: t('midi.disconnected'),
@@ -72,7 +77,17 @@
 		</a>
 	{/if}
 
-	{#if state === 'unsupported'}
+	{#if state === 'unsupported' && isiOS}
+		<!-- iPad / iOS: recommend Web MIDI Browser app -->
+		<a
+			href="https://apps.apple.com/app/web-midi-browser/id953846217"
+			target="_blank"
+			rel="noopener noreferrer"
+			class="inline-flex items-center gap-1.5 text-xs text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors"
+		>
+			📲 {t('midi.ipad_open_app')}
+		</a>
+	{:else if state === 'unsupported'}
 		<span class="text-xs text-[var(--text-dim)]">
 			{@html t('midi.use_chrome_edge').replace('Chrome', '<a href="https://www.google.com/chrome/" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors">Chrome</a>').replace('Edge', '<a href="https://www.microsoft.com/edge" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors">Edge</a>')}
 		</span>

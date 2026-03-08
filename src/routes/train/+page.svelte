@@ -19,7 +19,7 @@
 	import CelebrationOverlay from '$lib/components/CelebrationOverlay.svelte';
 	import type { HabitProfile, CelebrationEvent, QuickStartSuggestion, TimeOfDay } from '$lib/engine/habits';
 	import { loadHabitProfile, saveHabitProfile, processSessionHabits, scheduleDailyReminder, scheduleStreakSaver } from '$lib/services/habits';
-	import { MidiService } from '$lib/services/midi';
+	import { MidiService, isIOSorIPadOS } from '$lib/services/midi';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
 	import { MidiSoundEngine } from '$lib/services/midi-sound';
 	import { AudioInputService } from '$lib/services/audio-input';
@@ -147,6 +147,7 @@
 	// ─── MIDI Live-Sound Engine ─────────────────────────────────
 	const midiSoundEngine = new MidiSoundEngine();
 	let midiSoundEnabled = $state(midiSoundEngine.enabled);
+	const isIpadOS = isIOSorIPadOS();
 
 	// ─── Game state ──────────────────────────────────────────────
 	type Screen = 'setup' | 'playing' | 'finished' | 'custom-editor' | 'custom-playing' | 'custom-results' | 'ear-training';
@@ -1724,6 +1725,16 @@
 							{/each}
 						</div>
 						<p class="mt-2 text-xs text-[var(--text-dim)]">{t('settings.input_mode_note')}</p>
+						{#if midiState === 'unsupported' && isIpadOS}
+							<a
+								href="https://apps.apple.com/app/web-midi-browser/id953846217"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="inline-flex items-center gap-1.5 mt-1.5 text-xs text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors"
+							>
+								📲 {t('midi.ipad_open_app')}
+							</a>
+						{/if}
 					</fieldset>
 					<fieldset>
 						<legend class="text-sm font-medium mb-1">{t('settings.difficulty')}</legend>

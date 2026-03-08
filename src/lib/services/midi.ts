@@ -2,6 +2,19 @@
 
 import { noteToSemitone } from '$lib/engine';
 
+/**
+ * Detect iOS / iPadOS — all browsers on iOS use WebKit (no Web MIDI API).
+ * iPadOS 13+ masquerades as Mac but has touch support.
+ */
+export function isIOSorIPadOS(): boolean {
+	if (typeof navigator === 'undefined') return false;
+	const ua = navigator.userAgent;
+	if (/iPhone|iPod|iPad/.test(ua)) return true;
+	// iPadOS 13+ reports as "Macintosh" but has multi-touch
+	if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+	return false;
+}
+
 export type MidiConnectionState = 'disconnected' | 'connecting' | 'connected' | 'unsupported' | 'denied';
 
 export interface MidiDevice {
