@@ -134,7 +134,7 @@
 
 					<button
 						onclick={toggleLanguage}
-						class="px-2 py-1 text-xs font-mono border border-[var(--border)] rounded items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
+						class="px-2 py-1 min-h-11 min-w-11 text-xs font-mono border border-(--border) rounded inline-flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
 						title={t('nav.language')}
 					>
 						{getLocale().toUpperCase()}
@@ -162,7 +162,7 @@
 
 					<!-- Mobile hamburger -->
 					<button
-						class="sm:hidden ml-1 p-1.5 rounded-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg-card)] transition-colors"
+						class="sm:hidden ml-1 p-2 min-h-11 min-w-11 rounded-sm inline-flex items-center justify-center text-(--text-muted) hover:text-(--text) hover:bg-(--bg-card) transition-colors"
 						onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 						aria-label="Menu"
 					>
@@ -281,9 +281,9 @@
 	{/if}
 
 	<!-- Content -->
-	<div class="flex-1 flex flex-col">
+	<main class="flex-1 flex flex-col">
 		{@render children()}
-	</div>
+	</main>
 
 	<!-- Footer (hidden on train page and embed routes for focus) -->
 	{#if !isTrainPage && !isLearnLesson && !isEmbedRoute}
