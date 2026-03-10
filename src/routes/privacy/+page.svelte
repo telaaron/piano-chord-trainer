@@ -83,6 +83,16 @@
 					<td>{t('privacy.td_cloudflare_purpose')}</td>
 					<td><a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">{t('privacy.td_link')}</a></td>
 				</tr>
+				<tr>
+					<td>Supabase</td>
+					<td>{t('privacy.td_supabase_purpose')}</td>
+					<td><a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">{t('privacy.td_link')}</a></td>
+				</tr>
+				<tr>
+					<td>Stripe</td>
+					<td>{t('privacy.td_stripe_purpose')}</td>
+					<td><a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">{t('privacy.td_link')}</a></td>
+				</tr>
 			</tbody>
 		</table>
 

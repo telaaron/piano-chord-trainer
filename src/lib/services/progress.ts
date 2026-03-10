@@ -1,6 +1,7 @@
 // Progress tracking – save session history to localStorage
 
 import type { Difficulty, NotationStyle, VoicingType, DisplayMode, AccidentalPreference, ProgressionMode } from '$lib/engine';
+import { debouncedSync } from './cloud-sync';
 
 export interface ChordTiming {
 	/** The displayed chord name */
@@ -87,6 +88,7 @@ export function saveSession(session: Omit<SessionResult, 'id'>): SessionResult {
 	if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
 	if (typeof localStorage !== 'undefined') {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+		debouncedSync();
 	}
 	return full;
 }
@@ -94,6 +96,7 @@ export function saveSession(session: Omit<SessionResult, 'id'>): SessionResult {
 export function clearHistory(): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.removeItem(STORAGE_KEY);
+		debouncedSync();
 	}
 }
 
@@ -162,6 +165,7 @@ export function loadSettings(): SavedSettings | null {
 export function saveSettings(settings: SavedSettings): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+		debouncedSync();
 	}
 }
 
@@ -237,6 +241,7 @@ export function recordPracticeDay(): StreakData {
 
 	if (typeof localStorage !== 'undefined') {
 		localStorage.setItem(STREAK_KEY, JSON.stringify(streak));
+		debouncedSync();
 	}
 	return streak;
 }
@@ -264,6 +269,7 @@ export function recordPlanUsed(planId: string): void {
 	if (filtered.length > 10) filtered.length = 10;
 	if (typeof localStorage !== 'undefined') {
 		localStorage.setItem(PLAN_HISTORY_KEY, JSON.stringify(filtered));
+		debouncedSync();
 	}
 }
 

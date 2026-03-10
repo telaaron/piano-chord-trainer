@@ -10,6 +10,7 @@ import {
 	createCourseProgress,
 	computeMastery,
 } from '$lib/engine/courses';
+import { debouncedSync } from './cloud-sync';
 
 const STORAGE_KEY = 'chord-trainer-course-progress';
 
@@ -29,6 +30,7 @@ function saveAllProgress(data: Record<string, CourseProgress>): void {
 	if (typeof localStorage === 'undefined') return;
 	try {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+		debouncedSync();
 	} catch {
 		// Storage full — silently fail
 	}

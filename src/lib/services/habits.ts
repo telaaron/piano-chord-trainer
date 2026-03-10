@@ -22,6 +22,7 @@ import {
 } from '../engine/habits';
 import type { SessionResult, StreakData } from './progress';
 import { loadHistory, loadStreak } from './progress';
+import { debouncedSync } from './cloud-sync';
 
 // ─── Storage Keys ───────────────────────────────────────────
 
@@ -78,6 +79,7 @@ export function loadHabitProfile(): HabitProfile {
 export function saveHabitProfile(profile: HabitProfile): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+		debouncedSync();
 	}
 }
 
@@ -110,12 +112,14 @@ export function loadPendingCelebrations(): CelebrationEvent[] {
 export function savePendingCelebrations(celebrations: CelebrationEvent[]): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.setItem(CELEBRATIONS_KEY, JSON.stringify(celebrations));
+		debouncedSync();
 	}
 }
 
 export function clearPendingCelebrations(): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.removeItem(CELEBRATIONS_KEY);
+		debouncedSync();
 	}
 }
 
