@@ -508,6 +508,7 @@
 
 <svelte:head>
 	<title>{lesson ? t(lesson.titleKey) : 'Lesson'} – Chord Trainer</title>
+        <meta name="robots" content="noindex" />
 </svelte:head>
 
 {#if !found || !lesson || !course}

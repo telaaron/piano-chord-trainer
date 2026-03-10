@@ -3,6 +3,9 @@ User-agent: *
 Allow: /
 Disallow: /.git/
 Disallow: /train
+Disallow: /learn
+Disallow: /admin
+Disallow: /midi-test
 Disallow: /privacy
 Disallow: /impressum
 

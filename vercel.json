@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.jazzchords.app" }],
+      "destination": "https://jazzchords.app/:path*",
+      "permanent": true
+    }
+  ]
+}
