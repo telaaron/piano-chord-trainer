@@ -2647,6 +2647,7 @@
 			habitProfile.dailyGoalMinutes = config.dailyGoalMinutes;
 			habitProfile.preferredTime = config.preferredTime as TimeOfDay;
 			habitProfile.notificationsEnabled = config.notificationsEnabled;
+			habitProfile.notificationTime = config.notificationTime;
 			habitProfile.onboardingDone = true;
 			saveHabitProfile(habitProfile);
 			showOnboarding = false;
