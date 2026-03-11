@@ -482,7 +482,7 @@
 			</div>
 
 			<!-- Progress bar -->
-			<div class="h-0.75 bg-(--wood-dark) shrink-0" role="progressbar" aria-valuenow={currentIdx} aria-valuemax={totalChords}>
+\t\t\t<div class="h-0.75 bg-(--wood-dark) shrink-0" role="progressbar" aria-valuemin={0} aria-valuenow={currentIdx} aria-valuemax={totalChords} aria-label="Progress">
 				<div class="h-full bg-linear-to-r from-(--primary) to-(--accent-amber) transition-[width] duration-400 ease-in-out" style="width: {progressPct}%"></div>
 			</div>
 

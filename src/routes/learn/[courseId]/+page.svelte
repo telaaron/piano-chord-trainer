@@ -64,7 +64,7 @@
 
 		<!-- Course header -->
 		<div class="flex items-start gap-4 mb-8">
-			<span class="text-4xl" role="img">{course.icon}</span>
+					<span class="text-4xl" role="img" aria-label={t(course.titleKey)}>{course.icon}</span>
 			<div class="flex-1 min-w-0">
 				<h1 class="text-xl sm:text-2xl font-bold text-[var(--text)]">
 					{t(course.titleKey)}

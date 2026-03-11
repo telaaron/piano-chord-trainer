@@ -103,7 +103,7 @@
 			<div class="card p-5 sm:p-6">
 				<!-- Course header -->
 				<div class="flex items-start gap-4">
-					<span class="text-3xl" role="img">{course.icon}</span>
+					<span class="text-3xl" role="img" aria-label={t(course.titleKey)}>{course.icon}</span>
 					<div class="flex-1 min-w-0">
 						<h2 class="text-lg sm:text-xl font-bold text-[var(--text)]">
 							{t(course.titleKey)}

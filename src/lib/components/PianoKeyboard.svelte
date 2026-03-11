@@ -221,7 +221,7 @@
 	}
 </script>
 
-<div class="select-none {mini ? 'px-1' : 'px-1 sm:px-4'}">
+<div class="select-none {mini ? 'px-1' : 'px-1 sm:px-4'}" aria-hidden={!interactive}>
 	<!-- Aspect ratio wrapper -->
 	<div class="relative w-full {mini ? 'pb-[22%]' : octaves === 3 ? 'pb-[18%] sm:pb-[15%]' : 'pb-[25%] sm:pb-[22%]'}">
 		<div class="absolute inset-0">

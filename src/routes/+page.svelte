@@ -207,8 +207,8 @@
 		</a>
 	</div>
 
-	<!-- Piano Animation (Scroll-controlled) -->
-	<div class="piano-container absolute right-0 top-0 bottom-0 w-[60%] flex items-center justify-end pointer-events-none max-[968px]:hidden">
+	<!-- Piano Animation (Scroll-controlled) — decorative, hidden from AT -->
+	<div aria-hidden="true" class="piano-container absolute right-0 top-0 bottom-0 w-[60%] flex items-center justify-end pointer-events-none max-[968px]:hidden">
 		<video
 			bind:this={videoElement}
 			muted
@@ -224,13 +224,21 @@
 
 	<!-- Static image for mobile/touch (no video) — eager + high priority: LCP on mobile -->
 	<div class="piano-static hidden max-[968px]:block max-[968px]:absolute max-[968px]:inset-0 max-[968px]:pointer-events-none max-[968px]:z-0">
-		<img
-			src="/bilder/piano.webp"
-			srcset="/bilder/piano-480.webp 480w, /bilder/piano-768.webp 768w, /bilder/piano.webp 1344w"
-			sizes="100vw"
-			alt="Jazz piano"
-			class="piano-static-img max-[968px]:w-full max-[968px]:h-full max-[968px]:object-cover max-[968px]:object-center max-[968px]:opacity-20 max-[968px]:brightness-[0.8] max-[968px]:contrast-[1.2]"
-			width="1344" height="768" loading="eager" fetchpriority="high" />
+		<picture>
+			<source
+				type="image/avif"
+				srcset="/bilder/piano-480.avif 480w, /bilder/piano-768.avif 768w"
+				sizes="100vw" />
+			<source
+				type="image/webp"
+				srcset="/bilder/piano-480.webp 480w, /bilder/piano-768.webp 768w, /bilder/piano.webp 1344w"
+				sizes="100vw" />
+			<img
+				src="/bilder/piano.webp"
+				alt="Jazz piano"
+				class="piano-static-img max-[968px]:w-full max-[968px]:h-full max-[968px]:object-cover max-[968px]:object-center max-[968px]:opacity-20 max-[968px]:brightness-[0.8] max-[968px]:contrast-[1.2]"
+				width="1344" height="768" loading="eager" fetchpriority="high" />
+		</picture>
 	</div>
 </section>
 
