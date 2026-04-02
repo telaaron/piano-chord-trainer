@@ -682,6 +682,7 @@ export const de = {
     vl_find_desc: 'Finde die nächste Umkehrung selbst via MIDI',
     vl_free_label: 'Frei',
     vl_free_desc: 'Beliebiges Voicing — bewertet nach Bewegungsdistanz',
+    loading: 'Lädt',
   },
 
   voicing_info: {

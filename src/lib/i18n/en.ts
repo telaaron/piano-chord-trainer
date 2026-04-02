@@ -625,6 +625,13 @@ export const en = {
     ear_clear: 'Clear',
     ear_try_again: 'Try again',
     keep_trying: '{percent}% — keep trying',
+    loading: 'Loading',
+    vl_guided_label: 'Follow along',
+    vl_guided_desc: 'Keyboard shows the optimal inversion — play it back',
+    vl_find_label: 'Find inversion',
+    vl_find_desc: 'Find the closest inversion yourself via MIDI',
+    vl_free_label: 'Free',
+    vl_free_desc: 'Any voicing — scored by movement distance',
   },
 
   voicing_info: {
