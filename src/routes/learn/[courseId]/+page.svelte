@@ -72,7 +72,7 @@
 				<p class="text-sm text-[var(--text-muted)] mt-1">{t(course.subtitleKey)}</p>
 				<p class="text-xs text-[var(--text-dim)] mt-1">{t(course.descriptionKey)}</p>
 				<div class="flex items-center gap-3 mt-3">
-					<span class="text-xs px-2 py-0.5 rounded-sm bg-[var(--bg-muted)] text-[var(--text-muted)]">
+					<span class="text-xs px-2.5 py-0.5 rounded-full bg-[var(--bg-muted)] text-[var(--text-muted)]">
 						{levelLabel(course.level)}
 					</span>
 					<span class="text-xs text-[var(--text-dim)]">{percent}%</span>
@@ -94,7 +94,7 @@
 				{@const modProg = progress?.modules.find((m) => m.moduleId === mod.id)}
 				{@const modPercent = modProg ? moduleCompletionPercent(modProg) : 0}
 
-				<div class="card p-5 sm:p-6">
+				<div class="card surface-glass p-5 sm:p-6">
 					<div class="flex items-center justify-between mb-3">
 						<h2 class="text-base font-semibold text-[var(--text)]">
 							{t(mod.titleKey)}
@@ -146,7 +146,7 @@
 			{#if next}
 				<a
 					href="/learn/{course.id}/{next.lessonId}"
-					class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-semibold text-sm hover:bg-[var(--primary-hover)] transition-colors"
+					class="pill-btn pill-btn-primary inline-flex items-center gap-2 px-6 py-3 text-[var(--primary-text)] font-semibold text-sm transition-colors"
 				>
 					{percent > 0 ? t('learn.continue') : t('learn.start')} →
 				</a>

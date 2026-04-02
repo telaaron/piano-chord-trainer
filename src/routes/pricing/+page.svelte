@@ -119,7 +119,7 @@
 
 		<!-- Beta banner -->
 		{#if beta}
-			<div class="max-w-2xl mx-auto p-4 rounded-sm bg-[var(--gold)]/10 border border-[var(--gold)]/30 text-center">
+			<div class="max-w-2xl mx-auto p-4 surface-glass text-center">
 				<p class="font-semibold text-[var(--gold)]">🎉 {t('pricing.beta_banner_title')}</p>
 				<p class="text-sm text-[var(--text-muted)] mt-1">{t('pricing.beta_banner_desc')}</p>
 			</div>
@@ -128,7 +128,7 @@
 		<!-- Plans grid -->
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 			{#each plans as plan}
-				<div class="card p-6 flex flex-col relative {plan.highlighted ? 'border-[var(--primary)]/50 ring-1 ring-[var(--primary)]/20' : ''} {beta && plan.id !== 'free' ? 'opacity-50' : ''}">
+				<div class="card surface-glass p-6 flex flex-col relative {plan.highlighted ? 'border-[var(--primary)]/50 ring-1 ring-[var(--primary)]/20' : ''} {beta && plan.id !== 'free' ? 'opacity-50' : ''}">
 					{#if plan.highlighted && !beta}
 						<div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[var(--primary)] text-white text-xs font-medium">
 							{t('pricing.popular')}
@@ -165,15 +165,15 @@
 					</ul>
 
 					{#if beta && plan.id !== 'free'}
-						<button disabled class="w-full py-2.5 px-4 rounded-sm font-medium bg-[var(--card-bg)] border border-[var(--border)] text-[var(--text-dim)] cursor-not-allowed">
+						<button disabled class="w-full py-2.5 px-4 pill-btn pill-btn-secondary font-medium text-[var(--text-dim)] cursor-not-allowed">
 							{t('pricing.coming_soon')}
 						</button>
 					{:else if plan.id === 'pro'}
 						<button
 							onclick={() => startCheckout(data.priceIdPro, 'pro')}
 							disabled={checkoutLoading === 'pro'}
-							class="w-full py-2.5 px-4 rounded-sm font-medium text-center transition-all
-								bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white
+							class="w-full py-2.5 px-4 pill-btn pill-btn-primary font-medium text-center transition-all
+								text-white
 								disabled:opacity-60 disabled:cursor-wait"
 						>
 							{checkoutLoading === 'pro' ? '...' : t(plan.cta)}
@@ -181,8 +181,8 @@
 					{:else}
 						<a
 							href={plan.href}
-							class="w-full py-2.5 px-4 rounded-sm font-medium text-center transition-all block
-								{plan.highlighted ? 'bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white' : 'bg-[var(--card-bg)] border border-[var(--border)] hover:bg-[var(--bg)] text-[var(--text)]'}"
+							class="w-full py-2.5 px-4 pill-btn font-medium text-center transition-all block
+								{plan.highlighted ? 'pill-btn-primary text-white' : 'pill-btn-secondary text-[var(--text)]'}"
 						>
 							{t(plan.cta)}
 						</a>
@@ -196,7 +196,7 @@
 			<h2 class="text-2xl font-bold text-center">{t('pricing.faq_heading')}</h2>
 			<div class="space-y-4">
 				{#each ['beta', 'data', 'cancel', 'educator'] as faq}
-					<details class="card p-4 group">
+					<details class="card surface-glass p-4 group">
 						<summary class="cursor-pointer font-medium text-[var(--text)] group-open:text-[var(--primary)] transition-colors">
 							{t(`pricing.faq_${faq}_q`)}
 						</summary>

@@ -99,7 +99,7 @@
 	<!-- Header -->
 	<div class="flex items-center gap-3">
 		<button
-			class="p-2 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] transition-colors cursor-pointer"
+			class="p-2 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] transition-colors cursor-pointer"
 			onclick={onback}
 			title={t('ui.back_editor')}
 		>
@@ -128,7 +128,7 @@
 			<div class="grid grid-cols-2 gap-2 mt-3" in:fade={{ duration: 150 }}>
 				{#each PROGRESSION_PRESETS as preset}
 					<button
-						class="card p-3 text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors group"
+						class="card surface-glass p-3 text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors group"
 						onclick={() => loadPreset(preset)}
 					>
 						<div class="font-semibold text-sm group-hover:text-[var(--primary)] transition-colors">{preset.name}</div>
@@ -143,7 +143,7 @@
 	</div>
 
 	<!-- Input area -->
-	<div class="card p-5 space-y-4">
+	<div class="card surface-glass p-5 space-y-4">
 		<div>
 			<label class="text-sm font-medium block mb-1" for="prog-name">{t('ui.progression_name_label')} <span class="text-[var(--text-dim)] font-normal">({t('ui.name_optional', { default: 'optional' })})</span></label>
 			<input
@@ -151,7 +151,7 @@
 				type="text"
 				bind:value={progressionName}
 				placeholder={t('ui.progression_name_placeholder')}
-				class="w-full px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-sm"
+				class="pill-input text-sm"
 			/>
 		</div>
 
@@ -166,7 +166,7 @@
 				bind:value={rawInput}
 				placeholder={t('ui.progression_input_placeholder')}
 				rows="3"
-				class="w-full px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] font-mono text-sm resize-none"
+				class="pill-input font-mono text-sm resize-none"
 			></textarea>
 
 			{#if parseError}
@@ -176,11 +176,11 @@
 
 		<!-- Live Preview -->
 		{#if parsedChords.length > 0}
-			<div class="bg-[var(--bg-muted)] rounded-[var(--radius)] p-3 space-y-2" in:fade={{ duration: 100 }}>
+			<div class="bg-[var(--bg-muted)]/35 rounded-[var(--radius)] p-3 space-y-2 border border-[var(--border)]/40 backdrop-blur-sm" in:fade={{ duration: 100 }}>
 				<div class="text-xs font-medium text-[var(--text-muted)]">Preview ({parsedChords.length} chords · {totalBeats} beats · ~{Math.round(passDuration)}s per pass)</div>
 				<div class="flex flex-wrap gap-2">
 					{#each parsedChords as chord, i}
-						<div class="bg-[var(--bg)] px-2.5 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-sm font-mono">
+						<div class="bg-[var(--bg)]/72 px-2.5 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-sm font-mono backdrop-blur-sm">
 							{chord.display}
 							{#if chord.beats !== 4}
 								<span class="text-xs text-[var(--text-dim)] ml-1">({chord.beats})</span>
@@ -216,7 +216,7 @@
 				<div class="flex gap-2">
 					{#each [1, 2, 3, 4, 0] as l}
 						<button
-							class="flex-1 py-2 rounded-[var(--radius-sm)] border-2 text-sm font-semibold transition-all cursor-pointer {loops === l ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
+							class="flex-1 py-2 rounded-full border text-sm font-semibold transition-all cursor-pointer {loops === l ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] bg-[var(--bg)]/50'}"
 							onclick={() => (loops = l)}
 						>
 							{l === 0 ? '∞' : `${l}×`}
@@ -229,14 +229,14 @@
 		<!-- Action row -->
 		<div class="flex gap-3 pt-2">
 			<button
-				class="flex-1 h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+				class="flex-1 h-12 pill-btn pill-btn-primary text-[var(--primary-text)] text-base font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 				onclick={handlePlay}
 				disabled={parsedChords.length === 0}
 			>
 				▶ {t('ui.progression_play')}
 			</button>
 			<button
-				class="h-12 px-5 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+				class="h-12 px-5 pill-btn pill-btn-secondary text-[var(--text-muted)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 				onclick={handleSave}
 				disabled={parsedChords.length === 0}
 				title={t('ui.progression_save')}
@@ -252,7 +252,7 @@
 			<h3 class="text-sm font-medium text-[var(--text-muted)] mb-3">{t('ui.saved_progressions')}</h3>
 			<div class="space-y-2">
 				{#each savedProgressions as prog}
-					<div class="card p-4 flex items-center gap-3 group">
+					<div class="card surface-glass p-4 flex items-center gap-3 group">
 						<button
 							class="flex-1 text-left cursor-pointer"
 							onclick={() => loadProgression(prog)}
@@ -262,7 +262,7 @@
 							<div class="text-xs text-[var(--text-dim)] mt-1">{prog.bpm} BPM · {prog.loops === 0 ? '∞' : `${prog.loops}×`} · {prog.chords.length} chords</div>
 						</button>
 						<button
-							class="flex-1 max-w-[80px] text-center px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--primary)] text-[var(--primary-text)] text-xs font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
+							class="flex-1 max-w-[80px] text-center px-3 py-2 pill-btn pill-btn-primary text-[var(--primary-text)] text-xs font-semibold transition-colors cursor-pointer"
 							onclick={() => onplay(prog.chords, prog.bpm, prog.loops, prog.name)}
 						>
 							▶ Go

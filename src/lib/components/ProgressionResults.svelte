@@ -28,7 +28,7 @@
 
 <div class="max-w-2xl mx-auto space-y-6" in:scale={{ start: 0.95, duration: 300 }}>
 	<!-- Hero -->
-	<div class="card p-8 text-center">
+	<div class="card surface-glass p-8 text-center">
 		<div class="text-5xl mb-3">{grade.emoji}</div>
 		<div class="text-3xl font-bold" style="color: {grade.color}">{grade.text}</div>
 		<div class="text-sm text-[var(--text-muted)] mt-2">{name} · {bpm} BPM</div>
@@ -36,15 +36,15 @@
 
 	<!-- Stats Grid -->
 	<div class="grid grid-cols-3 gap-3">
-		<div class="card p-4 text-center">
+		<div class="card surface-glass p-4 text-center">
 			<div class="text-2xl font-bold">{accuracyPercent}%</div>
 			<div class="text-xs text-[var(--text-muted)] mt-1">{t('ui.chord_accuracy')}</div>
 		</div>
-		<div class="card p-4 text-center">
+		<div class="card surface-glass p-4 text-center">
 			<div class="text-2xl font-bold">{evaluation.avgTimingMs}<span class="text-sm font-normal">ms</span></div>
 			<div class="text-xs text-[var(--text-muted)] mt-1">{t('ui.timing_offset')}</div>
 		</div>
-		<div class="card p-4 text-center">
+		<div class="card surface-glass p-4 text-center">
 			<div class="text-2xl font-bold">{formatTime(evaluation.totalMs)}</div>
 			<div class="text-xs text-[var(--text-muted)] mt-1">{t('ui.total_time')}</div>
 		</div>
@@ -52,7 +52,7 @@
 
 	<!-- Per-Loop Breakdown -->
 	{#if evaluation.loops.length > 1}
-		<div class="card p-5">
+		<div class="card surface-glass p-5">
 			<h3 class="text-sm font-medium mb-3">{t('ui.results_loops')}</h3>
 			<div class="space-y-2">
 				{#each evaluation.loops as loop, i}
@@ -73,7 +73,7 @@
 
 	<!-- Weak Chords -->
 	{#if evaluation.weakChords.length > 0}
-		<div class="card p-5">
+		<div class="card surface-glass p-5">
 			<h3 class="text-sm font-medium mb-2">{t('ui.results_weakest_chords')}</h3>
 			<p class="text-xs text-[var(--text-dim)] mb-3">{t('ui.results_weak_desc')}</p>
 			<div class="flex flex-wrap gap-2">
@@ -89,7 +89,7 @@
 	<!-- Per-chord detail (last loop) -->
 	{#if evaluation.loops.length > 0}
 		{@const lastLoop = evaluation.loops[evaluation.loops.length - 1]}
-		<div class="card p-5">
+		<div class="card surface-glass p-5">
 			<h3 class="text-sm font-medium mb-3">{t('ui.results_detail_last')}</h3>
 			<div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
 				{#each lastLoop.chords as ce}
@@ -109,13 +109,13 @@
 	<!-- Actions -->
 	<div class="flex gap-3">
 		<button
-			class="flex-1 h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
+			class="flex-1 h-12 pill-btn pill-btn-primary text-[var(--primary-text)] text-base font-semibold transition-colors cursor-pointer"
 			onclick={onreplay}
 		>
 			🔄 {t('ui.play_again')}
 		</button>
 		<button
-			class="flex-1 h-12 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] transition-colors cursor-pointer"
+			class="flex-1 h-12 pill-btn pill-btn-secondary text-[var(--text-muted)] transition-colors cursor-pointer"
 			onclick={onback}
 		>
 			← {t('ui.back_editor')}

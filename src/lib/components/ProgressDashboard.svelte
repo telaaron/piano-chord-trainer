@@ -101,7 +101,7 @@
 </script>
 
 {#if stats.totalSessions > 0}
-	<div class="card p-5 sm:p-6 w-full space-y-6 sm:space-y-8 border-l-4 border-l-[var(--primary)] shadow-[0_0_30px_rgba(251,146,60,0.06)] relative">
+	<div class="card surface-glass p-5 sm:p-6 w-full space-y-6 sm:space-y-8 border-l-4 border-l-[var(--primary)] shadow-[0_0_30px_rgba(251,146,60,0.06)] relative">
 		
 		<!-- Optional subtle background glow -->
 		<div class="absolute top-0 right-0 w-64 h-64 bg-[var(--primary)]/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>

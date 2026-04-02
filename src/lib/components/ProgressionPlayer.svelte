@@ -281,7 +281,7 @@
 			</p>
 		</div>
 		<button
-			class="px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer text-sm font-medium"
+			class="px-3 py-1.5 pill-btn pill-btn-secondary text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer text-sm font-medium"
 			onclick={handleStop}
 		>
 			✕ {t('ui.stop')}
@@ -298,7 +298,7 @@
 		</div>
 	{:else}
 		<!-- Progression bar (visual overview of chord positions) -->
-		<div class="bg-[var(--bg-muted)] rounded-[var(--radius)] p-3">
+		<div class="bg-[var(--bg-muted)]/35 rounded-[var(--radius)] p-3 border border-[var(--border)]/40 backdrop-blur-sm">
 			<div class="flex gap-1 overflow-x-auto">
 				{#each chords as chord, i}
 					<div
@@ -316,7 +316,7 @@
 		</div>
 
 		<!-- Current Chord (big) -->
-		<div class="card p-8 text-center relative overflow-hidden">
+		<div class="card surface-glass p-8 text-center relative overflow-hidden">
 			<!-- Beat progress bar through chord -->
 			<div
 				class="absolute bottom-0 left-0 h-1 bg-[var(--primary)] transition-all"

@@ -30,7 +30,7 @@
 </script>
 
 <div
-	class="card p-8 sm:p-12 text-center cursor-pointer active:scale-[0.98] transition-transform"
+	class="card surface-glass p-8 sm:p-12 text-center cursor-pointer active:scale-[0.98] transition-transform"
 	role="button"
 	tabindex="0"
 	{onclick}

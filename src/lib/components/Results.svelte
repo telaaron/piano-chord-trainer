@@ -108,7 +108,7 @@
 	});
 </script>
 
-<div class="card p-6 sm:p-8 w-full max-w-4xl mx-auto text-center space-y-6">
+<div class="card surface-glass p-6 sm:p-8 w-full max-w-4xl mx-auto text-center space-y-6">
 	<!-- Trophy -->
 	<div>
 		<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--primary-muted)] mb-4">
@@ -122,7 +122,7 @@
 	</div>
 
 	<!-- Time -->
-	<div class="bg-[var(--bg-muted)] rounded-[var(--radius-lg)] p-6">
+	<div class="bg-[var(--bg-muted)]/35 rounded-[var(--radius-lg)] p-6 border border-[var(--border)]/40 backdrop-blur-sm">
 		<div class="text-sm text-[var(--text-muted)] mb-1">{t('results.time')}</div>
 		<div class="text-5xl font-bold text-[var(--primary)]">{fmt(elapsedMs)}</div>
 		<div class="text-sm text-[var(--text-muted)] mt-2">
@@ -140,40 +140,40 @@
 			{ label: t('results.accidentals'), value: t('settings.accidentals_' + accidentals) },
 			{ label: t('results.voicing'), value: t('settings.voicing_' + voicing.replace(/-/g, '_')) }, // Voicing keys use underscores
 		] as stat}
-			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+			<div class="bg-[var(--bg)]/72 rounded-[var(--radius)] p-3 border border-[var(--border)] backdrop-blur-sm">
 				<div class="text-xs text-[var(--text-muted)] mb-1">{stat.label}</div>
 				<div class="font-semibold capitalize">{stat.value}</div>
 			</div>
 		{/each}
 		{#if midiEnabled && midiAccuracy > 0}
-			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+			<div class="bg-[var(--bg)]/72 rounded-[var(--radius)] p-3 border border-[var(--border)] backdrop-blur-sm">
 				<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.midi_accuracy')}</div>
 				<div class="font-semibold text-[var(--accent-green)]">{midiAccuracy}%</div>
 			</div>
 		{/if}
 		{#if inTimeModeActive}
-			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+			<div class="bg-[var(--bg)]/72 rounded-[var(--radius)] p-3 border border-[var(--border)] backdrop-blur-sm">
 				<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.avg_timing')}</div>
 				<div class="font-semibold text-[var(--accent-amber)]">{avgTimingMs > 0 ? avgTimingMs + 'ms' : 'N/A'}</div>
 			</div>
 		{/if}
 		{#if earTrainingTotal > 0}
-			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+			<div class="bg-[var(--bg)]/72 rounded-[var(--radius)] p-3 border border-[var(--border)] backdrop-blur-sm">
 				<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.ear_score')}</div>
 				<div class="font-semibold text-[var(--accent-amber)]">{earTrainingTotal > 0 ? Math.round((earTrainingCorrect / earTrainingTotal) * 100) : 0}%</div>
 			</div>
 		{/if}
 		{#if vlModeActive && vlTotalChords > 0}
-			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+			<div class="bg-[var(--bg)]/72 rounded-[var(--radius)] p-3 border border-[var(--border)] backdrop-blur-sm">
 				<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.vl_mode')}</div>
 				<div class="font-semibold text-[var(--primary)] capitalize">{vlModeActive}</div>
 			</div>
-			<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+			<div class="bg-[var(--bg)]/72 rounded-[var(--radius)] p-3 border border-[var(--border)] backdrop-blur-sm">
 				<div class="text-xs text-[var(--text-muted)] mb-0.5">{t('results.avg_movement')}</div>
 				<div class="font-semibold text-[var(--accent-amber)]">{vlAvgMovement} {t('results.semitones_short')}</div>
 			</div>
 			{#if vlModeActive === 'find-inversion'}
-				<div class="bg-[var(--bg)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
+				<div class="bg-[var(--bg)]/72 rounded-[var(--radius)] p-3 border border-[var(--border)] backdrop-blur-sm">
 					<div class="text-xs text-[var(--text-muted)] mb-1">{t('results.optimal')}</div>
 					<div class="font-semibold text-[var(--accent-green)]">{vlOptimalCount}/{vlTotalChords}</div>
 				</div>
@@ -183,7 +183,7 @@
 
 	<!-- Next up recommendation -->
 	{#if recommendation}
-		<div class="bg-[var(--bg-muted)] rounded-[var(--radius-lg)] p-4 text-left flex items-start gap-3 border border-[var(--border)]">
+		<div class="bg-[var(--bg-muted)]/30 rounded-[var(--radius-lg)] p-4 text-left flex items-start gap-3 border border-[var(--border)]/55 backdrop-blur-sm">
 			<span class="text-2xl shrink-0 mt-0.5">{recommendation.icon}</span>
 			<div>
 				<div class="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-1">{t('results.next_up')}</div>
@@ -200,13 +200,13 @@
 	<!-- Action buttons -->
 	<div class="flex gap-3">
 		<button
-			class="flex-1 h-11 rounded-[var(--radius)] border border-[var(--border)] text-[var(--text)] font-medium hover:bg-[var(--bg-muted)] transition-colors cursor-pointer"
+			class="flex-1 h-11 pill-btn pill-btn-secondary text-[var(--text)] font-medium transition-colors cursor-pointer"
 			onclick={onrestart}
 		>
 			{t('results.play_again')}
 		</button>
 		<button
-			class="flex-1 h-11 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-medium hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
+			class="flex-1 h-11 pill-btn pill-btn-primary text-[var(--primary-text)] font-medium transition-colors cursor-pointer"
 			onclick={onreset}
 		>
 			{t('results.back_to_setup')}
@@ -221,7 +221,7 @@
 			</summary>
 			<div class="mt-4 space-y-3 max-h-[28rem] overflow-y-auto pr-1">
 				{#each chordsWithNotes as cd, i}
-					<div class="bg-[var(--bg)] rounded-[var(--radius)] p-4 border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors">
+					<div class="bg-[var(--bg)]/72 rounded-[var(--radius)] p-4 border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors backdrop-blur-sm">
 						<div class="flex items-center gap-3 mb-3">
 							<span class="text-xs bg-[var(--bg-muted)] px-2 py-0.5 rounded">{i + 1}</span>
 							<span class="text-lg font-bold text-[var(--primary)]">
@@ -237,7 +237,7 @@
 						<!-- All 4 voicings -->
 						<div class="grid grid-cols-2 gap-2 text-xs">
 							{#each (['root', 'shell', 'half-shell', 'full'] as const) as v}
-								<div class="bg-[var(--bg-muted)] p-2 rounded-[var(--radius-sm)]">
+								<div class="bg-[var(--bg-muted)]/50 p-2 rounded-[var(--radius-sm)] border border-[var(--border)]/40">
 									<div class="text-[var(--text-dim)] mb-0.5">{VOICING_LABELS[v]}</div>
 									<div class="font-mono font-semibold">{formatVoicing(cd, v, notationSystem)}</div>
 								</div>

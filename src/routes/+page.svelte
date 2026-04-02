@@ -11,76 +11,155 @@
 		Target,
 	} from 'lucide-svelte';
 
-	let videoElement: HTMLVideoElement;
-	let scrollProgress = $state(0);
-	let useStaticFallback = $state(false);
-	let isMobile = $state(false);
+	const HERO_FRAME_COUNT = 73;
+	const HERO_FRAME_BASES = ['/videos/frames', '/video/frames'];
+
+	let heroSection: HTMLElement | undefined;
+	let heroCanvas: HTMLCanvasElement | undefined;
+	let frameImages: Array<HTMLImageElement | undefined> = [];
+	let activeFrameIndex = 0;
+	let pendingFrameIndex = 0;
+	let rafScheduled = false;
+	let latestScrollY = 0;
+	let hasStartedPreload = false;
+
+	const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+	const getFrameFilename = (index: number) => `frame_${String(index + 1).padStart(4, '0')}.jpg`;
+
+	function drawFrame(index: number) {
+		if (!heroCanvas) return;
+		const image = frameImages[index];
+		if (!image || !image.complete || image.naturalWidth === 0) return;
+
+		const ctx = heroCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const dpr = window.devicePixelRatio || 1;
+		const cssWidth = heroCanvas.clientWidth;
+		const cssHeight = heroCanvas.clientHeight;
+
+		if (!cssWidth || !cssHeight) return;
+
+		const targetWidth = Math.floor(cssWidth * dpr);
+		const targetHeight = Math.floor(cssHeight * dpr);
+
+		if (heroCanvas.width !== targetWidth || heroCanvas.height !== targetHeight) {
+			heroCanvas.width = targetWidth;
+			heroCanvas.height = targetHeight;
+		}
+
+		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+		const coverScale = Math.max(cssWidth / image.naturalWidth, cssHeight / image.naturalHeight);
+		const cinematicZoom = window.innerWidth <= 968 ? 1.12 : 1.17;
+		const scale = coverScale * cinematicZoom;
+		const drawWidth = image.naturalWidth * scale;
+		const drawHeight = image.naturalHeight * scale;
+		const focalX = window.innerWidth <= 968 ? -0.03 : -0.14;
+		const rightShiftPx = cssWidth * (window.innerWidth <= 968 ? 0.07 : 0.12);
+		const offsetX = (cssWidth - drawWidth) * focalX + rightShiftPx;
+		const offsetY = (cssHeight - drawHeight) * 0.5;
+
+		ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+		activeFrameIndex = index;
+	}
+
+	function scheduleDraw(index: number) {
+		pendingFrameIndex = index;
+		if (rafScheduled) return;
+
+		rafScheduled = true;
+		requestAnimationFrame(() => {
+			rafScheduled = false;
+			drawFrame(pendingFrameIndex);
+		});
+	}
+
+	function loadFrame(index: number, basePathIndex = 0) {
+		if (index < 0 || index >= HERO_FRAME_COUNT) return;
+		if (frameImages[index]) return;
+
+		const image = new Image();
+		const file = getFrameFilename(index);
+		const source = `${HERO_FRAME_BASES[basePathIndex]}/${file}`;
+
+		image.decoding = 'async';
+		image.src = source;
+
+		image.onload = () => {
+			frameImages[index] = image;
+			if (index === pendingFrameIndex || index === 0) {
+				scheduleDraw(index);
+			}
+		};
+
+		image.onerror = () => {
+			if (basePathIndex + 1 < HERO_FRAME_BASES.length) {
+				loadFrame(index, basePathIndex + 1);
+			}
+		};
+	}
+
+	function ensureFramesAround(index: number) {
+		const preloadRadius = 10;
+		for (let i = Math.max(0, index - preloadRadius); i <= Math.min(HERO_FRAME_COUNT - 1, index + preloadRadius); i += 1) {
+			loadFrame(i);
+		}
+	}
+
+	function getScrollProgress(scrollY: number) {
+		if (!heroSection) return 0;
+		const sectionTop = heroSection.offsetTop;
+		const sectionHeight = heroSection.offsetHeight;
+		const viewportHeight = window.innerHeight;
+		const start = Math.max(0, sectionTop - viewportHeight * 0.04);
+		const end = sectionTop + sectionHeight - viewportHeight * 0.08;
+		const range = Math.max(1, end - start);
+		return clamp((scrollY - start) / range, 0, 1);
+	}
+
+	function updateFromScroll(scrollY: number) {
+		const progress = getScrollProgress(scrollY);
+		const nextIndex = Math.round(progress * (HERO_FRAME_COUNT - 1));
+		ensureFramesAround(nextIndex);
+		if (nextIndex !== activeFrameIndex) {
+			scheduleDraw(nextIndex);
+		}
+	}
 
 	onMount(() => {
-		const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-		isMobile = window.matchMedia('(max-width: 968px)').matches;
-		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (!heroCanvas) return;
+		if (window.innerWidth <= 968) return;
 
-		// Static fallback for reduced motion preference
-		if (prefersReducedMotion) {
-			useStaticFallback = true;
-		}
-
-		// On mobile OR any touch device (iPad etc): show first frame only, no scroll animation
-		// iOS Safari throttles video.currentTime seeks, making scroll animation unusable
-		if (isMobile || isTouchDevice) {
-			useStaticFallback = true;
-			if (videoElement) {
-				videoElement.load();
-				videoElement.addEventListener('loadeddata', () => {
-					videoElement.currentTime = 0;
-				}, { once: true });
+		if (!hasStartedPreload) {
+			hasStartedPreload = true;
+			for (let i = 0; i < HERO_FRAME_COUNT; i += 1) {
+				loadFrame(i);
 			}
-			return;
 		}
-
-		let targetTime = 0;
-		let isUpdating = false;
 
 		const handleScroll = () => {
-			if (!videoElement || !videoElement.duration) return;
-
-			const scrollTop = window.scrollY;
-			const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-			const scrollPercent = scrollTop / docHeight;
-			scrollProgress = Math.min(scrollPercent * 0.7, 1);
-			targetTime = videoElement.duration * scrollProgress;
-
-			if (!isUpdating && !useStaticFallback) {
-				isUpdating = true;
-				videoElement.currentTime = targetTime;
-			}
+			latestScrollY = window.scrollY;
+			updateFromScroll(latestScrollY);
 		};
 
-		// When the browser has actually decoded a frame after seeking,
-		// seek to the latest target — this avoids queueing seeks faster than decode.
-		const onSeeked = () => {
-			if (!videoElement || useStaticFallback) return;
-			isUpdating = false;
-
-			// If scroll moved since our last seek, catch up
-			if (Math.abs(videoElement.currentTime - targetTime) > 0.05) {
-				isUpdating = true;
-				videoElement.currentTime = targetTime;
-			}
+		const handleResize = () => {
+			scheduleDraw(activeFrameIndex);
+			updateFromScroll(latestScrollY);
 		};
+
+		latestScrollY = window.scrollY;
+		updateFromScroll(latestScrollY);
+		scheduleDraw(0);
 
 		window.addEventListener('scroll', handleScroll, { passive: true });
-
-		// Preload video
-		if (videoElement) {
-			videoElement.addEventListener('seeked', onSeeked);
-			videoElement.load();
-		}
+		window.addEventListener('resize', handleResize);
 
 		return () => {
 			window.removeEventListener('scroll', handleScroll);
-			videoElement?.removeEventListener('seeked', onSeeked);
+			window.removeEventListener('resize', handleResize);
 		};
 	});
 </script>
@@ -151,94 +230,68 @@
 	})}</script>`}
 </svelte:head>
 
-<!-- Hero with Scroll-Controlled 3D Piano -->
+<!-- Cinematic Hero with Frame 1 -->
 <section
-	class="relative h-[calc(100svh-3.5rem)] min-h-120 flex items-center py-16 px-[5%] xl:px-[8%] 2xl:px-[12%] max-[968px]:text-left max-[968px]:py-8"
-	style="background: linear-gradient(135deg, #0a0908 0%, #1a1410 30%, #3e2723 50%, #1a1410 70%, #0a0908 100%)"
+	bind:this={heroSection}
+	class="hero-stage relative isolate h-[calc(100svh-3.5rem)] overflow-hidden max-[968px]:h-auto max-[968px]:min-h-[calc(100svh-3.5rem)]"
 >
-	<div class="relative z-2 max-w-150 max-[968px]:max-w-none">
+	<div class="hero-media absolute inset-0 z-0">
+		<canvas bind:this={heroCanvas} class="hero-canvas h-full w-full" aria-hidden="true"></canvas>
+	</div>
+
+	<div class="hero-glow absolute inset-x-0 bottom-0 h-[58%] pointer-events-none"></div>
+	<div class="hero-mist hero-mist-left absolute -left-[18%] top-[10%] h-[56%] w-[52%] pointer-events-none"></div>
+	<div class="hero-mist hero-mist-right absolute -right-[20%] top-[6%] h-[58%] w-[54%] pointer-events-none"></div>
+	<div class="hero-watermark-mask absolute bottom-[1.5%] right-[0.8%] h-[13%] w-[13%] pointer-events-none"></div>
+	<div class="hero-vignette absolute inset-0 pointer-events-none"></div>
+
+	<div class="hero-content-frame relative z-2 flex h-full items-center">
+	<div class="hero-copy-shell max-w-140 px-8 py-8 rounded-[1.35rem] max-[968px]:max-w-none max-[968px]:rounded-2xl max-[968px]:px-5 max-[968px]:py-5.5">
 		<!-- Badge -->
-		<div class="inline-flex items-center gap-2 py-2 px-4 bg-(--glow-warm) border border-(--accent-amber) rounded-[20px] text-[0.85rem] text-(--accent-amber) mb-8 w-fit max-[968px]:hidden">
+		<div class="hero-badge inline-flex items-center gap-2 py-2 px-4 bg-[rgba(18,12,8,0.55)] border border-[rgba(255,140,66,0.45)] rounded-[999px] text-[0.76rem] tracking-[0.08em] uppercase text-(--accent-amber) mb-6 w-fit max-[968px]:mb-4 max-[968px]:text-[0.72rem]">
 			<span class="w-2 h-2 bg-(--accent-amber) rounded-full animate-pulse"></span>
 			{t('landing.badge')}
 		</div>
 
 		<!-- Titles -->
-		<h1 class="text-[clamp(3rem,5vw,4.5rem)] font-extrabold leading-[1.1] mb-6">
-			<span class="gradient-text">{t('landing.hero_title_line1')}</span>
-			<span class="white-text">{t('landing.hero_title_line2')}</span>
+		<h1 class="hero-title text-[clamp(2rem,3.7vw,3.9rem)] font-black leading-[1.04] tracking-[-0.03em] mb-5 max-w-[16ch] max-[968px]:text-[clamp(1.62rem,8.2vw,2.32rem)] max-[968px]:leading-[1.07] max-[968px]:max-w-[11ch] max-[968px]:mb-3">
+			<span class="block text-[rgba(255,186,110,0.96)]">{t('landing.hero_title_line1')}</span>
+			<span class="block text-(--text)">{t('landing.hero_title_line2')}</span>
 		</h1>
 
-		<p class="text-xl leading-[1.6] text-(--text-muted) max-w-125 mb-4 max-[968px]:hidden">
+		<p class="hero-subtitle text-[0.98rem] leading-[1.62] text-[rgba(239,219,194,0.9)] max-w-[56ch] mb-4 max-[968px]:text-[0.92rem] max-[968px]:leading-[1.55]">
 			{t('landing.hero_subtitle')}
 		</p>
 
-		<p class="text-xl leading-[1.6] text-(--text-muted) max-w-125 mb-4 hidden max-[968px]:block">
-			{t('landing.hero_subtitle_mobile')}
-		</p>
-
-		<p class="text-sm text-(--text-dim) mb-10 flex items-center gap-1.5 max-[968px]:mb-8">
+		<p class="hero-support text-[0.84rem] text-[rgba(192,165,139,0.9)] mb-7 flex items-center gap-1.5 max-[968px]:mb-5 max-[968px]:text-[0.8rem]">
 			<svg class="w-4 h-4 text-(--accent-green) shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 			{t('landing.hero_no_midi')}
 		</p>
 
 		<!-- CTAs -->
-		<div class="flex flex-wrap gap-3 mb-6 max-[968px]:items-center">
+		<div class="hero-cta-row flex flex-wrap gap-2.5 mb-5 max-[968px]:items-center">
 			<a
 				href="/train"
-				class="py-3.5 px-6 rounded-xl text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap text-(--primary-text) shadow-[0_4px_20px_var(--glow-warm)] hover:-translate-y-0.5 hover:shadow-[0_6px_30px_var(--glow-warm)]"
+				class="hero-cta-primary py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap text-(--primary-text) shadow-[0_6px_30px_rgba(232,118,59,0.35)] hover:-translate-y-0.5 hover:shadow-[0_12px_38px_rgba(232,118,59,0.45)] max-[968px]:text-[0.95rem] max-[968px]:px-4.5"
 				style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent-amber) 100%)"
 			>
 				{t('landing.cta_start')}
-				<span class="arrow">→</span>
+				<span>→</span>
 			</a>
-			<a href="/learn" class="py-3.5 px-6 rounded-xl text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-(--wood-dark) text-(--text) border border-(--wood-light) hover:bg-(--wood-light) hover:border-(--accent-gold) max-[968px]:py-2.5 max-[968px]:px-4 max-[968px]:text-sm">
+			<a href="/learn" class="hero-cta-secondary py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-[rgba(15,10,8,0.56)] text-(--text) border border-[rgba(188,141,97,0.32)] hover:bg-[rgba(25,17,12,0.72)] hover:border-[rgba(212,175,55,0.62)] max-[968px]:py-2.5 max-[968px]:px-4 max-[968px]:text-[0.95rem]">
 				{t('landing.cta_learn')}
 			</a>
-			<a href="/for-educators" class="py-3.5 px-6 rounded-xl text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-(--wood-dark) text-(--text) border border-(--wood-light) hover:bg-(--wood-light) hover:border-(--accent-gold) max-[968px]:hidden">
+			<a href="/for-educators" class="py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-[rgba(15,10,8,0.56)] text-(--text) border border-[rgba(188,141,97,0.32)] hover:bg-[rgba(25,17,12,0.72)] hover:border-[rgba(212,175,55,0.62)] max-[968px]:hidden">
 				{t('landing.cta_educators')}
 			</a>
 		</div>
 
-		<p class="text-[0.9rem] text-(--text-dim) max-[968px]:hidden">{t('landing.footnote')}</p>
-		<p class="text-[0.9rem] text-(--text-dim) hidden max-[968px]:block">{t('landing.footnote_mobile')}</p>
-		<a href="/for-educators" class="hidden max-[968px]:inline-block max-[968px]:mt-3 text-[0.8rem] text-(--text-muted) no-underline transition-colors duration-150 hover:text-(--text)">
+		<p class="hero-footnote text-[0.9rem] text-[rgba(165,142,120,0.92)] max-[968px]:hidden">{t('landing.footnote')}</p>
+		<p class="hero-footnote-mobile text-[0.9rem] text-[rgba(165,142,120,0.92)] hidden max-[968px]:block">{t('landing.footnote_mobile')}</p>
+		<a href="/for-educators" class="hero-edu-link hidden max-[968px]:inline-block max-[968px]:mt-3 text-[0.8rem] text-(--text-muted) no-underline transition-colors duration-150 hover:text-(--text)">
 			{t('landing.cta_educators')} →
 		</a>
 	</div>
-
-	<!-- Piano Animation (Scroll-controlled) — decorative, hidden from AT -->
-	<div aria-hidden="true" class="piano-container absolute right-0 top-0 bottom-0 w-[60%] flex items-center justify-end pointer-events-none max-[968px]:hidden">
-		<video
-			bind:this={videoElement}
-			muted
-			playsinline
-			preload="auto"
-			class="w-full h-full object-contain object-right mix-blend-screen brightness-[1.1] contrast-[1.1]"
-			width="1920"
-			height="1080"
-		>
-			<source src="/videos/piano-rotation-4.webm" type="video/webm" />
-		</video>
-	</div>
-
-	<!-- Static image for mobile/touch (no video) — eager + high priority: LCP on mobile -->
-	<div class="piano-static hidden max-[968px]:block max-[968px]:absolute max-[968px]:inset-0 max-[968px]:pointer-events-none max-[968px]:z-0">
-		<picture>
-			<source
-				type="image/avif"
-				srcset="/bilder/piano-480.avif 480w, /bilder/piano-768.avif 768w"
-				sizes="100vw" />
-			<source
-				type="image/webp"
-				srcset="/bilder/piano-480.webp 480w, /bilder/piano-768.webp 768w, /bilder/piano.webp 1344w"
-				sizes="100vw" />
-			<img
-				src="/bilder/piano.webp"
-				alt="Jazz piano"
-				class="piano-static-img max-[968px]:w-full max-[968px]:h-full max-[968px]:object-cover max-[968px]:object-center max-[968px]:opacity-20 max-[968px]:brightness-[0.8] max-[968px]:contrast-[1.2]"
-				width="1344" height="768" loading="eager" fetchpriority="high" />
-		</picture>
 	</div>
 </section>
 
@@ -323,43 +376,210 @@
 </section>
 
 <style>
-	/* Gradient text classes used in @html hero title */
-	:global(.gradient-text) {
-		display: block;
-		background: linear-gradient(135deg, var(--primary) 0%, var(--accent-amber) 100%);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
+	.hero-stage {
+		--hero-safe: clamp(1.8rem, 4.2vw, 5.8rem);
+		background:
+			radial-gradient(circle at 50% 78%, rgba(232, 118, 59, 0.38) 0%, rgba(232, 118, 59, 0.1) 25%, transparent 58%),
+			radial-gradient(circle at 82% 14%, rgba(232, 118, 59, 0.22) 0%, transparent 40%),
+			linear-gradient(180deg, #070605 0%, #0a0908 36%, #0f0b08 72%, #080706 100%);
 	}
 
-	:global(.white-text) {
-		display: block;
-		color: var(--text);
+	.hero-content-frame {
+		width: 100%;
+		max-width: min(1720px, 100%);
+		margin: 0 auto;
+		padding-left: var(--hero-safe);
+		padding-right: var(--hero-safe);
 	}
 
-	/* Touch devices (iPad etc) above mobile breakpoint: use static image */
-	@media (hover: none) and (pointer: coarse) and (min-width: 969px) {
-		.piano-container {
+	.hero-media {
+		overflow: hidden;
+	}
+
+	.hero-media::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+		background: linear-gradient(
+			90deg,
+			rgba(6, 5, 4, 1) 0%,
+			rgba(6, 5, 4, 0.96) 18%,
+			rgba(6, 5, 4, 0.82) 34%,
+			rgba(6, 5, 4, 0.56) 48%,
+			rgba(6, 5, 4, 0.22) 62%,
+			transparent 72%
+		);
+	}
+
+	.hero-canvas {
+		display: block;
+		background: #060504;
+		filter: saturate(1.09) contrast(1.05) brightness(0.9);
+	}
+
+	.hero-copy-shell {
+		width: min(41rem, 48vw);
+		min-width: 31rem;
+		background: linear-gradient(145deg, rgba(8, 7, 6, 0.72) 0%, rgba(8, 7, 6, 0.38) 52%, rgba(8, 7, 6, 0.16) 100%);
+		border: 1px solid rgba(255, 186, 110, 0.2);
+		backdrop-filter: blur(9px);
+		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 222, 186, 0.12);
+	}
+
+	@media (max-width: 1280px) {
+		.hero-copy-shell {
+			width: min(36rem, 54vw);
+			min-width: 0;
+		}
+	}
+
+	.hero-glow {
+		background: radial-gradient(ellipse at center, rgba(232, 118, 59, 0.25) 0%, rgba(232, 118, 59, 0.12) 38%, transparent 70%);
+		filter: blur(20px);
+	}
+
+	.hero-watermark-mask {
+		background:
+			radial-gradient(ellipse at center, rgba(10, 8, 7, 0.98) 0%, rgba(10, 8, 7, 0.76) 44%, rgba(10, 8, 7, 0.18) 72%, transparent 100%),
+			radial-gradient(ellipse at center, rgba(232, 118, 59, 0.28) 0%, transparent 74%);
+		filter: blur(12px);
+	}
+
+	.hero-mist {
+		filter: blur(42px);
+		opacity: 0.5;
+		will-change: transform;
+		animation: hero-mist-drift 12s ease-in-out infinite;
+	}
+
+	.hero-mist-left {
+		background: radial-gradient(ellipse at center, rgba(255, 199, 146, 0.13) 0%, rgba(255, 146, 83, 0.09) 34%, transparent 70%);
+	}
+
+	.hero-mist-right {
+		background: radial-gradient(ellipse at center, rgba(255, 167, 98, 0.14) 0%, rgba(232, 118, 59, 0.08) 36%, transparent 72%);
+		animation-delay: -4s;
+	}
+
+	.hero-vignette {
+		background:
+			radial-gradient(circle at 50% 35%, transparent 0%, rgba(0, 0, 0, 0.3) 62%, rgba(0, 0, 0, 0.66) 100%),
+			linear-gradient(90deg, rgba(7, 5, 4, 0.8) 0%, transparent 18%, transparent 82%, rgba(7, 5, 4, 0.82) 100%);
+	}
+
+	.hero-title {
+		text-wrap: balance;
+	}
+
+	@keyframes hero-mist-drift {
+		0%,
+		100% {
+			transform: translate3d(0, 0, 0);
+		}
+		50% {
+			transform: translate3d(12px, -8px, 0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-mist {
+			animation: none;
+		}
+	}
+
+	@media (max-width: 968px) {
+		.hero-media,
+		.hero-glow,
+		.hero-mist,
+		.hero-watermark-mask {
 			display: none;
 		}
 
-		.piano-static {
-			position: absolute;
-			inset: 0;
-			display: block;
-			pointer-events: none;
-			z-index: 0;
-			overflow: hidden;
+		.hero-media::before {
+			display: none;
 		}
 
-		.piano-static-img {
+		.hero-canvas {
+			filter: saturate(1.03) contrast(1.02) brightness(0.8);
+		}
+
+		.hero-copy-shell {
+			height: auto;
+			max-width: none;
+			overflow: visible;
+			background: transparent;
+			border-color: transparent;
+			box-shadow: none;
+			backdrop-filter: none;
+			padding: 0;
+			margin-top: 0;
+		}
+
+		.hero-stage {
+			height: auto;
+			min-height: calc(100svh - 3.5rem);
+			padding-top: 4.5rem;
+			padding-bottom: 2rem;
+			background:
+				radial-gradient(75% 58% at 88% 12%, rgba(232, 118, 59, 0.22) 0%, transparent 72%),
+				linear-gradient(180deg, #080706 0%, #0b0806 38%, #0d0907 100%);
+		}
+
+		.hero-content-frame {
+			padding: 0 1.25rem;
+		}
+
+		.hero-badge,
+		.hero-support {
+			display: none;
+		}
+
+		.hero-vignette {
+			background: linear-gradient(180deg, rgba(8, 7, 6, 0.08) 0%, rgba(8, 7, 6, 0.42) 50%, rgba(8, 7, 6, 0.76) 100%);
+		}
+
+		.hero-title {
+			font-size: clamp(1.72rem, 10.2vw, 2.34rem);
+			line-height: 1.06;
+			max-width: 10.5ch;
+			margin-bottom: 0.9rem;
+		}
+
+		.hero-subtitle {
+			font-size: 1rem;
+			line-height: 1.56;
+			max-width: 36ch;
+			margin-bottom: 1.25rem;
+		}
+
+		.hero-cta-row {
+			gap: 0.65rem;
+			margin-bottom: 1.15rem;
+		}
+
+		.hero-cta-primary,
+		.hero-cta-secondary {
 			width: 100%;
-			height: 100%;
-			object-fit: cover;
-			object-position: center center;
-			opacity: 0.50;
-			filter: brightness(0.8) contrast(1.2) blur(1px);
-			transform: translateX(15%);
+			justify-content: center;
+			padding-top: 0.9rem;
+			padding-bottom: 0.9rem;
+			font-size: 1rem;
+		}
+
+		.hero-footnote-mobile {
+			display: block;
+			font-size: 0.82rem;
+			line-height: 1.45;
+			color: rgba(180, 159, 140, 0.9);
+		}
+
+		.hero-edu-link {
+			margin-top: 0.8rem;
+			font-size: 0.95rem;
+			font-weight: 500;
+			color: rgba(211, 192, 170, 0.95);
 		}
 	}
 

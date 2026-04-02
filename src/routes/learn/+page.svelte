@@ -80,7 +80,7 @@
 	{#if globalContinue}
 		<a
 			href="/learn/{globalContinue.course.id}/{globalContinue.lessonId}"
-			class="flex items-center gap-4 mb-8 p-4 sm:p-5 rounded-xl border border-[var(--primary)]/40 bg-[var(--primary-muted)] hover:bg-[var(--primary-muted)]/80 transition-colors"
+			class="surface-glass flex items-center gap-4 mb-8 p-4 sm:p-5 rounded-2xl border-[var(--primary)]/40 bg-[var(--primary-muted)]/60 hover:bg-[var(--primary-muted)]/80 transition-colors"
 		>
 			<span class="text-2xl">▶</span>
 			<div class="flex-1 min-w-0">
@@ -100,7 +100,7 @@
 			{@const percent = progress ? courseCompletionPercent(progress) : 0}
 			{@const next = progress ? getNextLesson(course, progress) : null}
 			
-			<div class="card p-5 sm:p-6">
+			<div class="card surface-glass p-5 sm:p-6">
 				<!-- Course header -->
 				<div class="flex items-start gap-4">
 					<span class="text-3xl" role="img" aria-label={t(course.titleKey)}>{course.icon}</span>
@@ -110,7 +110,7 @@
 						</h2>
 						<p class="text-sm text-[var(--text-muted)] mt-0.5">{t(course.subtitleKey)}</p>
 						<p class="text-xs text-[var(--text-dim)] mt-1">{t(course.descriptionKey)}</p>
-						<span class="inline-block mt-2 text-xs px-2 py-0.5 rounded-sm bg-[var(--bg-muted)] text-[var(--text-muted)]">
+						<span class="inline-block mt-2 text-xs px-2.5 py-0.5 rounded-full bg-[var(--bg-muted)] text-[var(--text-muted)]">
 							{levelLabel(course.level)}
 						</span>
 					</div>
@@ -172,7 +172,7 @@
 					{#if next}
 						<a
 							href="/learn/{course.id}/{next.lessonId}"
-							class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-medium text-sm hover:bg-[var(--primary-hover)] transition-colors"
+							class="pill-btn pill-btn-primary inline-flex items-center gap-2 px-4 py-2 text-[var(--primary-text)] font-medium text-sm transition-colors"
 						>
 							{percent > 0 ? t('learn.continue') : t('learn.start')}
 						</a>

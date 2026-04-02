@@ -84,7 +84,7 @@
 
 <main class="flex-1 flex items-center justify-center px-4 py-16">
 	<div class="w-full max-w-md">
-		<div class="card p-8 space-y-6">
+		<div class="card surface-glass p-8 space-y-6">
 			<!-- Header -->
 			<div class="text-center space-y-2">
 				<h1 class="text-2xl font-bold text-gradient">
@@ -97,7 +97,7 @@
 
 			<!-- Sync hint -->
 			{#if mode === 'signup' || mode === 'login'}
-				<div class="flex items-start gap-3 p-3 rounded-sm bg-[var(--primary-muted)]/20 border border-[var(--primary)]/20 text-sm">
+				<div class="status-glass flex items-start gap-3 text-sm">
 					<span class="text-[var(--primary)] text-lg mt-0.5">☁️</span>
 					<p class="text-[var(--text-muted)]">{t('auth.sync_hint')}</p>
 				</div>
@@ -113,7 +113,7 @@
 						required
 						autocomplete="email"
 						bind:value={email}
-						class="w-full px-3 py-2 rounded-sm bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] focus:border-[var(--primary)] focus:outline-none transition-colors"
+						class="pill-input"
 						placeholder="you@example.com"
 					/>
 				</div>
@@ -128,7 +128,7 @@
 							autocomplete={mode === 'signup' ? 'new-password' : 'current-password'}
 							bind:value={password}
 							minlength={8}
-							class="w-full px-3 py-2 rounded-sm bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] focus:border-[var(--primary)] focus:outline-none transition-colors"
+							class="pill-input"
 							placeholder="••••••••"
 						/>
 					</div>
@@ -144,7 +144,7 @@
 							autocomplete="new-password"
 							bind:value={confirmPassword}
 							minlength={8}
-							class="w-full px-3 py-2 rounded-sm bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] focus:border-[var(--primary)] focus:outline-none transition-colors"
+							class="pill-input"
 							placeholder="••••••••"
 						/>
 					</div>
@@ -164,7 +164,7 @@
 				{/if}
 
 				{#if errorMsg}
-					<div class="p-3 rounded-sm bg-red-500/10 border border-red-500/30 text-sm text-red-400">
+					<div class="status-danger text-sm">
 						{errorMsg}
 					</div>
 				{/if}
@@ -172,9 +172,9 @@
 				<button
 					type="submit"
 					disabled={loading}
-					class="w-full py-2.5 px-4 rounded-sm font-medium transition-all
-						{loading ? 'bg-[var(--primary)]/50 cursor-wait' : 'bg-[var(--primary)] hover:bg-[var(--primary-hover)] active:scale-[0.98]'}
-						text-white"
+					class="w-full pill-btn transition-all text-white {loading
+						? 'bg-[var(--primary)]/50 cursor-wait'
+						: 'pill-btn-primary active:scale-[0.98]'}"
 				>
 					{#if loading}
 						{t('auth.loading')}...

@@ -86,7 +86,7 @@
 	const activeGoals = $derived(profile.activeGoals.filter((g) => !g.completedAt));
 </script>
 
-<div class="habit-dashboard flex flex-col gap-3.5 max-sm:gap-3.25 p-[16px_18px_18px] max-sm:p-[14px_14px_16px] rounded-[10px] bg-[rgba(255,255,255,0.025)] border border-[rgba(255,255,255,0.07)] mb-5">
+<div class="habit-dashboard surface-glass flex flex-col gap-3.5 max-sm:gap-3.25 p-[16px_18px_18px] max-sm:p-[14px_14px_16px] rounded-[10px] mb-3 sm:mb-4">
 	<!-- Header row -->
 	<div class="flex items-start justify-between">
 		<div class="flex flex-col gap-1.25">

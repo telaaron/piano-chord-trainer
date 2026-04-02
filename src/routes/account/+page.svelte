@@ -107,15 +107,15 @@
 		<h1 class="text-3xl font-bold text-gradient">{t('account.heading')}</h1>
 
 		{#if !auth.user}
-			<div class="card p-8 text-center space-y-4">
+			<div class="card surface-glass p-8 text-center space-y-4">
 				<p class="text-[var(--text-muted)]">{t('account.not_logged_in')}</p>
-				<a href="/auth/login" class="inline-block px-6 py-2.5 rounded-sm bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-medium transition-colors">
+				<a href="/auth/login" class="inline-block px-6 py-2.5 pill-btn pill-btn-primary text-white font-medium transition-colors">
 					{t('auth.login_button')}
 				</a>
 			</div>
 		{:else}
 			<!-- Profile info -->
-			<div class="card p-6 space-y-4">
+			<div class="card surface-glass p-6 space-y-4">
 				<h2 class="text-lg font-semibold">{t('account.profile')}</h2>
 				<div class="grid grid-cols-2 gap-4 text-sm">
 					<div>
@@ -135,10 +135,10 @@
 							bind:value={displayName}
 							placeholder={t('account.display_name_placeholder')}
 							maxlength={50}
-							class="w-full px-3 py-2 rounded-sm bg-[var(--bg)] border border-[var(--border)] text-[var(--text)] text-sm"
+							class="pill-input text-sm"
 						/>
 					</div>
-					<button onclick={handleSaveDisplayName} disabled={savingName} class="px-3 py-2 rounded-sm bg-[var(--primary)] text-white text-sm disabled:opacity-50">
+					<button onclick={handleSaveDisplayName} disabled={savingName} class="px-3 py-2 pill-btn pill-btn-primary text-white text-sm disabled:opacity-50">
 						{savingName ? '…' : t('account.save')}
 					</button>
 				</div>
@@ -148,20 +148,20 @@
 				{#if showPasswordChange}
 					<form onsubmit={handlePasswordChange} class="space-y-3 max-w-sm">
 						<input type="password" bind:value={newPassword} minlength={8} placeholder={t('account.new_password')}
-							class="w-full px-3 py-2 rounded-sm bg-[var(--bg)] border border-[var(--border)] text-[var(--text)]" />
+							class="pill-input" />
 						<input type="password" bind:value={confirmNewPassword} minlength={8} placeholder={t('auth.confirm_password')}
-							class="w-full px-3 py-2 rounded-sm bg-[var(--bg)] border border-[var(--border)] text-[var(--text)]" />
+							class="pill-input" />
 						{#if passwordError}<p class="text-sm text-red-400">{passwordError}</p>{/if}
-						<button type="submit" class="px-4 py-2 rounded-sm bg-[var(--primary)] text-white text-sm">{t('account.save')}</button>
+						<button type="submit" class="px-4 py-2 pill-btn pill-btn-primary text-white text-sm">{t('account.save')}</button>
 					</form>
 				{/if}
 			</div>
 
 			<!-- Subscription -->
-			<div class="card p-6 space-y-4">
+			<div class="card surface-glass p-6 space-y-4">
 				<h2 class="text-lg font-semibold">{t('account.subscription')}</h2>
 				{#if isBeta()}
-					<div class="flex items-center gap-3 p-3 rounded-sm bg-[var(--gold)]/10 border border-[var(--gold)]/30">
+					<div class="status-glass flex items-center gap-3">
 						<span class="text-xl">🎉</span>
 						<div>
 							<p class="font-medium text-[var(--gold)]">{t('account.beta_active')}</p>
@@ -174,14 +174,14 @@
 						{#if sub.currentPeriodEnd}
 							<p class="text-[var(--text-dim)]">{t('account.renews')}: {new Date(sub.currentPeriodEnd).toLocaleDateString()}</p>
 						{/if}
-						<button onclick={handleManageSubscription} class="px-4 py-2 rounded-sm bg-[var(--card-bg)] border border-[var(--border)] text-sm hover:bg-[var(--bg)] transition-colors">
+						<button onclick={handleManageSubscription} class="px-4 py-2 pill-btn pill-btn-secondary text-sm transition-colors">
 							{t('account.manage_subscription')}
 						</button>
 					</div>
 				{:else}
 					<div class="text-sm space-y-2">
 						<p class="text-[var(--text-muted)]">{t('account.free_plan')}</p>
-						<a href="/pricing" class="inline-block px-4 py-2 rounded-sm bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary-hover)] transition-colors">
+						<a href="/pricing" class="inline-block px-4 py-2 pill-btn pill-btn-primary text-white text-sm transition-colors">
 							{t('account.upgrade')}
 						</a>
 					</div>
@@ -189,40 +189,40 @@
 			</div>
 
 			<!-- Cloud Sync -->
-			<div class="card p-6 space-y-4">
+			<div class="card surface-glass p-6 space-y-4">
 				<h2 class="text-lg font-semibold">{t('account.cloud_sync')}</h2>
 				<p class="text-sm text-[var(--text-muted)]">{t('account.cloud_sync_desc')}</p>
 				<div class="flex flex-wrap gap-3">
 					<button onclick={handleSyncToCloud} disabled={syncing}
-						class="px-4 py-2 rounded-sm bg-[var(--primary)] text-white text-sm hover:bg-[var(--primary-hover)] disabled:opacity-50 transition-colors">
+						class="px-4 py-2 pill-btn pill-btn-primary text-white text-sm disabled:opacity-50 transition-colors">
 						{syncing ? '...' : t('account.upload_to_cloud')}
 					</button>
 					<button onclick={handleSyncFromCloud} disabled={syncing}
-						class="px-4 py-2 rounded-sm bg-[var(--card-bg)] border border-[var(--border)] text-sm hover:bg-[var(--bg)] disabled:opacity-50 transition-colors">
+						class="px-4 py-2 pill-btn pill-btn-secondary text-sm disabled:opacity-50 transition-colors">
 						{syncing ? '...' : t('account.download_from_cloud')}
 					</button>
 				</div>
 			</div>
 
 			<!-- Danger Zone -->
-			<div class="card p-6 space-y-4 border-red-500/30">
+			<div class="card surface-glass p-6 space-y-4 border-red-500/30">
 				<h2 class="text-lg font-semibold text-red-400">{t('account.danger_zone')}</h2>
 				<div class="flex flex-wrap gap-3">
 					<button onclick={handleSignOut}
-						class="px-4 py-2 rounded-sm border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
+						class="px-4 py-2 pill-btn pill-btn-secondary text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
 						{t('account.sign_out')}
 					</button>
 					<button onclick={() => showDeleteConfirm = true}
-						class="px-4 py-2 rounded-sm border border-red-500/30 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+						class="px-4 py-2 pill-btn border border-red-500/30 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
 						{t('account.delete_account')}
 					</button>
 				</div>
 				{#if showDeleteConfirm}
-					<div class="p-4 rounded-sm bg-red-500/10 border border-red-500/30 space-y-3">
+					<div class="status-danger p-4 space-y-3">
 						<p class="text-sm text-red-400">{t('account.delete_confirm')}</p>
 						<div class="flex gap-3">
-							<button onclick={handleDeleteAccount} class="px-4 py-2 rounded-sm bg-red-600 text-white text-sm">{t('account.delete_yes')}</button>
-							<button onclick={() => showDeleteConfirm = false} class="px-4 py-2 rounded-sm border border-[var(--border)] text-sm">{t('account.delete_cancel')}</button>
+							<button onclick={handleDeleteAccount} class="px-4 py-2 pill-btn bg-red-600 text-white text-sm">{t('account.delete_yes')}</button>
+							<button onclick={() => showDeleteConfirm = false} class="px-4 py-2 pill-btn pill-btn-secondary text-sm">{t('account.delete_cancel')}</button>
 						</div>
 					</div>
 				{/if}

@@ -72,32 +72,32 @@
 		<h1 class="text-3xl font-bold text-gradient">{t('admin.heading')}</h1>
 
 		{#if loading}
-			<div class="card p-8 text-center text-[var(--text-muted)]">Loading...</div>
+			<div class="card surface-glass p-8 text-center text-[var(--text-muted)]">Loading...</div>
 		{:else if error}
-			<div class="card p-8 text-center text-red-400">{error}</div>
+			<div class="card surface-glass p-8 text-center text-red-400">{error}</div>
 		{:else if stats}
 			<!-- Overview cards -->
 			<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-				<div class="card p-5 text-center">
+				<div class="card surface-glass p-5 text-center">
 					<p class="text-3xl font-bold text-[var(--primary)]">{stats.totalUsers}</p>
 					<p class="text-sm text-[var(--text-muted)] mt-1">{t('admin.total_users')}</p>
 				</div>
-				<div class="card p-5 text-center">
+				<div class="card surface-glass p-5 text-center">
 					<p class="text-3xl font-bold text-[var(--gold)]">{stats.activeToday}</p>
 					<p class="text-sm text-[var(--text-muted)] mt-1">{t('admin.active_today')}</p>
 				</div>
-				<div class="card p-5 text-center">
+				<div class="card surface-glass p-5 text-center">
 					<p class="text-3xl font-bold text-[var(--accent)]">{stats.totalSessions}</p>
 					<p class="text-sm text-[var(--text-muted)] mt-1">{t('admin.total_sessions')}</p>
 				</div>
-				<div class="card p-5 text-center">
+				<div class="card surface-glass p-5 text-center">
 					<p class="text-3xl font-bold text-green-400">{stats.activeSubs}</p>
 					<p class="text-sm text-[var(--text-muted)] mt-1">{t('admin.active_subs')}</p>
 				</div>
 			</div>
 
 			<!-- Signup chart -->
-			<div class="card p-6 space-y-4">
+			<div class="card surface-glass p-6 space-y-4">
 				<h2 class="text-lg font-semibold">{t('admin.signups_chart')}</h2>
 				<div class="flex items-end gap-[2px] h-32">
 					{#each chartDays as day}
@@ -123,11 +123,11 @@
 			</div>
 
 			<!-- Tier distribution -->
-			<div class="card p-6 space-y-4">
+			<div class="card surface-glass p-6 space-y-4">
 				<h2 class="text-lg font-semibold">{t('admin.subscriptions')}</h2>
 				<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
 					{#each Object.entries(tierDistribution) as [tier, count]}
-						<div class="p-3 rounded-sm bg-[var(--bg)] border border-[var(--border)] text-center">
+						<div class="p-3 rounded-xl bg-[var(--bg)]/70 border border-[var(--border)] text-center backdrop-blur-sm">
 							<p class="text-xl font-bold">{count}</p>
 							<p class="text-xs text-[var(--text-muted)] capitalize">{tier}</p>
 						</div>
@@ -136,7 +136,7 @@
 			</div>
 
 			<!-- Recent users -->
-			<div class="card p-6 space-y-4">
+			<div class="card surface-glass p-6 space-y-4">
 				<h2 class="text-lg font-semibold">{t('admin.recent_users')}</h2>
 				{#if recentUsers.length === 0}
 					<p class="text-sm text-[var(--text-muted)]">{t('admin.no_data')}</p>
@@ -157,12 +157,12 @@
 									<tr class="border-b border-[var(--border)]/30 hover:bg-[var(--card-bg)] transition-colors">
 										<td class="py-2 px-3 font-mono text-xs">{user.email}</td>
 										<td class="py-2 px-3">
-											<span class="px-1.5 py-0.5 rounded text-xs {user.role === 'admin' ? 'bg-[var(--primary)]/20 text-[var(--primary)]' : 'bg-[var(--border)] text-[var(--text-dim)]'}">
+											<span class="px-2 py-0.5 rounded-full text-xs {user.role === 'admin' ? 'bg-[var(--primary)]/20 text-[var(--primary)]' : 'bg-[var(--border)] text-[var(--text-dim)]'}">
 												{user.role}
 											</span>
 										</td>
 										<td class="py-2 px-3">
-											<span class="px-1.5 py-0.5 rounded text-xs capitalize {user.tier === 'pro' ? 'bg-[var(--gold)]/20 text-[var(--gold)]' : 'bg-[var(--border)] text-[var(--text-dim)]'}">
+											<span class="px-2 py-0.5 rounded-full text-xs capitalize {user.tier === 'pro' ? 'bg-[var(--gold)]/20 text-[var(--gold)]' : 'bg-[var(--border)] text-[var(--text-dim)]'}">
 												{user.tier}
 											</span>
 										</td>

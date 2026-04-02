@@ -374,19 +374,25 @@
 	<!-- Harmony Games vs Chord Trainer -->
 	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-4xl mx-auto">
-			<div class="card p-8 sm:p-10">
+			<div class="card surface-glass p-8 sm:p-10">
 				<h2 class="text-xl font-bold mb-6">{@html t('open_studio.comparison_title')}</h2>
 
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-					<div>					<img src="/elements/open-studio/compare-ear.webp" alt="Harmony Games Unlimited" width="80" height="80" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />						<h3 class="font-semibold text-[var(--text-muted)] mb-3 uppercase tracking-wider text-xs">{t('open_studio.comparison_hg')}</h3>
+					<div class="rounded-xl border border-[var(--border)]/45 bg-[var(--bg)]/45 backdrop-blur-sm p-4 sm:p-5">
+						<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[0.65rem] font-semibold tracking-wider uppercase bg-[var(--bg-muted)] text-[var(--text-dim)] mb-3">
+							Ear Focus
+						</div>
+						<h3 class="font-semibold text-[var(--text-muted)] mb-3 uppercase tracking-wider text-xs">{t('open_studio.comparison_hg')}</h3>
 						<ul class="space-y-2 text-[var(--text-muted)]">
 							<li>{t('open_studio.comparison_hg_1')}</li>
 							<li>{t('open_studio.comparison_hg_2')}</li>
 							<li>{t('open_studio.comparison_hg_3')}</li>
 						</ul>
 					</div>
-					<div>
-						<div class="hands-icon-placeholder" style="height: 80px; margin: 0 auto 16px;"></div>
+					<div class="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary-muted)]/15 backdrop-blur-sm p-4 sm:p-5">
+						<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[0.65rem] font-semibold tracking-wider uppercase bg-[var(--primary-muted)] text-[var(--primary)] mb-3">
+							Hands Focus
+						</div>
 						<h3 class="font-semibold text-[var(--primary)] mb-3 uppercase tracking-wider text-xs">{t('open_studio.comparison_ct')}</h3>
 						<ul class="space-y-2 text-[var(--text)]">
 							<li>{t('open_studio.comparison_ct_1')}</li>

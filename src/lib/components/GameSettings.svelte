@@ -43,6 +43,8 @@
 		voiceLeadingEnabled: boolean;
 		/** Voice leading sub-mode */
 		vlMode: VoiceLeadingMode;
+		/** Compact mode for calmer dashboard-first layout */
+		compact?: boolean;
 		onstartplan: (plan: PracticePlan) => void;
 	}
 
@@ -64,6 +66,7 @@
 		adaptiveEnabled = $bindable(),
 		voiceLeadingEnabled = $bindable(),
 		vlMode = $bindable(),
+		compact = false,
 		onstartplan,
 	}: Props = $props();
 
@@ -74,11 +77,16 @@
 	};
 
 	let suggested: PracticePlan = $state(PRACTICE_PLANS[0]);
+	let showPlanLibrary = $state(true);
 
 	onMount(() => {
 		const recent = loadRecentPlanIds();
 		// We need totalSessions but don't have it as prop — use recent length as proxy
 		suggested = suggestPlan(recent, recent.length);
+	});
+
+	$effect(() => {
+		showPlanLibrary = !compact;
 	});
 
 	/** Helper: quick 2-col option grid item */
@@ -115,10 +123,11 @@
 <div class="space-y-6">
 	<!-- ── Empfohlen ── -->
 	<button
-		class="card w-full p-5 sm:p-6 text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors group relative"
+		class="card surface-glass w-full p-5 sm:p-6 text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors group relative overflow-hidden"
 		style="border-left: 3px solid {LEVEL_CONFIG[suggested.level].color}; box-shadow: {LEVEL_CONFIG[suggested.level].shadow};"
 		onclick={() => onstartplan(suggested)}
 	>
+		<div aria-hidden="true" class="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[rgba(251,146,60,0.14)] blur-2xl transition-opacity duration-300 group-hover:opacity-100 opacity-70"></div>
 		<!-- Difficulty badge -->
 		<div
 			class="absolute top-3 right-3 uppercase font-medium"
@@ -142,19 +151,50 @@
 				<div class="text-sm text-[var(--text-muted)] mt-1">{t(suggested.tagline)}</div>
 				<p class="text-xs text-[var(--text-dim)] mt-2 overflow-hidden transition-all duration-300 max-h-0 group-hover:max-h-24">{t(suggested.description)}</p>
 			</div>
-			<div class="text-[var(--primary)] text-2xl opacity-60 group-hover:opacity-100 transition-opacity self-center">▶</div>
+			<div class="flex flex-col items-end justify-center gap-2 self-center">
+				<span class="text-[var(--primary)] text-2xl opacity-60 group-hover:opacity-100 transition-opacity">▶</span>
+				<span class="pill-btn pill-btn-primary text-xs px-3 py-1.5">{t('settings.start_training')}</span>
+			</div>
 		</div>
 	</button>
 
-		<!-- ── Practice Plans Grid ── -->
+	<!-- ── Practice Plans Library ── -->
 	<div>
-		<h3 class="text-sm font-medium text-[var(--text-muted)] mb-3">{t('settings.all_plans')}</h3>
+		<div class="mb-3 flex items-center justify-between gap-3">
+			<h3 class="text-sm font-medium text-[var(--text-muted)]">{t('settings.all_plans')}</h3>
+			<button
+				class="pill-btn pill-btn-secondary text-xs px-3 py-1.5"
+				onclick={() => (showPlanLibrary = !showPlanLibrary)}
+			>
+				{showPlanLibrary ? 'Hide Plans' : 'Show Plans'}
+			</button>
+		</div>
+
+		{#if !showPlanLibrary}
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+				{#each PRACTICE_PLANS.filter((p) => p.id !== suggested.id).slice(0, 3) as quick}
+					<button
+						class="surface-glass p-3 rounded-xl text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors"
+						onclick={() => onstartplan(quick)}
+					>
+						<div class="flex items-center gap-2.5">
+							<img src="/elements/icons/{PLAN_ICON[quick.id]}.webp" alt="{t(quick.name)}" width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; flex-shrink:0;" />
+							<div class="min-w-0 flex-1">
+								<div class="text-sm font-semibold truncate">{t(quick.name)}</div>
+								<div class="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('settings.difficulty_' + quick.level)}</div>
+							</div>
+							<span class="text-[var(--primary)] text-sm font-semibold">Start</span>
+						</div>
+					</button>
+				{/each}
+			</div>
+		{:else}
 		<div class="plan-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
 			{#each PRACTICE_PLANS.filter((p) => p.id !== suggested.id) as plan}
 				{#if plan.id === 'voice-leading-flow'}
 					<!-- Voice Leading Flow: full-width card spanning all 3 columns with mode sub-cards -->
 					<div
-						class="vl-flow-card card text-left transition-all duration-200 relative"
+						class="vl-flow-card card surface-glass text-left transition-all duration-200 relative"
 						style="grid-column: 1 / -1; border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
 					>
 						<div class="absolute top-3 right-3 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
@@ -171,7 +211,7 @@
 							{#each (['guided', 'find-inversion', 'free'] as VoiceLeadingMode[]) as mode}
 								{@const cfg = VL_MODE_CONFIG[mode]}
 								<button
-									class="vl-mode-btn flex flex-col items-start p-3 rounded-[var(--radius)] border cursor-pointer transition-all text-left hover:scale-105 hover:z-10 {vlMode === mode ? 'border-[var(--primary)] bg-[var(--primary-muted)]' : 'border-[var(--border)] hover:border-[var(--border-hover)]'}"
+									class="vl-mode-btn flex flex-col items-start p-3 rounded-[var(--radius)] border cursor-pointer transition-all text-left hover:scale-105 hover:z-10 {vlMode === mode ? 'border-[var(--primary)] bg-[var(--primary-muted)]' : 'border-[var(--border)] bg-[var(--bg)]/60 hover:border-[var(--border-hover)]'}"
 									onclick={() => { vlMode = mode; onstartplan(plan); }}
 								>
 									<span class="vl-mode-icon text-2xl mb-2 leading-none">{cfg.icon}</span>
@@ -183,7 +223,7 @@
 					</div>
 				{:else}
 					<button
-					class="plan-card card p-4 text-left cursor-pointer transition-all duration-200 group relative hover:z-10 hover:scale-105 hover:border-[var(--border-hover)]"
+					class="plan-card card surface-glass p-4 text-left cursor-pointer transition-all duration-200 group relative hover:z-10 hover:scale-105 hover:border-[var(--border-hover)]"
 					style="border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
 					onclick={() => onstartplan(plan)}
 				>
@@ -204,6 +244,7 @@
 				{/if}
 			{/each}
 		</div>
+		{/if}
 	</div>
 
 </div>

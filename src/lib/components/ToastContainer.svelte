@@ -37,8 +37,8 @@
 			out:fade={{ duration: 200 }}
 			animate:flip={{ duration: 200 }}
 			class="w-full pointer-events-auto flex items-center gap-3
-			       bg-[var(--bg-card)] border border-[var(--border)]
-			       rounded-[var(--radius)] px-4 py-3 shadow-xl text-sm"
+			       bg-[var(--bg-card)]/84 border border-[var(--border)]
+			       rounded-[var(--radius)] px-4 py-3 shadow-xl text-sm backdrop-blur-xl"
 			style="border-color: color-mix(in srgb, {colors[t.type]} 35%, var(--border));"
 		>
 			<!-- Icon -->
@@ -52,9 +52,9 @@
 			<!-- Optional action -->
 			{#if t.action}
 				<button
-					class="shrink-0 text-xs px-2 py-1 rounded-[var(--radius-sm)]
-					       border border-[var(--border)] text-[var(--text-muted)]
-					       hover:border-[var(--border-hover)] hover:text-[var(--text)]
+					class="shrink-0 text-xs px-2.5 py-1 rounded-full
+					       border border-[var(--border)] text-[var(--text-muted)] bg-[var(--bg)]/50
+					       hover:border-[var(--border-hover)] hover:text-[var(--text)] hover:bg-[var(--bg)]/75
 					       transition-colors cursor-pointer whitespace-nowrap"
 					onclick={() => { t.action!.onClick(); dismissToast(t.id); }}
 				>{t.action.label}</button>
