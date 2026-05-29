@@ -25,13 +25,56 @@
 	--accent-amber: #ff8c42;
 	--accent-red: #8b1538;
 	--accent-green: #3fb573;
-	
+
+	/* Semantic status — single source of truth (was hard-coded #fb923c etc. in components) */
+	--success: #4ade80;
+	--success-muted: rgba(74, 222, 128, 0.15);
+	--warning: #f59e0b;
+	--warning-muted: rgba(245, 158, 11, 0.15);
+	--danger: #ef4444;
+	--danger-muted: rgba(239, 68, 68, 0.14);
+	--info: #38bdf8;
+	--info-muted: rgba(56, 189, 248, 0.15);
+
+	/* XP / gamification accent (was scattered #fb923c) */
+	--xp: #fb923c;
+	--xp-muted: rgba(251, 146, 60, 0.15);
+
 	--wood-dark: #3e2723;
 	--wood-light: #6d4c41;
 	--velvet-red: #8b1538;
-	
+
 	--glow-warm: rgba(255, 140, 66, 0.2);
 	--shadow-deep: rgba(0, 0, 0, 0.8);
+
+	/* ── Spacing scale (4px base) ─────────────────────────── */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.5rem;
+	--space-6: 2rem;
+	--space-8: 3rem;
+
+	/* ── Type scale ───────────────────────────────────────── */
+	--text-xs: 0.75rem;
+	--text-sm: 0.875rem;
+	--text-base: 1rem;
+	--text-lg: 1.125rem;
+	--text-xl: 1.375rem;
+	--text-2xl: 1.75rem;
+	--text-3xl: 2.25rem;
+	--leading-tight: 1.15;
+	--leading-normal: 1.5;
+	--leading-relaxed: 1.7;
+
+	/* ── Elevation ────────────────────────────────────────── */
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+	--shadow-md: 0 6px 18px rgba(0, 0, 0, 0.35);
+	--shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.45);
+
+	/* ── Touch targets (WCAG 2.2 — min 44px) ──────────────── */
+	--tap-min: 2.75rem;
 	
 	/* Piano colors */
 	--key-white: #f8f8f8;

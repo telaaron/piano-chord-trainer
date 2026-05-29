@@ -3,7 +3,7 @@
 	import { t } from '$lib/i18n';
 	import {
 		Piano,
-		Volume2,
+		Music,
 		BarChart3,
 		BookOpen,
 		ArrowRight,
@@ -12,7 +12,7 @@
 	} from 'lucide-svelte';
 
 	const HERO_FRAME_COUNT = 73;
-	const HERO_FRAME_BASES = ['/videos/frames', '/video/frames'];
+	const HERO_FRAME_BASES = ['/video/frames', '/videos/frames'];
 
 	let heroSection: HTMLElement | undefined;
 	let heroCanvas: HTMLCanvasElement | undefined;
@@ -300,12 +300,21 @@
 
 	<!-- Step 1: Plug In -->
 	<div class="grid grid-cols-2 items-center min-h-[55vh] border-b border-[rgba(255,255,255,0.04)] max-w-400 mx-auto w-full max-[968px]:grid-cols-1 max-[968px]:min-h-auto">
-		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[72vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
+		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[78vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
 			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(232, 118, 59, 0.12) 0%, transparent 65%)"></div>
-			<img src="/bilder/pluged-in-piano.webp" alt="Connect MIDI keyboard via USB"
+			<!-- Piano image (cord curls behind via z-index) -->
+			<img src="/bilder/pluged-in-piano.webp" alt="A jazz chord voicing on screen, ready to play"
 				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-800/600 group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
 				width="800" height="600" loading="lazy"
 				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
+			<!-- Floating chord label — layered over the piano for depth -->
+			<div class="step1-chord pointer-events-none absolute z-2 left-1/2 top-[14%] text-center select-none">
+				<div class="text-gradient text-[clamp(2.4rem,5.2vw,4rem)] font-black leading-none tracking-[-0.02em] [filter:drop-shadow(0_10px_28px_rgba(0,0,0,0.55))]">CMaj7</div>
+				<div class="mt-1.5 text-[0.72rem] uppercase tracking-[0.16em] text-[rgba(244,228,210,0.72)] font-medium [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">Shell Voicing</div>
+				<div class="mt-1 flex items-center justify-center gap-2 font-mono text-[1.05rem] font-bold text-(--text) [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
+					<span>C</span><span class="text-(--primary)">–</span><span>E</span><span class="text-(--primary)">–</span><span>B</span>
+				</div>
+			</div>
 		</div>
 		<div class="p-[3rem_5%_3rem_6%] max-[968px]:p-[1.5rem_1.5rem_3rem]">
 			<span class="block text-[5rem] font-black leading-none mb-2 opacity-35 tabular-nums bg-linear-to-br from-(--primary) to-(--accent-amber) bg-clip-text text-transparent max-[968px]:text-[3.5rem]" style="-webkit-text-fill-color: transparent">01</span>
@@ -313,7 +322,7 @@
 			<p class="text-[1.15rem] leading-[1.7] text-(--text-muted) mb-8 max-w-105 max-[968px]:text-base">{t('landing.step1_desc')}</p>
 			<div class="flex flex-wrap gap-[0.6rem]">
 				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(232,118,59,0.3)] bg-[rgba(232,118,59,0.06)] text-[0.85rem] text-(--text-muted)"><Piano size={14} />{t('landing.step1_chip1')}</span>
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(232,118,59,0.3)] bg-[rgba(232,118,59,0.06)] text-[0.85rem] text-(--text-muted)"><Volume2 size={14} />{t('landing.step1_chip2')}</span>
+				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(232,118,59,0.3)] bg-[rgba(232,118,59,0.06)] text-[0.85rem] text-(--text-muted)"><Music size={14} />{t('landing.step1_chip2')}</span>
 			</div>
 		</div>
 	</div>
@@ -322,7 +331,7 @@
 	<div class="grid grid-cols-2 items-center min-h-[55vh] border-b border-[rgba(255,255,255,0.04)] max-w-400 mx-auto w-full [direction:rtl] *:[direction:ltr] max-[968px]:grid-cols-1 max-[968px]:min-h-auto max-[968px]:[direction:ltr]">
 		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[72vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
 			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(232, 118, 59, 0.1) 0%, transparent 65%)"></div>
-			<img src="/bilder/hands-on-piano.webp" alt="Play chords on the keyboard"
+			<img src="/bilder/hands-on-piano.webp" alt="Play the voicing and get instant feedback"
 				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-800/600 group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
 				width="800" height="600" loading="lazy"
 				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
@@ -586,5 +595,25 @@
 	:global(.story-chip svg) {
 		color: var(--primary);
 		flex-shrink: 0;
+	}
+
+	.step1-chord {
+		animation: step1-chord-float 5.5s ease-in-out infinite;
+		will-change: transform;
+	}
+
+	@keyframes step1-chord-float {
+		0%, 100% {
+			transform: translate(-50%, 0);
+		}
+		50% {
+			transform: translate(-50%, -7px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.step1-chord {
+			animation: none;
+		}
 	}
 </style>

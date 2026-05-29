@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fly, fade, scale } from 'svelte/transition';
+	import { fly, fade, scale, slide } from 'svelte/transition';
 	import { t } from '$lib/i18n';
 	import GameSettings from '$lib/components/GameSettings.svelte';
+	import QuickStart from '$lib/components/QuickStart.svelte';
 	import ChordCard from '$lib/components/ChordCard.svelte';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import Results from '$lib/components/Results.svelte';
@@ -25,7 +26,7 @@
 	import { MidiSoundEngine } from '$lib/services/midi-sound';
 	import { AudioInputService } from '$lib/services/audio-input';
 	import type { AudioInputState } from '$lib/services/audio-input';
-	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadHistory, computeStats, type ProgressStats, type StreakData, type ChordTiming } from '$lib/services/progress';
+	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadRecentPlanIds, loadHistory, computeStats, type ProgressStats, type StreakData, type ChordTiming } from '$lib/services/progress';
 	import { playChord, playChordAtTime, playNote, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll, setSoundPreset, getSoundPreset, SOUND_PRESETS, type SoundPreset } from '$lib/services/audio';
 	import {
 		CHORDS_BY_DIFFICULTY,
@@ -134,6 +135,7 @@
 	// ─── Habit Engine state ─────────────────────────────────────
 	let habitProfile: HabitProfile = $state(null as unknown as HabitProfile);
 	let showOnboarding = $state(false);
+	let pendingHabitOffer = $state(false);
 	let pendingCelebrations: CelebrationEvent[] = $state([]);
 	let notificationCleanup: (() => void) | null = $state(null);
 	let streakSaverCleanup: (() => void) | null = $state(null);
@@ -210,6 +212,7 @@
 	let pauseStart = $state(0);
 	let showExerciseInfo = $state(false);
 	let showInsights = $state(false);
+	let advancedOpen = $state(false);
 	let currentIdx = $state(0);
 	let chords: string[] = $state([]);
 	let chordsWithNotes: ChordWithNotes[] = $state([]);
@@ -1500,182 +1503,127 @@
 ), linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #12100c 70%, var(--bg) 100%);">
 	<div class="w-full max-w-345 mx-auto">
 		<!-- ─────── Setup Screen ─────── -->
-		{#if screen === 'setup'}
-			<div in:fade={{ duration: 200, delay: 100 }}>
-				<div class="surface-glass relative overflow-hidden rounded-2xl p-4 sm:p-5 mb-4 sm:mb-5 border-[rgba(251,146,60,0.2)]">
-					<div aria-hidden="true" class="pointer-events-none absolute -top-12 right-0 h-28 w-44 rounded-full bg-[rgba(251,146,60,0.15)] blur-3xl"></div>
-					<div class="relative flex flex-col gap-3.5">
-						<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-							<div>
-								<div class="text-[11px] uppercase tracking-[0.12em] font-semibold text-(--text-dim)">{t('settings.trainer_hub_label')}</div>
-								<h1 class="mt-1 text-[1.05rem] sm:text-[1.15rem] leading-tight font-semibold text-(--text)">{t('settings.trainer_hub_title')}</h1>
+			{#if screen === 'setup'}
+				<div in:fade={{ duration: 200, delay: 80 }} class="mx-auto flex max-w-[1080px] flex-col gap-6 sm:gap-7">
+					<!-- ① Progress hero — single source for greeting / streak / level / MIDI -->
+					{#if habitProfile}
+						<HabitDashboard
+							profile={habitProfile}
+							{streak}
+							weekDots={sbWeekDots}
+							midiConnected={midiState === 'connected' && midiDevices.length > 0}
+							onquickstart={(suggestion) => {
+								focusRoots = suggestion.focusRoots ?? [];
+								focusVoicing = suggestion.focusVoicing ?? null;
+								const plan = PRACTICE_PLANS.find(p => p.id === suggestion.planId);
+								if (plan) startPlan(plan); else startGame();
+							}}
+						/>
+					{:else}
+						<div class="surface-glass flex items-center justify-between gap-4 rounded-2xl px-4 py-3.5 sm:px-5">
+							<div class="flex items-center gap-4 min-w-0">
+								<span class="text-lg font-bold text-(--text) truncate">{greeting}!</span>
+								<div class="flex items-center gap-1.5 text-sm font-semibold text-(--xp)">
+									<img src="/elements/images/streak-flame.webp" width="18" height="18" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
+									<span>{streak.current}</span>
+									<span class="text-(--text-dim) font-normal">{streak.current === 1 ? t('habit.day') : t('habit.days')}</span>
+								</div>
 							</div>
-							<div class="self-start rounded-full border border-[rgba(255,255,255,0.14)] bg-black/25 px-3 py-1.5 text-xs text-(--text-muted)">
-								{#if authState.loading}
-									{t('ui.loading')}...
-								{:else if authState.user}
-									{t('settings.trainer_hub_member')}
-								{:else}
-									{t('settings.trainer_hub_guest')}
-								{/if}
-							</div>
+							<a href="/midi-test?tab=midi" class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs no-underline transition-opacity hover:opacity-80 {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[var(--success-muted)] text-(--success)' : 'bg-white/5 text-(--text-dim)'}">
+								<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
+								<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : t('settings.no_midi')}</span>
+								<span class="opacity-50">⚙</span>
+							</a>
 						</div>
+					{/if}
 
-						<div class="flex flex-wrap items-center gap-2.5">
-							<a href="/" class="pill-btn pill-btn-secondary text-sm px-3 py-1.5 no-underline">{t('nav.home')}</a>
-							<a href="/learn" class="pill-btn pill-btn-secondary text-sm px-3 py-1.5 no-underline">{t('nav.learn')}</a>
-							{#if authState.loading}
-								<span class="pill-btn pill-btn-secondary text-sm px-3 py-1.5 opacity-60">{t('ui.loading')}...</span>
-							{:else if authState.user}
-								<a href="/account" class="pill-btn pill-btn-secondary text-sm px-3 py-1.5 no-underline">{t('nav_auth.account')}</a>
-							{:else}
-								<a href="/auth/login" class="pill-btn pill-btn-secondary text-sm px-3 py-1.5 no-underline">{t('nav_auth.login')}</a>
-							{/if}
+					<!-- ② Start practicing — the single primary action zone -->
+					<section aria-labelledby="start-heading" class="flex flex-col gap-3.5">
+						<div class="flex items-end justify-between gap-3">
+							<div>
+								<h1 id="start-heading" class="text-xl sm:text-2xl font-bold text-(--text)">{t('settings.start_practicing')}</h1>
+								<p class="mt-1 text-sm text-(--text-dim)">{t('settings.start_practicing_sub')}</p>
+							</div>
 							<button
-								class="pill-btn pill-btn-secondary text-sm px-3 py-1.5"
+								class="hidden shrink-0 rounded-full border border-[var(--border)] px-3.5 py-1.5 text-sm font-medium text-(--text-muted) transition-colors hover:border-(--primary) hover:text-(--text) sm:inline-flex"
 								onclick={() => (showInsights = !showInsights)}
 							>
 								{showInsights ? t('settings.hide_insights') : t('settings.show_insights')}
 							</button>
 						</div>
 
-						<div class="flex flex-wrap items-center gap-2 text-xs text-(--text-dim)">
-							<span>{t('settings.trainer_hub_next')}</span>
-							<button class="rounded-full border border-[rgba(74,222,128,0.3)] bg-[rgba(74,222,128,0.12)] px-2.5 py-1 text-[#86efac]" onclick={startGame}>{t('settings.start_training')}</button>
-							<button class="rounded-full border border-[rgba(251,191,36,0.35)] bg-[rgba(251,191,36,0.1)] px-2.5 py-1 text-[#fcd34d]" onclick={openCustomEditor}>{t('settings.custom_progression')}</button>
-							<a href="/learn" class="rounded-full border border-[rgba(148,163,184,0.34)] bg-[rgba(148,163,184,0.1)] px-2.5 py-1 text-[#cbd5e1] no-underline">{t('settings.trainer_hub_next_learn')}</a>
-						</div>
-					</div>
-				</div>
+						<QuickStart
+							resumePlanId={loadRecentPlanIds()[0] ?? null}
+							hasHistory={loadHistory().length > 0}
+							onstart={startPlan}
+							onstartdefault={startGame}
+							oncustomize={() => (settingsOpen = true)}
+						/>
+					</section>
 
-				<!-- Dashboard header (full width) -->
-				{#if habitProfile}
-					<HabitDashboard
-						profile={habitProfile}
-						{streak}
-						weekDots={sbWeekDots}
-						midiConnected={midiState === 'connected' && midiDevices.length > 0}
-						onquickstart={(suggestion) => {
-							// Set focus for adaptive drill targeting
-							focusRoots = suggestion.focusRoots ?? [];
-							focusVoicing = suggestion.focusVoicing ?? null;
-							const plan = PRACTICE_PLANS.find(p => p.id === suggestion.planId);
-							if (plan) {
-								startPlan(plan);
-							} else {
-								startGame();
-							}
-						}}
-					/>
-				{:else}
-					<div class="flex flex-col gap-2.5 px-4 py-3.5 bg-white/[0.03] border border-white/[0.07] rounded-[14px] mb-5">
-						<div class="flex justify-between items-center">
-							<div class="flex items-center gap-4">
-								<span class="text-[1.05rem] font-bold text-white">{greeting}!</span>
-								<div class="flex items-center gap-[5px] text-[0.85rem] text-[#fb923c] font-semibold">
-									<img src="/elements/images/streak-flame.webp" width="18" height="18" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
-									<span>{streak.current}</span>
-									<span class="text-[#666] font-normal">day streak</span>
-								</div>
-							</div>
-							<a href="/midi-test?tab=midi" class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.72rem] no-underline hover:opacity-80 transition-opacity {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[rgba(74,222,128,0.1)] text-[#4ade80]' : 'bg-white/5 text-[#555]'}">
-								<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
-								<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : 'No MIDI'}</span>
-								<span class="opacity-50">⚙</span>
-							</a>
-						</div>
-					</div>
-				{/if}
-
-				<div class="train-layout relative isolate flex flex-col gap-4 sm:gap-5 max-w-[1260px] mx-auto">
-					<div aria-hidden="true" class="pointer-events-none absolute -top-10 left-4 h-32 w-44 rounded-full bg-[rgba(251,146,60,0.14)] blur-3xl"></div>
-					<div aria-hidden="true" class="pointer-events-none absolute -top-12 right-8 h-36 w-52 rounded-full bg-[rgba(251,191,36,0.09)] blur-3xl"></div>
-
-					<div class="surface-glass relative rounded-2xl p-4 sm:p-5 border-[rgba(251,146,60,0.24)]">
-						<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-							{#if !habitProfile}
-								<div>
-									<div class="text-[11px] uppercase tracking-[0.11em] text-[var(--text-dim)] font-semibold">{t('settings.quick_controls_label')}</div>
-									<div class="text-base sm:text-lg font-semibold text-[var(--text)] mt-1">{t('settings.quick_controls_title')}</div>
-									<div class="text-sm text-[var(--text-dim)] mt-1.5">{t('settings.quick_controls_desc')}</div>
-								</div>
-							{/if}
-							<div class="flex flex-wrap items-center gap-2">
-								<button
-									class="pill-btn pill-btn-primary text-sm px-4 py-2"
-									onclick={startGame}
-								>
-									{t('settings.start_training')}
-								</button>
-								<button
-									class="pill-btn pill-btn-secondary text-sm px-3 py-2"
-									onclick={() => (showInsights = !showInsights)}
-								>
-									{showInsights ? t('settings.hide_insights') : t('settings.show_insights')}
-								</button>
-								<button
-									class="pill-btn pill-btn-secondary text-sm px-3 py-2"
-									onclick={() => (settingsOpen = true)}
-								>
-									{t('settings.custom_settings')}
-								</button>
-							</div>
-						</div>
-
-						<div class="mt-3.5 flex flex-wrap items-center gap-2.5">
-							<span class="rounded-full border border-[rgba(255,255,255,0.12)] bg-black/25 px-3 py-1 text-[11px] font-medium text-[var(--text-muted)]">
-								{t('settings.difficulty_' + difficulty)}
-							</span>
-							<span class="rounded-full border border-[rgba(255,255,255,0.12)] bg-black/25 px-3 py-1 text-[11px] font-medium text-[var(--text-muted)]">
-								{t(VOICING_KEYS[voicing])}
-							</span>
-							<span class="rounded-full border border-[rgba(255,255,255,0.12)] bg-black/25 px-3 py-1 text-[11px] font-medium text-[var(--text-muted)]">
-								{t(PROGRESSION_KEYS[progressionMode])}
-							</span>
-							{#if inTimeMode}
-								<span class="rounded-full border border-[rgba(74,222,128,0.26)] bg-[rgba(74,222,128,0.1)] px-3 py-1 text-[11px] font-medium text-[#86efac]">
-									{t('settings.in_time_mode')}
-								</span>
-							{/if}
-							<button
-								class="ml-auto text-xs text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
-								onclick={openCustomEditor}
-							>
-								{t('settings.custom_progression')} ->
-							</button>
-						</div>
-					</div>
-
-					<GameSettings
-						compact={true}
-						bind:difficulty
-						bind:notation
-						bind:voicing={voicing}
-						bind:displayMode
-						bind:accidentals
-						bind:notationSystem
-						bind:totalChords
-						bind:progressionMode
-						midiEnabled={inputMode === 'midi'}
-						bind:inTimeMode
-						bind:inTimeBars
-						bind:adaptiveEnabled
-						bind:voiceLeadingEnabled
-						bind:vlMode
-						{streak}
-						{midiState}
-						{midiDevices}
-						onstartplan={startPlan}
-					/>
-
+					<!-- ③ Insights (toggle) -->
 					{#if showInsights}
-						<div class="surface-glass rounded-2xl p-4 sm:p-5" in:fade={{ duration: 180 }}>
+						<section class="surface-glass rounded-2xl p-4 sm:p-5" in:fade={{ duration: 180 }}>
+							<h2 class="mb-3 text-sm font-semibold uppercase tracking-[0.06em] text-(--text-muted)">{t('settings.your_progress')}</h2>
 							<ProgressDashboard />
-						</div>
+						</section>
 					{/if}
+
+					<!-- ④ Advanced setup — full plan library + custom settings, opt-in -->
+					<section class="surface-glass overflow-hidden rounded-2xl">
+						<button
+							class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.02] sm:px-5"
+							onclick={() => (advancedOpen = !advancedOpen)}
+							aria-expanded={advancedOpen}
+						>
+							<div class="flex items-center gap-3 min-w-0">
+								<span class="text-sm font-semibold text-(--text)">{t('settings.advanced_setup')}</span>
+								<div class="hidden items-center gap-1.5 sm:flex">
+									<span class="rounded-full border border-[var(--border)]/60 bg-black/20 px-2.5 py-0.5 text-[11px] text-(--text-muted)">{t('settings.difficulty_' + difficulty)}</span>
+									<span class="rounded-full border border-[var(--border)]/60 bg-black/20 px-2.5 py-0.5 text-[11px] text-(--text-muted)">{t(VOICING_KEYS[voicing])}</span>
+									<span class="rounded-full border border-[var(--border)]/60 bg-black/20 px-2.5 py-0.5 text-[11px] text-(--text-muted)">{t(PROGRESSION_KEYS[progressionMode])}</span>
+									{#if inTimeMode}
+										<span class="rounded-full border border-[var(--success)]/30 bg-[var(--success-muted)] px-2.5 py-0.5 text-[11px] text-(--success)">{t('settings.in_time_mode')}</span>
+									{/if}
+								</div>
+							</div>
+							<span class="shrink-0 text-(--text-dim) transition-transform duration-200 {advancedOpen ? 'rotate-180' : ''}">▾</span>
+						</button>
+
+						{#if advancedOpen}
+							<div class="border-t border-[var(--border)]/30 px-4 py-4 sm:px-5 sm:py-5 space-y-5" transition:slide={{ duration: 220 }}>
+								<div class="flex flex-wrap items-center gap-2">
+									<button class="pill-btn pill-btn-primary text-sm px-4 py-2" onclick={startGame}>{t('settings.start_training')}</button>
+									<button class="pill-btn pill-btn-secondary text-sm px-3 py-2" onclick={() => (settingsOpen = true)}>{t('settings.custom_settings')}</button>
+									<button class="pill-btn pill-btn-secondary text-sm px-3 py-2" onclick={openCustomEditor}>{t('settings.custom_progression')}</button>
+								</div>
+
+								<GameSettings
+									compact={true}
+									bind:difficulty
+									bind:notation
+									bind:voicing={voicing}
+									bind:displayMode
+									bind:accidentals
+									bind:notationSystem
+									bind:totalChords
+									bind:progressionMode
+									midiEnabled={inputMode === 'midi'}
+									bind:inTimeMode
+									bind:inTimeBars
+									bind:adaptiveEnabled
+									bind:voiceLeadingEnabled
+									bind:vlMode
+									{streak}
+									{midiState}
+									{midiDevices}
+									onstartplan={startPlan}
+								/>
+							</div>
+						{/if}
+					</section>
 				</div>
-			</div>
-		{/if}
+			{/if}
 
 		<!-- ─── Training einrichten Modal ─── -->
 		{#if settingsOpen}
@@ -2051,34 +1999,39 @@
 		{#if screen === 'playing'}
 			<div in:fly={{ y: 20, duration: 300, delay: 50 }}>
 			<!-- Page-level top bar -->
-			<div class="flex items-center justify-between mb-6">
-				<button
-					class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
-					onclick={resetToSetup}
-					title={t('ui.back_setup')}
-				>
-					← {t('ui.back')}
-				</button>
-				<div class="flex items-center gap-3">
-					<div class="text-sm text-[var(--text-muted)] text-right">
-						<span class="font-semibold text-[var(--text)]">{t(VOICING_KEYS[voicing])}</span>
-						<span class="mx-1">·</span>
-						<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
-						<span class="mx-1">·</span>
-						<span>{t(PROGRESSION_KEYS[progressionMode])}</span>
+				<div class="flex items-center justify-between gap-3 mb-6">
+					<button
+						class="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] px-3.5 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--text)] hover:text-[var(--text)]"
+						onclick={resetToSetup}
+						title={t('ui.back_setup')}
+					>
+						← {t('ui.back')}
+					</button>
+					<div class="flex items-center gap-2 sm:gap-3 min-w-0">
+						<div class="hidden sm:flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
+							<span class="font-semibold text-[var(--text)]">{t(VOICING_KEYS[voicing])}</span>
+							<span class="text-[var(--text-dim)]">·</span>
+							<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
+							<span class="text-[var(--text-dim)]">·</span>
+							<span>{t(PROGRESSION_KEYS[progressionMode])}</span>
+						</div>
+						<button
+							class="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+							onclick={openSettingsFromGame}
+							title="{t('settings.custom_settings')} (S)"
+							aria-label="{t('settings.custom_settings')}"
+						>
+							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+						</button>
+						<button
+							class="grid h-9 w-9 place-items-center rounded-full border text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] {showExerciseInfo ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)]'}"
+							onclick={() => (showExerciseInfo = !showExerciseInfo)}
+							title={t('explain.title')}
+							aria-label={t('explain.title')}
+							aria-pressed={showExerciseInfo}
+						>?</button>
 					</div>
-					<button
-						class="w-7 h-7 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer flex items-center justify-center text-sm"
-						onclick={openSettingsFromGame}
-						title="Settings (S)"
-					>⚙</button>
-					<button
-						class="w-7 h-7 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer flex items-center justify-center text-sm"
-						onclick={() => (showExerciseInfo = !showExerciseInfo)}
-						title="Exercise info"
-					>?</button>
 				</div>
-			</div>
 
 			<!-- Exercise info panel -->
 			{#if showExerciseInfo}
@@ -2125,59 +2078,68 @@
 					</div>
 				{/if}
 
-				<!-- Audio / Metronome / Sound controls -->
-				<div class="flex items-center gap-3 text-sm flex-wrap">
+				<!-- Transport — audio, sound, metronome in one coherent bar -->
+				<div class="flex flex-wrap items-center gap-2 rounded-full border border-[var(--border)]/50 bg-[var(--bg-card)]/40 px-2 py-1.5 text-sm backdrop-blur-sm">
 					<button
-						class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {audioEnabled ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
+						class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors {audioEnabled ? 'bg-[var(--primary-muted)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text)]'}"
 						onclick={() => (audioEnabled = !audioEnabled)}
-						title={audioEnabled ? 'Mute audio' : 'Enable audio'}
+						aria-pressed={audioEnabled}
+						title={audioEnabled ? t('ui.audio') : t('ui.audio')}
 					>
 						{audioEnabled ? '🔊' : '🔇'} {t('ui.audio')}
 					</button>
-					{#if inputMode === 'midi'}
-						<button
-							class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {midiSoundEnabled ? 'border-[var(--accent-green)] bg-[var(--accent-green)]/10 text-[var(--accent-green)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
-							onclick={toggleMidiSound}
-							title={midiSoundEnabled ? t('settings.midi_sound_on') : t('settings.midi_sound_off')}
-						>
-							🎹 {t('settings.midi_sound')}
-						</button>
-					{/if}
 					{#if audioEnabled}
 						<select
-							class="px-2 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text-muted)] text-xs cursor-pointer"
+							class="rounded-full border border-[var(--border)]/60 bg-[var(--bg)]/70 px-2.5 py-1.5 text-xs text-[var(--text-muted)] transition-colors hover:border-[var(--border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] cursor-pointer"
 							value={soundPreset}
 							onchange={(e) => changeSoundPreset((e.target as HTMLSelectElement).value as SoundPreset)}
+							aria-label={t('ui.audio')}
 						>
 							{#each Object.entries(SOUND_PRESETS) as [key, preset]}
 								<option value={key}>{preset.label}</option>
 							{/each}
 						</select>
 					{/if}
+					{#if inputMode === 'midi'}
+						<button
+							class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors {midiSoundEnabled ? 'bg-[var(--primary-muted)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text)]'}"
+							onclick={toggleMidiSound}
+							aria-pressed={midiSoundEnabled}
+							title={midiSoundEnabled ? t('settings.midi_sound_on') : t('settings.midi_sound_off')}
+						>
+							🎹 {t('settings.midi_sound')}
+						</button>
+					{/if}
+
+					<span class="mx-0.5 hidden h-5 w-px bg-[var(--border)]/50 sm:block"></span>
+
 					<button
-						class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border transition-colors cursor-pointer {metronomeEnabled ? 'border-[var(--accent-green)] bg-[var(--accent-green)]/10 text-[var(--accent-green)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)]'}"
+						class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors {metronomeEnabled ? 'bg-[var(--primary-muted)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text)]'}"
 						onclick={toggleMetronome}
+						aria-pressed={metronomeEnabled}
 					>
 						{metronomeEnabled ? '⏸' : '▶'} {t('ui.metronome')}
 					</button>
 					{#if metronomeEnabled}
-						<div class="flex items-center gap-2">
+						<div class="flex items-center gap-1.5">
 							<button
-								class="w-7 h-7 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] cursor-pointer flex items-center justify-center"
+								class="grid h-7 w-7 place-items-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
 								onclick={() => updateBpm(metronomeBpm - 5)}
+								aria-label="−5 BPM"
 							>−</button>
-							<span class="font-mono text-xs w-12 text-center">{metronomeBpm} {t('ui.bpm')}</span>
+							<span class="w-14 text-center font-mono text-xs tabular-nums">{metronomeBpm} {t('ui.bpm')}</span>
 							<button
-								class="w-7 h-7 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] cursor-pointer flex items-center justify-center"
+								class="grid h-7 w-7 place-items-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
 								onclick={() => updateBpm(metronomeBpm + 5)}
+								aria-label="+5 BPM"
 							>+</button>
 						</div>
-						<div class="flex items-center gap-1">
+						<div class="flex items-center gap-1 pl-0.5">
 							{#each [1, 2, 3, 4] as beat}
 								<div
-									class="w-2.5 h-2.5 rounded-full transition-all duration-100 {currentBeat === beat
+									class="h-2.5 w-2.5 rounded-full transition-all duration-100 {currentBeat === beat
 										? beat === 1
-											? 'bg-[var(--accent-green)] scale-125'
+											? 'bg-[var(--success)] scale-125'
 											: 'bg-[var(--primary)] scale-110'
 										: 'bg-[var(--border)]'}"
 								></div>
@@ -2405,6 +2367,25 @@
 						<p>{t('ui.tap_space')}</p>
 					{/if}
 				</div>
+
+				<!-- Primary action — visible on all viewports (no more hidden Space-only advance) -->
+				{#if timerStarted && !paused && inputMode === 'none' && !inTimeMode && displayMode !== 'verify'}
+					<div class="flex flex-col items-center gap-2 pt-1">
+						<button
+							class="btn btn-primary min-h-[var(--tap-min)] px-8 text-base font-semibold"
+							onclick={nextChord}
+						>
+							{currentIdx < actualTotalChords - 1 ? t('ui.next_chord') : t('ui.finish')}
+						</button>
+						<div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-[var(--text-dim)]">
+							<span><kbd class="kbd">Space</kbd> {t('ui.shortcut_next')}</span>
+							<span><kbd class="kbd">P</kbd> {t('ui.shortcut_pause')}</span>
+							<span><kbd class="kbd">H</kbd> {t('ui.shortcut_lookahead')}</span>
+							<span><kbd class="kbd">?</kbd> {t('ui.shortcut_explain')}</span>
+							<span><kbd class="kbd">Esc</kbd> {t('ui.shortcut_back')}</span>
+						</div>
+					</div>
+				{/if}
 
 				</div>
 			</div>

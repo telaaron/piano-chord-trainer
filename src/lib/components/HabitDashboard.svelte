@@ -98,7 +98,7 @@
 				<div class="flex items-center gap-0.75">
 					<img src="/elements/images/streak-flame.webp" width="14" height="14" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
 					<span class="streak-num text-[0.82rem] max-sm:text-[0.9rem] font-bold text-[#fb923c]">{streak.current}</span>
-					<span class="streak-days text-[0.68rem] max-sm:text-[0.75rem] text-[rgba(251,146,60,0.6)] font-medium">{streak.current === 1 ? 'Tag' : 'Tage'}</span>
+					<span class="streak-days text-[0.68rem] max-sm:text-[0.75rem] text-[rgba(251,146,60,0.6)] font-medium">{streak.current === 1 ? t('habit.day') : t('habit.days')}</span>
 				</div>
 				<span class="text-[0.7rem] text-[rgba(255,255,255,0.15)]">·</span>
 				<LevelBadge totalXP={profile.totalXP} compact />
@@ -170,7 +170,7 @@
 				</div>
 				<div class="flex flex-col items-end gap-px shrink-0">
 					<span class="xp-num text-[0.82rem] max-sm:text-[0.9rem] font-bold text-[#fb923c] tabular-nums">+{profile.weeklyXP}</span>
-					<span class="xp-lbl text-[0.6rem] max-sm:text-[0.62rem] text-[rgba(255,255,255,0.25)] whitespace-nowrap">XP {t('habit.this_week') || 'this week'}</span>
+					<span class="xp-lbl text-[0.6rem] max-sm:text-[0.62rem] text-[rgba(255,255,255,0.25)] whitespace-nowrap">XP {t('habit.this_week')}</span>
 				</div>
 			</div>
 		</div>
@@ -179,7 +179,7 @@
 	<!-- Goals -->
 	{#if activeGoals.length > 0}
 		<div class="flex flex-col gap-1.75">
-			<span class="goals-title text-[0.68rem] max-sm:text-[0.74rem] font-semibold text-[rgba(255,255,255,0.35)] uppercase tracking-[0.06em]">🎯 {t('habit.your_goals') || 'Your Goals'}</span>
+			<span class="goals-title text-[0.68rem] max-sm:text-[0.74rem] font-semibold text-[rgba(255,255,255,0.35)] uppercase tracking-[0.06em]">🎯 {t('habit.your_goals')}</span>
 			<div class="flex flex-col gap-1.5">
 				{#each activeGoals.slice(0, 2) as goal (goal.id)}
 					<GoalCard {goal} />
@@ -195,7 +195,7 @@
 			<span class="qs-title text-[0.78rem] max-sm:text-[0.85rem] font-bold text-(--text,#fff) whitespace-nowrap overflow-hidden text-ellipsis">{t(quickSuggestion.titleKey, quickSuggestion.titleParams) || quickSuggestion.title}</span>
 			<span class="qs-meta text-[0.62rem] max-sm:text-[0.68rem] text-[rgba(255,255,255,0.38)] whitespace-nowrap overflow-hidden text-ellipsis">{quickSuggestion.minutes} min · {t(quickSuggestion.descriptionKey, quickSuggestion.descriptionParams) || quickSuggestion.description}</span>
 		</div>
-		<span class="qs-cta text-[0.72rem] max-sm:text-[0.78rem] font-bold text-[#fb923c] shrink-0 tracking-[0.02em]">Start →</span>
+		<span class="qs-cta text-[0.72rem] max-sm:text-[0.78rem] font-bold text-[#fb923c] shrink-0 tracking-[0.02em]">{t('habit.start_arrow')} →</span>
 	</button>
 </div>
 
