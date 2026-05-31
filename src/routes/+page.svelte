@@ -86,6 +86,8 @@
 		const source = `${HERO_FRAME_BASES[basePathIndex]}/${file}`;
 
 		image.decoding = 'async';
+		// Frames are decorative — never let them contend with hero copy / fonts.
+		try { (image as HTMLImageElement & { fetchPriority?: string }).fetchPriority = 'low'; } catch { /* unsupported */ }
 		image.src = source;
 
 		image.onload = () => {
@@ -103,19 +105,32 @@
 	}
 
 	function ensureFramesAround(index: number) {
-		const preloadRadius = 10;
-		for (let i = Math.max(0, index - preloadRadius); i <= Math.min(HERO_FRAME_COUNT - 1, index + preloadRadius); i += 1) {
+		// Lazy window: load only what's near the current scroll position so we
+		// never flood the network with all 73 frames (~14 MB) on page load.
+		const aheadRadius = 8; // bias forward — user scrolls down
+		const behindRadius = 3;
+		for (let i = Math.max(0, index - behindRadius); i <= Math.min(HERO_FRAME_COUNT - 1, index + aheadRadius); i += 1) {
 			loadFrame(i);
 		}
 	}
 
+	// Cached layout metrics — reading offsetTop/offsetHeight per scroll forces
+	// a synchronous reflow (a major source of scroll jank). Recompute on resize.
+	let cachedSectionTop = 0;
+	let cachedSectionHeight = 0;
+	let cachedViewportH = 0;
+
+	function refreshHeroMetrics() {
+		if (!heroSection) return;
+		cachedSectionTop = heroSection.offsetTop;
+		cachedSectionHeight = heroSection.offsetHeight;
+		cachedViewportH = window.innerHeight;
+	}
+
 	function getScrollProgress(scrollY: number) {
 		if (!heroSection) return 0;
-		const sectionTop = heroSection.offsetTop;
-		const sectionHeight = heroSection.offsetHeight;
-		const viewportHeight = window.innerHeight;
-		const start = Math.max(0, sectionTop - viewportHeight * 0.04);
-		const end = sectionTop + sectionHeight - viewportHeight * 0.08;
+		const start = Math.max(0, cachedSectionTop - cachedViewportH * 0.04);
+		const end = cachedSectionTop + cachedSectionHeight - cachedViewportH * 0.08;
 		const range = Math.max(1, end - start);
 		return clamp((scrollY - start) / range, 0, 1);
 	}
@@ -131,21 +146,36 @@
 
 	onMount(() => {
 		if (!heroCanvas) return;
+		// Skip the scroll-frame cinema on mobile and for users who opt out of motion.
 		if (window.innerWidth <= 968) return;
-
-		if (!hasStartedPreload) {
-			hasStartedPreload = true;
-			for (let i = 0; i < HERO_FRAME_COUNT; i += 1) {
-				loadFrame(i);
-			}
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+			refreshHeroMetrics();
+			loadFrame(0); // a single static poster frame is enough
+			scheduleDraw(0);
+			return;
 		}
 
+		refreshHeroMetrics();
+		// Warm only the opening window; the rest stream in as the user scrolls.
+		if (!hasStartedPreload) {
+			hasStartedPreload = true;
+			ensureFramesAround(0);
+		}
+
+		// Coalesce scroll → one draw per animation frame.
+		let ticking = false;
 		const handleScroll = () => {
 			latestScrollY = window.scrollY;
-			updateFromScroll(latestScrollY);
+			if (ticking) return;
+			ticking = true;
+			requestAnimationFrame(() => {
+				ticking = false;
+				updateFromScroll(latestScrollY);
+			});
 		};
 
 		const handleResize = () => {
+			refreshHeroMetrics();
 			scheduleDraw(activeFrameIndex);
 			updateFromScroll(latestScrollY);
 		};
