@@ -295,8 +295,8 @@
 	</div>
 </section>
 
-<!-- Plug in. Play. Get faster. — cinematic rows -->
-<section class="overflow-x-hidden" style="background: linear-gradient(180deg, var(--bg) 0%, #0e0c09 20%, #0e0c09 80%, var(--bg) 100%)">
+<!-- See · Play · Master — cinematic rows (intentionally always dark, art is rendered for dark) -->
+<section class="cinematic-dark overflow-x-hidden" style="background: linear-gradient(180deg, #0a0908 0%, #0e0c09 20%, #0e0c09 80%, #0a0908 100%)">
 
 	<!-- Step 1: Plug In -->
 	<div class="grid grid-cols-2 items-center min-h-[55vh] border-b border-[rgba(255,255,255,0.04)] max-w-400 mx-auto w-full max-[968px]:grid-cols-1 max-[968px]:min-h-auto">
@@ -595,6 +595,18 @@
 	:global(.story-chip svg) {
 		color: var(--primary);
 		flex-shrink: 0;
+	}
+
+	/* Cinematic zones (hero + story rows) stay dark in every theme — re-pin
+	   warm-dark tokens locally so text/borders read over the dark video + 3D art. */
+	.hero-stage,
+	.cinematic-dark {
+		--text: #f2e9e4;
+		--text-muted: #c4b5a0;
+		--text-dim: #8a7968;
+		--bg: #0a0908;
+		--bg-card: #1a1410;
+		--border: #6d4c41;
 	}
 
 	.step1-chord {

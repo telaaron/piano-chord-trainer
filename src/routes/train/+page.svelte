@@ -4,6 +4,9 @@
 	import { t } from '$lib/i18n';
 	import GameSettings from '$lib/components/GameSettings.svelte';
 	import QuickStart from '$lib/components/QuickStart.svelte';
+	import { Icon } from '$lib/components/ui';
+	import { toggleLightDark, isLightActive } from '$lib/services/theme';
+	import { Sun, Moon } from 'lucide-svelte';
 	import ChordCard from '$lib/components/ChordCard.svelte';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import Results from '$lib/components/Results.svelte';
@@ -213,6 +216,14 @@
 	let showExerciseInfo = $state(false);
 	let showInsights = $state(false);
 	let advancedOpen = $state(false);
+	let themeIsLight = $state(false);
+	function flipTheme() {
+		toggleLightDark();
+		themeIsLight = isLightActive();
+	}
+	$effect(() => {
+		themeIsLight = isLightActive();
+	});
 	let currentIdx = $state(0);
 	let chords: string[] = $state([]);
 	let chordsWithNotes: ChordWithNotes[] = $state([]);
@@ -1496,15 +1507,42 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<main class="train-page flex-1 py-2 sm:py-3 px-3 xl:py-4 xl:px-8" style="background: radial-gradient(
-  ellipse 80% 40% at 50% 0%,
-  rgba(251, 146, 60, 0.04) 0%,
-  transparent 70%
-), linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #12100c 70%, var(--bg) 100%);">
+<main class="train-page flex-1 py-2 sm:py-3 px-3 xl:py-4 xl:px-8">
 	<div class="w-full max-w-345 mx-auto">
 		<!-- ─────── Setup Screen ─────── -->
 			{#if screen === 'setup'}
 				<div in:fade={{ duration: 200, delay: 80 }} class="mx-auto flex max-w-[1080px] flex-col gap-6 sm:gap-7">
+					<!-- ⓪ Dashboard nav — back to landing + user settings -->
+					<div class="flex items-center justify-between gap-3">
+						<a
+							href="/"
+							class="group inline-flex items-center gap-2 rounded-full py-1.5 pr-3.5 pl-2 text-sm font-medium text-(--text-muted) transition-colors hover:text-(--text)"
+						>
+							<span class="grid h-7 w-7 place-items-center rounded-full border border-[var(--border)] transition-colors group-hover:border-(--primary)">
+								<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+							</span>
+							<span class="text-gradient font-bold">{t('settings.back_to_home')}</span>
+						</a>
+					<div class="flex items-center gap-2">
+						<button
+							onclick={flipTheme}
+							class="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] text-(--text-muted) transition-colors hover:border-(--primary) hover:text-(--text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+							title={t('nav.theme')}
+							aria-label={t('nav.theme')}
+						>
+							{#if themeIsLight}<Moon size={16} />{:else}<Sun size={16} />{/if}
+						</button>
+						<a
+							href="/account"
+							class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] py-1.5 pr-3.5 pl-2.5 text-sm font-medium text-(--text-muted) no-underline transition-colors hover:border-(--primary) hover:text-(--text)"
+							title={t('settings.open_settings')}
+						>
+							<Icon name="settings" size={18} />
+							<span class="hidden sm:inline">{t('settings.open_settings')}</span>
+						</a>
+					</div>
+					</div>
+
 					<!-- ① Progress hero — single source for greeting / streak / level / MIDI -->
 					{#if habitProfile}
 						<HabitDashboard
@@ -1529,7 +1567,7 @@
 									<span class="text-(--text-dim) font-normal">{streak.current === 1 ? t('habit.day') : t('habit.days')}</span>
 								</div>
 							</div>
-							<a href="/midi-test?tab=midi" class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs no-underline transition-opacity hover:opacity-80 {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[var(--success-muted)] text-(--success)' : 'bg-white/5 text-(--text-dim)'}">
+							<a href="/midi-test?tab=midi" class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs no-underline transition-opacity hover:opacity-80 {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[var(--success-muted)] text-(--success)' : 'bg-(--bg-muted) text-(--text-dim)'}">
 								<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
 								<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : t('settings.no_midi')}</span>
 								<span class="opacity-50">⚙</span>
@@ -1552,6 +1590,16 @@
 							</button>
 						</div>
 
+						{#if loadHistory().length === 0}
+							<div class="flex items-start gap-2.5 rounded-2xl border border-[var(--border)]/60 bg-[var(--bg-card)]/40 px-4 py-3">
+								<span class="mt-0.5 shrink-0"><Icon name="weak-spots" size={20} /></span>
+								<p class="text-sm leading-relaxed text-(--text-muted)">
+									<span class="font-semibold text-(--text)">{t('settings.how_it_works_goal')}</span>
+									<span class="block text-(--text-dim)">{t('settings.how_it_works_steps')}</span>
+								</p>
+							</div>
+						{/if}
+
 						<QuickStart
 							resumePlanId={loadRecentPlanIds()[0] ?? null}
 							hasHistory={loadHistory().length > 0}
@@ -1563,16 +1611,16 @@
 
 					<!-- ③ Insights (toggle) -->
 					{#if showInsights}
-						<section class="surface-glass rounded-2xl p-4 sm:p-5" in:fade={{ duration: 180 }}>
-							<h2 class="mb-3 text-sm font-semibold uppercase tracking-[0.06em] text-(--text-muted)">{t('settings.your_progress')}</h2>
-							<ProgressDashboard />
+						<section in:fade={{ duration: 180 }} class="flex flex-col gap-3">
+							<h2 class="text-sm font-semibold uppercase tracking-[0.06em] text-(--text-muted)">{t('settings.your_progress')}</h2>
+							<ProgressDashboard onstart={startGame} />
 						</section>
 					{/if}
 
 					<!-- ④ Advanced setup — full plan library + custom settings, opt-in -->
 					<section class="surface-glass overflow-hidden rounded-2xl">
 						<button
-							class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.02] sm:px-5"
+							class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-(--bg-card-hover) sm:px-5"
 							onclick={() => (advancedOpen = !advancedOpen)}
 							aria-expanded={advancedOpen}
 						>
@@ -2081,7 +2129,7 @@
 				<!-- Transport — audio, sound, metronome in one coherent bar -->
 				<div class="flex flex-wrap items-center gap-2 rounded-full border border-[var(--border)]/50 bg-[var(--bg-card)]/40 px-2 py-1.5 text-sm backdrop-blur-sm">
 					<button
-						class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors {audioEnabled ? 'bg-[var(--primary-muted)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text)]'}"
+						class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors {audioEnabled ? 'bg-[var(--primary-muted)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:bg-(--bg-muted) hover:text-[var(--text)]'}"
 						onclick={() => (audioEnabled = !audioEnabled)}
 						aria-pressed={audioEnabled}
 						title={audioEnabled ? t('ui.audio') : t('ui.audio')}
@@ -2102,7 +2150,7 @@
 					{/if}
 					{#if inputMode === 'midi'}
 						<button
-							class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors {midiSoundEnabled ? 'bg-[var(--primary-muted)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text)]'}"
+							class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors {midiSoundEnabled ? 'bg-[var(--primary-muted)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:bg-(--bg-muted) hover:text-[var(--text)]'}"
 							onclick={toggleMidiSound}
 							aria-pressed={midiSoundEnabled}
 							title={midiSoundEnabled ? t('settings.midi_sound_on') : t('settings.midi_sound_off')}
@@ -2114,7 +2162,7 @@
 					<span class="mx-0.5 hidden h-5 w-px bg-[var(--border)]/50 sm:block"></span>
 
 					<button
-						class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors {metronomeEnabled ? 'bg-[var(--primary-muted)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:bg-white/5 hover:text-[var(--text)]'}"
+						class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium transition-colors {metronomeEnabled ? 'bg-[var(--primary-muted)] text-[var(--primary)]' : 'text-[var(--text-muted)] hover:bg-(--bg-muted) hover:text-[var(--text)]'}"
 						onclick={toggleMetronome}
 						aria-pressed={metronomeEnabled}
 					>
@@ -2717,6 +2765,13 @@
 {/if}
 
 <style>
+	/* Ambient page wash — token-based so it flips with the theme. */
+	.train-page {
+		background:
+			radial-gradient(ellipse 80% 40% at 50% 0%, color-mix(in srgb, var(--primary) 6%, transparent) 0%, transparent 70%),
+			linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 88%, var(--primary)) 35%, var(--bg) 100%);
+	}
+
 	/* Touch devices (iPad): maximum screen real-estate */
 	@media (hover: none) and (pointer: coarse) and (min-width: 768px) {
 		.train-page {

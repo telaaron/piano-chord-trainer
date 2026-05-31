@@ -5,6 +5,25 @@ import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_PRO, STRIPE_PRIC
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
+/**
+ * Stripe API 2025-x moved current_period_start/end off the subscription
+ * top-level onto each subscription item. Read from the item first, fall back
+ * to the (legacy) top-level, and tolerate either being absent.
+ */
+function periodBounds(subscription: Stripe.Subscription): {
+	current_period_start: string | null;
+	current_period_end: string | null;
+} {
+	const item = subscription.items?.data?.[0] as unknown as Record<string, unknown> | undefined;
+	const sub = subscription as unknown as Record<string, unknown>;
+	const start = (item?.current_period_start ?? sub.current_period_start) as number | undefined;
+	const end = (item?.current_period_end ?? sub.current_period_end) as number | undefined;
+	return {
+		current_period_start: typeof start === 'number' ? new Date(start * 1000).toISOString() : null,
+		current_period_end: typeof end === 'number' ? new Date(end * 1000).toISOString() : null,
+	};
+}
+
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = await request.text();
 	const signature = request.headers.get('stripe-signature');
@@ -33,7 +52,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 			const priceId = subscription.items.data[0]?.price?.id;
 			const tier = priceIdToTier(priceId);
-			const sub = subscription as unknown as Record<string, unknown>;
 
 			await supabaseAdmin.from('subscriptions').upsert({
 				user_id: userId,
@@ -41,14 +59,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				stripe_customer_id: session.customer as string,
 				tier,
 				status: subscription.status,
-				current_period_start: new Date((sub.current_period_start as number) * 1000).toISOString(),
-				current_period_end: new Date((sub.current_period_end as number) * 1000).toISOString(),
+				...periodBounds(subscription),
 				price_id: priceId,
 			}, { onConflict: 'user_id' });
 
 			break;
 		}
 
+		case 'customer.subscription.created':
 		case 'customer.subscription.updated':
 		case 'customer.subscription.deleted': {
 			const subscription = event.data.object as Stripe.Subscription;
@@ -65,7 +83,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 			const priceId = subscription.items.data[0]?.price?.id;
 			const tier = priceIdToTier(priceId);
-			const sub = subscription as unknown as Record<string, unknown>;
 
 			await supabaseAdmin.from('subscriptions').upsert({
 				user_id: profile.id,
@@ -73,8 +90,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				stripe_customer_id: customerId,
 				tier,
 				status: subscription.status,
-				current_period_start: new Date((sub.current_period_start as number) * 1000).toISOString(),
-				current_period_end: new Date((sub.current_period_end as number) * 1000).toISOString(),
+				...periodBounds(subscription),
 				price_id: priceId,
 			}, { onConflict: 'user_id' });
 
@@ -85,6 +101,25 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			const invoice = event.data.object as Stripe.Invoice;
 			const customerId = invoice.customer as string;
 			console.warn(`[Stripe] Payment failed for customer ${customerId}`);
+			// Reflect the dunning state so the app can prompt the user.
+			const { data: profile } = await supabaseAdmin
+				.from('profiles')
+				.select('id')
+				.eq('stripe_customer_id', customerId)
+				.single();
+			if (profile) {
+				await supabaseAdmin
+					.from('subscriptions')
+					.update({ status: 'past_due' })
+					.eq('user_id', profile.id);
+			}
+			break;
+		}
+
+		case 'customer.subscription.trial_will_end': {
+			// 3 days before trial ends — info only (hook for a reminder email later).
+			const subscription = event.data.object as Stripe.Subscription;
+			console.info(`[Stripe] Trial ending soon for customer ${subscription.customer}`);
 			break;
 		}
 

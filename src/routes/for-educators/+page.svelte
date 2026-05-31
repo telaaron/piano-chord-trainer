@@ -79,7 +79,7 @@
 	})}</script>`}
 </svelte:head>
 
-<main class="flex-1" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">
+<main class="flex-1" style="background: linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 92%, var(--primary)) 40%, var(--bg) 100%);">
 	<!-- Hero -->
 	<section style="position: relative; overflow: hidden;">
 		<!-- Background image -->

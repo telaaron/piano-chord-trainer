@@ -37,6 +37,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		customer: customerId,
 		mode: 'subscription',
 		line_items: [{ price: priceId, quantity: 1 }],
+		// Grand-slam offer: 14 days free, no charge until trial ends.
+		subscription_data: {
+			trial_period_days: 14,
+			metadata: { supabase_user_id: user.id },
+		},
+		// Collect card up front so billing continues seamlessly after the trial.
+		payment_method_collection: 'always',
+		allow_promotion_codes: true,
 		success_url: `${request.headers.get('origin')}/account?checkout=success`,
 		cancel_url: `${request.headers.get('origin')}/pricing?checkout=cancelled`,
 		metadata: { supabase_user_id: user.id },

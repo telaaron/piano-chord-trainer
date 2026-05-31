@@ -282,13 +282,22 @@ export const PRACTICE_PLANS: PracticePlan[] = [
  * - Default → rotate through plans player hasn't done recently
  */
 export function suggestPlan(recentPlanIds: string[], totalSessions: number): PracticePlan {
-	if (totalSessions === 0) return PRACTICE_PLANS[0]; // Warm-Up
-	if (totalSessions < 5) return PRACTICE_PLANS[2]; // Deep Dive
+	// Difficulty tier grows with experience — never throw an advanced plan at a newbie.
+	const maxLevel: PracticePlan['level'] =
+		totalSessions < 6 ? 'beginner' : totalSessions < 20 ? 'intermediate' : 'advanced';
+	const levelRank = { beginner: 0, intermediate: 1, advanced: 2 } as const;
+	const eligible = PRACTICE_PLANS.filter((p) => levelRank[p.level] <= levelRank[maxLevel]);
+	const pool = eligible.length > 0 ? eligible : PRACTICE_PLANS;
 
-	// Find a plan not used recently
-	const unused = PRACTICE_PLANS.filter((p) => !recentPlanIds.includes(p.id));
+	if (totalSessions === 0) {
+		// First-ever: the gentlest entry point.
+		return pool.find((p) => p.id === 'warmup') ?? pool[0];
+	}
+
+	// Prefer something they haven't drilled recently, within their tier.
+	const unused = pool.filter((p) => !recentPlanIds.includes(p.id));
 	if (unused.length > 0) return unused[0];
 
-	// All used recently → rotate
-	return PRACTICE_PLANS[totalSessions % PRACTICE_PLANS.length];
+	// All used recently → rotate within tier.
+	return pool[totalSessions % pool.length];
 }

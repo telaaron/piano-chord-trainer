@@ -28,7 +28,7 @@
 	};
 
 	const base =
-		'rounded-[var(--radius-lg)] border bg-[var(--bg-card)]/60 backdrop-blur-md transition-all duration-200';
+		'rounded-[var(--radius-lg)] border bg-[var(--bg-card)]/60 backdrop-blur-md shadow-[var(--shadow-sm)] transition-all duration-200';
 
 	const state = $derived(
 		selected
@@ -38,8 +38,8 @@
 
 	const interactiveCls = $derived(
 		interactive
-			? 'cursor-pointer text-left w-full hover:border-[var(--primary)]/50 hover:bg-[var(--bg-card-hover)]/80 ' +
-					'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] active:translate-y-px'
+			? 'cursor-pointer text-left w-full hover:border-[var(--primary)]/50 hover:bg-[var(--bg-card-hover)]/80 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] ' +
+					'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] active:translate-y-0'
 			: '',
 	);
 

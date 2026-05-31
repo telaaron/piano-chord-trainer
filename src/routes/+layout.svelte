@@ -2,6 +2,8 @@
 	import '../app.css';
 	import { page } from '$app/state';
 	import { t, setLocale, getLocale, type Locale } from '$lib/i18n';
+	import { initTheme, toggleLightDark, isLightActive } from '$lib/services/theme';
+	import { Sun, Moon } from 'lucide-svelte';
 	import { initAuth, onAuthChange, type AuthState } from '$lib/services/auth';
 	import { getSupabase } from '$lib/services/supabase';
 	import ToastContainer from '$lib/components/ToastContainer.svelte';
@@ -17,6 +19,19 @@
 	let isAdmin = $state(false);
 	let mobileMenuOpen = $state(false);
 	let navbarCondensed = $state(false);
+	let themeIsLight = $state(false);
+
+	$effect(() => {
+		if (!browser) return;
+		const cleanup = initTheme();
+		themeIsLight = isLightActive();
+		return cleanup;
+	});
+
+	function flipTheme() {
+		toggleLightDark();
+		themeIsLight = isLightActive();
+	}
 
 	$effect(() => {
 		if (!browser) return;
@@ -155,6 +170,18 @@
 							{/if}
 						</div>
 
+						<button
+							onclick={flipTheme}
+							class="border border-(--border) rounded-full inline-flex items-center justify-center text-(--text-muted) opacity-70 hover:opacity-100 hover:text-(--text) transition-all {isTrainPage ? 'min-h-9 min-w-9 sm:min-h-10 sm:min-w-10' : 'min-h-10 min-w-10 sm:min-h-11 sm:min-w-11'}"
+							title={t('nav.theme')}
+							aria-label={t('nav.theme')}
+						>
+							{#if themeIsLight}
+								<Moon size={16} />
+							{:else}
+								<Sun size={16} />
+							{/if}
+						</button>
 						<button
 							onclick={toggleLanguage}
 							class="px-2 py-1 text-xs font-mono border border-(--border) rounded-full inline-flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity {isTrainPage ? 'min-h-9 min-w-9 sm:min-h-10 sm:min-w-10' : 'min-h-10 min-w-10 sm:min-h-11 sm:min-w-11'}"

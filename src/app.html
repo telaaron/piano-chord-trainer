@@ -114,6 +114,23 @@
 		<link rel="apple-touch-icon" sizes="180x180" href="%sveltekit.assets%/favicon/apple-touch-icon.png" />
 		<link rel="manifest" href="%sveltekit.assets%/favicon/site.webmanifest" />
 
+		<!-- Anti-flash theme: set data-theme before first paint -->
+		<script>
+			(function () {
+				try {
+					var o = localStorage.getItem('chord-trainer-theme');
+					var t =
+						o === 'default' || o === 'light' || o === 'openstudio'
+							? o
+							: window.matchMedia &&
+								  window.matchMedia('(prefers-color-scheme: light)').matches
+								? 'light'
+								: 'default';
+					document.documentElement.setAttribute('data-theme', t);
+				} catch (e) {}
+			})();
+		</script>
+
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

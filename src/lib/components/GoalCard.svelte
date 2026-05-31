@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
 	import type { SmartGoal } from '$lib/engine/habits';
+	import { Icon } from '$lib/components/ui';
+	import { goalIconName } from '$lib/utils/goal-icon';
 
 	interface Props {
 		goal: SmartGoal;
@@ -39,19 +41,19 @@
 </script>
 
 <div
-	class="goal-card bg-white/[0.03] border border-[color:var(--border,#222)] border-l-[3px]
+	class="goal-card bg-(--bg-muted) border border-[color:var(--border)] border-l-[3px]
 		rounded-[var(--radius,8px)] py-2 px-3 transition-all duration-200 ease-in-out
-		hover:bg-white/[0.05] hover:border-[color:var(--goal-color)] hover:border-l-[color:var(--goal-color)]
+		hover:bg-(--bg-card-hover) hover:border-[color:var(--goal-color)] hover:border-l-[color:var(--goal-color)]
 		max-sm:py-2.5
 		{isCompleted ? 'opacity-60 border-l-[color:var(--accent-green,#4ade80)]' : 'border-l-[color:var(--goal-color)]'}"
 	style="--goal-color: {color}"
 >
 	<div class="flex items-start gap-2 mb-1.5">
-		<span class="goal-icon text-[0.85rem] shrink-0 mt-px max-sm:text-base">{goal.icon}</span>
+		<span class="goal-icon shrink-0 mt-px"><Icon name={goalIconName(goal.type)} size={18} /></span>
 		<div class="flex flex-col gap-px flex-1 min-w-0">
-			<span class="goal-title text-xs font-semibold text-[var(--text,#fff)] min-w-0 max-sm:text-[0.85rem]">{t(goal.titleKey, goal.titleParams) || goal.title}</span>
+			<span class="goal-title text-xs font-semibold text-[var(--text)] min-w-0 max-sm:text-[0.85rem]">{t(goal.titleKey, goal.titleParams) || goal.title}</span>
 			{#if goal.descriptionKey}
-				<span class="goal-desc text-[0.6rem] text-white/[0.32] whitespace-nowrap overflow-hidden text-ellipsis max-sm:text-[0.68rem] max-sm:whitespace-normal max-sm:line-clamp-2">{t(goal.descriptionKey, goal.descriptionParams)}</span>
+				<span class="goal-desc text-[0.6rem] text-(--text-dim) whitespace-nowrap overflow-hidden text-ellipsis max-sm:text-[0.68rem] max-sm:whitespace-normal max-sm:line-clamp-2">{t(goal.descriptionKey, goal.descriptionParams)}</span>
 			{/if}
 		</div>
 		{#if isCompleted}
@@ -60,15 +62,15 @@
 	</div>
 
 	<div class="flex items-center gap-2">
-		<div class="goal-bar flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden max-sm:h-[5px]">
+		<div class="goal-bar flex-1 h-1 bg-(--bg-muted) rounded-full overflow-hidden max-sm:h-[5px]">
 			<div class="h-full bg-[var(--goal-color)] rounded-full transition-[width] duration-[0.8s] ease-out" style="width: {progressPct}%"></div>
 		</div>
 		{#if progressPct === 0 && !isCompleted}
-			<span class="goal-new text-[0.6rem] text-[var(--text-muted,#888)] font-medium uppercase tracking-[0.03em] min-w-[28px] text-right shrink-0 max-sm:text-[0.62rem]">New</span>
+			<span class="goal-new text-[0.6rem] text-[var(--text-muted)] font-medium uppercase tracking-[0.03em] min-w-[28px] text-right shrink-0 max-sm:text-[0.62rem]">New</span>
 		{:else}
 			<span class="goal-pct text-[0.6rem] text-[var(--goal-color)] font-semibold tabular-nums min-w-[28px] text-right shrink-0 max-sm:text-[0.65rem]">{progressPct}%</span>
 		{/if}
-		<span class="goal-xp text-[0.6rem] text-[var(--text-dim,#666)] font-medium shrink-0 max-sm:text-[0.65rem]">+{goal.xpReward} XP</span>
+		<span class="goal-xp text-[0.6rem] text-[var(--text-dim)] font-medium shrink-0 max-sm:text-[0.65rem]">+{goal.xpReward} XP</span>
 	</div>
 </div>
 

@@ -129,8 +129,9 @@
 				</div>
 				<div class="flex items-end gap-2 max-w-sm">
 					<div class="flex-1">
-						<label class="text-xs text-[var(--text-dim)] block mb-1">{t('account.display_name')}</label>
+						<label for="display-name" class="text-xs text-[var(--text-dim)] block mb-1">{t('account.display_name')}</label>
 						<input
+							id="display-name"
 							type="text"
 							bind:value={displayName}
 							placeholder={t('account.display_name_placeholder')}

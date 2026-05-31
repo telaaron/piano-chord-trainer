@@ -12,6 +12,13 @@
 		type ChordTrend,
 	} from '$lib/services/progress';
 	import { t, getLocale } from '$lib/i18n';
+	import { Icon } from '$lib/components/ui';
+
+	interface Props {
+		/** Called by the empty-state CTA (e.g. start a first session). */
+		onstart?: () => void;
+	}
+	let { onstart }: Props = $props();
 
 	let history: SessionResult[] = $state([]);
 	let stats: ProgressStats = $state(computeStats([]));
@@ -138,7 +145,7 @@
 			{#if improvements.length > 0}
 				<div class="bg-[var(--accent-green)]/10 border border-[var(--accent-green)]/20 rounded-[var(--radius)] p-4">
 					<div class="flex items-center gap-2 mb-3">
-						<span class="text-base">📈</span>
+						<Icon name="progress" size={18} />
 						<span class="font-bold text-[var(--accent-green)] text-sm">{t('ui.getting_faster')}</span>
 					</div>
 					<div class="space-y-2">
@@ -154,8 +161,8 @@
 					</div>
 				</div>
 			{:else if stats.totalSessions > 3}
-				<div class="bg-[var(--bg-muted)]/20 border border-[var(--border)] rounded-[var(--radius)] p-4 flex flex-col items-center justify-center gap-1 text-center min-h-[90px]">
-					<span class="text-2xl opacity-40">📊</span>
+				<div class="bg-[var(--bg-muted)]/20 border border-[var(--border)] rounded-[var(--radius)] p-4 flex flex-col items-center justify-center gap-1.5 text-center min-h-[90px]">
+					<Icon name="progress" size={26} class="opacity-50" />
 					<span class="text-[var(--text-dim)] text-xs">{t('ui.more_sessions_needed')}</span>
 				</div>
 			{/if}
@@ -164,7 +171,7 @@
 			{#if weakChords.length > 0}
 				<div>
 					<div class="flex items-center gap-2 mb-3">
-						<span class="text-base">🎯</span>
+						<Icon name="weak-spots" size={18} />
 						<span class="font-medium text-sm text-[var(--text-muted)]">{t('ui.focus_on')}</span>
 					</div>
 					<div class="space-y-3">
@@ -194,8 +201,8 @@
 				<!-- Header -->
 				<div class="flex justify-between items-start mb-5">
 					<div>
-						<div class="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide">Letzte {sparkData.length} Sitzungen</div>
-						<div class="text-[var(--text-dim)] text-xs mt-0.5">Sekunden pro Akkord</div>
+						<div class="text-[var(--text-muted)] text-xs font-medium uppercase tracking-wide">{t('ui.sessions_label', { n: sparkData.length })}</div>
+						<div class="text-[var(--text-dim)] text-xs mt-0.5">{t('ui.seconds_per_chord')}</div>
 					</div>
 					{#if trend !== null && trend.meaningful}
 						<!-- amber for slower (not alarming red), green for faster -->
@@ -203,7 +210,7 @@
 							<div class="text-xs font-semibold {trend.pct < 0 ? 'text-[var(--accent-green)]' : 'text-[var(--accent-amber)]'}">
 								{trend.pct < 0 ? `↓ ${t('ui.faster')}` : `↑ ${t('ui.slower')}`}
 							</div>
-							<div class="text-[10px] text-[var(--text-dim)] font-mono mt-0.5">{Math.abs(trend.pct).toFixed(0)}% vs. vorher</div>
+							<div class="text-[10px] text-[var(--text-dim)] font-mono mt-0.5">{t('ui.vs_before', { pct: Math.abs(trend.pct).toFixed(0) })}</div>
 						</div>
 					{:else if trend !== null}
 						<div class="text-xs text-[var(--text-dim)]">→ {t('ui.same')}</div>
@@ -230,13 +237,13 @@
 
 				<!-- X-axis label -->
 				<div class="flex justify-between text-[10px] text-[var(--text-dim)] mt-2">
-					<span>Älter</span>
+					<span>{t('ui.older')}</span>
 					<span>{t('ui.now')}</span>
 				</div>
 			</div>
 		{:else if stats.totalSessions > 0 && stats.totalSessions < 5}
 			<div class="text-center py-2 text-[var(--text-dim)] text-xs">
-				Noch {5 - stats.totalSessions} Sitzung{5 - stats.totalSessions === 1 ? '' : 'en'} bis zum Chart
+				{t(5 - stats.totalSessions === 1 ? 'ui.sessions_until_chart' : 'ui.sessions_until_chart_plural', { n: 5 - stats.totalSessions })}
 			</div>
 		{/if}
 
@@ -311,6 +318,20 @@
 			{/if}
 
 		</div>
+	</div>
+{:else}
+	<!-- Empty state — insights fill up once the player has sessions -->
+	<div class="card surface-glass flex flex-col items-center gap-3 rounded-2xl p-8 text-center sm:p-10">
+		<div class="grid h-16 w-16 place-items-center rounded-2xl bg-[var(--primary-muted)]">
+			<Icon name="progress" size={40} glow />
+		</div>
+		<h3 class="text-lg font-bold text-[var(--text)]">{t('ui.insights_empty_title')}</h3>
+		<p class="max-w-sm text-sm leading-relaxed text-[var(--text-muted)]">{t('ui.insights_empty_desc')}</p>
+		{#if onstart}
+			<button class="pill-btn pill-btn-primary mt-1 px-5 py-2.5 text-sm" onclick={onstart}>
+				{t('ui.insights_empty_cta')}
+			</button>
+		{/if}
 	</div>
 {/if}
 

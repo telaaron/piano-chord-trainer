@@ -6,7 +6,25 @@
 	import { loadHistory, loadStreak } from '$lib/services/progress';
 	import GoalCard from './GoalCard.svelte';
 	import LevelBadge from './LevelBadge.svelte';
+	import { Icon } from '$lib/components/ui';
 	import { onMount } from 'svelte';
+
+	/** plan id → Icon key (custom webp art); falls back to 'warmup'. */
+	const PLAN_ICON_KEY: Record<string, string> = {
+		warmup: 'warmup',
+		speed: 'speed',
+		deepdive: 'deep-dive',
+		turnaround: 'turnaround',
+		challenge: 'challenge',
+		quartenzirkel: 'cycle',
+		'voicing-drill': 'voicing-drill',
+		'left-hand-comping': 'left-hand',
+		'inversions-drill': 'inversions',
+		'in-time-comping': 'in-time',
+		'ear-check': 'ear-check',
+		'adaptive-drill': 'weak-spots',
+		'voice-leading-flow': 'voice-leading',
+	};
 
 	interface Props {
 		profile: HabitProfile;
@@ -91,7 +109,7 @@
 	<div class="flex items-start justify-between">
 		<div class="flex flex-col gap-1.25">
 			<div class="flex items-center gap-2">
-				<span class="greeting text-base max-sm:text-[1.1rem] font-bold text-(--text,#fff) tracking-[-0.01em]">{greeting}!</span>
+				<span class="greeting text-base max-sm:text-[1.1rem] font-bold text-(--text) tracking-[-0.01em]">{greeting}!</span>
 				<span class="rank-pill text-[0.6rem] max-sm:text-[0.68rem] font-semibold text-[#fb923c] uppercase tracking-[0.06em] bg-[rgba(251,146,60,0.12)] border border-[rgba(251,146,60,0.22)] rounded-full py-0.5 px-1.75 max-sm:px-2">{t(levelInfo.titleKey)}</span>
 			</div>
 			<div class="flex items-center gap-1.75">
@@ -100,11 +118,11 @@
 					<span class="streak-num text-[0.82rem] max-sm:text-[0.9rem] font-bold text-[#fb923c]">{streak.current}</span>
 					<span class="streak-days text-[0.68rem] max-sm:text-[0.75rem] text-[rgba(251,146,60,0.6)] font-medium">{streak.current === 1 ? t('habit.day') : t('habit.days')}</span>
 				</div>
-				<span class="text-[0.7rem] text-[rgba(255,255,255,0.15)]">·</span>
+				<span class="text-[0.7rem] text-(--text-dim)">·</span>
 				<LevelBadge totalXP={profile.totalXP} compact />
 			</div>
 		</div>
-		<a href="/midi-test?tab=midi" class="midi-pill flex items-center gap-1.25 py-1 px-2.5 rounded-full text-[0.65rem] font-medium border no-underline hover:opacity-80 transition-opacity {midiConnected ? 'bg-[rgba(74,222,128,0.08)] border-[rgba(74,222,128,0.2)] text-[#4ade80]' : 'bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.3)]'}">
+		<a href="/midi-test?tab=midi" class="midi-pill flex items-center gap-1.25 py-1 px-2.5 rounded-full text-[0.65rem] font-medium border no-underline hover:opacity-80 transition-opacity {midiConnected ? 'bg-[rgba(74,222,128,0.08)] border-[rgba(74,222,128,0.2)] text-[#4ade80]' : 'bg-(--bg-muted) border-(--border) text-(--text-dim)'}">
 			<img src="/elements/images/midi-connect.webp" width="12" height="12" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
 			<span>{midiConnected ? 'MIDI ✓' : 'No MIDI'}</span>
 		</a>
@@ -117,7 +135,7 @@
 			<svg viewBox="0 0 {RING_SIZE} {RING_SIZE}" width={RING_SIZE} height={RING_SIZE} style="display:block">
 				<circle
 					cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RING_RADIUS}
-					fill="none" stroke="rgba(255,255,255,0.07)" stroke-width={RING_STROKE}
+					fill="none" stroke="var(--border)" stroke-width={RING_STROKE}
 				/>
 				<circle
 					class="ring-arc" class:ring-done={dailyProgress.goalMet}
@@ -134,7 +152,7 @@
 					<span class="text-[1.3rem] text-[#4ade80] font-bold">✓</span>
 				{:else}
 					<span class="ring-num text-[1.1rem] max-sm:text-[1.2rem] font-extrabold text-[#fb923c] tabular-nums leading-none">{Math.floor(dailyProgress.practicedMinutes)}</span>
-					<span class="ring-denom text-[0.6rem] max-sm:text-[0.65rem] text-[rgba(255,255,255,0.3)] font-medium mt-px">/{dailyProgress.goalMinutes}m</span>
+					<span class="ring-denom text-[0.6rem] max-sm:text-[0.65rem] text-(--text-dim) font-medium mt-px">/{dailyProgress.goalMinutes}m</span>
 				{/if}
 			</div>
 		</div>
@@ -149,10 +167,10 @@
 				<div class="week-dots flex gap-1.75 max-sm:gap-2">
 					{#each dayLabels as label, i}
 						<div class="flex flex-col items-center gap-1">
-							<span class="day-label text-[0.58rem] max-sm:text-[0.64rem] uppercase tracking-[0.02em] font-medium {isToday(i) ? 'text-[#fb923c]' : 'text-[rgba(255,255,255,0.28)]'}">{label}</span>
+							<span class="day-label text-[0.58rem] max-sm:text-[0.64rem] uppercase tracking-[0.02em] font-medium {isToday(i) ? 'text-[#fb923c]' : 'text-(--text-dim)'}">{label}</span>
 							{#if isToday(i) && !weekDots[i]}
 								<svg viewBox="0 0 16 16" width="16" height="16" style="display:block;overflow:visible">
-									<circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="2" />
+									<circle cx="8" cy="8" r="6" fill="none" stroke="var(--border)" stroke-width="2" />
 									<circle
 										class="mini-arc"
 										cx="8" cy="8" r="6" fill="none"
@@ -163,14 +181,14 @@
 									/>
 								</svg>
 							{:else}
-								<div class="day-dot w-3 h-3 max-sm:w-3.25 max-sm:h-3.25 rounded-full border-[1.5px] transition-all duration-300 ease-in-out {weekDots[i] ? 'bg-[#4ade80] border-[#4ade80] shadow-[0_0_8px_rgba(74,222,128,0.4)]' : isToday(i) ? 'bg-[rgba(255,255,255,0.05)] border-[rgba(251,146,60,0.5)]' : 'bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.09)]'}"></div>
+								<div class="day-dot w-3 h-3 max-sm:w-3.25 max-sm:h-3.25 rounded-full border-[1.5px] transition-all duration-300 ease-in-out {weekDots[i] ? 'bg-[#4ade80] border-[#4ade80] shadow-[0_0_8px_rgba(74,222,128,0.4)]' : isToday(i) ? 'bg-(--bg-muted) border-[rgba(251,146,60,0.5)]' : 'bg-(--bg-muted) border-(--border)'}"></div>
 							{/if}
 						</div>
 					{/each}
 				</div>
 				<div class="flex flex-col items-end gap-px shrink-0">
 					<span class="xp-num text-[0.82rem] max-sm:text-[0.9rem] font-bold text-[#fb923c] tabular-nums">+{profile.weeklyXP}</span>
-					<span class="xp-lbl text-[0.6rem] max-sm:text-[0.62rem] text-[rgba(255,255,255,0.25)] whitespace-nowrap">XP {t('habit.this_week')}</span>
+					<span class="xp-lbl text-[0.6rem] max-sm:text-[0.62rem] text-(--text-dim) whitespace-nowrap">XP {t('habit.this_week')}</span>
 				</div>
 			</div>
 		</div>
@@ -179,7 +197,7 @@
 	<!-- Goals -->
 	{#if activeGoals.length > 0}
 		<div class="flex flex-col gap-1.75">
-			<span class="goals-title text-[0.68rem] max-sm:text-[0.74rem] font-semibold text-[rgba(255,255,255,0.35)] uppercase tracking-[0.06em]">🎯 {t('habit.your_goals')}</span>
+			<span class="goals-title flex items-center gap-1.5 text-[0.68rem] max-sm:text-[0.74rem] font-semibold text-(--text-dim) uppercase tracking-[0.06em]"><Icon name="weak-spots" size={14} /> {t('habit.your_goals')}</span>
 			<div class="flex flex-col gap-1.5">
 				{#each activeGoals.slice(0, 2) as goal (goal.id)}
 					<GoalCard {goal} />
@@ -190,10 +208,10 @@
 
 	<!-- Quick Start CTA -->
 	<button class="quick-start flex items-center gap-3 p-[11px_14px] max-sm:p-[12px_14px] bg-[rgba(251,146,60,0.07)] border border-[rgba(251,146,60,0.18)] rounded-lg cursor-pointer w-full text-left text-inherit font-[inherit] hover:bg-[rgba(251,146,60,0.13)] hover:border-[rgba(251,146,60,0.32)] hover:-translate-y-px active:translate-y-0" style="transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease" onclick={() => onquickstart(quickSuggestion)}>
-		<span class="qs-icon text-[1.1rem] max-sm:text-[1.2rem] shrink-0">{quickSuggestion.icon}</span>
+		<span class="qs-icon shrink-0"><Icon name={PLAN_ICON_KEY[quickSuggestion.planId ?? ''] ?? 'warmup'} size={24} /></span>
 		<div class="flex-1 flex flex-col gap-0.5 min-w-0">
-			<span class="qs-title text-[0.78rem] max-sm:text-[0.85rem] font-bold text-(--text,#fff) whitespace-nowrap overflow-hidden text-ellipsis">{t(quickSuggestion.titleKey, quickSuggestion.titleParams) || quickSuggestion.title}</span>
-			<span class="qs-meta text-[0.62rem] max-sm:text-[0.68rem] text-[rgba(255,255,255,0.38)] whitespace-nowrap overflow-hidden text-ellipsis">{quickSuggestion.minutes} min · {t(quickSuggestion.descriptionKey, quickSuggestion.descriptionParams) || quickSuggestion.description}</span>
+			<span class="qs-title text-[0.78rem] max-sm:text-[0.85rem] font-bold text-(--text) whitespace-nowrap overflow-hidden text-ellipsis">{t(quickSuggestion.titleKey, quickSuggestion.titleParams) || quickSuggestion.title}</span>
+			<span class="qs-meta text-[0.62rem] max-sm:text-[0.68rem] text-(--text-dim) whitespace-nowrap overflow-hidden text-ellipsis">{quickSuggestion.minutes} min · {t(quickSuggestion.descriptionKey, quickSuggestion.descriptionParams) || quickSuggestion.description}</span>
 		</div>
 		<span class="qs-cta text-[0.72rem] max-sm:text-[0.78rem] font-bold text-[#fb923c] shrink-0 tracking-[0.02em]">{t('habit.start_arrow')} →</span>
 	</button>
