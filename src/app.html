@@ -114,19 +114,25 @@
 		<link rel="apple-touch-icon" sizes="180x180" href="%sveltekit.assets%/favicon/apple-touch-icon.png" />
 		<link rel="manifest" href="%sveltekit.assets%/favicon/site.webmanifest" />
 
-		<!-- Anti-flash theme: set data-theme before first paint -->
+		<!-- Anti-flash theme: set data-theme before first paint.
+		     Light mode is scoped to the practice surfaces (/train, /learn) — the
+		     landing and global header always stay on the dark jazz-club theme. -->
 		<script>
 			(function () {
 				try {
+					var p = location.pathname;
+					var routeAllowsLight = p.indexOf('/train') === 0 || p.indexOf('/learn') === 0;
 					var o = localStorage.getItem('chord-trainer-theme');
-					var t =
-						o === 'default' || o === 'light' || o === 'openstudio'
-							? o
-							: window.matchMedia &&
-								  window.matchMedia('(prefers-color-scheme: light)').matches
-								? 'light'
-								: 'default';
-					document.documentElement.setAttribute('data-theme', t);
+					var prefersLight =
+						o === 'light' ||
+						(o !== 'default' &&
+							o !== 'openstudio' &&
+							window.matchMedia &&
+							window.matchMedia('(prefers-color-scheme: light)').matches);
+					document.documentElement.setAttribute(
+						'data-theme',
+						routeAllowsLight && prefersLight ? 'light' : 'default',
+					);
 				} catch (e) {}
 			})();
 		</script>

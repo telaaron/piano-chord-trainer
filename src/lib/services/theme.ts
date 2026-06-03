@@ -64,13 +64,28 @@ function systemPrefersLight(): boolean {
 }
 
 /**
- * Effective theme: explicit override wins; otherwise follow the OS.
- * White-label (openstudio) is only ever set explicitly.
+ * Light mode is scoped to the practice surfaces only. The marketing/landing
+ * pages and the global header always stay on the dark jazz-club theme.
  */
-export function resolveTheme(): ThemeId {
+export function routeAllowsLight(pathname: string): boolean {
+	return pathname.startsWith('/train') || pathname.startsWith('/learn');
+}
+
+/**
+ * The user's *preferred* color scheme (override wins, else OS). This is what a
+ * light/dark toggle reflects — independent of whether the current route shows it.
+ */
+export function preferredScheme(): 'light' | 'default' {
 	const override = loadThemeOverride();
-	if (override) return override;
+	if (override === 'light') return 'light';
+	if (override === 'default') return 'default';
+	if (override === 'openstudio') return 'default';
 	return systemPrefersLight() ? 'light' : 'default';
+}
+
+/** Back-compat alias. */
+export function resolveTheme(): ThemeId {
+	return preferredScheme();
 }
 
 export function applyTheme(theme: ThemeId): void {
@@ -78,28 +93,43 @@ export function applyTheme(theme: ThemeId): void {
 	document.documentElement.setAttribute('data-theme', theme);
 }
 
-/** Apply the resolved theme and keep it in sync with the OS until overridden. */
-export function initTheme(): () => void {
-	applyTheme(resolveTheme());
+/**
+ * Apply the effective theme for a given route: light only if the route allows
+ * it AND the user prefers light; otherwise the default dark theme.
+ */
+export function applyThemeForRoute(pathname: string): void {
+	const wantLight = routeAllowsLight(pathname) && preferredScheme() === 'light';
+	applyTheme(wantLight ? 'light' : 'default');
+}
+
+/**
+ * Initialise theming and keep it in sync with the OS (until overridden) for the
+ * current route. Returns a cleanup fn. Pass the current pathname.
+ */
+export function initTheme(pathname = '/'): () => void {
+	applyThemeForRoute(pathname);
 	if (typeof window === 'undefined' || !window.matchMedia) return () => {};
 	const mq = window.matchMedia('(prefers-color-scheme: light)');
 	const onChange = () => {
-		if (!loadThemeOverride()) applyTheme(resolveTheme());
+		if (!loadThemeOverride()) applyThemeForRoute(getCurrentPath());
 	};
 	mq.addEventListener?.('change', onChange);
 	return () => mq.removeEventListener?.('change', onChange);
 }
 
-/** Is the currently-applied theme a light one? */
-export function isLightActive(): boolean {
-	if (typeof document === 'undefined') return false;
-	return document.documentElement.getAttribute('data-theme') === 'light';
+function getCurrentPath(): string {
+	return typeof location !== 'undefined' ? location.pathname : '/';
 }
 
-/** Flip between light and dark, persisting the explicit choice. */
+/** Is the dark/light *preference* light? (Not the currently-rendered theme.) */
+export function isLightActive(): boolean {
+	return preferredScheme() === 'light';
+}
+
+/** Flip the user's light/dark preference and re-apply for the current route. */
 export function toggleLightDark(): ThemeId {
-	const next: ThemeId = isLightActive() ? 'default' : 'light';
+	const next: ThemeId = preferredScheme() === 'light' ? 'default' : 'light';
 	saveTheme(next);
-	applyTheme(next);
+	applyThemeForRoute(getCurrentPath());
 	return next;
 }
