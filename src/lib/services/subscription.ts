@@ -16,7 +16,7 @@ export interface SubscriptionInfo {
 }
 
 // Beta flag — set to false when launching paid tiers
-const IS_BETA = true;
+const IS_BETA = false;
 
 /**
  * Get the current user's subscription tier.
