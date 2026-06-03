@@ -35,19 +35,17 @@
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
 
-		<!-- Preload LCP assets -->
-		<!-- Mobile hero: AVIF for supporting browsers, WebP fallback -->
+		<!-- Preload LCP hero image — AVIF for supporting browsers, WebP fallback -->
 		<link rel="preload" as="image"
-			href="%sveltekit.assets%/bilder/piano-480.avif"
-			imagesrcset="%sveltekit.assets%/bilder/piano-480.avif 480w, %sveltekit.assets%/bilder/piano-768.avif 768w"
+			href="%sveltekit.assets%/bilder/hero-piano-1280.avif"
+			imagesrcset="%sveltekit.assets%/bilder/hero-piano-480.avif 480w, %sveltekit.assets%/bilder/hero-piano-768.avif 768w, %sveltekit.assets%/bilder/hero-piano-1280.avif 1280w, %sveltekit.assets%/bilder/hero-piano-1920.avif 1920w"
 			imagesizes="100vw"
-			type="image/avif"
-			media="(max-width: 968px)" />
+			type="image/avif" />
 		<link rel="preload" as="image"
-			href="%sveltekit.assets%/bilder/piano-480.webp"
-			imagesrcset="%sveltekit.assets%/bilder/piano-480.webp 480w, %sveltekit.assets%/bilder/piano-768.webp 768w, %sveltekit.assets%/bilder/piano.webp 1344w"
+			href="%sveltekit.assets%/bilder/hero-piano-1280.webp"
+			imagesrcset="%sveltekit.assets%/bilder/hero-piano-480.webp 480w, %sveltekit.assets%/bilder/hero-piano-768.webp 768w, %sveltekit.assets%/bilder/hero-piano-1280.webp 1280w, %sveltekit.assets%/bilder/hero-piano-1920.webp 1920w"
 			imagesizes="100vw"
-			media="(max-width: 968px)" />
+			type="image/webp" />
 
 		<!-- Structured Data: SoftwareApplication -->
 		<script type="application/ld+json">

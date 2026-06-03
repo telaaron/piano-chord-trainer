@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { t } from '$lib/i18n';
 	import {
 		Piano,
@@ -10,188 +9,6 @@
 		Keyboard,
 		Target,
 	} from 'lucide-svelte';
-
-	const HERO_FRAME_COUNT = 73;
-	const HERO_FRAME_BASES = ['/video/frames', '/videos/frames'];
-
-	let heroSection: HTMLElement | undefined;
-	let heroCanvas: HTMLCanvasElement | undefined;
-	let frameImages: Array<HTMLImageElement | undefined> = [];
-	let activeFrameIndex = 0;
-	let pendingFrameIndex = 0;
-	let rafScheduled = false;
-	let latestScrollY = 0;
-	let hasStartedPreload = false;
-
-	const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-	const getFrameFilename = (index: number) => `frame_${String(index + 1).padStart(4, '0')}.jpg`;
-
-	function drawFrame(index: number) {
-		if (!heroCanvas) return;
-		const image = frameImages[index];
-		if (!image || !image.complete || image.naturalWidth === 0) return;
-
-		const ctx = heroCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const dpr = window.devicePixelRatio || 1;
-		const cssWidth = heroCanvas.clientWidth;
-		const cssHeight = heroCanvas.clientHeight;
-
-		if (!cssWidth || !cssHeight) return;
-
-		const targetWidth = Math.floor(cssWidth * dpr);
-		const targetHeight = Math.floor(cssHeight * dpr);
-
-		if (heroCanvas.width !== targetWidth || heroCanvas.height !== targetHeight) {
-			heroCanvas.width = targetWidth;
-			heroCanvas.height = targetHeight;
-		}
-
-		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-		ctx.clearRect(0, 0, cssWidth, cssHeight);
-
-		const coverScale = Math.max(cssWidth / image.naturalWidth, cssHeight / image.naturalHeight);
-		const cinematicZoom = window.innerWidth <= 968 ? 1.12 : 1.17;
-		const scale = coverScale * cinematicZoom;
-		const drawWidth = image.naturalWidth * scale;
-		const drawHeight = image.naturalHeight * scale;
-		const focalX = window.innerWidth <= 968 ? -0.03 : -0.14;
-		const rightShiftPx = cssWidth * (window.innerWidth <= 968 ? 0.07 : 0.12);
-		const offsetX = (cssWidth - drawWidth) * focalX + rightShiftPx;
-		const offsetY = (cssHeight - drawHeight) * 0.5;
-
-		ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
-		activeFrameIndex = index;
-	}
-
-	function scheduleDraw(index: number) {
-		pendingFrameIndex = index;
-		if (rafScheduled) return;
-
-		rafScheduled = true;
-		requestAnimationFrame(() => {
-			rafScheduled = false;
-			drawFrame(pendingFrameIndex);
-		});
-	}
-
-	function loadFrame(index: number, basePathIndex = 0) {
-		if (index < 0 || index >= HERO_FRAME_COUNT) return;
-		if (frameImages[index]) return;
-
-		const image = new Image();
-		const file = getFrameFilename(index);
-		const source = `${HERO_FRAME_BASES[basePathIndex]}/${file}`;
-
-		image.decoding = 'async';
-		// Frames are decorative — never let them contend with hero copy / fonts.
-		try { (image as HTMLImageElement & { fetchPriority?: string }).fetchPriority = 'low'; } catch { /* unsupported */ }
-		image.src = source;
-
-		image.onload = () => {
-			frameImages[index] = image;
-			if (index === pendingFrameIndex || index === 0) {
-				scheduleDraw(index);
-			}
-		};
-
-		image.onerror = () => {
-			if (basePathIndex + 1 < HERO_FRAME_BASES.length) {
-				loadFrame(index, basePathIndex + 1);
-			}
-		};
-	}
-
-	function ensureFramesAround(index: number) {
-		// Lazy window: load only what's near the current scroll position so we
-		// never flood the network with all 73 frames (~14 MB) on page load.
-		const aheadRadius = 8; // bias forward — user scrolls down
-		const behindRadius = 3;
-		for (let i = Math.max(0, index - behindRadius); i <= Math.min(HERO_FRAME_COUNT - 1, index + aheadRadius); i += 1) {
-			loadFrame(i);
-		}
-	}
-
-	// Cached layout metrics — reading offsetTop/offsetHeight per scroll forces
-	// a synchronous reflow (a major source of scroll jank). Recompute on resize.
-	let cachedSectionTop = 0;
-	let cachedSectionHeight = 0;
-	let cachedViewportH = 0;
-
-	function refreshHeroMetrics() {
-		if (!heroSection) return;
-		cachedSectionTop = heroSection.offsetTop;
-		cachedSectionHeight = heroSection.offsetHeight;
-		cachedViewportH = window.innerHeight;
-	}
-
-	function getScrollProgress(scrollY: number) {
-		if (!heroSection) return 0;
-		const start = Math.max(0, cachedSectionTop - cachedViewportH * 0.04);
-		const end = cachedSectionTop + cachedSectionHeight - cachedViewportH * 0.08;
-		const range = Math.max(1, end - start);
-		return clamp((scrollY - start) / range, 0, 1);
-	}
-
-	function updateFromScroll(scrollY: number) {
-		const progress = getScrollProgress(scrollY);
-		const nextIndex = Math.round(progress * (HERO_FRAME_COUNT - 1));
-		ensureFramesAround(nextIndex);
-		if (nextIndex !== activeFrameIndex) {
-			scheduleDraw(nextIndex);
-		}
-	}
-
-	onMount(() => {
-		if (!heroCanvas) return;
-		// Skip the scroll-frame cinema on mobile and for users who opt out of motion.
-		if (window.innerWidth <= 968) return;
-		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-			refreshHeroMetrics();
-			loadFrame(0); // a single static poster frame is enough
-			scheduleDraw(0);
-			return;
-		}
-
-		refreshHeroMetrics();
-		// Warm only the opening window; the rest stream in as the user scrolls.
-		if (!hasStartedPreload) {
-			hasStartedPreload = true;
-			ensureFramesAround(0);
-		}
-
-		// Coalesce scroll → one draw per animation frame.
-		let ticking = false;
-		const handleScroll = () => {
-			latestScrollY = window.scrollY;
-			if (ticking) return;
-			ticking = true;
-			requestAnimationFrame(() => {
-				ticking = false;
-				updateFromScroll(latestScrollY);
-			});
-		};
-
-		const handleResize = () => {
-			refreshHeroMetrics();
-			scheduleDraw(activeFrameIndex);
-			updateFromScroll(latestScrollY);
-		};
-
-		latestScrollY = window.scrollY;
-		updateFromScroll(latestScrollY);
-		scheduleDraw(0);
-
-		window.addEventListener('scroll', handleScroll, { passive: true });
-		window.addEventListener('resize', handleResize);
-
-		return () => {
-			window.removeEventListener('scroll', handleScroll);
-			window.removeEventListener('resize', handleResize);
-		};
-	});
 </script>
 
 <svelte:head>
@@ -260,13 +77,32 @@
 	})}</script>`}
 </svelte:head>
 
-<!-- Cinematic Hero with Frame 1 -->
+<!-- Cinematic Hero — static jazz-club piano, subject right / dark left for copy -->
 <section
-	bind:this={heroSection}
 	class="hero-stage relative isolate h-[calc(100svh-3.5rem)] overflow-hidden max-[968px]:h-auto max-[968px]:min-h-[calc(100svh-3.5rem)]"
 >
 	<div class="hero-media absolute inset-0 z-0">
-		<canvas bind:this={heroCanvas} class="hero-canvas h-full w-full" aria-hidden="true"></canvas>
+		<picture>
+			<source
+				type="image/avif"
+				srcset="/bilder/hero-piano-480.avif 480w, /bilder/hero-piano-768.avif 768w, /bilder/hero-piano-1280.avif 1280w, /bilder/hero-piano-1920.avif 1920w"
+				sizes="100vw"
+			/>
+			<source
+				type="image/webp"
+				srcset="/bilder/hero-piano-480.webp 480w, /bilder/hero-piano-768.webp 768w, /bilder/hero-piano-1280.webp 1280w, /bilder/hero-piano-1920.webp 1920w"
+				sizes="100vw"
+			/>
+			<img
+				src="/bilder/hero-piano-1280.webp"
+				alt=""
+				aria-hidden="true"
+				width="2752"
+				height="1536"
+				fetchpriority="high"
+				class="hero-canvas h-full w-full object-cover"
+			/>
+		</picture>
 	</div>
 
 	<div class="hero-glow absolute inset-x-0 bottom-0 h-[58%] pointer-events-none"></div>
