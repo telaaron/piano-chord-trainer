@@ -1635,6 +1635,9 @@ export const en = {
     feat_all_courses: 'All 4 structured courses',
     feat_speed_drill: 'Speed drill (random mode)',
     feat_shell_voicings: 'Shell voicings',
+    feat_all_voicings_free: 'All 9 voicing types',
+    feat_voice_leading_free: 'Voice-leading drills',
+    feat_progressions: 'ii-V-I & all progressions, 12 keys',
     feat_midi_mic: 'MIDI & microphone input',
     feat_habit_basic: 'Habit system (streaks, XP)',
     feat_i18n: 'English & German',
@@ -1668,6 +1671,36 @@ export const en = {
     faq_trial_a: 'You get 14 days of full Pro access. We collect your card so billing continues smoothly, but you are not charged until day 15 — and you can cancel any time before then for free.',
     faq_guarantee_q: 'What\'s the money-back guarantee?',
     faq_guarantee_a: 'If you\'re not happy for any reason, email info@jazzchords.app within 30 days of your first payment and we refund you in full. We\'re confident in the product, so the risk is ours.',
+  },
+
+  upgrade: {
+    // generic
+    eyebrow: 'Pro feature',
+    points_title: 'Pro unlocks',
+    point_adaptive: 'Adaptive coaching — drills your weakest keys automatically',
+    point_custom: 'Custom progressions — practice any tune, any changes',
+    point_stats: 'Advanced stats — trends, weak-spot analysis, personal bests',
+    point_sync: 'Cloud sync — your progress on every device',
+    cta_trial: 'Start 14 days free',
+    cta_login: 'Sign in to upgrade',
+    later: 'Maybe later',
+    trial_note: 'then €4.99/mo · cancel anytime · 30-day money-back',
+    // teaser (after first free taste)
+    teaser_adaptive_title: 'That was Adaptive Coaching.',
+    teaser_adaptive_desc: 'It found the keys slowing you down and drilled exactly those. Keep it working for you with Pro.',
+    teaser_stats_title: 'This is your full progress picture.',
+    teaser_stats_desc: 'Trends, your slowest chords, every personal best. Keep the deep insights with Pro.',
+    // direct lock
+    lock_adaptive_title: 'Unlock Adaptive Coaching',
+    lock_adaptive_desc: 'Let the trainer find your weak keys and drill them automatically — the fastest way to even out all 12.',
+    lock_custom_title: 'Unlock Custom Progressions',
+    lock_custom_desc: 'Build and drill any chord sequence — jazz standards, your own changes, anything.',
+    lock_stats_title: 'Unlock Advanced Stats',
+    lock_stats_desc: 'See trends over time, your slowest chords, and every personal best.',
+    lock_sync_title: 'Unlock Cloud Sync',
+    lock_sync_desc: 'Practice on your laptop, check stats on your phone — your progress follows you.',
+    lock_generic_title: 'Unlock with Pro',
+    lock_generic_desc: 'This is a Pro feature. Try everything free for 14 days.',
   },
 
   // ─── Navigation additions ─────────────────────────

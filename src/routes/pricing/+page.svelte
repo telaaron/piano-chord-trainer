@@ -49,11 +49,11 @@
 			period: '',
 			features: [
 				'pricing.feat_all_courses',
-				'pricing.feat_speed_drill',
-				'pricing.feat_shell_voicings',
+				'pricing.feat_all_voicings_free',
+				'pricing.feat_voice_leading_free',
+				'pricing.feat_progressions',
 				'pricing.feat_midi_mic',
 				'pricing.feat_habit_basic',
-				'pricing.feat_i18n',
 			],
 			cta: 'pricing.cta_free',
 			href: '/train',
@@ -67,8 +67,6 @@
 			features: [
 				'pricing.feat_everything_free',
 				'pricing.feat_adaptive',
-				'pricing.feat_all_voicings',
-				'pricing.feat_voice_leading',
 				'pricing.feat_custom_progressions',
 				'pricing.feat_advanced_stats',
 				'pricing.feat_cloud_sync',

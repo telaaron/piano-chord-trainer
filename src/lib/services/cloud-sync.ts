@@ -2,6 +2,7 @@
 // Implements merge-on-login: local data is merged into cloud on first sign-in.
 import { getSupabase } from './supabase';
 import { getAuthState } from './auth';
+import { canUse } from './subscription-store.svelte';
 
 // All localStorage keys that should be synced
 const SYNC_KEYS = [
@@ -97,6 +98,8 @@ export async function downloadCloudData(): Promise<{ merged: boolean; error: Err
 export async function syncToCloud(): Promise<void> {
 	const { user } = getAuthState();
 	if (!user) return;
+	// Cloud sync is a Pro feature — free users keep data local only.
+	if (!canUse('cloud-sync')) return;
 
 	const supabase = getSupabase();
 	const dataPayload: Record<string, unknown> = {};

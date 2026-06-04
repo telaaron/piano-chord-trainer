@@ -5,6 +5,10 @@
 	import GameSettings from '$lib/components/GameSettings.svelte';
 	import QuickStart from '$lib/components/QuickStart.svelte';
 	import { Icon } from '$lib/components/ui';
+	import UpgradeSheet from '$lib/components/UpgradeSheet.svelte';
+	import ProBadge from '$lib/components/ProBadge.svelte';
+	import { canUse, showLock } from '$lib/services/subscription-store.svelte';
+	import { hasUsedTeaser, markTeaserUsed } from '$lib/utils/teaser';
 	import { toggleLightDark, isLightActive } from '$lib/services/theme';
 	import { Sun, Moon } from 'lucide-svelte';
 	import ChordCard from '$lib/components/ChordCard.svelte';
@@ -216,6 +220,31 @@
 	let showExerciseInfo = $state(false);
 	let showInsights = $state(false);
 	let advancedOpen = $state(false);
+
+	// ─── Upgrade / paywall ───────────────────────────────────────
+	let upgradeOpen = $state(false);
+	let upgradeFeature = $state('adaptive-difficulty');
+	let upgradeTeaser = $state(false);
+	/** Tracks whether the just-finished session was an adaptive (Pro) drill. */
+	let sessionWasAdaptive = $state(false);
+
+	function openUpgrade(feature: string, teaser = false) {
+		upgradeFeature = feature;
+		upgradeTeaser = teaser;
+		upgradeOpen = true;
+	}
+
+	/**
+	 * Gate a Pro feature. Returns true if the caller may proceed.
+	 * Free users get one teaser taste of teaser-able features; after that (or for
+	 * non-teaser features) the upgrade sheet opens and we block.
+	 */
+	function gatePro(feature: string, opts: { teaserable?: boolean } = {}): boolean {
+		if (canUse(feature)) return true;
+		if (opts.teaserable && !hasUsedTeaser(feature)) return true; // allow the one free taste
+		openUpgrade(feature, false);
+		return false;
+	}
 	let themeIsLight = $state(false);
 	function flipTheme() {
 		toggleLightDark();
@@ -601,6 +630,14 @@
 	}
 
 	function startPlan(plan: PracticePlan) {
+		// Adaptive coaching is Pro — free users get one teaser run, then a prompt.
+		if (plan.id === 'adaptive-drill' && !gatePro('adaptive-difficulty', { teaserable: true })) {
+			return;
+		}
+		// Remember (for the post-session teaser) whether this run was the free taste.
+		sessionWasAdaptive =
+			plan.id === 'adaptive-drill' && !canUse('adaptive-difficulty') && !hasUsedTeaser('adaptive-difficulty');
+
 		// Clear focus unless this is an adaptive drill with focus
 		if (plan.id !== 'adaptive-drill') {
 			focusRoots = [];
@@ -771,6 +808,13 @@
 
 		// Refresh dashboard stats
 		dashStats = computeStats(loadHistory());
+
+		// Adaptive teaser: the free user just felt the coaching — convert now.
+		if (sessionWasAdaptive) {
+			markTeaserUsed('adaptive-difficulty');
+			sessionWasAdaptive = false;
+			setTimeout(() => openUpgrade('adaptive-difficulty', true), 900);
+		}
 	}
 
 	function restartGame() {
@@ -806,6 +850,8 @@
 
 	// ─── Custom Progression handlers ─────────────────────────────
 	function openCustomEditor() {
+		// Custom progressions are Pro (no teaser — a half-built editor has no aha).
+		if (!gatePro('custom-progressions')) return;
 		screen = 'custom-editor';
 	}
 
@@ -1613,7 +1659,7 @@
 					{#if showInsights}
 						<section in:fade={{ duration: 180 }} class="flex flex-col gap-3">
 							<h2 class="text-sm font-semibold uppercase tracking-[0.06em] text-(--text-muted)">{t('settings.your_progress')}</h2>
-							<ProgressDashboard onstart={startGame} />
+							<ProgressDashboard onstart={startGame} onupgrade={() => openUpgrade('advanced-stats', false)} />
 						</section>
 					{/if}
 
@@ -1643,7 +1689,7 @@
 								<div class="flex flex-wrap items-center gap-2">
 									<button class="pill-btn pill-btn-primary text-sm px-4 py-2" onclick={startGame}>{t('settings.start_training')}</button>
 									<button class="pill-btn pill-btn-secondary text-sm px-3 py-2" onclick={() => (settingsOpen = true)}>{t('settings.custom_settings')}</button>
-									<button class="pill-btn pill-btn-secondary text-sm px-3 py-2" onclick={openCustomEditor}>{t('settings.custom_progression')}</button>
+									<button class="pill-btn pill-btn-secondary text-sm px-3 py-2 inline-flex items-center gap-1.5" onclick={openCustomEditor}>{t('settings.custom_progression')} <ProBadge feature="custom-progressions" size="xs" /></button>
 								</div>
 
 								<GameSettings
@@ -1960,14 +2006,17 @@
 						{/if}
 					</fieldset>
 					<fieldset>
-						<legend class="text-sm font-medium mb-1">{t('settings.adaptive_mode')}</legend>
+						<legend class="text-sm font-medium mb-1 flex items-center gap-2">{t('settings.adaptive_mode')} <ProBadge feature="adaptive-difficulty" size="xs" /></legend>
 						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.adaptive_desc')}</p>
 						<div class="grid grid-cols-2 gap-3">
 							{#each [
 								{ val: false, label: t('settings.on_off_off'), sub: t('settings.adaptive_off_sub') },
 								{ val: true, label: t('settings.on_off_on'), sub: t('settings.adaptive_on_sub') },
 							] as opt}
-								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(adaptiveEnabled, opt.val)}" onclick={() => (adaptiveEnabled = opt.val)}>
+								<button class="p-3 rounded-[var(--radius)] border-2 transition-all text-left {sel(adaptiveEnabled, opt.val)}" onclick={() => {
+									if (opt.val && showLock('adaptive-difficulty')) { openUpgrade('adaptive-difficulty', false); return; }
+									adaptiveEnabled = opt.val;
+								}}>
 									<div class="font-semibold text-sm">{opt.label}</div><div class="text-xs text-[var(--text-dim)] mt-1">{opt.sub}</div>
 								</button>
 							{/each}
@@ -2763,6 +2812,8 @@
 		onclose={() => { showExplain = false; }}
 	/>
 {/if}
+
+<UpgradeSheet bind:open={upgradeOpen} feature={upgradeFeature} teaserMode={upgradeTeaser} />
 
 <style>
 	/* Ambient page wash — token-based so it flips with the theme. */

@@ -72,19 +72,20 @@ export function hasAccess(requiredTier: SubscriptionTier, currentTier: Subscript
  * Feature gate definitions — what tier each feature requires.
  */
 export const FEATURE_GATES: Record<string, SubscriptionTier> = {
-	// Free features
+	// Free features — a genuinely strong free tier
 	'courses': 'free',
 	'speed-drill-random': 'free',
 	'shell-voicings': 'free',
+	'all-voicing-types': 'free',
+	'voice-leading': 'free',
+	'progressions': 'free',
 	'midi-input': 'free',
 	'microphone-input': 'free',
 	'habit-basic': 'free',
 	'i18n': 'free',
 
-	// Pro features
+	// Pro features — coaching + power tools + persistence
 	'adaptive-difficulty': 'pro',
-	'all-voicing-types': 'pro',
-	'voice-leading': 'pro',
 	'custom-progressions': 'pro',
 	'advanced-stats': 'pro',
 	'cloud-sync': 'pro',

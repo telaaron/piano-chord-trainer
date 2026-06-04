@@ -1,15 +1,24 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import Stripe from 'stripe';
-import { STRIPE_SECRET_KEY } from '$env/static/private';
+import { STRIPE_SECRET_KEY, STRIPE_PRICE_PRO, STRIPE_PRICE_EDUCATOR, STRIPE_PRICE_INSTITUTION } from '$env/static/private';
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
+
+const PLAN_PRICE: Record<string, string> = {
+	pro: STRIPE_PRICE_PRO,
+	educator: STRIPE_PRICE_EDUCATOR,
+	institution: STRIPE_PRICE_INSTITUTION,
+};
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const { session, user } = await locals.safeGetSession();
 	if (!user) throw error(401, 'Not authenticated');
 
-	const { priceId } = await request.json();
+	const body = await request.json();
+	// Accept either an explicit priceId (pricing page) or a plan key (upgrade sheet).
+	const priceId: string | undefined =
+		typeof body.priceId === 'string' ? body.priceId : PLAN_PRICE[body.plan];
 	if (!priceId || typeof priceId !== 'string') throw error(400, 'Invalid price ID');
 
 	// Get or create Stripe customer

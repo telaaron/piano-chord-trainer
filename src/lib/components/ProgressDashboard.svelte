@@ -13,12 +13,20 @@
 	} from '$lib/services/progress';
 	import { t, getLocale } from '$lib/i18n';
 	import { Icon } from '$lib/components/ui';
+	import { showLock } from '$lib/services/subscription-store.svelte';
+	import { hasUsedTeaser, markTeaserUsed } from '$lib/utils/teaser';
 
 	interface Props {
 		/** Called by the empty-state CTA (e.g. start a first session). */
 		onstart?: () => void;
+		/** Called when a locked advanced block is tapped (opens upgrade sheet). */
+		onupgrade?: () => void;
 	}
-	let { onstart }: Props = $props();
+	let { onstart, onupgrade }: Props = $props();
+
+	// Advanced stats are Pro. Free users get one full look (the aha), then the
+	// deep blocks lock — the basic metrics (sessions / chords / avg) stay free.
+	let advancedLocked = $state(false);
 
 	let history: SessionResult[] = $state([]);
 	let stats: ProgressStats = $state(computeStats([]));
@@ -31,6 +39,15 @@
 		stats = computeStats(history);
 		weakChords = analyzeWeakChords(history, 5);
 		chordTrends = analyzeChordTrends(history);
+
+		// First full view = the teaser. Lock the deep blocks only afterwards.
+		if (showLock('advanced-stats')) {
+			if (hasUsedTeaser('advanced-stats')) {
+				advancedLocked = true;
+			} else {
+				markTeaserUsed('advanced-stats');
+			}
+		}
 	});
 
 	function handleClear() {
@@ -139,6 +156,9 @@
 		</div>
 
 		<!-- ── Middle: Improvements + Weak Spots ── -->
+		<!-- Advanced stats — Pro. Free users saw it once; now blurred + locked. -->
+		<div class="relative">
+		<div class={advancedLocked ? "pointer-events-none select-none blur-[6px] opacity-50" : ""}>
 		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
 
 			<!-- Improvements: show absolute old→new times -->
@@ -317,6 +337,17 @@
 				</details>
 			{/if}
 
+		</div>
+		{#if advancedLocked}
+			<button type="button" onclick={() => onupgrade?.()} class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] bg-[var(--bg)]/30 backdrop-blur-[1px] cursor-pointer">
+				<span class="grid h-11 w-11 place-items-center rounded-full bg-[var(--accent-gold)]/15">
+					<svg class="h-5 w-5 text-[var(--accent-gold)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+				</span>
+				<span class="text-sm font-semibold text-[var(--text)]">{t("upgrade.lock_stats_title")}</span>
+				<span class="text-xs text-[var(--accent-gold)] font-medium">{t("upgrade.cta_trial")} →</span>
+			</button>
+		{/if}
+		</div>
 		</div>
 	</div>
 {:else}

@@ -5,6 +5,7 @@
 	import { initTheme, applyThemeForRoute, isLightActive, toggleLightDark, routeAllowsLight } from '$lib/services/theme';
 	import { Sun, Moon } from 'lucide-svelte';
 	import { initAuth, onAuthChange, type AuthState } from '$lib/services/auth';
+	import { initSubscriptionStore } from '$lib/services/subscription-store.svelte';
 	import { getSupabase } from '$lib/services/supabase';
 	import ToastContainer from '$lib/components/ToastContainer.svelte';
 	import { browser } from '$app/environment';
@@ -44,6 +45,7 @@
 
 	$effect(() => {
 		if (!browser) return;
+		const unsubSub = initSubscriptionStore();
 		initAuth();
 		const unsub = onAuthChange(async (s) => {
 			auth = s;
@@ -65,7 +67,10 @@
 				showSyncBanner = false;
 			}
 		});
-		return unsub;
+		return () => {
+			unsub();
+			unsubSub();
+		};
 	});
 
 	function dismissSyncBanner() {
