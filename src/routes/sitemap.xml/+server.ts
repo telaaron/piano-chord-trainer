@@ -1,15 +1,27 @@
 import type { RequestHandler } from './$types';
+import { CHORD_PAGE_SLUGS } from '$lib/seo/chords';
 
-// Single source of truth for indexable URLs. Add /chords/* and /learn/* entries
-// here as content pages ship. lastmod is generated at build time so Google sees
-// a fresh signal instead of a hard-coded stale date.
-const PAGES: { path: string; priority: number; freq: string }[] = [
+// Single source of truth for indexable URLs. lastmod is generated at build time
+// so Google sees a fresh signal instead of a hard-coded stale date.
+const STATIC_PAGES: { path: string; priority: number; freq: string }[] = [
 	{ path: '/', priority: 1.0, freq: 'weekly' },
+	{ path: '/learn/jazz-piano-voicings', priority: 0.9, freq: 'weekly' },
+	{ path: '/learn/ii-v-i', priority: 0.9, freq: 'weekly' },
+	{ path: '/learn/rootless-voicings', priority: 0.9, freq: 'weekly' },
 	{ path: '/for-educators', priority: 0.8, freq: 'monthly' },
 	{ path: '/open-studio', priority: 0.7, freq: 'monthly' },
 	{ path: '/pricing', priority: 0.7, freq: 'monthly' },
 	{ path: '/about', priority: 0.5, freq: 'yearly' },
 ];
+
+// Content pages — one per chord type (Welle 1).
+const CHORD_PAGES = CHORD_PAGE_SLUGS.map((slug) => ({
+	path: `/chords/${slug}`,
+	priority: 0.8,
+	freq: 'monthly',
+}));
+
+const PAGES = [...STATIC_PAGES, ...CHORD_PAGES];
 
 const BASE = 'https://jazzchords.app';
 
