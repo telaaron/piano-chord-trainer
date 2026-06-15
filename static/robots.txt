@@ -2,6 +2,9 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Disallow: /account
+Disallow: /auth/
+Disallow: /midi-test
 
 User-agent: bingbot
 Crawl-delay: 1
