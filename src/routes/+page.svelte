@@ -107,14 +107,6 @@
 
 	<div class="hero-vignette absolute inset-0 pointer-events-none"></div>
 
-	<!-- Animated piano-key equaliser — the signature motif. GPU-only (transform
-	     + opacity), no blur, so it never janks. Sits along the bottom edge. -->
-	<div class="hero-keys pointer-events-none" aria-hidden="true">
-		{#each Array(28) as _, i (i)}
-			<span class="hk" style={`--i:${i}; --d:${(i % 7) * 0.18 + (i % 3) * 0.07}s`}></span>
-		{/each}
-	</div>
-
 	<div class="hero-content-frame relative z-2 flex h-full items-center">
 	<div class="hero-copy-shell max-w-140 px-8 py-8 rounded-[1.35rem] max-[968px]:max-w-none max-[968px]:rounded-2xl max-[968px]:px-5 max-[968px]:py-5.5">
 		<!-- Badge -->
@@ -315,39 +307,6 @@
 		}
 	}
 
-	/* ── Animated piano-key equaliser ── */
-	.hero-keys {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 1;
-		display: flex;
-		align-items: flex-end;
-		justify-content: center;
-		gap: clamp(3px, 0.5vw, 7px);
-		height: 30%;
-		padding: 0 6%;
-		mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-	}
-	.hk {
-		flex: 1 1 0;
-		max-width: 34px;
-		height: 100%;
-		border-radius: 6px 6px 2px 2px;
-		background: linear-gradient(180deg, rgba(255, 167, 98, 0.5) 0%, rgba(232, 118, 59, 0.16) 60%, transparent 100%);
-		transform-origin: bottom;
-		transform: scaleY(0.18);
-		opacity: 0.55;
-		animation: hk-pulse 2.6s ease-in-out infinite;
-		animation-delay: var(--d);
-		will-change: transform, opacity;
-	}
-	@keyframes hk-pulse {
-		0%, 100% { transform: scaleY(0.14); opacity: 0.4; }
-		45% { transform: scaleY(0.85); opacity: 0.95; }
-		60% { transform: scaleY(0.55); opacity: 0.75; }
-	}
 
 	.hero-vignette {
 		background:
@@ -359,17 +318,9 @@
 		text-wrap: balance;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.hk {
-			animation: none;
-			transform: scaleY(0.4);
-			opacity: 0.5;
-		}
-	}
 
 	@media (max-width: 968px) {
-		.hero-media,
-		.hero-keys {
+		.hero-media {
 			display: none;
 		}
 
