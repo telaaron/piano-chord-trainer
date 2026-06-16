@@ -232,7 +232,7 @@ h1, h2, h3, .font-display {
 }
 
 .card-hover:hover {
-	border-color: rgba(232, 118, 59, 0.3);
+	border-color: rgba(245, 166, 35, 0.3);
 	background: rgba(34, 26, 21, 0.8);
 }
 
@@ -250,7 +250,7 @@ h1, h2, h3, .font-display {
 	padding: 0.55rem 0.85rem;
 	border-radius: 999px;
 	background: rgba(10, 9, 8, 0.78);
-	border: 1px solid rgba(109, 76, 65, 0.55);
+	border: 1px solid rgba(45, 41, 82, 0.55);
 	color: var(--text);
 	transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
@@ -258,7 +258,7 @@ h1, h2, h3, .font-display {
 .pill-input:focus {
 	outline: none;
 	border-color: var(--primary);
-	box-shadow: 0 0 0 3px rgba(232, 118, 59, 0.2);
+	box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.2);
 	background: rgba(10, 9, 8, 0.9);
 }
 
@@ -288,21 +288,21 @@ h1, h2, h3, .font-display {
 
 .pill-btn-secondary {
 	background: rgba(26, 20, 16, 0.76);
-	border: 1px solid rgba(109, 76, 65, 0.62);
+	border: 1px solid rgba(45, 41, 82, 0.62);
 	color: var(--text);
 }
 
 .pill-btn-secondary:hover {
 	background: rgba(34, 26, 21, 0.88);
-	border-color: rgba(232, 118, 59, 0.46);
+	border-color: rgba(245, 166, 35, 0.46);
 }
 
 .status-glass {
 	border-radius: 0.85rem;
 	backdrop-filter: blur(8px);
 	padding: 0.75rem;
-	border: 1px solid rgba(232, 118, 59, 0.25);
-	background: rgba(232, 118, 59, 0.08);
+	border: 1px solid rgba(245, 166, 35, 0.25);
+	background: rgba(245, 166, 35, 0.08);
 }
 
 .status-danger {

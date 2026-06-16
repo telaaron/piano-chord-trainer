@@ -169,7 +169,7 @@
 				<span class="block mt-1 text-sm text-[var(--text-dim)]">{t('open_studio.platform_preview')}</span>
 			</p>
 
-			<div class="rounded-xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.6)] border border-[rgba(109,76,65,0.3)]">
+			<div class="rounded-xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.6)] border border-[rgba(45, 41, 82,0.3)]">
 				<!-- Browser Chrome -->
 				<div class="bg-[#2b2b2b] px-3 py-[0.6rem] flex items-center gap-3">
 					<div class="flex gap-[0.35rem]"><span class="w-2.75 h-2.75 rounded-full bg-[#ff5f57]"></span><span class="w-2.75 h-2.75 rounded-full bg-[#ffbd2e]"></span><span class="w-2.75 h-2.75 rounded-full bg-[#28c840]"></span></div>
@@ -256,7 +256,7 @@
 								{@const isBlack = [1, 3, 6, 8, 10, 13].includes(i)}
 								{@const isActive = [2, 5, 12].includes(i)}
 								<div
-									class="rounded-b {isBlack ? 'w-5.5 h-14.5 bg-[#1a1410] border border-[#3e2723] -mx-3 z-2 relative max-md:w-4 max-md:-mx-2.25' : 'w-8.5 h-22.5 bg-[#f5f3ee] border border-[#c8c4ba] max-md:w-6.5'}"
+									class="rounded-b {isBlack ? 'w-5.5 h-14.5 bg-[#161329] border border-[#2d2952] -mx-3 z-2 relative max-md:w-4 max-md:-mx-2.25' : 'w-8.5 h-22.5 bg-[#f5f3ee] border border-[#c8c4ba] max-md:w-6.5'}"
 									class:os-key-active={isActive}
 									class:os-key-white={!isBlack}
 									class:os-key-black={isBlack}
@@ -266,7 +266,7 @@
 
 						<div class="flex items-center gap-3 text-[0.8rem] text-(--text-muted)">
 							<span>Chord 8 / 20</span>
-							<div class="flex-1 h-1.25 bg-[rgba(109,76,65,0.2)] rounded-[3px] overflow-hidden">
+							<div class="flex-1 h-1.25 bg-[rgba(45, 41, 82,0.2)] rounded-[3px] overflow-hidden">
 								<div class="h-full rounded-[3px]" style="width: 40%; background: linear-gradient(90deg, var(--primary), var(--accent-amber))"></div>
 							</div>
 							<span class="text-(--accent-green) font-semibold">Accuracy: 94%</span>
@@ -279,7 +279,7 @@
 
 		<!-- Benefits as annotation OUTSIDE the mock -->
 		<div class="max-w-5xl mx-auto">
-			<div class="grid grid-cols-3 gap-6 bg-[rgba(232,118,59,0.05)] px-6 py-10 mt-6 rounded-lg max-md:grid-cols-1">
+			<div class="grid grid-cols-3 gap-6 bg-[rgba(245, 166, 35,0.05)] px-6 py-10 mt-6 rounded-lg max-md:grid-cols-1">
 				<div class="flex items-center gap-3 text-[0.9rem] text-(--text) font-medium">
 					<CheckCircle size={20} class="text-[#00a86b]" />
 					<span>{t('open_studio.benefits_1')}</span>
