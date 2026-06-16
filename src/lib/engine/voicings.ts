@@ -1,7 +1,7 @@
 // Voicing calculation – which notes to play for each voicing type
 
 import type { AccidentalPreference, NotationSystem } from './notes';
-import { noteToSemitone, getNoteName, convertNoteName, ENHARMONIC_MAP } from './notes';
+import { noteToSemitone, getNoteName, convertNoteName, ENHARMONIC_MAP, spellChordNotes } from './notes';
 import { CHORD_INTERVALS, CHORD_NOTATIONS, type NotationStyle, type VoicingType } from './chords';
 
 export interface ChordWithNotes {
@@ -22,6 +22,10 @@ export function getChordNotes(root: string, quality: string, pref: AccidentalPre
 	const rootSemi = noteToSemitone(root);
 	const intervals = CHORD_INTERVALS[quality];
 	if (!intervals || rootSemi === -1) return [];
+	// 'both' = let chord theory drive the spelling (no doubled letters, quality-
+	// aware): Cm7 → C Eb G Bb, not C D# G A#. Explicit 'sharps'/'flats' (chosen
+	// by the user in the trainer) keep the simple chromatic spelling.
+	if (pref === 'both') return spellChordNotes(root, intervals);
 	return intervals.map((iv) => getNoteName(rootSemi, iv, pref));
 }
 
@@ -32,6 +36,9 @@ export function getChordNotes(root: string, quality: string, pref: AccidentalPre
 function getNinth(root: string, pref: AccidentalPreference): string {
 	const rootSemi = noteToSemitone(root);
 	if (rootSemi === -1) return '';
+	// Spell the 9th as a proper second above the root (e.g. C → D, Eb → F),
+	// quality-aware under 'both'; chromatic otherwise.
+	if (pref === 'both') return spellChordNotes(root, [0, 2])[1];
 	return getNoteName(rootSemi, 14, pref);
 }
 

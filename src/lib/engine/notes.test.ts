@@ -9,7 +9,36 @@ import {
 	getNoteName,
 	convertNoteName,
 	convertChordNotation,
+	spellChordNotes,
 } from './notes';
+import { CHORD_INTERVALS } from './chords';
+
+describe('spellChordNotes (theory-correct, no doubled letters)', () => {
+	const sp = (root: string, quality: string) =>
+		spellChordNotes(root, CHORD_INTERVALS[quality]);
+
+	it('spells Cm7 with flats, not sharps (Eb/Bb not D#/A#)', () => {
+		expect(sp('C', 'm7')).toEqual(['C', 'Eb', 'G', 'Bb']);
+	});
+	it('spells the dominant ♭7 as Bb in C7', () => {
+		expect(sp('C', '7')).toEqual(['C', 'E', 'G', 'Bb']);
+	});
+	it('keeps Cmaj7 natural', () => {
+		expect(sp('C', 'Maj7')).toEqual(['C', 'E', 'G', 'B']);
+	});
+	it('uses sharps for a sharp-key dominant (F#7)', () => {
+		expect(sp('F#', '7')).toEqual(['F#', 'A#', 'C#', 'E']);
+	});
+	it('never produces a note the keyboard cannot resolve', () => {
+		for (const root of ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']) {
+			for (const quality of Object.keys(CHORD_INTERVALS)) {
+				for (const n of sp(root, quality)) {
+					expect(noteToSemitone(n), `${n} in ${root}${quality}`).toBeGreaterThanOrEqual(0);
+				}
+			}
+		}
+	});
+});
 
 describe('NOTES_SHARPS / NOTES_FLATS', () => {
 	it('has 12 sharps notes', () => {
