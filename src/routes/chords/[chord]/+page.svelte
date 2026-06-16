@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ArrowRight, Music } from 'lucide-svelte';
+	import { ArrowRight, Play, AudioWaveform, ChevronRight } from 'lucide-svelte';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import { VOICING_LABELS } from '$lib/engine/chords';
 	import type { ChordWithNotes } from '$lib/engine/voicings';
@@ -15,18 +15,28 @@
 	const description = $derived(meta.blurb);
 	const canonical = $derived(`https://jazzchords.app/chords/${meta.slug}`);
 
-	// Build a ChordWithNotes per voicing so PianoKeyboard can draw it.
 	function chordData(voicingNotes: string[]): ChordWithNotes {
-		return {
-			chord: meta.name,
-			root: meta.root,
-			type: meta.quality,
-			notes,
-			voicing: voicingNotes,
-		};
+		return { chord: meta.name, root: meta.root, type: meta.quality, notes, voicing: voicingNotes };
 	}
 
-	// JSON-LD: FAQPage built from the editorial FAQ.
+	// Audio is loaded lazily on first interaction so it never blocks prerender
+	// or the initial load. Tone.js only enters the bundle when a button is hit.
+	let playing = $state<string | null>(null);
+
+	async function playBlock(key: string, voicingNotes: string[]) {
+		playing = key;
+		const { playChord } = await import('$lib/services/audio');
+		await playChord(voicingNotes, '1n');
+		setTimeout(() => { if (playing === key) playing = null; }, 900);
+	}
+
+	async function playArp(key: string, voicingNotes: string[]) {
+		playing = key + '-arp';
+		const { playArpeggio } = await import('$lib/services/audio');
+		await playArpeggio(voicingNotes, 200, '2n');
+		setTimeout(() => { if (playing === key + '-arp') playing = null; }, voicingNotes.length * 200 + 400);
+	}
+
 	const faqSchema = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'FAQPage',
@@ -37,7 +47,6 @@
 		})),
 	});
 
-	// JSON-LD: breadcrumb for the chords hub.
 	const breadcrumbSchema = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'BreadcrumbList',
@@ -68,12 +77,13 @@
 <article class="chord-page">
 	<nav class="crumbs" aria-label="Breadcrumb">
 		<a href="/learn/jazz-piano-voicings">Jazz Piano Voicings</a>
-		<span aria-hidden="true">/</span>
-		<span>{meta.name}</span>
+		<ChevronRight size={13} aria-hidden="true" />
+		<span aria-current="page">{meta.name}</span>
 	</nav>
 
 	<header class="hero">
-		<h1>{meta.name} Piano Voicings</h1>
+		<p class="eyebrow">{meta.longName}</p>
+		<h1>{meta.name} <span>Piano Voicings</span></h1>
 		<p class="lead">{meta.context}</p>
 		<a class="cta" href="/train">
 			Drill {meta.name} in all 12 keys
@@ -81,11 +91,8 @@
 		</a>
 	</header>
 
-	<section aria-labelledby="notes-h">
+	<section class="panel notes-panel" aria-labelledby="notes-h">
 		<h2 id="notes-h">The notes in {meta.name}</h2>
-		<p>
-			{meta.longName} ({meta.name}) is built from these notes:
-		</p>
 		<ul class="note-list">
 			{#each notes as note, i (note + i)}
 				<li>
@@ -98,34 +105,58 @@
 
 	<section aria-labelledby="voicings-h">
 		<h2 id="voicings-h">{meta.name} voicings on piano</h2>
-		<p>
-			Each voicing below is the exact shape the trainer drills. The root position
-			shows the full chord; the shell and rootless voicings are the working
-			left-hand shapes jazz pianists actually use.
+		<p class="section-intro">
+			Each voicing is the exact shape the trainer drills. Press play to hear it —
+			as a block chord or rolled note by note.
 		</p>
 
-		{#each voicings as v (v.type)}
-			<div class="voicing">
-				<h3>{VOICING_LABELS[v.type]}</h3>
-				<div class="keyboard">
-					<PianoKeyboard chordData={chordData(v.notes)} accidentalPref="both" showVoicing={true} />
+		<div class="voicing-grid">
+			{#each voicings as v (v.type)}
+				<div class="voicing-card">
+					<div class="voicing-head">
+						<h3>{VOICING_LABELS[v.type]}</h3>
+						<div class="play-controls">
+							<button
+								class="play-btn"
+								class:active={playing === v.type}
+								onclick={() => playBlock(v.type, v.notes)}
+								aria-label={`Play ${VOICING_LABELS[v.type]} as a block chord`}
+							>
+								<Play size={15} aria-hidden="true" /> Chord
+							</button>
+							<button
+								class="play-btn"
+								class:active={playing === v.type + '-arp'}
+								onclick={() => playArp(v.type, v.notes)}
+								aria-label={`Play ${VOICING_LABELS[v.type]} as an arpeggio`}
+							>
+								<AudioWaveform size={15} aria-hidden="true" /> Arp
+							</button>
+						</div>
+					</div>
+					<div class="keyboard">
+						<PianoKeyboard chordData={chordData(v.notes)} accidentalPref="both" showVoicing={true} />
+					</div>
+					<p class="voicing-notes">
+						<span class="vn-notes">{v.notes.join(' · ')}</span>
+						<span class="vn-intervals">{v.intervals.join(' · ')}</span>
+					</p>
 				</div>
-				<p class="voicing-notes">
-					<Music size={15} aria-hidden="true" />
-					{v.notes.join(' – ')}
-					<span class="voicing-intervals">({v.intervals.join(' · ')})</span>
-				</p>
-			</div>
-		{/each}
+			{/each}
+		</div>
 	</section>
 
-	<section aria-labelledby="ctx-h">
+	<section class="panel" aria-labelledby="ctx-h">
 		<h2 id="ctx-h">Where {meta.name} fits in a ii-V-I</h2>
 		<p>{meta.context}</p>
 		<p>
 			The fastest way to internalise {meta.name} is to drill it in context across
-			all 12 keys until the shape is automatic. <a href="/learn/ii-v-i">Practice the full ii-V-I progression →</a>
+			all 12 keys until the shape is automatic.
 		</p>
+		<a class="text-link" href="/learn/ii-v-i">
+			Practice the full ii-V-I progression
+			<ArrowRight size={15} aria-hidden="true" />
+		</a>
 	</section>
 
 	<section aria-labelledby="faq-h" class="faq">
@@ -140,118 +171,337 @@
 
 	<aside class="related" aria-labelledby="rel-h">
 		<h2 id="rel-h">Keep going</h2>
-		<ul>
-			<li><a href="/learn/rootless-voicings">Master rootless voicings</a></li>
-			<li><a href="/learn/jazz-piano-voicings">All jazz piano voicings (hub)</a></li>
-			<li><a href="/train">Open the voicing trainer</a></li>
-		</ul>
+		<div class="related-grid">
+			<a href="/learn/rootless-voicings">
+				<span class="rl-title">Master rootless voicings</span>
+				<span class="rl-sub">The Bill Evans left-hand shapes</span>
+				<ArrowRight size={16} aria-hidden="true" />
+			</a>
+			<a href="/learn/jazz-piano-voicings">
+				<span class="rl-title">All jazz piano voicings</span>
+				<span class="rl-sub">The complete guide & every chord</span>
+				<ArrowRight size={16} aria-hidden="true" />
+			</a>
+			<a href="/train" class="rl-accent">
+				<span class="rl-title">Open the voicing trainer</span>
+				<span class="rl-sub">Drill {meta.name} in all 12 keys — free</span>
+				<ArrowRight size={16} aria-hidden="true" />
+			</a>
+		</div>
 	</aside>
 </article>
 
 <style>
 	.chord-page {
-		max-width: 760px;
+		max-width: 780px;
 		margin: 0 auto;
-		padding: 2rem 1.25rem 4rem;
+		padding: 2.5rem 1.25rem 5rem;
 	}
+
 	.crumbs {
 		display: flex;
-		gap: 0.5rem;
+		align-items: center;
+		gap: 0.35rem;
 		font-size: 0.85rem;
-		opacity: 0.7;
-		margin-bottom: 1.5rem;
+		color: var(--text-dim);
+		margin-bottom: 1.75rem;
 	}
 	.crumbs a {
-		color: inherit;
+		color: var(--text-muted);
+		text-decoration: none;
+	}
+	.crumbs a:hover {
+		color: var(--primary);
+	}
+
+	/* ── Hero ── */
+	.hero {
+		margin-bottom: 3rem;
+	}
+	.eyebrow {
+		font-size: 0.8rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--accent-amber);
+		margin: 0 0 0.5rem;
+		font-weight: 600;
 	}
 	.hero h1 {
-		font-size: clamp(1.75rem, 4vw, 2.5rem);
-		line-height: 1.1;
-		margin: 0 0 0.75rem;
+		font-size: clamp(2rem, 5vw, 3rem);
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+		margin: 0 0 0.9rem;
+		font-weight: 800;
+	}
+	.hero h1 span {
+		color: var(--text-muted);
+		font-weight: 600;
 	}
 	.lead {
-		font-size: 1.05rem;
-		opacity: 0.85;
-		margin: 0 0 1.25rem;
+		font-size: 1.08rem;
+		line-height: 1.6;
+		color: var(--text-muted);
+		max-width: 60ch;
+		margin: 0 0 1.5rem;
 	}
+
+	/* ── CTA ── */
 	.cta {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
-		background: var(--accent, #e8763b);
-		color: #fff;
+		background: var(--primary);
+		color: var(--primary-text);
 		font-weight: 600;
-		padding: 0.7rem 1.25rem;
-		border-radius: 0.6rem;
+		padding: 0.8rem 1.4rem;
+		border-radius: 0.7rem;
 		text-decoration: none;
+		transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s;
+		box-shadow: 0 6px 24px -8px var(--primary);
 	}
-	section,
-	.related {
-		margin-top: 2.5rem;
+	.cta:hover {
+		background: var(--primary-hover);
+		transform: translateY(-2px);
+	}
+
+	/* ── Panels & sections ── */
+	section {
+		margin-top: 3rem;
+	}
+	.panel {
+		background: var(--bg-card);
+		border: 1px solid var(--border);
+		border-radius: 1rem;
+		padding: 1.5rem 1.6rem;
 	}
 	h2 {
-		font-size: 1.4rem;
+		font-size: 1.45rem;
+		letter-spacing: -0.01em;
+		margin: 0 0 0.9rem;
+		font-weight: 700;
+	}
+	.section-intro {
+		color: var(--text-muted);
+		max-width: 60ch;
+		margin: 0 0 1.5rem;
+		line-height: 1.6;
+	}
+	.panel p {
+		color: var(--text-muted);
+		line-height: 1.65;
 		margin: 0 0 0.75rem;
 	}
-	h3 {
-		font-size: 1.05rem;
-		margin: 0 0 0.5rem;
+
+	/* ── Notes ── */
+	.notes-panel h2 {
+		margin-bottom: 1.1rem;
 	}
 	.note-list {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 0.6rem;
 		list-style: none;
 		padding: 0;
+		margin: 0;
 	}
 	.note-list li {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		min-width: 3rem;
-		padding: 0.5rem;
-		border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
-		border-radius: 0.5rem;
+		min-width: 3.3rem;
+		padding: 0.6rem 0.4rem;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: 0.6rem;
 	}
 	.note-list .note {
 		font-weight: 700;
-		font-size: 1.1rem;
+		font-size: 1.25rem;
+		color: var(--text);
 	}
 	.note-list .interval {
-		font-size: 0.75rem;
-		opacity: 0.6;
+		font-size: 0.72rem;
+		color: var(--accent-amber);
+		margin-top: 0.15rem;
+		font-weight: 600;
 	}
-	.voicing {
-		margin-top: 1.5rem;
+
+	/* ── Voicing cards ── */
+	.voicing-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+		gap: 1rem;
+	}
+	.voicing-card {
+		background: var(--bg-card);
+		border: 1px solid var(--border);
+		border-radius: 1rem;
+		padding: 1.1rem 1.2rem 1.3rem;
+		transition: border-color 0.18s;
+	}
+	.voicing-card:hover {
+		border-color: var(--border-hover);
+	}
+	.voicing-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 0.9rem;
+	}
+	.voicing-head h3 {
+		font-size: 1.05rem;
+		margin: 0;
+		font-weight: 700;
+	}
+	.play-controls {
+		display: flex;
+		gap: 0.4rem;
+	}
+	.play-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		font-family: inherit;
+		color: var(--text-muted);
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: 0.5rem;
+		padding: 0.35rem 0.6rem;
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.1s;
+	}
+	.play-btn:hover {
+		color: var(--text);
+		border-color: var(--primary);
+	}
+	.play-btn:active {
+		transform: scale(0.95);
+	}
+	.play-btn.active {
+		color: var(--primary-text);
+		background: var(--primary);
+		border-color: var(--primary);
 	}
 	.keyboard {
-		max-width: 480px;
+		margin-bottom: 0.8rem;
 	}
 	.voicing-notes {
 		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		margin: 0;
+	}
+	.vn-notes {
+		font-weight: 700;
+		color: var(--text);
+		letter-spacing: 0.01em;
+	}
+	.vn-intervals {
+		font-size: 0.82rem;
+		color: var(--text-dim);
+	}
+
+	/* ── Inline text link ── */
+	.text-link {
+		display: inline-flex;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.35rem;
+		color: var(--primary);
 		font-weight: 600;
-		margin: 0.5rem 0 0;
+		text-decoration: none;
+		margin-top: 0.25rem;
 	}
-	.voicing-intervals {
-		font-weight: 400;
-		opacity: 0.6;
+	.text-link:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
 	}
+
+	/* ── FAQ ── */
 	.faq details {
-		border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
-		padding: 0.75rem 0;
+		border: 1px solid var(--border);
+		border-radius: 0.7rem;
+		padding: 0.85rem 1.1rem;
+		margin-bottom: 0.6rem;
+		background: var(--bg-card);
+		transition: border-color 0.15s;
+	}
+	.faq details[open] {
+		border-color: var(--border-hover);
 	}
 	.faq summary {
 		font-weight: 600;
 		cursor: pointer;
+		list-style: none;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.faq summary::after {
+		content: '+';
+		color: var(--accent-amber);
+		font-size: 1.3rem;
+		line-height: 1;
+		transition: transform 0.2s;
+	}
+	.faq details[open] summary::after {
+		transform: rotate(45deg);
 	}
 	.faq p {
-		margin: 0.5rem 0 0;
-		opacity: 0.85;
+		margin: 0.7rem 0 0;
+		color: var(--text-muted);
+		line-height: 1.6;
 	}
-	.related ul {
-		padding-left: 1.1rem;
-		line-height: 1.9;
+
+	/* ── Related (now obviously cards/links) ── */
+	.related-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: 0.8rem;
+	}
+	.related-grid a {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		grid-template-rows: auto auto;
+		align-items: center;
+		gap: 0.1rem 0.6rem;
+		padding: 1rem 1.1rem;
+		background: var(--bg-card);
+		border: 1px solid var(--border);
+		border-radius: 0.85rem;
+		text-decoration: none;
+		transition: border-color 0.18s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s;
+	}
+	.related-grid a:hover {
+		border-color: var(--primary);
+		transform: translateY(-2px);
+	}
+	.related-grid a :global(svg) {
+		grid-row: 1 / 3;
+		grid-column: 2;
+		color: var(--primary);
+	}
+	.rl-title {
+		font-weight: 700;
+		color: var(--text);
+		grid-column: 1;
+	}
+	.rl-sub {
+		font-size: 0.82rem;
+		color: var(--text-dim);
+		grid-column: 1;
+	}
+	.related-grid a.rl-accent {
+		background: var(--primary-muted);
+		border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.cta:hover,
+		.related-grid a:hover {
+			transform: none;
+		}
 	}
 </style>
