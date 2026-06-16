@@ -110,14 +110,14 @@
 	<div class="hero-content-frame relative z-2 flex h-full items-center">
 	<div class="hero-copy-shell max-w-140 px-8 py-8 rounded-[1.35rem] max-[968px]:max-w-none max-[968px]:rounded-2xl max-[968px]:px-5 max-[968px]:py-5.5">
 		<!-- Badge -->
-		<div class="hero-badge inline-flex items-center gap-2 py-2 px-4 bg-[rgba(18,12,8,0.55)] border border-[rgba(255,140,66,0.45)] rounded-[999px] text-[0.76rem] tracking-[0.08em] uppercase text-(--accent-amber) mb-6 w-fit max-[968px]:mb-4 max-[968px]:text-[0.72rem]">
+		<div class="hero-badge inline-flex items-center gap-2 py-2 px-4 bg-[rgba(18,12,8,0.55)] border border-[rgba(255, 184, 77,0.45)] rounded-[999px] text-[0.76rem] tracking-[0.08em] uppercase text-(--accent-amber) mb-6 w-fit max-[968px]:mb-4 max-[968px]:text-[0.72rem]">
 			<span class="w-2 h-2 bg-(--accent-amber) rounded-full animate-pulse"></span>
 			{t('landing.badge')}
 		</div>
 
 		<!-- Titles -->
 		<h1 class="hero-title text-[clamp(2rem,3.7vw,3.9rem)] font-black leading-[1.04] tracking-[-0.03em] mb-5 max-w-[16ch] max-[968px]:text-[clamp(1.62rem,8.2vw,2.32rem)] max-[968px]:leading-[1.07] max-[968px]:max-w-[11ch] max-[968px]:mb-3">
-			<span class="block text-[rgba(255,186,110,0.96)]">{t('landing.hero_title_line1')}</span>
+			<span class="block text-[rgba(255, 200, 130,0.96)]">{t('landing.hero_title_line1')}</span>
 			<span class="block text-(--text)">{t('landing.hero_title_line2')}</span>
 		</h1>
 
@@ -134,7 +134,7 @@
 		<div class="hero-cta-row flex flex-wrap gap-2.5 mb-5 max-[968px]:items-center">
 			<a
 				href="/train"
-				class="hero-cta-primary py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap text-(--primary-text) shadow-[0_6px_30px_rgba(232,118,59,0.35)] hover:-translate-y-0.5 hover:shadow-[0_12px_38px_rgba(232,118,59,0.45)] max-[968px]:text-[0.95rem] max-[968px]:px-4.5"
+				class="hero-cta-primary py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap text-(--primary-text) shadow-[0_6px_30px_rgba(245, 166, 35,0.35)] hover:-translate-y-0.5 hover:shadow-[0_12px_38px_rgba(245, 166, 35,0.45)] max-[968px]:text-[0.95rem] max-[968px]:px-4.5"
 				style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent-amber) 100%)"
 			>
 				{t('landing.cta_start')}
@@ -158,12 +158,12 @@
 </section>
 
 <!-- See · Play · Master — cinematic rows (intentionally always dark, art is rendered for dark) -->
-<section class="cinematic-dark overflow-x-hidden" style="background: linear-gradient(180deg, #0a0908 0%, #0e0c09 20%, #0e0c09 80%, #0a0908 100%)">
+<section class="cinematic-dark overflow-x-hidden" style="background: linear-gradient(180deg, #0c0a18 0%, #100d22 20%, #100d22 80%, #0c0a18 100%)">
 
 	<!-- Step 1: Plug In -->
 	<div class="grid grid-cols-2 items-center min-h-[55vh] border-b border-[rgba(255,255,255,0.04)] max-w-400 mx-auto w-full max-[968px]:grid-cols-1 max-[968px]:min-h-auto">
 		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[78vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
-			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(232, 118, 59, 0.12) 0%, transparent 65%)"></div>
+			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(245, 166, 35, 0.12) 0%, transparent 65%)"></div>
 			<!-- Piano image (cord curls behind via z-index) -->
 			<img src="/bilder/pluged-in-piano.webp" alt="A jazz chord voicing on screen, ready to play"
 				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-800/600 group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
@@ -183,8 +183,8 @@
 			<h2 class="text-[clamp(2.5rem,3.5vw,4rem)] font-extrabold leading-[1.1] text-(--text) mb-4 max-[968px]:text-[2rem]">{t('landing.step1_title')}</h2>
 			<p class="text-[1.15rem] leading-[1.7] text-(--text-muted) mb-8 max-w-105 max-[968px]:text-base">{t('landing.step1_desc')}</p>
 			<div class="flex flex-wrap gap-[0.6rem]">
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(232,118,59,0.3)] bg-[rgba(232,118,59,0.06)] text-[0.85rem] text-(--text-muted)"><Piano size={14} />{t('landing.step1_chip1')}</span>
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(232,118,59,0.3)] bg-[rgba(232,118,59,0.06)] text-[0.85rem] text-(--text-muted)"><Music size={14} />{t('landing.step1_chip2')}</span>
+				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><Piano size={14} />{t('landing.step1_chip1')}</span>
+				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><Music size={14} />{t('landing.step1_chip2')}</span>
 			</div>
 		</div>
 	</div>
@@ -192,7 +192,7 @@
 	<!-- Step 2: Play -->
 	<div class="grid grid-cols-2 items-center min-h-[55vh] border-b border-[rgba(255,255,255,0.04)] max-w-400 mx-auto w-full [direction:rtl] *:[direction:ltr] max-[968px]:grid-cols-1 max-[968px]:min-h-auto max-[968px]:[direction:ltr]">
 		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[72vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
-			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(232, 118, 59, 0.1) 0%, transparent 65%)"></div>
+			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(245, 166, 35, 0.1) 0%, transparent 65%)"></div>
 			<img src="/bilder/hands-on-piano.webp" alt="Play the voicing and get instant feedback"
 				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-800/600 group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
 				width="800" height="600" loading="lazy"
@@ -203,8 +203,8 @@
 			<h2 class="text-[clamp(2.5rem,3.5vw,4rem)] font-extrabold leading-[1.1] text-(--text) mb-4 max-[968px]:text-[2rem]">{t('landing.step2_title')}</h2>
 			<p class="text-[1.15rem] leading-[1.7] text-(--text-muted) mb-8 max-w-105 max-[968px]:text-base">{t('landing.step2_desc')}</p>
 			<div class="flex flex-wrap gap-[0.6rem]">
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(232,118,59,0.3)] bg-[rgba(232,118,59,0.06)] text-[0.85rem] text-(--text-muted)"><Target size={14} />{t('landing.step2_chip1')}</span>
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(232,118,59,0.3)] bg-[rgba(232,118,59,0.06)] text-[0.85rem] text-(--text-muted)"><Keyboard size={14} />{t('landing.step2_chip2')}</span>
+				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><Target size={14} />{t('landing.step2_chip1')}</span>
+				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><Keyboard size={14} />{t('landing.step2_chip2')}</span>
 			</div>
 		</div>
 	</div>
@@ -223,8 +223,8 @@
 			<h2 class="text-[clamp(2.5rem,3.5vw,4rem)] font-extrabold leading-[1.1] text-(--text) mb-4 max-[968px]:text-[2rem]">{t('landing.step3_title')}</h2>
 			<p class="text-[1.15rem] leading-[1.7] text-(--text-muted) mb-8 max-w-105 max-[968px]:text-base">{t('landing.step3_desc')}</p>
 			<div class="flex flex-wrap gap-[0.6rem]">
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(232,118,59,0.3)] bg-[rgba(232,118,59,0.06)] text-[0.85rem] text-(--text-muted)"><BarChart3 size={14} />{t('landing.step3_chip1')}</span>
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(232,118,59,0.3)] bg-[rgba(232,118,59,0.06)] text-[0.85rem] text-(--text-muted)"><BookOpen size={14} />{t('landing.step3_chip2')}</span>
+				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><BarChart3 size={14} />{t('landing.step3_chip1')}</span>
+				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><BookOpen size={14} />{t('landing.step3_chip2')}</span>
 			</div>
 		</div>
 	</div>
@@ -250,9 +250,9 @@
 	.hero-stage {
 		--hero-safe: clamp(1.8rem, 4.2vw, 5.8rem);
 		background:
-			radial-gradient(circle at 50% 78%, rgba(232, 118, 59, 0.38) 0%, rgba(232, 118, 59, 0.1) 25%, transparent 58%),
-			radial-gradient(circle at 82% 14%, rgba(232, 118, 59, 0.22) 0%, transparent 40%),
-			linear-gradient(180deg, #070605 0%, #0a0908 36%, #0f0b08 72%, #080706 100%);
+			radial-gradient(circle at 50% 78%, rgba(245, 166, 35, 0.38) 0%, rgba(245, 166, 35, 0.1) 25%, transparent 58%),
+			radial-gradient(circle at 82% 14%, rgba(245, 166, 35, 0.22) 0%, transparent 40%),
+			linear-gradient(180deg, #0a0816 0%, #0c0a18 36%, #120e26 72%, #0b0918 100%);
 	}
 
 	.hero-content-frame {
@@ -286,7 +286,7 @@
 
 	.hero-canvas {
 		display: block;
-		background: #060504;
+		background: #090713;
 		filter: saturate(1.09) contrast(1.05) brightness(0.9);
 	}
 
@@ -295,9 +295,9 @@
 		min-width: 31rem;
 		/* Solid translucent fill instead of backdrop-blur — same readability,
 		   no per-frame blur cost behind the moving keys. */
-		background: linear-gradient(145deg, rgba(10, 8, 6, 0.86) 0%, rgba(10, 8, 6, 0.66) 52%, rgba(10, 8, 6, 0.42) 100%);
-		border: 1px solid rgba(255, 186, 110, 0.2);
-		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 222, 186, 0.12);
+		background: linear-gradient(145deg, rgba(12, 10, 24, 0.86) 0%, rgba(12, 10, 24, 0.66) 52%, rgba(12, 10, 24, 0.42) 100%);
+		border: 1px solid rgba(255, 200, 130, 0.2);
+		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(235, 220, 255, 0.12);
 	}
 
 	@media (max-width: 1280px) {
@@ -350,8 +350,8 @@
 			padding-top: 4.5rem;
 			padding-bottom: 2rem;
 			background:
-				radial-gradient(75% 58% at 88% 12%, rgba(232, 118, 59, 0.22) 0%, transparent 72%),
-				linear-gradient(180deg, #080706 0%, #0b0806 38%, #0d0907 100%);
+				radial-gradient(75% 58% at 88% 12%, rgba(245, 166, 35, 0.22) 0%, transparent 72%),
+				linear-gradient(180deg, #0b0918 0%, #0c0a1c 38%, #0e0b20 100%);
 		}
 
 		.hero-content-frame {
@@ -364,7 +364,7 @@
 		}
 
 		.hero-vignette {
-			background: linear-gradient(180deg, rgba(8, 7, 6, 0.08) 0%, rgba(8, 7, 6, 0.42) 50%, rgba(8, 7, 6, 0.76) 100%);
+			background: linear-gradient(180deg, rgba(11, 9, 22, 0.08) 0%, rgba(11, 9, 22, 0.42) 50%, rgba(11, 9, 22, 0.76) 100%);
 		}
 
 		.hero-title {
@@ -416,15 +416,15 @@
 	}
 
 	/* Cinematic zones (hero + story rows) stay dark in every theme — re-pin
-	   warm-dark tokens locally so text/borders read over the dark video + 3D art. */
+	   indigo-dark tokens locally so text/borders read over the dark art. */
 	.hero-stage,
 	.cinematic-dark {
-		--text: #f2e9e4;
-		--text-muted: #c4b5a0;
-		--text-dim: #8a7968;
-		--bg: #0a0908;
-		--bg-card: #1a1410;
-		--border: #6d4c41;
+		--text: #f1eff8;
+		--text-muted: #a9a3c6;
+		--text-dim: #6f6992;
+		--bg: #0c0a18;
+		--bg-card: #16132a;
+		--border: #2d2952;
 	}
 
 	.step1-chord {
