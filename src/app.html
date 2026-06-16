@@ -102,9 +102,9 @@
 		</script>
 
 		<!-- Fonts — non-blocking load: preload the CSS, swap rel to stylesheet once loaded -->
-		<!-- Only 3 weights: 400 (body), 600 (semi), 700 (bold/headings) — drops 500 to reduce payload -->
-		<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" onload="this.rel='stylesheet'" />
-		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" /></noscript>
+		<!-- Inter for body (400/500/600/700) + Space Grotesk for display headings (500/600/700) -->
+		<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.rel='stylesheet'" />
+		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" /></noscript>
 
 		<!-- Icons -->
 		<link rel="icon" href="/favicon.ico" sizes="any" />

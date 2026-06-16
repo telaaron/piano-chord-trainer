@@ -132,7 +132,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
-		background: var(--accent, #e8763b);
+		background: var(--primary);
 		color: #fff;
 		font-weight: 600;
 		padding: 0.7rem 1.25rem;

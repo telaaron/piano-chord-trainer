@@ -1,30 +1,33 @@
 @import 'tailwindcss';
 
 :root {
+	/* Space Grotesk for headings (distinct, modern), Inter for body (readable) */
 	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+	--font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
 	--font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 
-	/* Warm Jazz Club Theme */
-	--bg: #0a0908;
-	--bg-card: #1a1410;
-	--bg-card-hover: #221a15;
-	--bg-muted: #3e2723;
-	--border: #6d4c41;
-	--border-hover: #8d6e63;
-	
-	--text: #f2e9e4;
-	--text-muted: #c4b5a0;
-	--text-dim: #8a7968;
-	
-	--primary: #e8763b;
-	--primary-hover: #f58549;
-	--primary-muted: rgba(232, 118, 59, 0.15);
-	--primary-text: #0a0908;
-	
-	--accent-gold: #d4af37;
-	--accent-amber: #ff8c42;
-	--accent-red: #8b1538;
-	--accent-green: #3fb573;
+	/* Midnight Indigo — jazz club at night. Deep indigo-black base (no brown),
+	   warm amber-gold accent. Modern audio-app language, kept warm & premium. */
+	--bg: #0c0a18;
+	--bg-card: #16132a;
+	--bg-card-hover: #1f1b3a;
+	--bg-muted: #211d40;
+	--border: #2d2952;
+	--border-hover: #423c6e;
+
+	--text: #f1eff8;
+	--text-muted: #a9a3c6;
+	--text-dim: #6f6992;
+
+	--primary: #f5a623;
+	--primary-hover: #ffb840;
+	--primary-muted: rgba(245, 166, 35, 0.15);
+	--primary-text: #1a1206;
+
+	--accent-gold: #e8b04b;
+	--accent-amber: #ffb84d;
+	--accent-red: #e0436b;
+	--accent-green: #3fd09a;
 
 	/* Semantic status — single source of truth (was hard-coded #fb923c etc. in components) */
 	--success: #4ade80;
@@ -40,11 +43,11 @@
 	--xp: #fb923c;
 	--xp-muted: rgba(251, 146, 60, 0.15);
 
-	--wood-dark: #3e2723;
-	--wood-light: #6d4c41;
-	--velvet-red: #8b1538;
+	--wood-dark: #211d40;
+	--wood-light: #2d2952;
+	--velvet-red: #e0436b;
 
-	--glow-warm: rgba(255, 140, 66, 0.2);
+	--glow-warm: rgba(245, 166, 35, 0.2);
 	--shadow-deep: rgba(0, 0, 0, 0.8);
 
 	/* ── Spacing scale (4px base) ─────────────────────────── */
@@ -77,10 +80,10 @@
 	--tap-min: 2.75rem;
 	
 	/* Piano colors */
-	--key-white: #f8f8f8;
+	--key-white: #f5f4fa;
 	--key-white-active: var(--accent-gold);
-	--key-white-border: #d4d4d8;
-	--key-black: #1a1410;
+	--key-white-border: #c9c6da;
+	--key-black: #161329;
 	--key-black-active: var(--accent-amber);
 	--key-root-dot: var(--accent-gold);
 
@@ -90,102 +93,102 @@
 }
 
 /* ─── Light Theme ─────────────────────────────────────────────────
-   Warm "daytime jazz café" — ivory paper, espresso text, same orange.
+   Daytime indigo — cool lavender paper, deep indigo text, same amber accent.
    Applied via data-theme="light" on <html>.
 ──────────────────────────────────────────────────────────────── */
 [data-theme="light"] {
-	--bg: #f7f3ec;
-	--bg-card: #fffdf9;
-	--bg-card-hover: #f3ece0;
-	--bg-muted: #ece1d1;
-	--border: #e2d6c3;
-	--border-hover: #c9b79c;
+	--bg: #f4f3fa;
+	--bg-card: #ffffff;
+	--bg-card-hover: #eeecf8;
+	--bg-muted: #e6e3f4;
+	--border: #ddd9ee;
+	--border-hover: #c2bce0;
 
-	--text: #211a14;
-	--text-muted: #6a5c4d;
-	--text-dim: #9c8c79;
+	--text: #1a1730;
+	--text-muted: #5a5478;
+	--text-dim: #8a84a8;
 
-	--primary: #d2622c;
-	--primary-hover: #b9531f;
-	--primary-muted: rgba(210, 98, 44, 0.12);
+	--primary: #c77f12;
+	--primary-hover: #ad6c08;
+	--primary-muted: rgba(199, 127, 18, 0.12);
 	--primary-text: #ffffff;
 
-	--accent-gold: #b8901f;
-	--accent-amber: #e07a2e;
-	--accent-red: #a01b40;
-	--accent-green: #2f9e63;
+	--accent-gold: #a87d1a;
+	--accent-amber: #c77f12;
+	--accent-red: #c5345e;
+	--accent-green: #18936a;
 
-	--success: #1f9d57;
-	--success-muted: rgba(31, 157, 87, 0.14);
-	--warning: #c97a08;
-	--warning-muted: rgba(201, 122, 8, 0.14);
+	--success: #18936a;
+	--success-muted: rgba(24, 147, 106, 0.14);
+	--warning: #b87708;
+	--warning-muted: rgba(184, 119, 8, 0.14);
 	--danger: #d23b34;
 	--danger-muted: rgba(210, 59, 52, 0.12);
-	--info: #1f8fc4;
-	--info-muted: rgba(31, 143, 196, 0.14);
+	--info: #3357c4;
+	--info-muted: rgba(51, 87, 196, 0.14);
 
-	--xp: #d2622c;
-	--xp-muted: rgba(210, 98, 44, 0.14);
+	--xp: #c77f12;
+	--xp-muted: rgba(199, 127, 18, 0.14);
 
-	--wood-dark: #e2d6c3;
-	--wood-light: #c9b79c;
-	--velvet-red: #a01b40;
+	--wood-dark: #e6e3f4;
+	--wood-light: #c2bce0;
+	--velvet-red: #c5345e;
 
-	--glow-warm: rgba(210, 98, 44, 0.18);
-	--shadow-deep: rgba(80, 60, 40, 0.18);
+	--glow-warm: rgba(199, 127, 18, 0.18);
+	--shadow-deep: rgba(40, 35, 70, 0.18);
 
-	--shadow-sm: 0 1px 2px rgba(60, 45, 30, 0.10);
-	--shadow-md: 0 1px 2px rgba(60, 45, 30, 0.08), 0 8px 24px rgba(60, 45, 30, 0.10);
-	--shadow-lg: 0 2px 6px rgba(60, 45, 30, 0.10), 0 22px 48px rgba(60, 45, 30, 0.16);
+	--shadow-sm: 0 1px 2px rgba(40, 35, 70, 0.10);
+	--shadow-md: 0 1px 2px rgba(40, 35, 70, 0.08), 0 8px 24px rgba(40, 35, 70, 0.10);
+	--shadow-lg: 0 2px 6px rgba(40, 35, 70, 0.10), 0 22px 48px rgba(40, 35, 70, 0.16);
 
 	/* Piano — keep playable contrast on light */
 	--key-white: #ffffff;
-	--key-white-active: #d2622c;
-	--key-white-border: #d9ccb8;
-	--key-black: #2a201a;
-	--key-black-active: #e07a2e;
-	--key-root-dot: #b8901f;
+	--key-white-active: #c77f12;
+	--key-white-border: #d6d2e8;
+	--key-black: #221d3a;
+	--key-black-active: #c77f12;
+	--key-root-dot: #a87d1a;
 
 	color-scheme: light;
 }
 
 /* Surfaces that hardcode dark rgba — give them light equivalents */
 [data-theme="light"] .card {
-	background: rgba(255, 253, 249, 0.7);
-	border-color: rgba(226, 214, 195, 0.8);
+	background: rgba(255, 255, 255, 0.7);
+	border-color: rgba(221, 217, 238, 0.8);
 }
 [data-theme="light"] .card-hover:hover {
-	border-color: rgba(210, 98, 44, 0.35);
-	background: rgba(243, 236, 224, 0.9);
+	border-color: rgba(199, 127, 18, 0.35);
+	background: rgba(238, 236, 248, 0.9);
 }
 [data-theme="light"] .surface-glass {
-	background: rgba(255, 253, 249, 0.82);
-	border: 1px solid rgba(201, 183, 156, 0.45);
+	background: rgba(255, 255, 255, 0.82);
+	border: 1px solid rgba(194, 188, 224, 0.45);
 	box-shadow: var(--shadow-md);
 }
 /* Weekday dots: low contrast on paper — darken the empty/border state */
 [data-theme="light"] .day-dot {
-	background: rgba(106, 92, 77, 0.10) !important;
-	border-color: rgba(106, 92, 77, 0.32) !important;
+	background: rgba(90, 84, 120, 0.10) !important;
+	border-color: rgba(90, 84, 120, 0.32) !important;
 }
 [data-theme="light"] .pill-input {
 	background: rgba(255, 255, 255, 0.9);
-	border-color: rgba(201, 183, 156, 0.7);
+	border-color: rgba(194, 188, 224, 0.7);
 }
 [data-theme="light"] .pill-input:focus {
 	background: #ffffff;
 }
 [data-theme="light"] .pill-btn-secondary {
-	background: rgba(255, 253, 249, 0.85);
-	border-color: rgba(201, 183, 156, 0.7);
+	background: rgba(255, 255, 255, 0.85);
+	border-color: rgba(194, 188, 224, 0.7);
 }
 [data-theme="light"] .pill-btn-secondary:hover {
-	background: rgba(243, 236, 224, 0.95);
-	border-color: rgba(210, 98, 44, 0.45);
+	background: rgba(238, 236, 248, 0.95);
+	border-color: rgba(199, 127, 18, 0.45);
 }
 [data-theme="light"] .status-glass {
-	background: rgba(210, 98, 44, 0.08);
-	border-color: rgba(210, 98, 44, 0.28);
+	background: rgba(199, 127, 18, 0.08);
+	border-color: rgba(199, 127, 18, 0.28);
 }
 /* Custom 3D icons are baked for dark bg (mix-blend lighten). On light,
    lighten makes them vanish — switch to normal blend. */
@@ -213,10 +216,17 @@ body {
 	min-height: 100dvh;
 }
 
+/* Headings use the display face (Space Grotesk) for a distinct, modern voice;
+   body text stays on Inter for readability. */
+h1, h2, h3, .font-display {
+	font-family: var(--font-display);
+	letter-spacing: -0.02em;
+}
+
 /* Utility classes */
 .card {
-	background: rgba(26, 20, 16, 0.6);
-	border: 1px solid rgba(109, 76, 65, 0.25);
+	background: rgba(22, 19, 42, 0.6);
+	border: 1px solid rgba(45, 41, 82, 0.4);
 	border-radius: var(--radius-lg);
 	backdrop-filter: blur(8px);
 }
