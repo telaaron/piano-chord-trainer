@@ -2,6 +2,13 @@
 	import { ArrowRight } from 'lucide-svelte';
 	import { CHORD_PAGES } from '$lib/seo/chords';
 
+	// Group chord pages by root so the (now ~74-page) index stays scannable.
+	const ROOT_ORDER = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+	const chordsByRoot = ROOT_ORDER.map((root) => ({
+		root,
+		chords: CHORD_PAGES.filter((c) => c.root === root),
+	})).filter((g) => g.chords.length > 0);
+
 	const title = 'Jazz Piano Voicings — The Complete Guide (Shell, Rootless, All 12 Keys) | jazzchords.app';
 	const description =
 		'Learn jazz piano voicings: shell, rootless A/B, and full voicings for every core chord type — with interactive piano diagrams and a free trainer to drill them in all 12 keys.';
@@ -76,13 +83,18 @@
 	</section>
 
 	<section aria-labelledby="chords-h">
-		<h2 id="chords-h">Voicings by chord type</h2>
+		<h2 id="chords-h">Voicings by chord, in every key</h2>
 		<p>Pick a chord to see its notes, shell and rootless voicings on an interactive keyboard:</p>
-		<ul class="chord-grid">
-			{#each CHORD_PAGES as c (c.slug)}
-				<li><a href={`/chords/${c.slug}`}>{c.name}<span>{c.longName}</span></a></li>
-			{/each}
-		</ul>
+		{#each chordsByRoot as group (group.root)}
+			<div class="key-group">
+				<h3>{group.root}</h3>
+				<ul class="chord-grid">
+					{#each group.chords as c (c.slug)}
+						<li><a href={`/chords/${c.slug}`}>{c.name}</a></li>
+					{/each}
+				</ul>
+			</div>
+		{/each}
 	</section>
 
 	<section aria-labelledby="practice-h">
@@ -142,26 +154,31 @@
 		margin: 0.25rem 0 0;
 		opacity: 0.85;
 	}
+	.key-group {
+		margin-top: 1.25rem;
+	}
+	.key-group h3 {
+		font-size: 0.95rem;
+		opacity: 0.6;
+		margin: 0 0 0.4rem;
+		letter-spacing: 0.02em;
+	}
 	.chord-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-		gap: 0.6rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
 		list-style: none;
 		padding: 0;
+		margin: 0;
 	}
 	.chord-grid a {
-		display: flex;
-		flex-direction: column;
-		padding: 0.7rem 0.85rem;
+		display: inline-block;
+		padding: 0.45rem 0.8rem;
 		border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
-		border-radius: 0.55rem;
+		border-radius: 0.5rem;
 		text-decoration: none;
 		color: inherit;
-		font-weight: 700;
-	}
-	.chord-grid a span {
-		font-weight: 400;
-		font-size: 0.78rem;
-		opacity: 0.6;
+		font-weight: 600;
+		font-size: 0.92rem;
 	}
 </style>

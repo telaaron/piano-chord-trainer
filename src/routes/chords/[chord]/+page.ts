@@ -17,11 +17,13 @@ export const load: PageLoad = ({ params }) => {
 	const meta = getChordPage(params.chord);
 	if (!meta) throw error(404, `No chord page for "${params.chord}"`);
 
-	const notes = getChordNotes(meta.root, meta.quality, 'flats');
+	// 'both' = spell notes by the key's convention (sharp keys use sharps, flat
+	// keys use flats), so F#maj7 shows F#/A#/C#/E rather than flat-spelled Gb/Bb.
+	const notes = getChordNotes(meta.root, meta.quality, 'both');
 	const formula = getChordFormula(meta.quality);
 
 	const voicings = SHOWCASE_VOICINGS.map((type) => {
-		const voicingNotes = getVoicingNotes(notes, type, meta.root, 'flats');
+		const voicingNotes = getVoicingNotes(notes, type, meta.root, 'both');
 		const intervals = getVoicingIntervalLabels(voicingNotes, meta.root, meta.quality);
 		return { type, notes: voicingNotes, intervals };
 	});
