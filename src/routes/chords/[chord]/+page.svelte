@@ -108,7 +108,7 @@
 			<div class="voicing">
 				<h3>{VOICING_LABELS[v.type]}</h3>
 				<div class="keyboard">
-					<PianoKeyboard chordData={chordData(v.notes)} accidentalPref="flats" showVoicing={true} />
+					<PianoKeyboard chordData={chordData(v.notes)} accidentalPref="both" showVoicing={true} />
 				</div>
 				<p class="voicing-notes">
 					<Music size={15} aria-hidden="true" />

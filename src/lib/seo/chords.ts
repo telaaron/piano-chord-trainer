@@ -5,6 +5,8 @@
 //
 // `quality` MUST match a key in CHORD_INTERVALS (src/lib/engine/chords.ts).
 
+import { getChordNotes } from '$lib/engine/voicings';
+
 export interface ChordPageMeta {
 	/** URL slug, e.g. "cmaj7" */
 	slug: string;
@@ -24,7 +26,8 @@ export interface ChordPageMeta {
 	faq: { q: string; a: string }[];
 }
 
-export const CHORD_PAGES: ChordPageMeta[] = [
+// Hand-written pages for root C (Welle 1) — richer, chord-specific copy.
+const C_CHORD_PAGES: ChordPageMeta[] = [
 	{
 		slug: 'cmaj7',
 		root: 'C',
@@ -239,6 +242,147 @@ export const CHORD_PAGES: ChordPageMeta[] = [
 		],
 	},
 ];
+
+// ─── Welle 2: top-5 chord types × the other 11 keys ─────────────────────────
+// C is already covered by the hand-written pages above, so the generator skips
+// it. Musical data is still computed at render time from the engine — these
+// templates only fill the editorial layer, with the root spliced in.
+
+/** The 11 non-C roots, each with the conventional enharmonic spelling for its
+ *  key (flat keys use flats) and a URL-safe slug. One page per pitch class —
+ *  no separate C#/Db pages, to avoid two pages competing for the same chord. */
+const GEN_ROOTS: { root: string; slug: string; spoken: string }[] = [
+	{ root: 'Db', slug: 'db', spoken: 'D-flat' },
+	{ root: 'D', slug: 'd', spoken: 'D' },
+	{ root: 'Eb', slug: 'eb', spoken: 'E-flat' },
+	{ root: 'E', slug: 'e', spoken: 'E' },
+	{ root: 'F', slug: 'f', spoken: 'F' },
+	{ root: 'F#', slug: 'fsharp', spoken: 'F-sharp' },
+	{ root: 'G', slug: 'g', spoken: 'G' },
+	{ root: 'Ab', slug: 'ab', spoken: 'A-flat' },
+	{ root: 'A', slug: 'a', spoken: 'A' },
+	{ root: 'Bb', slug: 'bb', spoken: 'B-flat' },
+	{ root: 'B', slug: 'b', spoken: 'B' },
+];
+
+/** Per-type editorial templates. `r` = root note (correctly spelled per key),
+ *  `notes` = the chord's notes as a readable string (computed at build time). */
+interface TypeTemplate {
+	quality: string;
+	/** Suffix appended to the root for the display name, e.g. "maj7" → "Cmaj7". */
+	suffix: string;
+	/** Spoken quality, e.g. "major seventh". */
+	spokenQuality: string;
+	slugSuffix: string;
+	blurb: (r: string, name: string) => string;
+	context: (r: string, name: string) => string;
+	faq: (r: string, name: string, notes: string) => { q: string; a: string }[];
+}
+
+const GEN_TYPES: TypeTemplate[] = [
+	{
+		quality: 'Maj7',
+		suffix: 'maj7',
+		slugSuffix: 'maj7',
+		spokenQuality: 'major seventh',
+		blurb: (r, name) =>
+			`Learn the notes, shell voicing, and rootless voicings of ${name} on piano — then drill it in all 12 keys.`,
+		context: (r, name) =>
+			`${name} is a major-seventh chord, the bright, restful "home" sound of jazz. It is the I chord wherever ${r} is the key centre, and one of the first voicings worth making automatic.`,
+		faq: (r, name, notes) => [
+			{ q: `What notes are in ${name}?`, a: `${name} is built from ${notes} — the root, major third, perfect fifth and major seventh.` },
+			{ q: `What is the shell voicing for ${name}?`, a: `The ${name} shell voicing keeps only root, third and seventh, dropping the fifth so the chord stays clear in the left hand.` },
+			{ q: `What is the rootless voicing for ${name}?`, a: `A rootless ${name} voicing plays the third, fifth, seventh and ninth, letting the bassist cover the root for a fuller upper structure.` },
+		],
+	},
+	{
+		quality: '7',
+		suffix: '7',
+		slugSuffix: '7',
+		spokenQuality: 'dominant seventh',
+		blurb: (r, name) =>
+			`The notes, shell and rootless voicings of ${name} — the dominant chord that drives a ii-V-I. Practice it in all 12 keys.`,
+		context: (r, name) =>
+			`${name} is a dominant chord: the V that wants to resolve. Its flat seventh creates the tension at the heart of every ii-V-I, making ${name} one of the four core shapes to drill.`,
+		faq: (r, name, notes) => [
+			{ q: `What notes are in ${name}?`, a: `${name} contains ${notes} — root, major third, perfect fifth and flat seventh. The flat seventh is what makes it a dominant chord.` },
+			{ q: `What is the shell voicing for ${name}?`, a: `The ${name} shell voicing is root, third and flat seventh. The third and seventh — the guide tones — carry the dominant sound.` },
+			{ q: `Why does ${name} sound unresolved?`, a: `The major third and flat seventh of ${name} form a tritone, an unstable interval that pulls strongly toward resolution.` },
+		],
+	},
+	{
+		quality: 'm7',
+		suffix: 'm7',
+		slugSuffix: 'm7',
+		spokenQuality: 'minor seventh',
+		blurb: (r, name) =>
+			`Notes, shell and rootless voicings of ${name} on piano — the ii chord of a ii-V-I. Drill it in all 12 keys.`,
+		context: (r, name) =>
+			`${name} is a minor-seventh chord, smooth and mellow. It is the ii chord that opens a ii-V-I and a minor tonic in its own right — one of the four core seventh chords every pianist drills first.`,
+		faq: (r, name, notes) => [
+			{ q: `What notes are in ${name}?`, a: `${name} contains ${notes} — root, minor third, perfect fifth and flat seventh.` },
+			{ q: `What is the shell voicing for ${name}?`, a: `The ${name} shell voicing keeps root, minor third and flat seventh, dropping the fifth.` },
+			{ q: `What is the rootless voicing for ${name}?`, a: `A rootless ${name} voicing plays the third, fifth, seventh and ninth — the Bill Evans shape used over a walking bass.` },
+		],
+	},
+	{
+		quality: '6',
+		suffix: '6',
+		slugSuffix: '6',
+		spokenQuality: 'major sixth',
+		blurb: (r, name) =>
+			`The notes and voicings of ${name} — a stable, vintage-sounding major chord. Practice it in all 12 keys on piano.`,
+		context: (r, name) =>
+			`${name} replaces the major seventh with the sixth, giving a settled, swing-era sound. It is a common substitute for the major-seventh chord as a final tonic.`,
+		faq: (r, name, notes) => [
+			{ q: `What notes are in ${name}?`, a: `${name} contains ${notes} — root, major third, perfect fifth and major sixth.` },
+			{ q: `When do you use ${name}?`, a: `${name} is often used as a final resting chord, because the sixth sounds more stable and less tense than a major seventh.` },
+		],
+	},
+	{
+		quality: 'm7b5',
+		suffix: 'm7b5',
+		slugSuffix: 'm7b5',
+		spokenQuality: 'half-diminished seventh',
+		blurb: (r, name) =>
+			`The notes and voicings of ${name} (half-diminished) — the ii chord of a minor ii-V-i. Practice it in all 12 keys.`,
+		context: (r, name) =>
+			`${name}, the half-diminished chord, is the ii chord of a minor ii-V-i. Its lowered fifth gives the tense, unresolved colour that defines minor-key jazz.`,
+		faq: (r, name, notes) => [
+			{ q: `What notes are in ${name}?`, a: `${name} contains ${notes} — root, minor third, diminished (flat) fifth and flat seventh.` },
+			{ q: `What is ${name} used for?`, a: `${name} most often appears as the ii chord in a minor ii-V-i, setting up the dominant that resolves to a minor tonic.` },
+		],
+	},
+];
+
+/** Build the readable note string for a chord, spelled correctly for its key. */
+function notesFor(root: string, quality: string): string {
+	const notes = getChordNotes(root, quality, 'both');
+	return notes.join(', ');
+}
+
+function generatePages(): ChordPageMeta[] {
+	const pages: ChordPageMeta[] = [];
+	for (const { root, slug, spoken } of GEN_ROOTS) {
+		for (const tpl of GEN_TYPES) {
+			const name = `${root}${tpl.suffix}`;
+			const notes = notesFor(root, tpl.quality);
+			pages.push({
+				slug: `${slug}${tpl.slugSuffix}`,
+				root,
+				quality: tpl.quality,
+				name,
+				longName: `${spoken} ${tpl.spokenQuality}`,
+				blurb: tpl.blurb(root, name),
+				context: tpl.context(root, name),
+				faq: tpl.faq(root, name, notes),
+			});
+		}
+	}
+	return pages;
+}
+
+export const CHORD_PAGES: ChordPageMeta[] = [...C_CHORD_PAGES, ...generatePages()];
 
 const PAGE_BY_SLUG = new Map(CHORD_PAGES.map((p) => [p.slug, p]));
 
