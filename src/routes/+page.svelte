@@ -105,11 +105,15 @@
 		</picture>
 	</div>
 
-	<div class="hero-glow absolute inset-x-0 bottom-0 h-[58%] pointer-events-none"></div>
-	<div class="hero-mist hero-mist-left absolute -left-[18%] top-[10%] h-[56%] w-[52%] pointer-events-none"></div>
-	<div class="hero-mist hero-mist-right absolute -right-[20%] top-[6%] h-[58%] w-[54%] pointer-events-none"></div>
-	<div class="hero-watermark-mask absolute bottom-[1.5%] right-[0.8%] h-[13%] w-[13%] pointer-events-none"></div>
 	<div class="hero-vignette absolute inset-0 pointer-events-none"></div>
+
+	<!-- Animated piano-key equaliser — the signature motif. GPU-only (transform
+	     + opacity), no blur, so it never janks. Sits along the bottom edge. -->
+	<div class="hero-keys pointer-events-none" aria-hidden="true">
+		{#each Array(28) as _, i (i)}
+			<span class="hk" style={`--i:${i}; --d:${(i % 7) * 0.18 + (i % 3) * 0.07}s`}></span>
+		{/each}
+	</div>
 
 	<div class="hero-content-frame relative z-2 flex h-full items-center">
 	<div class="hero-copy-shell max-w-140 px-8 py-8 rounded-[1.35rem] max-[968px]:max-w-none max-[968px]:rounded-2xl max-[968px]:px-5 max-[968px]:py-5.5">
@@ -297,9 +301,10 @@
 	.hero-copy-shell {
 		width: min(41rem, 48vw);
 		min-width: 31rem;
-		background: linear-gradient(145deg, rgba(8, 7, 6, 0.72) 0%, rgba(8, 7, 6, 0.38) 52%, rgba(8, 7, 6, 0.16) 100%);
+		/* Solid translucent fill instead of backdrop-blur — same readability,
+		   no per-frame blur cost behind the moving keys. */
+		background: linear-gradient(145deg, rgba(10, 8, 6, 0.86) 0%, rgba(10, 8, 6, 0.66) 52%, rgba(10, 8, 6, 0.42) 100%);
 		border: 1px solid rgba(255, 186, 110, 0.2);
-		backdrop-filter: blur(9px);
 		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 222, 186, 0.12);
 	}
 
@@ -310,32 +315,38 @@
 		}
 	}
 
-	.hero-glow {
-		background: radial-gradient(ellipse at center, rgba(232, 118, 59, 0.25) 0%, rgba(232, 118, 59, 0.12) 38%, transparent 70%);
-		filter: blur(20px);
+	/* ── Animated piano-key equaliser ── */
+	.hero-keys {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 1;
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		gap: clamp(3px, 0.5vw, 7px);
+		height: 30%;
+		padding: 0 6%;
+		mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
 	}
-
-	.hero-watermark-mask {
-		background:
-			radial-gradient(ellipse at center, rgba(10, 8, 7, 0.98) 0%, rgba(10, 8, 7, 0.76) 44%, rgba(10, 8, 7, 0.18) 72%, transparent 100%),
-			radial-gradient(ellipse at center, rgba(232, 118, 59, 0.28) 0%, transparent 74%);
-		filter: blur(12px);
+	.hk {
+		flex: 1 1 0;
+		max-width: 34px;
+		height: 100%;
+		border-radius: 6px 6px 2px 2px;
+		background: linear-gradient(180deg, rgba(255, 167, 98, 0.5) 0%, rgba(232, 118, 59, 0.16) 60%, transparent 100%);
+		transform-origin: bottom;
+		transform: scaleY(0.18);
+		opacity: 0.55;
+		animation: hk-pulse 2.6s ease-in-out infinite;
+		animation-delay: var(--d);
+		will-change: transform, opacity;
 	}
-
-	.hero-mist {
-		filter: blur(42px);
-		opacity: 0.5;
-		will-change: transform;
-		animation: hero-mist-drift 12s ease-in-out infinite;
-	}
-
-	.hero-mist-left {
-		background: radial-gradient(ellipse at center, rgba(255, 199, 146, 0.13) 0%, rgba(255, 146, 83, 0.09) 34%, transparent 70%);
-	}
-
-	.hero-mist-right {
-		background: radial-gradient(ellipse at center, rgba(255, 167, 98, 0.14) 0%, rgba(232, 118, 59, 0.08) 36%, transparent 72%);
-		animation-delay: -4s;
+	@keyframes hk-pulse {
+		0%, 100% { transform: scaleY(0.14); opacity: 0.4; }
+		45% { transform: scaleY(0.85); opacity: 0.95; }
+		60% { transform: scaleY(0.55); opacity: 0.75; }
 	}
 
 	.hero-vignette {
@@ -348,27 +359,17 @@
 		text-wrap: balance;
 	}
 
-	@keyframes hero-mist-drift {
-		0%,
-		100% {
-			transform: translate3d(0, 0, 0);
-		}
-		50% {
-			transform: translate3d(12px, -8px, 0);
-		}
-	}
-
 	@media (prefers-reduced-motion: reduce) {
-		.hero-mist {
+		.hk {
 			animation: none;
+			transform: scaleY(0.4);
+			opacity: 0.5;
 		}
 	}
 
 	@media (max-width: 968px) {
 		.hero-media,
-		.hero-glow,
-		.hero-mist,
-		.hero-watermark-mask {
+		.hero-keys {
 			display: none;
 		}
 

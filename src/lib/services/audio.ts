@@ -356,6 +356,30 @@ export async function playNote(note: string, duration: string = '8n'): Promise<v
 	}
 }
 
+/**
+ * Play a chord one note at a time (arpeggio), low to high.
+ * Notes are bare names (e.g. ["E","G","B","D"]); octaves are assigned the same
+ * ascending way as playChord. `stepMs` is the gap between notes.
+ */
+export async function playArpeggio(notes: string[], stepMs = 180, noteDuration = '4n'): Promise<void> {
+	const toneNotes = notesToToneNames(notes);
+	// Ensure audio is warm before the first note so timing is even.
+	await getTone();
+	await ensureStarted();
+	const T = await getTone();
+	if (currentPreset === 'grand-piano' && samplesLoading) {
+		await T.loaded();
+	}
+	const inst = getInstrument();
+	toneNotes.forEach((n, i) => {
+		setTimeout(() => {
+			if ('triggerAttackRelease' in inst) {
+				(inst as ToneType.PolySynth).triggerAttackRelease(n, noteDuration);
+			}
+		}, i * stepMs);
+	});
+}
+
 /** Release all currently sounding notes */
 export function stopAll(): void {
 	releaseAllVoices();
