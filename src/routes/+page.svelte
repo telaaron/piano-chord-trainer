@@ -110,7 +110,7 @@
 	<div class="hero-content-frame relative z-2 flex h-full items-center">
 	<div class="hero-copy-shell max-w-140 px-8 py-8 rounded-[1.35rem] max-[968px]:max-w-none max-[968px]:rounded-2xl max-[968px]:px-5 max-[968px]:py-5.5">
 		<!-- Badge -->
-		<div class="hero-badge inline-flex items-center gap-2 py-2 px-4 bg-[rgba(18,12,8,0.55)] border border-[rgba(255, 184, 77,0.45)] rounded-[999px] text-[0.76rem] tracking-[0.08em] uppercase text-(--accent-amber) mb-6 w-fit max-[968px]:mb-4 max-[968px]:text-[0.72rem]">
+		<div class="hero-badge inline-flex items-center gap-2 py-2 px-4 bg-[rgba(16, 13, 32,0.55)] border border-[rgba(255, 184, 77,0.45)] rounded-[999px] text-[0.76rem] tracking-[0.08em] uppercase text-(--accent-amber) mb-6 w-fit max-[968px]:mb-4 max-[968px]:text-[0.72rem]">
 			<span class="w-2 h-2 bg-(--accent-amber) rounded-full animate-pulse"></span>
 			{t('landing.badge')}
 		</div>
@@ -121,11 +121,11 @@
 			<span class="block text-(--text)">{t('landing.hero_title_line2')}</span>
 		</h1>
 
-		<p class="hero-subtitle text-[0.98rem] leading-[1.62] text-[rgba(239,219,194,0.9)] max-w-[56ch] mb-4 max-[968px]:text-[0.92rem] max-[968px]:leading-[1.55]">
+		<p class="hero-subtitle text-[0.98rem] leading-[1.62] text-[rgba(220, 214, 240,0.9)] max-w-[56ch] mb-4 max-[968px]:text-[0.92rem] max-[968px]:leading-[1.55]">
 			{t('landing.hero_subtitle')}
 		</p>
 
-		<p class="hero-support text-[0.84rem] text-[rgba(192,165,139,0.9)] mb-7 flex items-center gap-1.5 max-[968px]:mb-5 max-[968px]:text-[0.8rem]">
+		<p class="hero-support text-[0.84rem] text-[rgba(150, 144, 178,0.9)] mb-7 flex items-center gap-1.5 max-[968px]:mb-5 max-[968px]:text-[0.8rem]">
 			<svg class="w-4 h-4 text-(--accent-green) shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
 			{t('landing.hero_no_midi')}
 		</p>
@@ -140,16 +140,16 @@
 				{t('landing.cta_start')}
 				<span>→</span>
 			</a>
-			<a href="/learn" class="hero-cta-secondary py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-[rgba(15,10,8,0.56)] text-(--text) border border-[rgba(188,141,97,0.32)] hover:bg-[rgba(25,17,12,0.72)] hover:border-[rgba(212,175,55,0.62)] max-[968px]:py-2.5 max-[968px]:px-4 max-[968px]:text-[0.95rem]">
+			<a href="/learn" class="hero-cta-secondary py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-[rgba(14, 11, 28,0.56)] text-(--text) border border-[rgba(80, 72, 120,0.32)] hover:bg-[rgba(24, 20, 44,0.72)] hover:border-[rgba(245, 166, 35,0.62)] max-[968px]:py-2.5 max-[968px]:px-4 max-[968px]:text-[0.95rem]">
 				{t('landing.cta_learn')}
 			</a>
-			<a href="/for-educators" class="py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-[rgba(15,10,8,0.56)] text-(--text) border border-[rgba(188,141,97,0.32)] hover:bg-[rgba(25,17,12,0.72)] hover:border-[rgba(212,175,55,0.62)] max-[968px]:hidden">
+			<a href="/for-educators" class="py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-[rgba(14, 11, 28,0.56)] text-(--text) border border-[rgba(80, 72, 120,0.32)] hover:bg-[rgba(24, 20, 44,0.72)] hover:border-[rgba(245, 166, 35,0.62)] max-[968px]:hidden">
 				{t('landing.cta_educators')}
 			</a>
 		</div>
 
-		<p class="hero-footnote text-[0.9rem] text-[rgba(165,142,120,0.92)] max-[968px]:hidden">{t('landing.footnote')}</p>
-		<p class="hero-footnote-mobile text-[0.9rem] text-[rgba(165,142,120,0.92)] hidden max-[968px]:block">{t('landing.footnote_mobile')}</p>
+		<p class="hero-footnote text-[0.9rem] text-[rgba(140, 134, 168,0.92)] max-[968px]:hidden">{t('landing.footnote')}</p>
+		<p class="hero-footnote-mobile text-[0.9rem] text-[rgba(140, 134, 168,0.92)] hidden max-[968px]:block">{t('landing.footnote_mobile')}</p>
 		<a href="/for-educators" class="hero-edu-link hidden max-[968px]:inline-block max-[968px]:mt-3 text-[0.8rem] text-(--text-muted) no-underline transition-colors duration-150 hover:text-(--text)">
 			{t('landing.cta_educators')} →
 		</a>
@@ -166,8 +166,8 @@
 			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(245, 166, 35, 0.12) 0%, transparent 65%)"></div>
 			<!-- Piano image (cord curls behind via z-index) -->
 			<img src="/bilder/pluged-in-piano.webp" alt="A jazz chord voicing on screen, ready to play"
-				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-800/600 group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
-				width="800" height="600" loading="lazy"
+				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-square group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
+				width="1024" height="1024" loading="lazy"
 				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
 			<!-- Floating chord label — layered over the piano for depth -->
 			<div class="step1-chord pointer-events-none absolute z-2 left-1/2 top-[14%] text-center select-none">
@@ -194,8 +194,8 @@
 		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[72vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
 			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(245, 166, 35, 0.1) 0%, transparent 65%)"></div>
 			<img src="/bilder/hands-on-piano.webp" alt="Play the voicing and get instant feedback"
-				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-800/600 group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
-				width="800" height="600" loading="lazy"
+				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-square group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
+				width="1024" height="1024" loading="lazy"
 				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
 		</div>
 		<div class="p-[3rem_6%_3rem_5%] max-[968px]:p-[1.5rem_1.5rem_3rem]">
@@ -214,8 +214,8 @@
 		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[72vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
 			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(255, 170, 50, 0.15) 0%, transparent 65%)"></div>
 			<img src="/bilder/lvl-up-piano.webp" alt="Level up and get faster"
-				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-800/600 group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
-				width="800" height="600" loading="lazy"
+				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-square group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
+				width="1024" height="1024" loading="lazy"
 				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
 		</div>
 		<div class="p-[3rem_5%_3rem_6%] max-[968px]:p-[1.5rem_1.5rem_3rem]">
