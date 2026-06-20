@@ -69,6 +69,18 @@ struct TrainerSetupView: View {
                         Text("Off").tag(DisplayMode.off)
                     }.pickerStyle(.segmented)
                 }
+                pickerRow("Input") {
+                    Picker("", selection: $store.inputMode) {
+                        Text("Tap").tag(TrainerStore.InputMode.none)
+                        Text("MIDI").tag(TrainerStore.InputMode.midi)
+                        Text("Mic").tag(TrainerStore.InputMode.microphone)
+                    }.pickerStyle(.segmented)
+                }
+                if store.inputMode == .microphone {
+                    Text("Play chords into your mic — clear, sustained voicings work best.")
+                        .font(.footnote).foregroundStyle(palette.textDim)
+                }
+
                 Toggle("Audio", isOn: $store.audioEnabled)
                     .tint(palette.primary)
                     .foregroundStyle(palette.text)
@@ -146,14 +158,23 @@ struct TrainerPlayingView: View {
             }
 
             // Keyboard
-            if store.shouldShowVoicing {
+            if store.shouldShowVoicing || store.inputActive {
                 PianoKeyboard(
                     chordData: store.currentData,
                     accidentalPref: store.accidentals,
-                    showVoicing: true,
-                    forceOctaves: store.sessionOctaves
+                    showVoicing: store.shouldShowVoicing,
+                    forceOctaves: store.sessionOctaves,
+                    heldNotes: store.heldNotes,
+                    expectedPitchClasses: store.expectedPitchClasses,
+                    showInput: store.inputActive
                 )
                 .padding(.horizontal, Theme.space2)
+            }
+
+            if store.inputActive {
+                Label(inputStatus, systemImage: store.inputMode == .midi ? "pianokeys.inverse" : "mic.fill")
+                    .font(.caption)
+                    .foregroundStyle(palette.textMuted)
             }
 
             Spacer()
@@ -194,6 +215,12 @@ struct TrainerPlayingView: View {
     private var nextLabel: String {
         if store.currentIdx >= store.actualTotalChords - 1 { return "Finish" }
         return "Next chord"
+    }
+    private var inputStatus: String {
+        if store.inputMode == .midi {
+            return MIDIInput.shared.connected ? "Play it on your keyboard" : "Connect a MIDI keyboard"
+        }
+        return "Play it — listening…"
     }
 }
 

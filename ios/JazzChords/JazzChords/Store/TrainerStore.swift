@@ -22,8 +22,32 @@ final class TrainerStore {
     var totalChords: Int = 20
     var progressionMode: ProgressionMode = .random
     var voiceLeadingEnabled = false
+    var adaptiveEnabled = false
+    var focusRoots: [String] = []
     var audioEnabled = true
     var soundPreset: SoundPreset = .grandPiano
+
+    // ─── Input (none / midi / mic) ──────────────────────────
+    enum InputMode: String { case none, midi, microphone }
+    var inputMode: InputMode = .none
+    var inputActive: Bool { inputMode != .none }
+    /// Notes currently held via MIDI/mic (for keyboard overlay + validation).
+    private(set) var heldNotes: Set<Int> = []
+    private(set) var midiCorrectCount = 0
+    private(set) var midiTotalAttempts = 0
+    private var autoAdvanceArmed = false
+    var midiAccuracy: Int { midiTotalAttempts > 0 ? Int((Double(midiCorrectCount) / Double(midiTotalAttempts) * 100).rounded()) : 0 }
+
+    /// Expected pitch classes of the current voicing (for green/red key coloring).
+    var expectedPitchClasses: Set<Int> {
+        guard let d = currentData else { return [] }
+        var set = Set<Int>()
+        for n in d.voicing {
+            let st = noteToSemitone(n)
+            if st != -1 { set.insert(st) }
+        }
+        return set
+    }
 
     // ─── Game state ─────────────────────────────────────────
     var screen: Screen = .setup
@@ -86,6 +110,7 @@ final class TrainerStore {
         progressionMode = plan.settings.progressionMode
         totalChords = plan.settings.totalChords
         voiceLeadingEnabled = (plan.id == "voice-leading-flow")
+        adaptiveEnabled = (plan.id == "adaptive-drill" || plan.id == "weak-drill")
     }
 
     // ─── Chord generation (ports generateChords) ────────────
@@ -114,6 +139,32 @@ final class TrainerStore {
         var newChords: [String] = []
         var newData: [ChordWithNotes] = []
         var last = ""
+
+        // Adaptive: weight selection by past per-chord timing (spaced-repetition-ish).
+        if adaptiveEnabled {
+            let allHistory = ProgressStore.loadHistory()
+            let matching = allHistory.filter { $0.settings.voicing == voicing }
+            let timings = matching.flatMap { $0.chordTimings ?? [] }
+            let weighted = getWeightedChordPool(timings, available, pool, focusRoots.isEmpty ? nil : focusRoots)
+            var lastRoot = ""
+            var lastDisplay = ""
+            for _ in 0..<totalChords {
+                let pick = pickWeightedChord(weighted, lastRoot: lastRoot, lastDisplay: lastDisplay)
+                let displayQuality = CHORD_NOTATIONS[notation]?[pick.display] ?? pick.display
+                let name = "\(pick.root)\(displayQuality)"
+                lastRoot = pick.root; lastDisplay = pick.display
+                newChords.append(name)
+                let notes = getChordNotes(pick.root, pick.display, accidentals)
+                var voicingArr = getVoicingNotes(notes, voicing, pick.root, accidentals)
+                if voiceLeadingEnabled, let prev = newData.last {
+                    voicingArr = computeVoiceLeadVoicing(prev.voicing, voicingArr, accidentals)
+                }
+                newData.append(ChordWithNotes(chord: name, root: pick.root, type: pick.display, notes: notes, voicing: voicingArr))
+            }
+            chords = newChords
+            chordsWithNotes = newData
+            return
+        }
 
         for _ in 0..<totalChords {
             var name = ""
@@ -166,10 +217,104 @@ final class TrainerStore {
         startTime = 0
         chordTimings = []
         chordStartTime = 0
+        heldNotes = []
+        midiCorrectCount = 0
+        midiTotalAttempts = 0
+        autoAdvanceArmed = false
         sessionOctaves = chordsWithNotes.isEmpty ? nil : computeSessionOctaves(chordsWithNotes, accidentals)
         AudioEngine.shared.setPreset(soundPreset)
+        if inputMode == .midi { attachMidi() }
+        if inputMode == .microphone { attachMic() }
         persistSettings()
         screen = .playing
+    }
+
+    // ─── Input wiring ───────────────────────────────────────
+    private func attachMidi() {
+        let midi = MIDIInput.shared
+        midi.start()
+        midi.onNoteOn = { note, _ in AudioEngine.shared.playMidi(note) }
+        midi.onNotesChanged = { [weak self] notes in
+            guard let self else { return }
+            self.heldNotes = notes
+            self.validateHeld()
+        }
+    }
+
+    private func detachMidi() {
+        MIDIInput.shared.onNotesChanged = nil
+        MIDIInput.shared.onNoteOn = nil
+        MIDIInput.shared.stop()
+        heldNotes = []
+    }
+
+    private func attachMic() {
+        let mic = MicInput.shared
+        mic.onNotesChanged = { [weak self] notes in
+            guard let self else { return }
+            self.heldNotes = notes
+            self.validateHeld()
+        }
+        mic.start()
+    }
+
+    private func detachMic() {
+        MicInput.shared.onNotesChanged = nil
+        MicInput.shared.stop()
+        heldNotes = []
+    }
+
+    /// Suppress mic detection while we play audio (prevents self-trigger).
+    private func suppressMicForPlayback() {
+        if inputMode == .microphone { MicInput.shared.suppress(2.5) }
+    }
+
+    /// Validate currently-held notes against the current voicing; auto-advance on correct.
+    private func validateHeld() {
+        guard screen == .playing, let d = currentData, inputActive, !heldNotes.isEmpty else { return }
+        // Must have started the timer (first input also starts it).
+        if !timerStarted { beginTimer() }
+
+        let result: ChordMatchResult
+        if voicing.rawValue.hasPrefix("inversion-"), let bass = d.voicing.first {
+            result = ChordMatch.checkChordWithBass(d.voicing, expectedBassNote: bass, activeMidi: heldNotes)
+        } else {
+            result = ChordMatch.checkChordLenient(d.voicing, activeMidi: heldNotes)
+        }
+
+        if result.correct {
+            if !autoAdvanceArmed {
+                autoAdvanceArmed = true
+                midiTotalAttempts += 1
+                midiCorrectCount += 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+                    guard let self, self.autoAdvanceArmed else { return }
+                    self.autoAdvanceArmed = false
+                    self.advanceFromInput()
+                }
+            }
+        } else if heldNotes.count >= d.voicing.count {
+            midiTotalAttempts += 1
+        }
+    }
+
+    /// Advance triggered by correct input (skips the verify pause).
+    private func advanceFromInput() {
+        playPhase = .playing
+        let nowMs = Date().timeIntervalSince1970
+        if let d = currentData {
+            chordTimings.append(ChordTiming(chord: d.chord, root: d.root, durationMs: (nowMs - chordStartTime) * 1000))
+        }
+        chordStartTime = nowMs
+        if currentIdx < actualTotalChords - 1 {
+            currentIdx += 1
+            if audioEnabled, currentIdx < chordsWithNotes.count {
+                suppressMicForPlayback()
+                AudioEngine.shared.playChord(chordsWithNotes[currentIdx].voicing)
+            }
+        } else {
+            endGame()
+        }
     }
 
     /// First interaction starts the timer (chord already visible).
@@ -178,6 +323,7 @@ final class TrainerStore {
         startTime = Date().timeIntervalSince1970
         chordStartTime = startTime
         if audioEnabled, let d = chordsWithNotes.first {
+            suppressMicForPlayback()
             AudioEngine.shared.playChord(d.voicing)
         }
     }
@@ -195,6 +341,7 @@ final class TrainerStore {
         if displayMode == .verify && playPhase == .playing {
             playPhase = .verifying
             if audioEnabled, let d = currentData {
+                suppressMicForPlayback()
                 AudioEngine.shared.playChord(d.voicing)
             }
             return
@@ -211,6 +358,7 @@ final class TrainerStore {
         if currentIdx < actualTotalChords - 1 {
             currentIdx += 1
             if audioEnabled, currentIdx < chordsWithNotes.count {
+                suppressMicForPlayback()
                 AudioEngine.shared.playChord(chordsWithNotes[currentIdx].voicing)
             }
         } else {
@@ -219,7 +367,7 @@ final class TrainerStore {
     }
 
     func replayChord() {
-        if let d = currentData { AudioEngine.shared.playChord(d.voicing) }
+        if let d = currentData { suppressMicForPlayback(); AudioEngine.shared.playChord(d.voicing) }
     }
 
     private func endGame() {
@@ -239,7 +387,7 @@ final class TrainerStore {
             chordTimings: chordTimings,
             settings: SessionSettings(difficulty: difficulty, notation: notation, voicing: voicing,
                                       displayMode: displayMode, accidentals: accidentals, progressionMode: progressionMode),
-            midi: SessionMidi(enabled: false, accuracy: 0)
+            midi: SessionMidi(enabled: inputActive, accuracy: midiAccuracy)
         )
         // Previous best avg for the same difficulty/voicing/progression (for PB + XP).
         let history = ProgressStore.loadHistory()
@@ -269,6 +417,8 @@ final class TrainerStore {
         chordsWithNotes = []
         timerStarted = false
         AudioEngine.shared.stopAll()
+        detachMidi()
+        detachMic()
     }
 
     private static func generateId() -> String {

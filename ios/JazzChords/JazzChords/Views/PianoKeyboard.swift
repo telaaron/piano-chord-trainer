@@ -18,8 +18,25 @@ struct PianoKeyboard: View {
     var interactive: Bool = false
     /// Pitch classes the user has selected (ear-training guess).
     var selectedPitchClasses: Set<Int> = []
+    /// Live input: MIDI/mic notes currently held (chromatic-index space from C3).
+    var heldNotes: Set<Int> = []
+    /// Expected pitch classes — held notes are colored green if expected, red if not.
+    var expectedPitchClasses: Set<Int> = []
+    /// Show the MIDI/mic green/red overlay.
+    var showInput: Bool = false
     /// Tap handler: (chromaticIndex). When nil, taps still preview audio.
     var onKeyTap: ((Int) -> Void)? = nil
+
+    /// Chromatic indices (C3 = 0) currently held via input.
+    private var heldKeyIndices: Set<Int> {
+        guard showInput else { return [] }
+        var set = Set<Int>()
+        for mn in heldNotes {
+            let offset = mn - 48 // keyboard starts at C3 (MIDI 48)
+            if offset >= 0 { set.insert(offset) }
+        }
+        return set
+    }
 
     @State private var flashPC: Int? = nil
 
@@ -76,7 +93,7 @@ struct PianoKeyboard: View {
 
         return ZStack(alignment: .bottom) {
             Rectangle()
-                .fill(whiteFill(active: active, selected: selected, flash: flash))
+                .fill(whiteFill(chrIdx, active: active, selected: selected, flash: flash))
                 .overlay(Rectangle().stroke(palette.keyWhiteBorder, lineWidth: 0.5))
             if root {
                 Circle().fill(.white).frame(width: 8, height: 8).padding(.bottom, 8)
@@ -95,7 +112,7 @@ struct PianoKeyboard: View {
 
         return ZStack(alignment: .bottom) {
             RoundedRectangle(cornerRadius: 3)
-                .fill(blackFill(active: active, selected: selected, flash: flash))
+                .fill(blackFill(key.idx, active: active, selected: selected, flash: flash))
             if root {
                 Circle().fill(.white).frame(width: 6, height: 6).padding(.bottom, 4)
             }
@@ -107,14 +124,21 @@ struct PianoKeyboard: View {
 
     // MARK: Fills
 
-    private func whiteFill(active: Bool, selected: Bool, flash: Bool) -> Color {
+    private func inputColor(_ chrIdx: Int) -> Color? {
+        guard showInput, heldKeyIndices.contains(chrIdx) else { return nil }
+        return expectedPitchClasses.contains(chrIdx % 12) ? palette.accentGreen : palette.accentRed
+    }
+
+    private func whiteFill(_ chrIdx: Int, active: Bool, selected: Bool, flash: Bool) -> Color {
+        if let c = inputColor(chrIdx) { return c }
         if selected { return palette.primary.opacity(0.85) }
         if flash { return palette.accentGreen.opacity(0.7) }
         if active { return palette.primary }
         return palette.keyWhite
     }
 
-    private func blackFill(active: Bool, selected: Bool, flash: Bool) -> Color {
+    private func blackFill(_ chrIdx: Int, active: Bool, selected: Bool, flash: Bool) -> Color {
+        if let c = inputColor(chrIdx) { return c }
         if selected { return palette.primary }
         if flash { return palette.accentGreen }
         if active { return palette.primary }

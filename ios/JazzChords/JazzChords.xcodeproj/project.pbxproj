@@ -12,8 +12,10 @@
 		44B8C4456407179C239F8054 /* HabitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */; };
 		4B82778E6A2032DE544806F7 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DDA2D43A556F2895D50C30 /* Components.swift */; };
 		4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C685670A09A9D9D041427E06 /* JazzChordsApp.swift */; };
+		56DD437D723F0218EB5129F6 /* PitchDetectors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6FA6254D4E1B61B168536F /* PitchDetectors.swift */; };
 		644B66D66331A179320C49E2 /* MusicEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 4CC84F324CEA516CFA5C2507 /* MusicEngine */; };
 		80415604BDCF56D50030180C /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3205430E7105BBD412ED8C3D /* Theme.swift */; };
+		88D58423DACC1568F0D058F3 /* MIDIInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364C8A44BBA14E3CF00848DF /* MIDIInput.swift */; };
 		8F862844F36AA90408308D72 /* Gamification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905F024385A02CD6F8F28136 /* Gamification.swift */; };
 		92A76D9E6EE519F76C662164 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558859E350F645BD0FB4B81E /* Persistence.swift */; };
 		94FB28CC1E73FE89320A76DC /* LessonPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */; };
@@ -23,6 +25,7 @@
 		A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */; };
 		B10E5BD29AA3FB6F57933192 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C022B402A4004283821D49C9 /* OnboardingView.swift */; };
 		CF3AB4879000DF328D238148 /* Metronome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FC2B860DE316E7E340620B8 /* Metronome.swift */; };
+		D550AB6E3B5C7E16F2A7D126 /* MicInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDACE9F657B8CFF1C4FF3805 /* MicInput.swift */; };
 		D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A447E61D3336037E3D5865BD /* LearnView.swift */; };
 		DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C107A882B6475FA011F238FB /* AudioEngine.swift */; };
 		ED8216D853408C458EDD0F00 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2AE191D85096C087E5C4054 /* SettingsView.swift */; };
@@ -36,6 +39,8 @@
 		25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseProgressStore.swift; sourceTree = "<group>"; };
 		2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
 		3205430E7105BBD412ED8C3D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		364C8A44BBA14E3CF00848DF /* MIDIInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MIDIInput.swift; sourceTree = "<group>"; };
+		3B6FA6254D4E1B61B168536F /* PitchDetectors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetectors.swift; sourceTree = "<group>"; };
 		44DDA2D43A556F2895D50C30 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
 		558859E350F645BD0FB4B81E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
@@ -53,6 +58,7 @@
 		F2AE191D85096C087E5C4054 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonPlayerView.swift; sourceTree = "<group>"; };
 		F7FEDEE711344352652D8123 /* MusicEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MusicEngine; path = ../MusicEngine; sourceTree = SOURCE_ROOT; };
+		FDACE9F657B8CFF1C4FF3805 /* MicInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicInput.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +109,9 @@
 			children = (
 				C107A882B6475FA011F238FB /* AudioEngine.swift */,
 				9FC2B860DE316E7E340620B8 /* Metronome.swift */,
+				FDACE9F657B8CFF1C4FF3805 /* MicInput.swift */,
+				364C8A44BBA14E3CF00848DF /* MIDIInput.swift */,
+				3B6FA6254D4E1B61B168536F /* PitchDetectors.swift */,
 			);
 			path = Audio;
 			sourceTree = "<group>";
@@ -190,6 +199,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					F3CD4A21DB694FBD2D863186 = {
+						DevelopmentTeam = 3YB2KJCCHV;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = B3C4F8DD3A95619ABB488C66 /* Build configuration list for PBXProject "JazzChords" */;
@@ -227,10 +240,13 @@
 				4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */,
 				D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */,
 				94FB28CC1E73FE89320A76DC /* LessonPlayerView.swift in Sources */,
+				88D58423DACC1568F0D058F3 /* MIDIInput.swift in Sources */,
 				CF3AB4879000DF328D238148 /* Metronome.swift in Sources */,
+				D550AB6E3B5C7E16F2A7D126 /* MicInput.swift in Sources */,
 				B10E5BD29AA3FB6F57933192 /* OnboardingView.swift in Sources */,
 				92A76D9E6EE519F76C662164 /* Persistence.swift in Sources */,
 				9A7DCD5EF00F0352F62707ED /* PianoKeyboard.swift in Sources */,
+				56DD437D723F0218EB5129F6 /* PitchDetectors.swift in Sources */,
 				F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */,
 				A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */,
 				A6999155E26580513FD8D700 /* RootView.swift in Sources */,
@@ -250,7 +266,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YB2KJCCHV;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = jazzchords;
@@ -396,7 +414,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3YB2KJCCHV;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = jazzchords;

@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var notationStyle: NotationStyle = .standard
     @State private var accidentals: AccidentalPreference = .both
     @State private var soundPreset = "grand-piano"
+    @State private var showBluetooth = false
 
     private let soundPresets = ["grand-piano", "electric-piano", "vibraphone", "organ", "synth-pad"]
 
@@ -41,10 +42,33 @@ struct SettingsView: View {
                 }
             }
 
+            Section("MIDI") {
+                Button {
+                    MIDIInput.shared.start()
+                    showBluetooth = true
+                } label: {
+                    Label("Connect Bluetooth keyboard", systemImage: "pianokeys")
+                }
+                if !MIDIInput.shared.devices.isEmpty {
+                    ForEach(MIDIInput.shared.devices) { d in
+                        Label(d.name, systemImage: "pianokeys.inverse")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
             Section {
-                Text("More settings (input device, theme, language) arrive with the trainer.")
+                Text("Hardware MIDI works in the trainer (set Input → MIDI). Microphone recognition and more settings arrive soon.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+            }
+        }
+        .sheet(isPresented: $showBluetooth) {
+            NavigationStack {
+                BluetoothMIDISheet()
+                    .navigationTitle("Bluetooth MIDI")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { showBluetooth = false } } }
             }
         }
         .navigationTitle("Settings")
