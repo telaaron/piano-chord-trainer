@@ -49,6 +49,10 @@ private func noteToPitchClass(_ note: String, _ baseNotes: [String]) -> Int {
 public struct KeyboardLayout: Sendable, Equatable {
     public let activeIndices: Set<Int>
     public let octaves: OctaveCount
+    public init(activeIndices: Set<Int>, octaves: OctaveCount) {
+        self.activeIndices = activeIndices
+        self.octaves = octaves
+    }
 }
 
 /// Place pitch classes in ascending order on the keyboard, each above the previous.

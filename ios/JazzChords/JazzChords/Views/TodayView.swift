@@ -6,6 +6,7 @@ import MusicEngine
 
 struct TodayView: View {
     @Environment(\.palette) private var palette
+    @State private var startSuggested = false
 
     // M1 placeholder inputs; M3 replaces with persisted history/streak.
     private let suggested = suggestPlan([], 0)
@@ -52,7 +53,7 @@ struct TodayView: View {
                             .font(.subheadline)
                             .foregroundStyle(palette.textMuted)
                         Button {
-                            // M2: launch trainer with this plan.
+                            startSuggested = true
                         } label: {
                             Text("Start")
                                 .font(.body.weight(.semibold))
@@ -71,6 +72,9 @@ struct TodayView: View {
         .navigationTitle("Today")
         .navigationBarTitleDisplayMode(.inline)
         .screenBackground()
+        .fullScreenCover(isPresented: $startSuggested) {
+            NavigationStack { TrainerView(plan: suggested) }
+        }
     }
 
     // Plan name/tagline are i18n keys in the engine; M1 shows a readable fallback.

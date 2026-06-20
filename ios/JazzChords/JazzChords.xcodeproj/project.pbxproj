@@ -12,21 +12,33 @@
 		4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C685670A09A9D9D041427E06 /* JazzChordsApp.swift */; };
 		644B66D66331A179320C49E2 /* MusicEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 4CC84F324CEA516CFA5C2507 /* MusicEngine */; };
 		80415604BDCF56D50030180C /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3205430E7105BBD412ED8C3D /* Theme.swift */; };
+		92A76D9E6EE519F76C662164 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558859E350F645BD0FB4B81E /* Persistence.swift */; };
+		9A7DCD5EF00F0352F62707ED /* PianoKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */; };
+		A062354894811309A09CFBE8 /* TrainerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B56736703494CD04E7B1D17 /* TrainerStore.swift */; };
 		A6999155E26580513FD8D700 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD8D24429AD88D4ED75C2AE /* RootView.swift */; };
 		A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */; };
+		CF3AB4879000DF328D238148 /* Metronome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FC2B860DE316E7E340620B8 /* Metronome.swift */; };
 		D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A447E61D3336037E3D5865BD /* LearnView.swift */; };
+		DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C107A882B6475FA011F238FB /* AudioEngine.swift */; };
 		ED8216D853408C458EDD0F00 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2AE191D85096C087E5C4054 /* SettingsView.swift */; };
+		F662935F15E14DE990D05F1A /* TrainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCB9663547D5A0E3BF66245 /* TrainerView.swift */; };
 		F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0867EC7118FCB35AE3C9028E /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		0DD8D24429AD88D4ED75C2AE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
 		3205430E7105BBD412ED8C3D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		44DDA2D43A556F2895D50C30 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
+		558859E350F645BD0FB4B81E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		5A6FFC23232BA8E2500B99EF /* JazzChords.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = JazzChords.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B56736703494CD04E7B1D17 /* TrainerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerStore.swift; sourceTree = "<group>"; };
+		9FC2B860DE316E7E340620B8 /* Metronome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metronome.swift; sourceTree = "<group>"; };
 		A447E61D3336037E3D5865BD /* LearnView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnView.swift; sourceTree = "<group>"; };
+		AFCB9663547D5A0E3BF66245 /* TrainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerView.swift; sourceTree = "<group>"; };
+		C107A882B6475FA011F238FB /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
 		C685670A09A9D9D041427E06 /* JazzChordsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzChordsApp.swift; sourceTree = "<group>"; };
 		CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView_.swift; sourceTree = "<group>"; };
 		F2AE191D85096C087E5C4054 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -49,6 +61,8 @@
 			isa = PBXGroup;
 			children = (
 				A365A17123F59E42DF34E6CF /* App */,
+				433D98590D8E055795DAF72A /* Audio */,
+				2C99DD2E23C7FCA38EFF5F6F /* Store */,
 				6B3B96934DC968D3D152BFAC /* Theme */,
 				91CFA51D27D81C11A888DEE7 /* Views */,
 			);
@@ -61,6 +75,24 @@
 				5A6FFC23232BA8E2500B99EF /* JazzChords.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2C99DD2E23C7FCA38EFF5F6F /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				558859E350F645BD0FB4B81E /* Persistence.swift */,
+				7B56736703494CD04E7B1D17 /* TrainerStore.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+		433D98590D8E055795DAF72A /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				C107A882B6475FA011F238FB /* AudioEngine.swift */,
+				9FC2B860DE316E7E340620B8 /* Metronome.swift */,
+			);
+			path = Audio;
 			sourceTree = "<group>";
 		};
 		6B3B96934DC968D3D152BFAC /* Theme */ = {
@@ -84,10 +116,12 @@
 			children = (
 				44DDA2D43A556F2895D50C30 /* Components.swift */,
 				A447E61D3336037E3D5865BD /* LearnView.swift */,
+				2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */,
 				54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */,
 				CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */,
 				F2AE191D85096C087E5C4054 /* SettingsView.swift */,
 				0867EC7118FCB35AE3C9028E /* TodayView.swift */,
+				AFCB9663547D5A0E3BF66245 /* TrainerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -170,15 +204,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */,
 				4B82778E6A2032DE544806F7 /* Components.swift in Sources */,
 				4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */,
 				D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */,
+				CF3AB4879000DF328D238148 /* Metronome.swift in Sources */,
+				92A76D9E6EE519F76C662164 /* Persistence.swift in Sources */,
+				9A7DCD5EF00F0352F62707ED /* PianoKeyboard.swift in Sources */,
 				F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */,
 				A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */,
 				A6999155E26580513FD8D700 /* RootView.swift in Sources */,
 				ED8216D853408C458EDD0F00 /* SettingsView.swift in Sources */,
 				80415604BDCF56D50030180C /* Theme.swift in Sources */,
 				2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */,
+				A062354894811309A09CFBE8 /* TrainerStore.swift in Sources */,
+				F662935F15E14DE990D05F1A /* TrainerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
