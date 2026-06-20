@@ -94,7 +94,7 @@ struct TodayView: View {
     }
 
     private var suggestedCard: some View {
-        CardSurface(tint: palette.primary) {
+        CardSurface {
             VStack(alignment: .leading, spacing: Theme.space3) {
                 HStack(spacing: Theme.space2) {
                     ZStack {

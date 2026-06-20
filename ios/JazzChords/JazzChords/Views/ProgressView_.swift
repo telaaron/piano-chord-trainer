@@ -21,7 +21,8 @@ struct ProgressView_: View {
                 EmptyStateView(
                     systemImage: "chart.line.uptrend.xyaxis",
                     title: "No sessions yet",
-                    message: "Play your first drill and your speed, streaks, and weak spots will show up here."
+                    message: "Play your first drill and your speed, streaks, and weak spots will show up here.",
+                    artName: "empty"
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {

@@ -36,23 +36,37 @@ struct SectionHeader: View {
     }
 }
 
-/// Empty state — large glyph in a soft amber halo + display title + message.
+/// Empty state — rendered art (if `artName` present in bundle) or an SF glyph in
+/// an amber halo, plus a display title + message.
 struct EmptyStateView: View {
     @Environment(\.palette) private var palette
     let systemImage: String
     let title: String
     let message: String
+    var artName: String? = nil
+
+    private func art(_ name: String) -> UIImage? {
+        guard let url = Bundle.main.url(forResource: name, withExtension: "webp"),
+              let data = try? Data(contentsOf: url) else { return nil }
+        return UIImage(data: data)
+    }
 
     var body: some View {
         VStack(spacing: Theme.space4) {
-            ZStack {
-                Circle()
-                    .fill(palette.primary.opacity(0.12))
-                    .frame(width: 120, height: 120)
-                Image(systemName: systemImage)
-                    .font(.system(size: 48, weight: .regular))
-                    .foregroundStyle(palette.primary)
-                    .symbolRenderingMode(.hierarchical)
+            if let artName, let img = art(artName) {
+                Image(uiImage: img)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 180, height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
+            } else {
+                ZStack {
+                    Circle().fill(palette.primary.opacity(0.12)).frame(width: 120, height: 120)
+                    Image(systemName: systemImage)
+                        .font(.system(size: 48, weight: .regular))
+                        .foregroundStyle(palette.primary)
+                        .symbolRenderingMode(.hierarchical)
+                }
             }
             Text(title)
                 .font(Display.headline(22))
@@ -68,35 +82,45 @@ struct EmptyStateView: View {
     }
 }
 
-/// A warm "jazz-club at night" gradient band — used behind the Today header and
-/// as a lightweight hero until rendered art lands. Abstract key-light streaks.
+/// Atmospheric "jazz-club at night" hero band. Uses the rendered art if present
+/// in the bundle; otherwise a code gradient with key-light streaks. A bottom
+/// scrim keeps overlaid text legible.
 struct HeroGradient: View {
-    var height: CGFloat = 150
+    var height: CGFloat = 168
+
+    private var heroImage: UIImage? {
+        if let url = Bundle.main.url(forResource: "hero2", withExtension: "webp"),
+           let data = try? Data(contentsOf: url) {
+            return UIImage(data: data)
+        }
+        return nil
+    }
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            // Base radial glow + linear depth.
-            LinearGradient(
-                colors: [Color(hex: "1a1530"), Color(hex: "120e26"), Color(hex: "0c0a18")],
-                startPoint: .top, endPoint: .bottom
-            )
-            RadialGradient(
-                colors: [Color(hex: "f5a623").opacity(0.28), .clear],
-                center: .init(x: 0.82, y: 0.2), startRadius: 4, endRadius: height * 1.4
-            )
-            // Abstract "white key" light streaks.
-            GeometryReader { geo in
-                let w = geo.size.width
-                ForEach(0..<6, id: \.self) { i in
-                    Rectangle()
-                        .fill(Color.white.opacity(0.04 + Double(i) * 0.006))
-                        .frame(width: 2)
-                        .offset(x: w * 0.55 + CGFloat(i) * 16, y: 0)
-                        .rotationEffect(.degrees(18))
-                }
+            if let img = heroImage {
+                Image(uiImage: img)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                LinearGradient(
+                    colors: [Color(hex: "1a1530"), Color(hex: "120e26"), Color(hex: "0c0a18")],
+                    startPoint: .top, endPoint: .bottom
+                )
+                RadialGradient(
+                    colors: [Color(hex: "f5a623").opacity(0.28), .clear],
+                    center: .init(x: 0.82, y: 0.2), startRadius: 4, endRadius: height * 1.4
+                )
             }
+            // Scrim for text legibility.
+            LinearGradient(
+                colors: [.clear, Color(hex: "0c0a18").opacity(0.75)],
+                startPoint: .center, endPoint: .bottom
+            )
         }
         .frame(height: height)
+        .frame(maxWidth: .infinity)
+        .clipped()
         .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
     }
 }

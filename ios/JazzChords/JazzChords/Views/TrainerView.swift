@@ -120,13 +120,43 @@ struct TrainerSetupView: View {
 
 struct TrainerPlayingView: View {
     @Environment(\.palette) private var palette
+    @Environment(\.verticalSizeClass) private var vSize
     @Bindable var store: TrainerStore
 
     var onClose: () -> Void
 
+    private var isLandscape: Bool { vSize == .compact }
+
     var body: some View {
-        VStack(spacing: Theme.space5) {
-            // Progress + counter
+        VStack(spacing: Theme.space3) {
+            topBar
+            if isLandscape {
+                // Landscape: chord left, keyboard right — fits the short height.
+                HStack(spacing: Theme.space5) {
+                    chordBlock
+                        .frame(maxWidth: .infinity)
+                    VStack(spacing: Theme.space3) {
+                        keyboardBlock
+                        controls
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            } else {
+                Spacer(minLength: 0)
+                chordBlock
+                keyboardBlock
+                if store.inputActive { inputHint }
+                Spacer(minLength: 0)
+                controls
+            }
+        }
+        .padding(Theme.space4)
+        .frame(maxHeight: .infinity)
+        .navigationBarBackButtonHidden()
+    }
+
+    private var topBar: some View {
+        VStack(spacing: Theme.space2) {
             HStack {
                 Text("\(store.currentIdx + 1) / \(store.actualTotalChords)")
                     .font(.caption.monospacedDigit())
@@ -135,77 +165,70 @@ struct TrainerPlayingView: View {
                 Button { onClose() } label: { Image(systemName: "xmark.circle.fill") }
                     .foregroundStyle(palette.textDim)
             }
-            ProgressView(value: store.progress)
-                .tint(palette.primary)
+            ProgressView(value: store.progress).tint(palette.primary)
+        }
+    }
 
-            Spacer()
-
-            // Chord symbol
-            VStack(spacing: Theme.space2) {
-                Text(displayedChord)
-                    .font(Display.chord(68))
-                    .foregroundStyle(palette.text)
-                    .contentTransition(.numericText())
-                if store.shouldShowVoicing, let d = store.currentData {
-                    Text(VOICING_LABELS[store.voicing]?.uppercased() ?? "")
-                        .font(.caption.weight(.semibold))
-                        .tracking(1)
-                        .foregroundStyle(palette.primary)
-                    Text(formatVoicing(d, store.voicing, store.notationSystem))
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundStyle(palette.textMuted)
-                }
-            }
-
-            // Keyboard
-            if store.shouldShowVoicing || store.inputActive {
-                PianoKeyboard(
-                    chordData: store.currentData,
-                    accidentalPref: store.accidentals,
-                    showVoicing: store.shouldShowVoicing,
-                    forceOctaves: store.sessionOctaves,
-                    heldNotes: store.heldNotes,
-                    expectedPitchClasses: store.expectedPitchClasses,
-                    showInput: store.inputActive
-                )
-                .padding(.horizontal, Theme.space2)
-            }
-
-            if store.inputActive {
-                Label(inputStatus, systemImage: store.inputMode == .midi ? "pianokeys.inverse" : "mic.fill")
-                    .font(.caption)
+    private var chordBlock: some View {
+        VStack(spacing: Theme.space2) {
+            Text(displayedChord)
+                .font(Display.chord(isLandscape ? 52 : 68))
+                .foregroundStyle(palette.text)
+                .contentTransition(.numericText())
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+            if store.shouldShowVoicing, let d = store.currentData {
+                Text(VOICING_LABELS[store.voicing]?.uppercased() ?? "")
+                    .font(.caption.weight(.semibold)).tracking(1)
+                    .foregroundStyle(palette.primary)
+                Text(formatVoicing(d, store.voicing, store.notationSystem))
+                    .font(.system(.body, design: .monospaced))
                     .foregroundStyle(palette.textMuted)
             }
+        }
+    }
 
-            Spacer()
+    @ViewBuilder
+    private var keyboardBlock: some View {
+        if store.shouldShowVoicing || store.inputActive {
+            PianoKeyboard(
+                chordData: store.currentData,
+                accidentalPref: store.accidentals,
+                showVoicing: store.shouldShowVoicing,
+                forceOctaves: store.sessionOctaves,
+                heldNotes: store.heldNotes,
+                expectedPitchClasses: store.expectedPitchClasses,
+                showInput: store.inputActive
+            )
+        }
+    }
 
-            // Replay + Next
-            HStack(spacing: Theme.space3) {
-                Button { store.replayChord() } label: {
-                    Image(systemName: "speaker.wave.2.fill")
-                        .frame(width: Theme.tapMin, height: Theme.tapMin)
-                        .background(palette.bgCard)
-                        .foregroundStyle(palette.text)
-                        .clipShape(Circle())
-                }
-                Button {
-                    UISelectionFeedbackGenerator().selectionChanged()
-                    store.next()
-                } label: {
-                    Text(nextLabel)
-                        .font(.title3.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Theme.space4)
-                        .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
-                        .foregroundStyle(palette.primaryText)
-                }
+    private var inputHint: some View {
+        Label(inputStatus, systemImage: store.inputMode == .midi ? "pianokeys.inverse" : "mic.fill")
+            .font(.caption)
+            .foregroundStyle(palette.textMuted)
+    }
+
+    private var controls: some View {
+        HStack(spacing: Theme.space3) {
+            Button { store.replayChord() } label: {
+                Image(systemName: "speaker.wave.2.fill")
+                    .frame(width: Theme.tapMin, height: Theme.tapMin)
+                    .glassCard(cornerRadius: Theme.tapMin / 2)
+                    .foregroundStyle(palette.text)
+            }
+            Button {
+                UISelectionFeedbackGenerator().selectionChanged()
+                store.next()
+            } label: {
+                Text(nextLabel)
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Theme.space4)
+                    .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
+                    .foregroundStyle(palette.primaryText)
             }
         }
-        .padding(Theme.space4)
-        .navigationBarBackButtonHidden()
-        // Big invisible tap target: tap anywhere advances (like Space on web).
-        .contentShape(Rectangle())
-        .onTapGesture { store.next() }
     }
 
     private var displayedChord: String {

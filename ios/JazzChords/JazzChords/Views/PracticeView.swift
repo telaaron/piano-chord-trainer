@@ -62,7 +62,8 @@ struct PlanCard: View {
     @Environment(\.palette) private var palette
     let plan: PracticePlan
 
-    private var accent: Color {
+    /// Level dot color — the only chromatic cue beyond the amber accent.
+    private var levelColor: Color {
         switch plan.level {
         case .beginner: return palette.accentGreen
         case .intermediate: return palette.primary
@@ -72,17 +73,15 @@ struct PlanCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.space3) {
-            // Icon halo
-            ZStack {
-                Circle().fill(accent.opacity(0.16)).frame(width: 44, height: 44)
-                Image(systemName: AppIcons.plan(plan.id))
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(accent)
-                    .symbolRenderingMode(.hierarchical)
-            }
+            // Amber icon — single consistent accent across all cards.
+            Image(systemName: AppIcons.plan(plan.id))
+                .font(.system(size: 22, weight: .medium))
+                .foregroundStyle(palette.primary)
+                .symbolRenderingMode(.hierarchical)
+                .frame(height: 28)
 
             Text(planName(plan.id))
-                .font(Display.headline(17))
+                .font(Display.headline(18))
                 .foregroundStyle(palette.text)
                 .lineLimit(1)
 
@@ -95,27 +94,19 @@ struct PlanCard: View {
             Spacer(minLength: 0)
 
             HStack(spacing: 6) {
-                pill(text: plan.level.rawValue.capitalized, color: accent)
-                pill(text: "\(plan.settings.totalChords)", color: palette.textDim, system: "music.note")
+                Circle().fill(levelColor).frame(width: 6, height: 6)
+                Text(plan.level.rawValue.capitalized)
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(palette.textMuted)
+                Spacer()
+                Image(systemName: "music.note").font(.system(size: 9))
+                Text("\(plan.settings.totalChords)").font(.caption2.weight(.medium))
             }
+            .foregroundStyle(palette.textDim)
         }
-        .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 152, alignment: .topLeading)
         .padding(Theme.space4)
-        .glassCard(tint: accent)
-        .overlay(alignment: .leading) {
-            // subtle accent stripe
-            RoundedRectangle(cornerRadius: 2).fill(accent).frame(width: 3).padding(.vertical, Theme.space4)
-        }
-    }
-
-    private func pill(text: String, color: Color, system: String? = nil) -> some View {
-        HStack(spacing: 3) {
-            if let system { Image(systemName: system).font(.system(size: 9)) }
-            Text(text).font(.caption2.weight(.medium))
-        }
-        .foregroundStyle(color)
-        .padding(.horizontal, 8).padding(.vertical, 3)
-        .background(color.opacity(0.14), in: Capsule())
+        .glassCard()
     }
 
     private func planName(_ id: String) -> String {
