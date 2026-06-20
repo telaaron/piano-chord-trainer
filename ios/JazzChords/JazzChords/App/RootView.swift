@@ -1,0 +1,94 @@
+// Root navigation. Adaptive per HIG: iPhone (compact) → tab bar; iPad (regular)
+// → sidebar / split view. Tabs are the four peer sections; Settings is a sheet.
+
+import SwiftUI
+
+enum AppSection: String, CaseIterable, Identifiable {
+    case today, practice, learn, progress
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .today: return "Today"
+        case .practice: return "Practice"
+        case .learn: return "Learn"
+        case .progress: return "Progress"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .today: return "sun.max"
+        case .practice: return "pianokeys"
+        case .learn: return "book"
+        case .progress: return "chart.line.uptrend.xyaxis"
+        }
+    }
+}
+
+struct RootView: View {
+    @Environment(\.horizontalSizeClass) private var hSize
+    @Environment(\.colorScheme) private var scheme
+    @State private var selection: AppSection = .today
+    @State private var sidebarSelection: AppSection? = .today
+    @State private var showSettings = false
+
+    var body: some View {
+        Group {
+            if hSize == .regular {
+                iPadLayout
+            } else {
+                iPhoneLayout
+            }
+        }
+        .environment(\.palette, Theme.palette(for: scheme))
+        .sheet(isPresented: $showSettings) {
+            NavigationStack { SettingsView() }
+        }
+    }
+
+    // iPhone: tab bar (≤5 items, HIG).
+    private var iPhoneLayout: some View {
+        TabView(selection: $selection) {
+            ForEach(AppSection.allCases) { section in
+                NavigationStack {
+                    sectionView(section)
+                        .toolbar { settingsToolbarItem }
+                }
+                .tabItem { Label(section.title, systemImage: section.systemImage) }
+                .tag(section)
+            }
+        }
+    }
+
+    // iPad: sidebar + detail.
+    private var iPadLayout: some View {
+        NavigationSplitView {
+            List(AppSection.allCases, selection: $sidebarSelection) { section in
+                Label(section.title, systemImage: section.systemImage).tag(section)
+            }
+            .navigationTitle("jazzchords")
+            .toolbar { settingsToolbarItem }
+        } detail: {
+            NavigationStack { sectionView(sidebarSelection ?? .today) }
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var settingsToolbarItem: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button { showSettings = true } label: { Image(systemName: "gearshape") }
+                .accessibilityLabel("Settings")
+        }
+    }
+
+    @ViewBuilder
+    private func sectionView(_ section: AppSection) -> some View {
+        switch section {
+        case .today: TodayView()
+        case .practice: PracticeView()
+        case .learn: LearnView()
+        case .progress: ProgressView_()
+        }
+    }
+}

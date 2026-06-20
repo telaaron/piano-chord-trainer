@@ -1,0 +1,399 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0867EC7118FCB35AE3C9028E /* TodayView.swift */; };
+		4B82778E6A2032DE544806F7 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DDA2D43A556F2895D50C30 /* Components.swift */; };
+		4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C685670A09A9D9D041427E06 /* JazzChordsApp.swift */; };
+		644B66D66331A179320C49E2 /* MusicEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 4CC84F324CEA516CFA5C2507 /* MusicEngine */; };
+		80415604BDCF56D50030180C /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3205430E7105BBD412ED8C3D /* Theme.swift */; };
+		A6999155E26580513FD8D700 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD8D24429AD88D4ED75C2AE /* RootView.swift */; };
+		A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */; };
+		D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A447E61D3336037E3D5865BD /* LearnView.swift */; };
+		ED8216D853408C458EDD0F00 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2AE191D85096C087E5C4054 /* SettingsView.swift */; };
+		F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0867EC7118FCB35AE3C9028E /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		0DD8D24429AD88D4ED75C2AE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		3205430E7105BBD412ED8C3D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		44DDA2D43A556F2895D50C30 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
+		5A6FFC23232BA8E2500B99EF /* JazzChords.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = JazzChords.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A447E61D3336037E3D5865BD /* LearnView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnView.swift; sourceTree = "<group>"; };
+		C685670A09A9D9D041427E06 /* JazzChordsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzChordsApp.swift; sourceTree = "<group>"; };
+		CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView_.swift; sourceTree = "<group>"; };
+		F2AE191D85096C087E5C4054 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F7FEDEE711344352652D8123 /* MusicEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MusicEngine; path = ../MusicEngine; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		174E3814CF7B2FE1B324A840 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				644B66D66331A179320C49E2 /* MusicEngine in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		16EE6E81F745CA2F351B35F8 /* JazzChords */ = {
+			isa = PBXGroup;
+			children = (
+				A365A17123F59E42DF34E6CF /* App */,
+				6B3B96934DC968D3D152BFAC /* Theme */,
+				91CFA51D27D81C11A888DEE7 /* Views */,
+			);
+			path = JazzChords;
+			sourceTree = "<group>";
+		};
+		292138CC8484E35853344A59 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5A6FFC23232BA8E2500B99EF /* JazzChords.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6B3B96934DC968D3D152BFAC /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				3205430E7105BBD412ED8C3D /* Theme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		7E588BF82FF19B8E0CD0896B /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				F7FEDEE711344352652D8123 /* MusicEngine */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		91CFA51D27D81C11A888DEE7 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				44DDA2D43A556F2895D50C30 /* Components.swift */,
+				A447E61D3336037E3D5865BD /* LearnView.swift */,
+				54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */,
+				CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */,
+				F2AE191D85096C087E5C4054 /* SettingsView.swift */,
+				0867EC7118FCB35AE3C9028E /* TodayView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A365A17123F59E42DF34E6CF /* App */ = {
+			isa = PBXGroup;
+			children = (
+				C685670A09A9D9D041427E06 /* JazzChordsApp.swift */,
+				0DD8D24429AD88D4ED75C2AE /* RootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		B81378DCEBCC2DE1C32A9FAF = {
+			isa = PBXGroup;
+			children = (
+				16EE6E81F745CA2F351B35F8 /* JazzChords */,
+				7E588BF82FF19B8E0CD0896B /* Packages */,
+				292138CC8484E35853344A59 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F3CD4A21DB694FBD2D863186 /* JazzChords */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E620BC6CFAB77F58B62601F5 /* Build configuration list for PBXNativeTarget "JazzChords" */;
+			buildPhases = (
+				489CD6A2989BA5448DA49496 /* Sources */,
+				174E3814CF7B2FE1B324A840 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = JazzChords;
+			packageProductDependencies = (
+				4CC84F324CEA516CFA5C2507 /* MusicEngine */,
+			);
+			productName = JazzChords;
+			productReference = 5A6FFC23232BA8E2500B99EF /* JazzChords.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B73452EA2BD5E8C854D63795 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = B3C4F8DD3A95619ABB488C66 /* Build configuration list for PBXProject "JazzChords" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = B81378DCEBCC2DE1C32A9FAF;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DC2679E7A1B6F407724C1C95 /* XCLocalSwiftPackageReference "../MusicEngine" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 292138CC8484E35853344A59 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F3CD4A21DB694FBD2D863186 /* JazzChords */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		489CD6A2989BA5448DA49496 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B82778E6A2032DE544806F7 /* Components.swift in Sources */,
+				4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */,
+				D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */,
+				F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */,
+				A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */,
+				A6999155E26580513FD8D700 /* RootView.swift in Sources */,
+				ED8216D853408C458EDD0F00 /* SettingsView.swift in Sources */,
+				80415604BDCF56D50030180C /* Theme.swift in Sources */,
+				2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		140060480DA4E7AA7F98B0EA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = jazzchords;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "jazzchords listens to your piano so it can recognise the chords you play.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.jazzchords.trainer;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		7F92A4F62AF61E1B7F8CDE9E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		988AFF2E5F3746A6E451A884 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		CFF1AE2B63AC44A37A543D00 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = jazzchords;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "jazzchords listens to your piano so it can recognise the chords you play.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.jazzchords.trainer;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B3C4F8DD3A95619ABB488C66 /* Build configuration list for PBXProject "JazzChords" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				988AFF2E5F3746A6E451A884 /* Debug */,
+				7F92A4F62AF61E1B7F8CDE9E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E620BC6CFAB77F58B62601F5 /* Build configuration list for PBXNativeTarget "JazzChords" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CFF1AE2B63AC44A37A543D00 /* Debug */,
+				140060480DA4E7AA7F98B0EA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		DC2679E7A1B6F407724C1C95 /* XCLocalSwiftPackageReference "../MusicEngine" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../MusicEngine;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4CC84F324CEA516CFA5C2507 /* MusicEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MusicEngine;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B73452EA2BD5E8C854D63795 /* Project object */;
+}
