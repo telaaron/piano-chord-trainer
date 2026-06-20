@@ -51,6 +51,12 @@ public struct PracticePlan: Sendable, Equatable {
     public let accent: String
     public let level: PlanLevel
     public let settings: PlanSettings
+
+    public init(id: String, name: String, tagline: String, description: String,
+                icon: String, accent: String, level: PlanLevel, settings: PlanSettings) {
+        self.id = id; self.name = name; self.tagline = tagline; self.description = description
+        self.icon = icon; self.accent = accent; self.level = level; self.settings = settings
+    }
 }
 
 public let PRACTICE_PLANS: [PracticePlan] = [

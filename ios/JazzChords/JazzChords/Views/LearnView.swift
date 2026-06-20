@@ -4,6 +4,8 @@
 import SwiftUI
 import MusicEngine
 
+extension Lesson: @retroactive Identifiable {}
+
 struct LearnView: View {
     @Environment(\.palette) private var palette
 
@@ -51,9 +53,11 @@ struct LearnView: View {
     }
 }
 
-/// Course detail — modules + lessons. M1 read-only outline.
+/// Course detail — modules + lessons, with mastery + a lesson player.
 struct CourseDetailView: View {
     @Environment(\.palette) private var palette
+    @State private var progressStore = CourseProgressStore.shared
+    @State private var activeLesson: Lesson?
     let course: Course
 
     var body: some View {
@@ -61,13 +65,16 @@ struct CourseDetailView: View {
             ForEach(course.modules, id: \.id) { module in
                 Section(moduleTitle(module.id)) {
                     ForEach(module.lessons, id: \.id) { lesson in
-                        HStack {
-                            Text(lessonTitle(lesson.id))
-                                .foregroundStyle(palette.text)
-                            Spacer()
-                            Text("\(lesson.steps.count) steps")
-                                .font(.caption)
-                                .foregroundStyle(palette.textDim)
+                        Button { activeLesson = lesson } label: {
+                            HStack {
+                                masteryIcon(progressStore.mastery(courseId: course.id, lessonId: lesson.id))
+                                Text(lessonTitle(lesson.id))
+                                    .foregroundStyle(palette.text)
+                                Spacer()
+                                Text("\(lesson.steps.count) steps")
+                                    .font(.caption)
+                                    .foregroundStyle(palette.textDim)
+                            }
                         }
                     }
                 }
@@ -75,6 +82,19 @@ struct CourseDetailView: View {
         }
         .navigationTitle(courseName(course.id))
         .navigationBarTitleDisplayMode(.inline)
+        .fullScreenCover(item: $activeLesson) { lesson in
+            NavigationStack { LessonPlayerView(course: course, lesson: lesson) }
+        }
+    }
+
+    @ViewBuilder
+    private func masteryIcon(_ m: MasteryLevel) -> some View {
+        switch m {
+        case .none: Image(systemName: "circle").foregroundStyle(palette.textDim)
+        case .started: Image(systemName: "circle.lefthalf.filled").foregroundStyle(palette.primary)
+        case .completed: Image(systemName: "checkmark.circle.fill").foregroundStyle(palette.accentGreen)
+        case .mastered: Image(systemName: "star.circle.fill").foregroundStyle(palette.accentGold)
+        }
     }
 
     private func courseName(_ id: String) -> String {

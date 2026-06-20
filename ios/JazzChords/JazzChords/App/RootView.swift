@@ -32,6 +32,8 @@ struct RootView: View {
     @State private var selection: AppSection = .today
     @State private var sidebarSelection: AppSection? = .today
     @State private var showSettings = false
+    @State private var habits = HabitStore.shared
+    @State private var showOnboarding = !HabitStore.shared.profile.onboardingDone
 
     var body: some View {
         Group {
@@ -44,6 +46,10 @@ struct RootView: View {
         .environment(\.palette, Theme.palette(for: scheme))
         .sheet(isPresented: $showSettings) {
             NavigationStack { SettingsView() }
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView { showOnboarding = false }
+                .environment(\.palette, Theme.palette(for: scheme))
         }
     }
 

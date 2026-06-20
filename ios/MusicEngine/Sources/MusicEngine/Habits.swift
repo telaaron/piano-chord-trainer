@@ -126,6 +126,14 @@ public struct CelebrationEvent: Sendable, Equatable {
     public let subtitleParams: [String: String]?
     public let xpGained: Int
     public let timestamp: String
+
+    public init(type: CelebrationType, title: String, titleKey: String, titleParams: [String: String]?,
+                subtitle: String?, subtitleKey: String?, subtitleParams: [String: String]?,
+                xpGained: Int, timestamp: String) {
+        self.type = type; self.title = title; self.titleKey = titleKey; self.titleParams = titleParams
+        self.subtitle = subtitle; self.subtitleKey = subtitleKey; self.subtitleParams = subtitleParams
+        self.xpGained = xpGained; self.timestamp = timestamp
+    }
 }
 
 // ─── Date helpers (ISO YYYY-MM-DD, UTC — matches JS toISOString().slice(0,10)) ──

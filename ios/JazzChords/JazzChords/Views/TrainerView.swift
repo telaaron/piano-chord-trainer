@@ -204,7 +204,21 @@ struct TrainerFinishedView: View {
     @Bindable var store: TrainerStore
     var onClose: () -> Void
 
+    @State private var showCelebration = true
+
     var body: some View {
+        ZStack {
+            content
+            if showCelebration && !store.pendingCelebrations.isEmpty {
+                CelebrationOverlay(events: store.pendingCelebrations) {
+                    withAnimation { showCelebration = false }
+                    store.pendingCelebrations = []
+                }
+            }
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: Theme.space5) {
             Spacer()
             Text("Nice work")

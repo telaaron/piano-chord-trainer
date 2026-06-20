@@ -42,6 +42,9 @@ final class TrainerStore {
     private var chordTimings: [ChordTiming] = []
     private(set) var endTime: TimeInterval = 0
     private(set) var lastResult: SessionResult?
+    /// Celebrations from the just-finished session (level-up, PB, …) for the UI.
+    var pendingCelebrations: [CelebrationEvent] = []
+    private(set) var lastHabitResult: SessionHabitResult?
 
     // ─── Derived ────────────────────────────────────────────
     var currentChord: String { currentIdx < chords.count ? chords[currentIdx] : "" }
@@ -238,9 +241,22 @@ final class TrainerStore {
                                       displayMode: displayMode, accidentals: accidentals, progressionMode: progressionMode),
             midi: SessionMidi(enabled: false, accuracy: 0)
         )
+        // Previous best avg for the same difficulty/voicing/progression (for PB + XP).
+        let history = ProgressStore.loadHistory()
+        let sameKey = history.filter {
+            $0.settings.difficulty == difficulty &&
+            $0.settings.voicing == voicing &&
+            $0.settings.progressionMode == progressionMode
+        }
+        let previousBestAvg = sameKey.map { $0.avgMs }.min()
+
         ProgressStore.saveSession(result)
         ProgressStore.recordPracticeDay()
+        let habitResult = HabitStore.shared.processSession(result, previousBestAvgMs: previousBestAvg)
+
         lastResult = result
+        lastHabitResult = habitResult
+        pendingCelebrations = habitResult.celebrations
         screen = .finished
     }
 
