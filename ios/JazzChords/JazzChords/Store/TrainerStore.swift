@@ -10,7 +10,7 @@ import MusicEngine
 @MainActor
 @Observable
 final class TrainerStore {
-    enum Screen { case setup, playing, finished }
+    enum Screen { case setup, playing, finished, earTraining }
 
     // ─── Settings (persisted) ───────────────────────────────
     var difficulty: Difficulty = .beginner
@@ -60,7 +60,7 @@ final class TrainerStore {
     var playPhase: PlayPhase = .playing
 
     // timing
-    private var timerStarted = false
+    private(set) var timerStarted = false
     private var startTime: TimeInterval = 0
     private var chordStartTime: TimeInterval = 0
     private var chordTimings: [ChordTiming] = []
@@ -69,6 +69,13 @@ final class TrainerStore {
     /// Celebrations from the just-finished session (level-up, PB, …) for the UI.
     var pendingCelebrations: [CelebrationEvent] = []
     private(set) var lastHabitResult: SessionHabitResult?
+
+    // ─── Ear training ───────────────────────────────────────
+    var earRevealed = false
+    var earGuess: Set<Int> = []            // pitch classes the user selected
+    private(set) var earCorrect = 0
+    private(set) var earTotal = 0
+    var earResult: Bool? = nil             // last guess outcome
 
     // ─── Derived ────────────────────────────────────────────
     var currentChord: String { currentIdx < chords.count ? chords[currentIdx] : "" }
@@ -111,6 +118,18 @@ final class TrainerStore {
         totalChords = plan.settings.totalChords
         voiceLeadingEnabled = (plan.id == "voice-leading-flow")
         adaptiveEnabled = (plan.id == "adaptive-drill" || plan.id == "weak-drill")
+        isEarTraining = (plan.id == "ear-check")
+        inTimeMode = (plan.id == "in-time-comping")
+    }
+
+    /// Plan-selected modes that change which screen startSession opens.
+    var isEarTraining = false
+    var inTimeMode = false
+
+    /// Start the appropriate session for the selected mode.
+    func startSession() {
+        if isEarTraining { startEarTraining() }
+        else { startGame() }
     }
 
     // ─── Chord generation (ports generateChords) ────────────
@@ -317,6 +336,11 @@ final class TrainerStore {
         }
     }
 
+    // In-time comping: metronome advances chords every `inTimeBars` bars.
+    var inTimeBars = 2
+    var metronomeBpm = 100
+    private var inTimeBarCount = 0
+
     /// First interaction starts the timer (chord already visible).
     private func beginTimer() {
         timerStarted = true
@@ -325,6 +349,40 @@ final class TrainerStore {
         if audioEnabled, let d = chordsWithNotes.first {
             suppressMicForPlayback()
             AudioEngine.shared.playChord(d.voicing)
+        }
+        if inTimeMode { startInTimeMetronome() }
+    }
+
+    private func startInTimeMetronome() {
+        inTimeBarCount = 0
+        Metronome.shared.start(bpm: Double(metronomeBpm), beatsPerBar: 4) { [weak self] beat, _ in
+            guard let self else { return }
+            if beat == 1 {
+                self.inTimeBarCount += 1
+                if self.inTimeBarCount > self.inTimeBars {
+                    self.inTimeBarCount = 1
+                    self.inTimeAdvance()
+                }
+            }
+        }
+    }
+
+    /// Advance on the downbeat in In-Time mode.
+    private func inTimeAdvance() {
+        let nowMs = Date().timeIntervalSince1970
+        if let d = currentData {
+            chordTimings.append(ChordTiming(chord: d.chord, root: d.root, durationMs: (nowMs - chordStartTime) * 1000))
+        }
+        chordStartTime = nowMs
+        if currentIdx < actualTotalChords - 1 {
+            currentIdx += 1
+            if audioEnabled, currentIdx < chordsWithNotes.count {
+                suppressMicForPlayback()
+                AudioEngine.shared.playChord(chordsWithNotes[currentIdx].voicing)
+            }
+        } else {
+            Metronome.shared.stop()
+            endGame()
         }
     }
 
@@ -408,7 +466,126 @@ final class TrainerStore {
         screen = .finished
     }
 
+    /// Start a drill over an explicit custom chord list (parsed progression).
+    func startCustom(_ custom: [CustomChord]) {
+        var newChords: [String] = []
+        var newData: [ChordWithNotes] = []
+        for c in custom {
+            let notes = getChordNotes(c.root, c.quality, accidentals)
+            var voicingArr = getVoicingNotes(notes, voicing, c.root, accidentals)
+            if voiceLeadingEnabled, let prev = newData.last {
+                voicingArr = computeVoiceLeadVoicing(prev.voicing, voicingArr, accidentals)
+            }
+            newChords.append(c.display)
+            newData.append(ChordWithNotes(chord: c.display, root: c.root, type: c.quality, notes: notes, voicing: voicingArr))
+        }
+        chords = newChords
+        chordsWithNotes = newData
+        currentIdx = 0
+        playPhase = .playing
+        timerStarted = false
+        startTime = 0; chordTimings = []; chordStartTime = 0
+        heldNotes = []; midiCorrectCount = 0; midiTotalAttempts = 0; autoAdvanceArmed = false
+        sessionOctaves = newData.isEmpty ? nil : computeSessionOctaves(newData, accidentals)
+        AudioEngine.shared.setPreset(soundPreset)
+        if inputMode == .midi { attachMidi() }
+        if inputMode == .microphone { attachMic() }
+        if inTimeMode { /* metronome starts on first advance */ }
+        screen = .playing
+    }
+
     func restart() { startGame() }
+
+    // ─── Ear training ───────────────────────────────────────
+    func startEarTraining() {
+        generateChords()
+        currentIdx = 0
+        timerStarted = false
+        startTime = 0
+        chordTimings = []
+        chordStartTime = 0
+        earRevealed = false; earGuess = []; earCorrect = 0; earTotal = 0; earResult = nil
+        sessionOctaves = chordsWithNotes.isEmpty ? nil : computeSessionOctaves(chordsWithNotes, accidentals)
+        AudioEngine.shared.setPreset(soundPreset)
+        persistSettings()
+        screen = .earTraining
+    }
+
+    /// Play the current chord (player must identify it by ear).
+    func earPlayChord() {
+        if !timerStarted {
+            timerStarted = true
+            startTime = Date().timeIntervalSince1970
+            chordStartTime = startTime
+        }
+        if let d = currentData { AudioEngine.shared.playChord(d.voicing) }
+    }
+
+    /// Toggle a pitch-class in the guess; preview the note.
+    func earToggle(_ chrIdx: Int) {
+        AudioEngine.shared.playMidi(48 + chrIdx)
+        let pc = chrIdx % 12
+        if earGuess.contains(pc) { earGuess.remove(pc) } else { earGuess.insert(pc) }
+    }
+
+    /// Check the guess against the chord's pitch classes.
+    func earCheck() {
+        guard let d = currentData else { return }
+        let expected = Set(d.voicing.map { noteToSemitone($0) }.filter { $0 != -1 })
+        let correct = earGuess == expected
+        earResult = correct
+        earRevealed = true
+        earTotal += 1
+        if correct { earCorrect += 1 }
+    }
+
+    func earNext() {
+        let nowMs = Date().timeIntervalSince1970
+        if let d = currentData {
+            chordTimings.append(ChordTiming(chord: d.chord, root: d.root, durationMs: (nowMs - chordStartTime) * 1000))
+        }
+        chordStartTime = nowMs
+        earRevealed = false; earGuess = []; earResult = nil
+
+        if currentIdx < actualTotalChords - 1 {
+            currentIdx += 1
+            if let d = currentData { AudioEngine.shared.playChord(d.voicing) }
+        } else {
+            earEndGame()
+        }
+    }
+
+    private func earEndGame() {
+        endTime = Date().timeIntervalSince1970
+        if let d = currentData {
+            chordTimings.append(ChordTiming(chord: d.chord, root: d.root, durationMs: (endTime - chordStartTime) * 1000))
+        }
+        AudioEngine.shared.stopAll()
+        let elapsedMs = (endTime - startTime) * 1000
+        let accuracy = earTotal > 0 ? Int((Double(earCorrect) / Double(earTotal) * 100).rounded()) : 0
+        let result = SessionResult(
+            id: Self.generateId(),
+            timestamp: Date().timeIntervalSince1970 * 1000,
+            elapsedMs: elapsedMs,
+            totalChords: actualTotalChords,
+            avgMs: actualTotalChords > 0 ? elapsedMs / Double(actualTotalChords) : 0,
+            chordTimings: chordTimings,
+            settings: SessionSettings(difficulty: difficulty, notation: notation, voicing: voicing,
+                                      displayMode: displayMode, accidentals: accidentals, progressionMode: progressionMode),
+            midi: SessionMidi(enabled: true, accuracy: accuracy)
+        )
+        let history = ProgressStore.loadHistory()
+        let previousBestAvg = history.filter {
+            $0.settings.difficulty == difficulty && $0.settings.voicing == voicing && $0.settings.progressionMode == progressionMode
+        }.map { $0.avgMs }.min()
+        ProgressStore.saveSession(result)
+        ProgressStore.recordPracticeDay()
+        let habitResult = HabitStore.shared.processSession(result, previousBestAvgMs: previousBestAvg)
+        lastResult = result
+        lastHabitResult = habitResult
+        pendingCelebrations = habitResult.celebrations
+        screen = .finished
+    }
 
     func resetToSetup() {
         screen = .setup
@@ -417,6 +594,7 @@ final class TrainerStore {
         chordsWithNotes = []
         timerStarted = false
         AudioEngine.shared.stopAll()
+        Metronome.shared.stop()
         detachMidi()
         detachMic()
     }

@@ -11,6 +11,7 @@ struct PracticeView: View {
     @Environment(\.palette) private var palette
     @State private var activePlan: PracticePlan?
     @State private var freePlay = false
+    @State private var customOpen = false
 
     private let columns = [GridItem(.flexible(), spacing: Theme.space3), GridItem(.flexible(), spacing: Theme.space3)]
 
@@ -18,6 +19,7 @@ struct PracticeView: View {
         ScrollView {
             VStack(spacing: Theme.space4) {
                 freePracticeButton
+                customButton
                 LazyVGrid(columns: columns, spacing: Theme.space3) {
                     ForEach(PRACTICE_PLANS) { plan in
                         Button { activePlan = plan } label: { PlanCard(plan: plan) }
@@ -35,6 +37,26 @@ struct PracticeView: View {
         .fullScreenCover(isPresented: $freePlay) {
             NavigationStack { TrainerView(plan: nil) }
         }
+        .fullScreenCover(isPresented: $customOpen) {
+            NavigationStack { CustomProgressionView() }
+        }
+    }
+
+    private var customButton: some View {
+        Button { customOpen = true } label: {
+            HStack(spacing: Theme.space3) {
+                Image(systemName: "text.badge.plus").font(.title3).foregroundStyle(palette.primary)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Custom progression").font(Display.headline(17)).foregroundStyle(palette.text)
+                    Text("Type any chord sequence").font(.caption).foregroundStyle(palette.textMuted)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.textDim)
+            }
+            .padding(Theme.space4)
+            .glassCard()
+        }
+        .buttonStyle(.plain)
     }
 
     private var freePracticeButton: some View {

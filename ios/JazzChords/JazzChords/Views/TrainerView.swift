@@ -17,6 +17,7 @@ struct TrainerView: View {
             switch store.screen {
             case .setup: TrainerSetupView(store: store, onClose: { dismiss() })
             case .playing: TrainerPlayingView(store: store, onClose: { store.resetToSetup() })
+            case .earTraining: EarTrainingView(store: store, onClose: { store.resetToSetup() })
             case .finished: TrainerFinishedView(store: store, onClose: { dismiss() })
             }
         }
@@ -25,7 +26,7 @@ struct TrainerView: View {
             store.loadSettings()
             if let plan {
                 store.apply(plan: plan)
-                store.startGame()
+                store.startSession()
             }
         }
     }
@@ -84,11 +85,25 @@ struct TrainerSetupView: View {
                 Toggle("Audio", isOn: $store.audioEnabled)
                     .tint(palette.primary)
                     .foregroundStyle(palette.text)
+                Toggle("Ear training (guess by ear)", isOn: $store.isEarTraining)
+                    .tint(palette.primary)
+                    .foregroundStyle(palette.text)
+                Toggle("In-time (metronome advances)", isOn: $store.inTimeMode)
+                    .tint(palette.primary)
+                    .foregroundStyle(palette.text)
+                if store.inTimeMode {
+                    HStack {
+                        Text("Tempo").font(.subheadline).foregroundStyle(palette.textMuted)
+                        Slider(value: Binding(get: { Double(store.metronomeBpm) }, set: { store.metronomeBpm = Int($0) }), in: 40...200, step: 5)
+                            .tint(palette.primary)
+                        Text("\(store.metronomeBpm)").font(.caption.monospacedDigit()).foregroundStyle(palette.text).frame(width: 36)
+                    }
+                }
 
                 Button {
-                    store.startGame()
+                    store.startSession()
                 } label: {
-                    Text("Start drill")
+                    Text(store.isEarTraining ? "Start ear training" : "Start drill")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space4)
@@ -209,24 +224,39 @@ struct TrainerPlayingView: View {
             .foregroundStyle(palette.textMuted)
     }
 
+    @ViewBuilder
     private var controls: some View {
-        HStack(spacing: Theme.space3) {
-            Button { store.replayChord() } label: {
-                Image(systemName: "speaker.wave.2.fill")
-                    .frame(width: Theme.tapMin, height: Theme.tapMin)
-                    .glassCard(cornerRadius: Theme.tapMin / 2)
-                    .foregroundStyle(palette.text)
+        if store.inTimeMode {
+            // Metronome drives advancement; show a calm in-time indicator.
+            HStack(spacing: Theme.space2) {
+                Image(systemName: "metronome.fill").foregroundStyle(palette.primary)
+                Text("Playing in time · \(store.metronomeBpm) BPM")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(palette.textMuted)
             }
-            Button {
-                UISelectionFeedbackGenerator().selectionChanged()
-                store.next()
-            } label: {
-                Text(nextLabel)
-                    .font(.title3.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Theme.space4)
-                    .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
-                    .foregroundStyle(palette.primaryText)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Theme.space4)
+            .glassCard()
+            .onAppear { if !store.timerStarted { store.next() } } // kick off timer + metronome
+        } else {
+            HStack(spacing: Theme.space3) {
+                Button { store.replayChord() } label: {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .frame(width: Theme.tapMin, height: Theme.tapMin)
+                        .glassCard(cornerRadius: Theme.tapMin / 2)
+                        .foregroundStyle(palette.text)
+                }
+                Button {
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    store.next()
+                } label: {
+                    Text(nextLabel)
+                        .font(.title3.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Theme.space4)
+                        .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
+                        .foregroundStyle(palette.primaryText)
+                }
             }
         }
     }

@@ -24,10 +24,12 @@
 		92A76D9E6EE519F76C662164 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558859E350F645BD0FB4B81E /* Persistence.swift */; };
 		94FB28CC1E73FE89320A76DC /* LessonPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */; };
 		9A7DCD5EF00F0352F62707ED /* PianoKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */; };
+		9BD73F877ED7093B33A938E2 /* EarTrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2090908BA45B8DDA83185B8A /* EarTrainingView.swift */; };
 		A062354894811309A09CFBE8 /* TrainerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B56736703494CD04E7B1D17 /* TrainerStore.swift */; };
 		A3D6EDFBE9642870EF5B9739 /* SpaceGrotesk-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B76EAB57089F453D8001EA9C /* SpaceGrotesk-Medium.ttf */; };
 		A6999155E26580513FD8D700 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD8D24429AD88D4ED75C2AE /* RootView.swift */; };
 		A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */; };
+		B0219DF12B3E321CF940F1D5 /* CustomProgressionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887C32789B9783323292BC6B /* CustomProgressionView.swift */; };
 		B10E5BD29AA3FB6F57933192 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C022B402A4004283821D49C9 /* OnboardingView.swift */; };
 		BF3E706C3D4C6FC323CE8299 /* hero2.webp in Resources */ = {isa = PBXBuildFile; fileRef = 32B429969FAC364D67B4C639 /* hero2.webp */; };
 		C1B65C3383F51906621CFFA8 /* SpaceGrotesk-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CA78E9CF43C91692A7405A8B /* SpaceGrotesk-SemiBold.ttf */; };
@@ -45,6 +47,7 @@
 /* Begin PBXFileReference section */
 		0867EC7118FCB35AE3C9028E /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		0DD8D24429AD88D4ED75C2AE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		2090908BA45B8DDA83185B8A /* EarTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarTrainingView.swift; sourceTree = "<group>"; };
 		25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseProgressStore.swift; sourceTree = "<group>"; };
 		2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
 		3205430E7105BBD412ED8C3D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -60,6 +63,7 @@
 		7702795829A5ABB75729E310 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glass.swift; sourceTree = "<group>"; };
 		795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitStore.swift; sourceTree = "<group>"; };
 		7B56736703494CD04E7B1D17 /* TrainerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerStore.swift; sourceTree = "<group>"; };
+		887C32789B9783323292BC6B /* CustomProgressionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomProgressionView.swift; sourceTree = "<group>"; };
 		905F024385A02CD6F8F28136 /* Gamification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gamification.swift; sourceTree = "<group>"; };
 		9FC2B860DE316E7E340620B8 /* Metronome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metronome.swift; sourceTree = "<group>"; };
 		A041364050AAC6848F00EB4A /* SpaceGrotesk-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpaceGrotesk-Bold.ttf"; sourceTree = "<group>"; };
@@ -178,6 +182,8 @@
 			isa = PBXGroup;
 			children = (
 				44DDA2D43A556F2895D50C30 /* Components.swift */,
+				887C32789B9783323292BC6B /* CustomProgressionView.swift */,
+				2090908BA45B8DDA83185B8A /* EarTrainingView.swift */,
 				905F024385A02CD6F8F28136 /* Gamification.swift */,
 				7702795829A5ABB75729E310 /* Glass.swift */,
 				A447E61D3336037E3D5865BD /* LearnView.swift */,
@@ -306,6 +312,8 @@
 				DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */,
 				4B82778E6A2032DE544806F7 /* Components.swift in Sources */,
 				1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */,
+				B0219DF12B3E321CF940F1D5 /* CustomProgressionView.swift in Sources */,
+				9BD73F877ED7093B33A938E2 /* EarTrainingView.swift in Sources */,
 				8F862844F36AA90408308D72 /* Gamification.swift in Sources */,
 				04C58489DBA3E4BFFD5351E4 /* Glass.swift in Sources */,
 				44B8C4456407179C239F8054 /* HabitStore.swift in Sources */,
