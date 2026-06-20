@@ -34,12 +34,16 @@ struct CelebrationOverlay: View {
             if index < events.count {
                 let e = events[index]
                 VStack(spacing: Theme.space4) {
-                    Image(systemName: icon(for: e.type))
-                        .font(.system(size: 64, weight: .bold))
-                        .foregroundStyle(palette.primary)
-                        .symbolEffect(.bounce, value: index)
+                    ZStack {
+                        Circle().fill(palette.primary.opacity(0.18)).frame(width: 130, height: 130)
+                        Image(systemName: AppIcons.celebration(e.type))
+                            .font(.system(size: 60, weight: .bold))
+                            .foregroundStyle(palette.primary)
+                            .symbolRenderingMode(.hierarchical)
+                            .symbolEffect(.bounce, value: index)
+                    }
                     Text(e.title)
-                        .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                        .font(Display.title(34))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                     if let sub = e.subtitle {
@@ -69,16 +73,6 @@ struct CelebrationOverlay: View {
             scheduleAdvance()
         } else {
             onDone()
-        }
-    }
-
-    private func icon(for type: CelebrationType) -> String {
-        switch type {
-        case .levelUp: return "arrow.up.circle.fill"
-        case .goalComplete: return "checkmark.seal.fill"
-        case .streakMilestone: return "flame.fill"
-        case .personalBest: return "bolt.fill"
-        case .xpGain: return "star.fill"
         }
     }
 }

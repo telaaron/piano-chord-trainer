@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		041450E2866996B225A35323 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12BE9B7FC3E12658EBF8BA6 /* Typography.swift */; };
+		04C58489DBA3E4BFFD5351E4 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7702795829A5ABB75729E310 /* Glass.swift */; };
 		1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */; };
 		2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0867EC7118FCB35AE3C9028E /* TodayView.swift */; };
 		44B8C4456407179C239F8054 /* HabitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */; };
@@ -21,13 +23,17 @@
 		94FB28CC1E73FE89320A76DC /* LessonPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */; };
 		9A7DCD5EF00F0352F62707ED /* PianoKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */; };
 		A062354894811309A09CFBE8 /* TrainerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B56736703494CD04E7B1D17 /* TrainerStore.swift */; };
+		A3D6EDFBE9642870EF5B9739 /* SpaceGrotesk-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B76EAB57089F453D8001EA9C /* SpaceGrotesk-Medium.ttf */; };
 		A6999155E26580513FD8D700 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD8D24429AD88D4ED75C2AE /* RootView.swift */; };
 		A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */; };
 		B10E5BD29AA3FB6F57933192 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C022B402A4004283821D49C9 /* OnboardingView.swift */; };
+		C1B65C3383F51906621CFFA8 /* SpaceGrotesk-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CA78E9CF43C91692A7405A8B /* SpaceGrotesk-SemiBold.ttf */; };
+		C3193AA23C8409A7CF9D0D10 /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C3E965AC4FC3825ACC4C530 /* AppIcons.swift */; };
 		CF3AB4879000DF328D238148 /* Metronome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FC2B860DE316E7E340620B8 /* Metronome.swift */; };
 		D550AB6E3B5C7E16F2A7D126 /* MicInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDACE9F657B8CFF1C4FF3805 /* MicInput.swift */; };
 		D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A447E61D3336037E3D5865BD /* LearnView.swift */; };
 		DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C107A882B6475FA011F238FB /* AudioEngine.swift */; };
+		E9BF5CA9279A55756541DB0C /* SpaceGrotesk-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A041364050AAC6848F00EB4A /* SpaceGrotesk-Bold.ttf */; };
 		ED8216D853408C458EDD0F00 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2AE191D85096C087E5C4054 /* SettingsView.swift */; };
 		F662935F15E14DE990D05F1A /* TrainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCB9663547D5A0E3BF66245 /* TrainerView.swift */; };
 		F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */; };
@@ -40,20 +46,27 @@
 		2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
 		3205430E7105BBD412ED8C3D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		364C8A44BBA14E3CF00848DF /* MIDIInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MIDIInput.swift; sourceTree = "<group>"; };
+		369DE4A76420DD27F9178626 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3B6FA6254D4E1B61B168536F /* PitchDetectors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetectors.swift; sourceTree = "<group>"; };
+		3C3E965AC4FC3825ACC4C530 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcons.swift; sourceTree = "<group>"; };
 		44DDA2D43A556F2895D50C30 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
 		558859E350F645BD0FB4B81E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		5A6FFC23232BA8E2500B99EF /* JazzChords.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = JazzChords.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7702795829A5ABB75729E310 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glass.swift; sourceTree = "<group>"; };
 		795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitStore.swift; sourceTree = "<group>"; };
 		7B56736703494CD04E7B1D17 /* TrainerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerStore.swift; sourceTree = "<group>"; };
 		905F024385A02CD6F8F28136 /* Gamification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gamification.swift; sourceTree = "<group>"; };
 		9FC2B860DE316E7E340620B8 /* Metronome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metronome.swift; sourceTree = "<group>"; };
+		A041364050AAC6848F00EB4A /* SpaceGrotesk-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpaceGrotesk-Bold.ttf"; sourceTree = "<group>"; };
+		A12BE9B7FC3E12658EBF8BA6 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		A447E61D3336037E3D5865BD /* LearnView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnView.swift; sourceTree = "<group>"; };
 		AFCB9663547D5A0E3BF66245 /* TrainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerView.swift; sourceTree = "<group>"; };
+		B76EAB57089F453D8001EA9C /* SpaceGrotesk-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpaceGrotesk-Medium.ttf"; sourceTree = "<group>"; };
 		C022B402A4004283821D49C9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		C107A882B6475FA011F238FB /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
 		C685670A09A9D9D041427E06 /* JazzChordsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzChordsApp.swift; sourceTree = "<group>"; };
+		CA78E9CF43C91692A7405A8B /* SpaceGrotesk-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpaceGrotesk-SemiBold.ttf"; sourceTree = "<group>"; };
 		CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView_.swift; sourceTree = "<group>"; };
 		F2AE191D85096C087E5C4054 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonPlayerView.swift; sourceTree = "<group>"; };
@@ -76,8 +89,10 @@
 		16EE6E81F745CA2F351B35F8 /* JazzChords */ = {
 			isa = PBXGroup;
 			children = (
+				369DE4A76420DD27F9178626 /* Info.plist */,
 				A365A17123F59E42DF34E6CF /* App */,
 				433D98590D8E055795DAF72A /* Audio */,
+				9DFBB2EAF145FD67EFE58FCA /* Resources */,
 				2C99DD2E23C7FCA38EFF5F6F /* Store */,
 				6B3B96934DC968D3D152BFAC /* Theme */,
 				91CFA51D27D81C11A888DEE7 /* Views */,
@@ -119,7 +134,9 @@
 		6B3B96934DC968D3D152BFAC /* Theme */ = {
 			isa = PBXGroup;
 			children = (
+				3C3E965AC4FC3825ACC4C530 /* AppIcons.swift */,
 				3205430E7105BBD412ED8C3D /* Theme.swift */,
+				A12BE9B7FC3E12658EBF8BA6 /* Typography.swift */,
 			);
 			path = Theme;
 			sourceTree = "<group>";
@@ -132,11 +149,22 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		8F19B4D6E633926A39077232 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				A041364050AAC6848F00EB4A /* SpaceGrotesk-Bold.ttf */,
+				B76EAB57089F453D8001EA9C /* SpaceGrotesk-Medium.ttf */,
+				CA78E9CF43C91692A7405A8B /* SpaceGrotesk-SemiBold.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		91CFA51D27D81C11A888DEE7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				44DDA2D43A556F2895D50C30 /* Components.swift */,
 				905F024385A02CD6F8F28136 /* Gamification.swift */,
+				7702795829A5ABB75729E310 /* Glass.swift */,
 				A447E61D3336037E3D5865BD /* LearnView.swift */,
 				F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */,
 				C022B402A4004283821D49C9 /* OnboardingView.swift */,
@@ -148,6 +176,14 @@
 				AFCB9663547D5A0E3BF66245 /* TrainerView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		9DFBB2EAF145FD67EFE58FCA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8F19B4D6E633926A39077232 /* Fonts */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		A365A17123F59E42DF34E6CF /* App */ = {
@@ -176,6 +212,7 @@
 			buildConfigurationList = E620BC6CFAB77F58B62601F5 /* Build configuration list for PBXNativeTarget "JazzChords" */;
 			buildPhases = (
 				489CD6A2989BA5448DA49496 /* Sources */,
+				EB517EE3C800672111ECED09 /* Resources */,
 				174E3814CF7B2FE1B324A840 /* Frameworks */,
 			);
 			buildRules = (
@@ -227,15 +264,30 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		EB517EE3C800672111ECED09 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9BF5CA9279A55756541DB0C /* SpaceGrotesk-Bold.ttf in Resources */,
+				A3D6EDFBE9642870EF5B9739 /* SpaceGrotesk-Medium.ttf in Resources */,
+				C1B65C3383F51906621CFFA8 /* SpaceGrotesk-SemiBold.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		489CD6A2989BA5448DA49496 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C3193AA23C8409A7CF9D0D10 /* AppIcons.swift in Sources */,
 				DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */,
 				4B82778E6A2032DE544806F7 /* Components.swift in Sources */,
 				1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */,
 				8F862844F36AA90408308D72 /* Gamification.swift in Sources */,
+				04C58489DBA3E4BFFD5351E4 /* Glass.swift in Sources */,
 				44B8C4456407179C239F8054 /* HabitStore.swift in Sources */,
 				4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */,
 				D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */,
@@ -255,6 +307,7 @@
 				2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */,
 				A062354894811309A09CFBE8 /* TrainerStore.swift in Sources */,
 				F662935F15E14DE990D05F1A /* TrainerView.swift in Sources */,
+				041450E2866996B225A35323 /* Typography.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -270,13 +323,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3YB2KJCCHV;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = jazzchords;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "jazzchords listens to your piano so it can recognise the chords you play.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_FILE = JazzChords/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -418,13 +465,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3YB2KJCCHV;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = jazzchords;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "jazzchords listens to your piano so it can recognise the chords you play.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_FILE = JazzChords/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -143,7 +143,7 @@ struct TrainerPlayingView: View {
             // Chord symbol
             VStack(spacing: Theme.space2) {
                 Text(displayedChord)
-                    .font(.system(size: 64, weight: .heavy, design: .rounded))
+                    .font(Display.chord(68))
                     .foregroundStyle(palette.text)
                     .contentTransition(.numericText())
                 if store.shouldShowVoicing, let d = store.currentData {
@@ -196,9 +196,8 @@ struct TrainerPlayingView: View {
                         .font(.title3.weight(.semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space4)
-                        .background(palette.primary)
+                        .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
                         .foregroundStyle(palette.primaryText)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                 }
             }
         }
@@ -249,7 +248,7 @@ struct TrainerFinishedView: View {
         VStack(spacing: Theme.space5) {
             Spacer()
             Text("Nice work")
-                .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                .font(Display.title(34))
                 .foregroundStyle(palette.text)
 
             if let r = store.lastResult {
@@ -289,7 +288,7 @@ struct TrainerFinishedView: View {
     private func statCard(value: String, label: String) -> some View {
         VStack(spacing: Theme.space1) {
             Text(value)
-                .font(.system(.title, design: .rounded).weight(.bold))
+                .font(Display.headline(26))
                 .foregroundStyle(palette.primary)
             Text(label)
                 .font(.caption)
@@ -297,7 +296,6 @@ struct TrainerFinishedView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, Theme.space4)
-        .background(palette.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
+        .glassCard()
     }
 }

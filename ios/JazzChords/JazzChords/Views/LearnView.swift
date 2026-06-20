@@ -28,19 +28,31 @@ struct LearnView: View {
     }
 
     private func courseRow(_ course: Course) -> some View {
-        CardSurface {
+        let pct = CourseProgressStore.shared.completionPercent(for: course)
+        return CardSurface {
             HStack(spacing: Theme.space3) {
-                Text(course.icon).font(.title)
-                VStack(alignment: .leading, spacing: 2) {
+                ZStack {
+                    Circle().fill(palette.primary.opacity(0.14)).frame(width: 46, height: 46)
+                    Image(systemName: AppIcons.course(course.id))
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(palette.primary)
+                        .symbolRenderingMode(.hierarchical)
+                }
+                VStack(alignment: .leading, spacing: 3) {
                     Text(courseName(course.id))
-                        .font(.headline)
+                        .font(Display.headline(18))
                         .foregroundStyle(palette.text)
                     Text("\(lessonCount(course)) lessons · \(course.level.rawValue)")
                         .font(.caption)
                         .foregroundStyle(palette.textMuted)
+                    if pct > 0 {
+                        ProgressView(value: Double(pct), total: 100)
+                            .tint(palette.primary)
+                            .frame(maxWidth: 120)
+                    }
                 }
                 Spacer()
-                Image(systemName: "chevron.right").foregroundStyle(palette.textDim)
+                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.textDim)
             }
         }
     }

@@ -75,7 +75,7 @@ struct LessonPlayerView: View {
             if let chord = t.exampleChord {
                 let data = chordWithNotes(root: chord.root, quality: chord.quality, voicing: chord.voicing)
                 Text(data.chord)
-                    .font(.system(size: 48, weight: .heavy, design: .rounded))
+                    .font(Display.chord(50))
                     .foregroundStyle(palette.text)
                 PianoKeyboard(chordData: data, accidentalPref: .both, showVoicing: true)
                 Button { AudioEngine.shared.playChord(data.voicing) } label: {

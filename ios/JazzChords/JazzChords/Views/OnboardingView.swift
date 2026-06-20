@@ -45,11 +45,15 @@ struct OnboardingView: View {
 
     private var welcomePage: some View {
         VStack(spacing: Theme.space4) {
-            Image(systemName: "pianokeys")
-                .font(.system(size: 72, weight: .light))
-                .foregroundStyle(palette.primary)
+            ZStack {
+                Circle().fill(palette.primary.opacity(0.12)).frame(width: 132, height: 132)
+                Image(systemName: "pianokeys")
+                    .font(.system(size: 60, weight: .regular))
+                    .foregroundStyle(palette.primary)
+                    .symbolRenderingMode(.hierarchical)
+            }
             Text("jazzchords")
-                .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                .font(Display.title(38))
                 .foregroundStyle(palette.text)
             Text("Build muscle memory for jazz piano voicings — fast, focused, and measurable.")
                 .font(.body)
@@ -62,7 +66,7 @@ struct OnboardingView: View {
     private var goalPage: some View {
         VStack(spacing: Theme.space5) {
             Text("Daily goal")
-                .font(.title2.weight(.bold)).foregroundStyle(palette.text)
+                .font(Display.headline(24)).foregroundStyle(palette.text)
             Text("How long do you want to practice each day?")
                 .font(.subheadline).foregroundStyle(palette.textMuted)
                 .multilineTextAlignment(.center)
@@ -78,7 +82,7 @@ struct OnboardingView: View {
     private var timePage: some View {
         VStack(spacing: Theme.space5) {
             Text("When do you practice?")
-                .font(.title2.weight(.bold)).foregroundStyle(palette.text)
+                .font(Display.headline(24)).foregroundStyle(palette.text)
             VStack(spacing: Theme.space2) {
                 selectRow(title: "Morning", selected: preferredTime == .morning) { preferredTime = .morning }
                 selectRow(title: "Afternoon", selected: preferredTime == .afternoon) { preferredTime = .afternoon }

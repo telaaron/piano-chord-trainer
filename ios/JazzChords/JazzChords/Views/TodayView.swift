@@ -30,12 +30,13 @@ struct TodayView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.space5) {
-                header
+                hero
                 weekStrip
                 suggestedCard
                 motivationCard
             }
-            .padding(Theme.space4)
+            .padding(.horizontal, Theme.space4)
+            .padding(.bottom, Theme.space5)
             .id(refreshToken)
         }
         .navigationTitle("Today")
@@ -48,27 +49,32 @@ struct TodayView: View {
         }
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: Theme.space2) {
-            Text(greeting)
-                .font(.system(.largeTitle, design: .rounded).weight(.bold))
-                .foregroundStyle(palette.text)
-            HStack(spacing: Theme.space2) {
-                LevelBadge(level: habits.levelInfo.level)
-                Text(habits.levelInfo.title)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(palette.textMuted)
-                Spacer()
-                if streak.current > 0 {
-                    Label("\(streak.current)", systemImage: "flame.fill")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(palette.primary)
+    /// Hero band: atmospheric gradient with the greeting + level + streak on top.
+    private var hero: some View {
+        ZStack(alignment: .bottomLeading) {
+            HeroGradient(height: 168)
+            VStack(alignment: .leading, spacing: Theme.space3) {
+                Text(greeting)
+                    .font(Display.title(32))
+                    .foregroundStyle(.white)
+                HStack(spacing: Theme.space2) {
+                    LevelBadge(level: habits.levelInfo.level)
+                    Text(habits.levelInfo.title)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.82))
+                    Spacer()
+                    if streak.current > 0 {
+                        Label("\(streak.current)", systemImage: "flame.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(palette.primary)
+                    }
                 }
+                ProgressView(value: Double(habits.levelInfo.progressPercent), total: 100)
+                    .tint(palette.primary)
             }
-            // XP progress to next level
-            ProgressView(value: Double(habits.levelInfo.progressPercent), total: 100)
-                .tint(palette.xp)
+            .padding(Theme.space4)
         }
+        .padding(.top, Theme.space2)
     }
 
     private var weekStrip: some View {
@@ -88,13 +94,23 @@ struct TodayView: View {
     }
 
     private var suggestedCard: some View {
-        CardSurface {
+        CardSurface(tint: palette.primary) {
             VStack(alignment: .leading, spacing: Theme.space3) {
-                Text("SUGGESTED")
-                    .font(.caption2.weight(.semibold)).tracking(1)
-                    .foregroundStyle(palette.primary)
+                HStack(spacing: Theme.space2) {
+                    ZStack {
+                        Circle().fill(palette.primary.opacity(0.16)).frame(width: 40, height: 40)
+                        Image(systemName: AppIcons.plan(suggested.id))
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(palette.primary)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                    Text("SUGGESTED")
+                        .font(.caption2.weight(.semibold)).tracking(1.5)
+                        .foregroundStyle(palette.primary)
+                    Spacer()
+                }
                 Text(planTitle(suggested.id))
-                    .font(.title3.weight(.semibold))
+                    .font(Display.headline(24))
                     .foregroundStyle(palette.text)
                 Text(planSubtitle(suggested))
                     .font(.subheadline)
@@ -104,9 +120,8 @@ struct TodayView: View {
                         .font(.body.weight(.semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space3)
-                        .background(palette.primary)
+                        .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
                         .foregroundStyle(palette.primaryText)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                 }
                 .padding(.top, Theme.space1)
             }
@@ -117,15 +132,28 @@ struct TodayView: View {
     private var motivationCard: some View {
         let m = getDailyMotivation(habits.profile, streak)
         HStack(spacing: Theme.space3) {
-            Text(m.emoji).font(.title2)
+            Image(systemName: motivationIcon(m.type))
+                .font(.title3)
+                .foregroundStyle(palette.primary)
+                .symbolRenderingMode(.hierarchical)
             Text(motivationText(m))
                 .font(.subheadline)
                 .foregroundStyle(palette.textMuted)
             Spacer()
         }
         .padding(Theme.space4)
-        .background(palette.bgCard.opacity(0.6))
-        .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
+        .glassCard()
+    }
+
+    private func motivationIcon(_ t: MotivationType) -> String {
+        switch t {
+        case .streakAtRisk: return "flame.fill"
+        case .notStarted: return "pianokeys"
+        case .justStarted: return "music.note"
+        case .almostThere: return "bolt.fill"
+        case .goalReached: return "checkmark.seal.fill"
+        case .extraCredit: return "star.fill"
+        }
     }
 
     // MARK: helpers
