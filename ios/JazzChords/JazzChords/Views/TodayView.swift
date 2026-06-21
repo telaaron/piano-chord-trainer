@@ -177,9 +177,7 @@ struct TodayView: View {
         }
     }
 
-    private func planTitle(_ id: String) -> String {
-        id.split(separator: "-").map { $0.capitalized }.joined(separator: " ")
-    }
+    private func planTitle(_ id: String) -> String { Strings.planName(id) }
     private func planSubtitle(_ plan: PracticePlan) -> String {
         let prog = PROGRESSION_LABELS[plan.settings.progressionMode] ?? ""
         let v = VOICING_LABELS[plan.settings.voicing] ?? ""

@@ -102,12 +102,12 @@ struct PlanCard: View {
                 .symbolRenderingMode(.hierarchical)
                 .frame(height: 28)
 
-            Text(planName(plan.id))
+            Text(Strings.planName(plan.id))
                 .font(Display.headline(18))
                 .foregroundStyle(palette.text)
                 .lineLimit(1)
 
-            Text(miniLine)
+            Text(Strings.planTagline(plan.id))
                 .font(.caption)
                 .foregroundStyle(palette.textMuted)
                 .lineLimit(2)
@@ -131,12 +131,4 @@ struct PlanCard: View {
         .glassCard()
     }
 
-    private func planName(_ id: String) -> String {
-        id.split(separator: "-").map { $0.capitalized }.joined(separator: " ")
-    }
-    private var miniLine: String {
-        let v = VOICING_LABELS[plan.settings.voicing] ?? ""
-        let p = PROGRESSION_LABELS[plan.settings.progressionMode] ?? ""
-        return "\(v) · \(p)"
-    }
 }

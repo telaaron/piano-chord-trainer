@@ -191,7 +191,5 @@ struct LessonPlayerView: View {
         dismiss()
     }
 
-    private var lessonTitle: String {
-        lesson.id.split(separator: "-").map { $0.capitalized }.joined(separator: " ")
-    }
+    private var lessonTitle: String { Strings.lessonTitle(lesson.id) }
 }

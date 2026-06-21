@@ -73,15 +73,36 @@ final class AudioEngine: @unchecked Sendable {
     private let engine = AVAudioEngine()
     private var sourceNode: AVAudioSourceNode!
     private let reverb = AVAudioUnitReverb()
+    private let sampler = AVAudioUnitSampler()   // sampled grand piano (SoundFont)
     private let sampleRate: Double = 44100
 
     private let lock = NSLock()
     private var voices: [Voice] = []
     private var preset: SoundPreset = .grandPiano
     private var started = false
+    private var samplerLoaded = false
+    /// MIDI notes currently sounding on the sampler (so we can release them).
+    private var samplerActive: Set<UInt8> = []
+
+    /// Grand piano uses the sampled SoundFont; other presets use the synth voice.
+    private var useSampler: Bool { preset == .grandPiano && samplerLoaded }
 
     private init() {
         setupGraph()
+        loadSoundFont()
+    }
+
+    private func loadSoundFont() {
+        guard let url = Bundle.main.url(forResource: "FluidR3Mono_GM", withExtension: "sf3") else { return }
+        do {
+            // Program 0 = Acoustic Grand Piano (GM), melodic bank.
+            try sampler.loadSoundBankInstrument(at: url, program: 0,
+                bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
+                bankLSB: UInt8(kAUSampler_DefaultBankLSB))
+            samplerLoaded = true
+        } catch {
+            print("[AudioEngine] SoundFont load failed: \(error)")
+        }
     }
 
     // MARK: Graph
@@ -130,10 +151,12 @@ final class AudioEngine: @unchecked Sendable {
         }
 
         engine.attach(sourceNode)
+        engine.attach(sampler)
         engine.attach(reverb)
         reverb.loadFactoryPreset(.mediumHall)
         reverb.wetDryMix = 18
         engine.connect(sourceNode, to: reverb, format: format)
+        engine.connect(sampler, to: reverb, format: nil)
         engine.connect(reverb, to: engine.mainMixerNode, format: format)
     }
 
@@ -169,32 +192,51 @@ final class AudioEngine: @unchecked Sendable {
     func playChord(_ notes: [String]) {
         start()
         let midi = Self.notesToMidi(notes)
+        if useSampler {
+            releaseSampler()
+            for m in midi { let n = UInt8(clamping: m); sampler.startNote(n, withVelocity: 90, onChannel: 0); samplerActive.insert(n) }
+            return
+        }
         lock.lock()
         for v in voices where v.releasedAt == nil { v.releasedAt = v.age }
         for m in midi { voices.append(makeVoice(m)) }
         lock.unlock()
     }
 
-    /// Play a single MIDI-style note by name+octave is not needed; use pitch + octave.
+    /// Play a single note by pitch name + octave.
     func playNote(_ note: String, octave: Int = 4) {
         start()
         let pc = noteToSemitone(note)
         guard pc != -1 else { return }
-        let m = pc + (octave + 1) * 12
-        lock.lock(); voices.append(makeVoice(m)); lock.unlock()
+        playMidi(pc + (octave + 1) * 12)
     }
 
     /// Play a single absolute MIDI note (used by the on-screen keyboard taps).
     func playMidi(_ midiNote: Int) {
         start()
+        if useSampler {
+            let n = UInt8(clamping: midiNote)
+            sampler.startNote(n, withVelocity: 90, onChannel: 0)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+                self?.sampler.stopNote(n, onChannel: 0)
+                self?.samplerActive.remove(n)
+            }
+            return
+        }
         lock.lock(); voices.append(makeVoice(midiNote)); lock.unlock()
     }
 
     /// Release everything (chord change / stop).
     func stopAll() {
+        if useSampler { releaseSampler() }
         lock.lock()
         for v in voices where v.releasedAt == nil { v.releasedAt = v.age }
         lock.unlock()
+    }
+
+    private func releaseSampler() {
+        for n in samplerActive { sampler.stopNote(n, onChannel: 0) }
+        samplerActive.removeAll()
     }
 
     // MARK: Voice factory

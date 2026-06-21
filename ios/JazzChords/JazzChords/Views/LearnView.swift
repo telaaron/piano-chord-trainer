@@ -57,9 +57,7 @@ struct LearnView: View {
         }
     }
 
-    private func courseName(_ id: String) -> String {
-        id.split(separator: "-").map { $0.capitalized }.joined(separator: " ")
-    }
+    private func courseName(_ id: String) -> String { Strings.courseTitle(id) }
     private func lessonCount(_ course: Course) -> Int {
         course.modules.reduce(0) { $0 + $1.lessons.count }
     }
@@ -109,13 +107,7 @@ struct CourseDetailView: View {
         }
     }
 
-    private func courseName(_ id: String) -> String {
-        id.split(separator: "-").map { $0.capitalized }.joined(separator: " ")
-    }
-    private func moduleTitle(_ id: String) -> String {
-        id.split(separator: "-").map { $0.capitalized }.joined(separator: " ")
-    }
-    private func lessonTitle(_ id: String) -> String {
-        id.split(separator: "-").map { $0.capitalized }.joined(separator: " ")
-    }
+    private func courseName(_ id: String) -> String { Strings.courseTitle(id) }
+    private func moduleTitle(_ id: String) -> String { Strings.moduleTitle(id) }
+    private func lessonTitle(_ id: String) -> String { Strings.lessonTitle(id) }
 }
