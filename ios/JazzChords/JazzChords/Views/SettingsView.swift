@@ -64,12 +64,10 @@ struct SettingsView: View {
             }
         }
         .sheet(isPresented: $showBluetooth) {
-            NavigationStack {
-                BluetoothMIDISheet()
-                    .navigationTitle("Bluetooth MIDI")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { showBluetooth = false } } }
-            }
+            // CABTMIDICentralViewController carries its own nav bar; presenting it
+            // raw (no SwiftUI NavigationStack wrapper) avoids the CALayer bounds
+            // crash that double-nesting caused.
+            BluetoothMIDISheet().ignoresSafeArea()
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)

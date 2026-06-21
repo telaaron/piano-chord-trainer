@@ -147,10 +147,25 @@ final class MIDIInput {
     }
 }
 
-/// Bluetooth-MIDI pairing sheet (CoreAudioKit). Presented from Settings.
+/// Bluetooth-MIDI pairing sheet (CoreAudioKit). Wrapped in a UINavigationController
+/// so the controller gets a valid bounded frame + a Done button — presenting it
+/// inside a SwiftUI NavigationStack caused a CALayer bounds crash on connect.
 struct BluetoothMIDISheet: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> CABTMIDICentralViewController {
-        CABTMIDICentralViewController()
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIViewController(context: Context) -> UINavigationController {
+        let bt = CABTMIDICentralViewController()
+        bt.navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .done, target: context.coordinator, action: #selector(Coordinator.done))
+        let nav = UINavigationController(rootViewController: bt)
+        context.coordinator.nav = nav
+        return nav
     }
-    func updateUIViewController(_ vc: CABTMIDICentralViewController, context: Context) {}
+
+    func updateUIViewController(_ vc: UINavigationController, context: Context) {}
+
+    final class Coordinator: NSObject {
+        weak var nav: UINavigationController?
+        @objc func done() { nav?.dismiss(animated: true) }
+    }
 }
