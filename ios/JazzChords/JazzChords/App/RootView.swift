@@ -46,6 +46,7 @@ struct RootView: View {
         .environment(\.palette, Theme.palette(for: scheme))
         .sheet(isPresented: $showSettings) {
             NavigationStack { SettingsView() }
+                .presentationDetents(hSize == .regular ? [.large] : [.medium, .large])
         }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView { showOnboarding = false }

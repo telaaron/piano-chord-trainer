@@ -26,6 +26,9 @@ struct PianoKeyboard: View {
     var showInput: Bool = false
     /// Tap handler: (chromaticIndex). When nil, taps still preview audio.
     var onKeyTap: ((Int) -> Void)? = nil
+    /// Cap the rendered keyboard height (iPad: let it grow much taller than the
+    /// aspect ratio alone would allow on a wide screen).
+    var maxHeight: CGFloat = 200
 
     /// Chromatic indices (C3 = 0) currently held via input.
     private var heldKeyIndices: Set<Int> {
@@ -80,6 +83,7 @@ struct PianoKeyboard: View {
             }
         }
         .aspectRatio(octaves == .three ? 5.4 : 4.0, contentMode: .fit)
+        .frame(maxHeight: maxHeight)
         .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
     }
 

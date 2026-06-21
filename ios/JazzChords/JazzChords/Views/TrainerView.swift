@@ -150,7 +150,7 @@ struct TrainerPlayingView: View {
     }
 
     var body: some View {
-        VStack(spacing: Theme.space3) {
+        VStack(spacing: isPad ? Theme.space5 : Theme.space3) {
             topBar
             if isLandscape {
                 // Landscape: chord left, keyboard right — fits the short height.
@@ -166,14 +166,16 @@ struct TrainerPlayingView: View {
             } else {
                 Spacer(minLength: 0)
                 chordBlock
+                Spacer(minLength: 0)
                 keyboardBlock
                 if store.inputActive { inputHint }
                 Spacer(minLength: 0)
                 controls
             }
         }
-        .padding(Theme.space4)
-        .frame(maxWidth: isLandscape ? .infinity : 760)
+        .padding(isPad ? Theme.space6 : Theme.space4)
+        // iPad uses the full width for a big keyboard; iPhone keeps a tidy cap.
+        .frame(maxWidth: (isLandscape || isPad) ? .infinity : 760)
         .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)
         .navigationBarBackButtonHidden()
@@ -183,11 +185,13 @@ struct TrainerPlayingView: View {
         VStack(spacing: Theme.space2) {
             HStack {
                 Text("\(store.currentIdx + 1) / \(store.actualTotalChords)")
-                    .font(.caption.monospacedDigit())
+                    .font(.callout.monospacedDigit())
                     .foregroundStyle(palette.textMuted)
                 Spacer()
-                Button { onClose() } label: { Image(systemName: "xmark.circle.fill") }
-                    .foregroundStyle(palette.textDim)
+                Button { onClose() } label: {
+                    Image(systemName: "xmark.circle.fill").font(isPad ? .title2 : .body)
+                }
+                .foregroundStyle(palette.textDim)
             }
             ProgressView(value: store.progress).tint(palette.primary)
         }
@@ -196,20 +200,25 @@ struct TrainerPlayingView: View {
     private var chordBlock: some View {
         VStack(spacing: Theme.space2) {
             Text(displayedChord)
-                .font(Display.chord(isLandscape ? 52 : 68))
+                .font(Display.chord(chordFontSize))
                 .foregroundStyle(palette.text)
                 .contentTransition(.numericText())
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
             if store.shouldShowVoicing, let d = store.currentData {
                 Text(VOICING_LABELS[store.voicing]?.uppercased() ?? "")
-                    .font(.caption.weight(.semibold)).tracking(1)
+                    .font((isPad ? Font.body : Font.caption).weight(.semibold)).tracking(1.5)
                     .foregroundStyle(palette.primary)
                 Text(formatVoicing(d, store.voicing, store.notationSystem))
-                    .font(.system(.body, design: .monospaced))
+                    .font(.system(isPad ? .title3 : .body, design: .monospaced))
                     .foregroundStyle(palette.textMuted)
             }
         }
+    }
+
+    private var chordFontSize: CGFloat {
+        if isLandscape { return isPad ? 72 : 52 }
+        return isPad ? 120 : 68
     }
 
     @ViewBuilder
@@ -222,7 +231,8 @@ struct TrainerPlayingView: View {
                 forceOctaves: keyboardOctaves,
                 heldNotes: store.heldNotes,
                 expectedPitchClasses: store.expectedPitchClasses,
-                showInput: store.inputActive
+                showInput: store.inputActive,
+                maxHeight: isPad ? (isLandscape ? 240 : 320) : 200
             )
         }
     }

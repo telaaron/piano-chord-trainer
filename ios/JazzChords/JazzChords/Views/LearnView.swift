@@ -8,21 +8,31 @@ extension Lesson: @retroactive Identifiable {}
 
 struct LearnView: View {
     @Environment(\.palette) private var palette
+    @Environment(\.horizontalSizeClass) private var hSize
+    private var isPad: Bool { hSize == .regular }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: Theme.space3) {
-                ForEach(ALL_COURSES, id: \.id) { course in
-                    NavigationLink {
-                        CourseDetailView(course: course)
-                    } label: {
-                        courseRow(course)
+            if isPad {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 320), spacing: Theme.space4)], spacing: Theme.space4) {
+                    ForEach(ALL_COURSES, id: \.id) { course in
+                        NavigationLink { CourseDetailView(course: course) } label: { courseRow(course) }
+                            .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
+                .padding(Theme.space6)
+                .frame(maxWidth: 1100)
+                .frame(maxWidth: .infinity)
+            } else {
+                VStack(spacing: Theme.space3) {
+                    ForEach(ALL_COURSES, id: \.id) { course in
+                        NavigationLink { CourseDetailView(course: course) } label: { courseRow(course) }
+                            .buttonStyle(.plain)
+                    }
+                }
+                .padding(Theme.space4)
+                .readableWidth()
             }
-            .padding(Theme.space4)
-            .readableWidth()
         }
         .navigationTitle("Learn")
         .screenBackground()

@@ -6,9 +6,12 @@ import MusicEngine
 
 struct TodayView: View {
     @Environment(\.palette) private var palette
+    @Environment(\.horizontalSizeClass) private var hSize
     @State private var habits = HabitStore.shared
     @State private var startSuggested = false
     @State private var refreshToken = 0
+
+    private var isPad: Bool { hSize == .regular }
 
     private var history: [SessionResult] { ProgressStore.loadHistory() }
     private var streak: StreakData { ProgressStore.loadStreak() }
@@ -29,16 +32,7 @@ struct TodayView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Theme.space5) {
-                hero
-                weekStrip
-                suggestedCard
-                motivationCard
-            }
-            .padding(.horizontal, Theme.space4)
-            .padding(.bottom, Theme.space5)
-            .readableWidth()
-            .id(refreshToken)
+            if isPad { iPadDashboard } else { phoneStack }
         }
         .navigationTitle("Today")
         .navigationBarTitleDisplayMode(.inline)
@@ -47,6 +41,63 @@ struct TodayView: View {
         .onAppear { habits.reload(); refreshToken += 1 }
         .fullScreenCover(isPresented: $startSuggested, onDismiss: { habits.reload(); refreshToken += 1 }) {
             NavigationStack { TrainerView(plan: suggested) }
+        }
+    }
+
+    private var phoneStack: some View {
+        VStack(alignment: .leading, spacing: Theme.space5) {
+            hero
+            weekStrip
+            suggestedCard
+            motivationCard
+        }
+        .padding(.horizontal, Theme.space4)
+        .padding(.bottom, Theme.space5)
+        .readableWidth()
+        .id(refreshToken)
+    }
+
+    // iPad: full-width hero, then a two-column dashboard (suggested + a stats panel).
+    private var iPadDashboard: some View {
+        VStack(alignment: .leading, spacing: Theme.space5) {
+            hero
+            HStack(alignment: .top, spacing: Theme.space5) {
+                VStack(spacing: Theme.space5) {
+                    suggestedCard
+                    motivationCard
+                }
+                .frame(maxWidth: .infinity)
+                statsPanel
+                    .frame(width: 320)
+            }
+        }
+        .padding(Theme.space6)
+        .frame(maxWidth: 1100)
+        .frame(maxWidth: .infinity)
+        .id(refreshToken)
+    }
+
+    /// Right-hand stats panel (iPad): level, streak, weekly goal, quick stats.
+    private var statsPanel: some View {
+        VStack(alignment: .leading, spacing: Theme.space4) {
+            let stats = computeStats(history)
+            SectionHeader(text: "Your progress")
+            statRow("Level", "\(habits.levelInfo.level) · \(habits.levelInfo.title)")
+            statRow("Streak", "\(streak.current) days")
+            statRow("Sessions", "\(stats.totalSessions)")
+            statRow("Avg / chord", stats.totalSessions > 0 ? String(format: "%.1fs", stats.overallAvgMs / 1000) : "—")
+            Divider().overlay(palette.border)
+            weekStrip
+        }
+        .padding(Theme.space5)
+        .glassCard()
+    }
+
+    private func statRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label).font(.subheadline).foregroundStyle(palette.textMuted)
+            Spacer()
+            Text(value).font(.subheadline.weight(.semibold)).foregroundStyle(palette.text)
         }
     }
 
