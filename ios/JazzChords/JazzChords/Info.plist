@@ -20,6 +20,8 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>jazzchords connects to Bluetooth MIDI keyboards so you can play along.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>jazzchords listens to your piano so it can recognise the chords you play.</string>
 	<key>UIAppFonts</key>

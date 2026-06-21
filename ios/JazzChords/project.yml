@@ -35,6 +35,7 @@ targets:
         CFBundleDisplayName: jazzchords
         UILaunchScreen: {}
         NSMicrophoneUsageDescription: "jazzchords listens to your piano so it can recognise the chords you play."
+        NSBluetoothAlwaysUsageDescription: "jazzchords connects to Bluetooth MIDI keyboards so you can play along."
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
         UISupportedInterfaceOrientations:
