@@ -147,25 +147,63 @@ final class MIDIInput {
     }
 }
 
-/// Bluetooth-MIDI pairing sheet (CoreAudioKit). Wrapped in a UINavigationController
-/// so the controller gets a valid bounded frame + a Done button — presenting it
-/// inside a SwiftUI NavigationStack caused a CALayer bounds crash on connect.
-struct BluetoothMIDISheet: UIViewControllerRepresentable {
-    func makeCoordinator() -> Coordinator { Coordinator() }
+/// Presents Apple's Bluetooth-MIDI pairing UI (CABTMIDICentralViewController).
+///
+/// That controller's `loadView` builds a UITableView and crashes if it loads at a
+/// zero/NaN frame — which is what happens when it's used directly as a SwiftUI
+/// sheet's content. Fix: host an invisible UIViewController and *manually* present
+/// the BT controller (wrapped in a nav controller) as a `.formSheet`, which
+/// guarantees a valid bounded frame before `loadView` runs.
+struct BluetoothMIDIPresenter: UIViewControllerRepresentable {
+    @Binding var isPresented: Bool
 
-    func makeUIViewController(context: Context) -> UINavigationController {
-        let bt = CABTMIDICentralViewController()
-        bt.navigationItem.rightBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .done, target: context.coordinator, action: #selector(Coordinator.done))
-        let nav = UINavigationController(rootViewController: bt)
-        context.coordinator.nav = nav
-        return nav
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
     }
 
-    func updateUIViewController(_ vc: UINavigationController, context: Context) {}
+    func updateUIViewController(_ host: UIViewController, context: Context) {
+        if isPresented {
+            context.coordinator.present(from: host)
+        } else {
+            context.coordinator.dismiss()
+        }
+    }
 
-    final class Coordinator: NSObject {
-        weak var nav: UINavigationController?
-        @objc func done() { nav?.dismiss(animated: true) }
+    final class Coordinator: NSObject, UIAdaptivePresentationControllerDelegate {
+        private let parent: BluetoothMIDIPresenter
+        private weak var presented: UINavigationController?
+        init(_ parent: BluetoothMIDIPresenter) { self.parent = parent }
+
+        func present(from host: UIViewController) {
+            guard presented == nil, host.presentedViewController == nil else { return }
+            let bt = CABTMIDICentralViewController()
+            bt.title = "Bluetooth MIDI"
+            bt.navigationItem.rightBarButtonItem = UIBarButtonItem(
+                barButtonSystemItem: .done, target: self, action: #selector(done))
+            let nav = UINavigationController(rootViewController: bt)
+            nav.modalPresentationStyle = .formSheet   // fixed, valid bounds
+            nav.presentationController?.delegate = self
+            presented = nav
+            // Present on the next runloop so the host is in the window hierarchy.
+            DispatchQueue.main.async { host.present(nav, animated: true) }
+        }
+
+        func dismiss() {
+            presented?.dismiss(animated: true)
+            presented = nil
+        }
+
+        @objc private func done() {
+            presented?.dismiss(animated: true)
+            presented = nil
+            parent.isPresented = false
+        }
+
+        func presentationControllerDidDismiss(_ pc: UIPresentationController) {
+            presented = nil
+            parent.isPresented = false
+        }
     }
 }

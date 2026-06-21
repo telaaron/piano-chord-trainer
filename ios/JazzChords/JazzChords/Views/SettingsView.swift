@@ -63,12 +63,9 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .sheet(isPresented: $showBluetooth) {
-            // CABTMIDICentralViewController carries its own nav bar; presenting it
-            // raw (no SwiftUI NavigationStack wrapper) avoids the CALayer bounds
-            // crash that double-nesting caused.
-            BluetoothMIDISheet().ignoresSafeArea()
-        }
+        // Manual UIKit present (.formSheet) — CABTMIDICentralViewController crashes
+        // if loaded at a zero-frame, which a SwiftUI sheet causes.
+        .background(BluetoothMIDIPresenter(isPresented: $showBluetooth))
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
