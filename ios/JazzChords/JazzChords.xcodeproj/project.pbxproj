@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		041450E2866996B225A35323 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12BE9B7FC3E12658EBF8BA6 /* Typography.swift */; };
 		04C58489DBA3E4BFFD5351E4 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7702795829A5ABB75729E310 /* Glass.swift */; };
-		1BAC627AF609359F9B0B2963 /* FluidR3Mono_GM.sf3 in Resources */ = {isa = PBXBuildFile; fileRef = 123CB112201B1C7386CBB7B1 /* FluidR3Mono_GM.sf3 */; };
 		1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */; };
 		23E6837096744F2101283969 /* empty.webp in Resources */ = {isa = PBXBuildFile; fileRef = CEA73CE363D55D87924D64F4 /* empty.webp */; };
 		2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0867EC7118FCB35AE3C9028E /* TodayView.swift */; };
@@ -51,7 +50,6 @@
 /* Begin PBXFileReference section */
 		0867EC7118FCB35AE3C9028E /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		0DD8D24429AD88D4ED75C2AE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		123CB112201B1C7386CBB7B1 /* FluidR3Mono_GM.sf3 */ = {isa = PBXFileReference; path = FluidR3Mono_GM.sf3; sourceTree = "<group>"; };
 		2090908BA45B8DDA83185B8A /* EarTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarTrainingView.swift; sourceTree = "<group>"; };
 		25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseProgressStore.swift; sourceTree = "<group>"; };
 		2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
@@ -215,7 +213,6 @@
 				EA814142A1EAB3935C084DB7 /* Assets.xcassets */,
 				A0514651239161E6F062BEBE /* PrivacyInfo.xcprivacy */,
 				841D636F2248E39F63DB2E2E /* Art */,
-				FB59AA1912E909DB3711B84B /* Audio */,
 				8F19B4D6E633926A39077232 /* Fonts */,
 			);
 			path = Resources;
@@ -237,14 +234,6 @@
 				7E588BF82FF19B8E0CD0896B /* Packages */,
 				292138CC8484E35853344A59 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		FB59AA1912E909DB3711B84B /* Audio */ = {
-			isa = PBXGroup;
-			children = (
-				123CB112201B1C7386CBB7B1 /* FluidR3Mono_GM.sf3 */,
-			);
-			path = Audio;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -313,7 +302,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B783711BA8940D4A03FBE89 /* Assets.xcassets in Resources */,
-				1BAC627AF609359F9B0B2963 /* FluidR3Mono_GM.sf3 in Resources */,
 				D1E6E5A82F1AA2524B779E2B /* PrivacyInfo.xcprivacy in Resources */,
 				E9BF5CA9279A55756541DB0C /* SpaceGrotesk-Bold.ttf in Resources */,
 				A3D6EDFBE9642870EF5B9739 /* SpaceGrotesk-Medium.ttf in Resources */,

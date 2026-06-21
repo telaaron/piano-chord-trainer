@@ -84,18 +84,23 @@ final class AudioEngine: @unchecked Sendable {
     /// MIDI notes currently sounding on the sampler (so we can release them).
     private var samplerActive: Set<UInt8> = []
 
-    /// Grand piano uses the sampled SoundFont; other presets use the synth voice.
-    private var useSampler: Bool { preset == .grandPiano && samplerLoaded }
+    /// Grand piano uses the sampled SoundFont when available; otherwise (and for
+    /// the other presets) the built-in synth voice. NOTE: AVAudioUnitSampler hard-
+    /// crashes on compressed .sf3 SoundFonts (DLS loader assert), so the sampler
+    /// is only enabled once a real uncompressed .sf2 is bundled. Until then this
+    /// stays false and the synth covers every preset — no crash.
+    private var useSampler: Bool { samplerLoaded && preset == .grandPiano }
 
     private init() {
         setupGraph()
     }
 
-    /// Load the SoundFont once, after the engine is running. Failure is
-    /// non-fatal — the synth voice covers grand piano if the sampler can't load.
+    /// Load an uncompressed .sf2 SoundFont once, after the engine is running.
+    /// Only .sf2 is supported — AVAudioUnitSampler asserts/crashes on compressed
+    /// .sf3. If no .sf2 is bundled, the synth voice is used (no crash).
     private func loadSoundFontIfNeeded() {
         guard !samplerLoaded else { return }
-        guard let url = Bundle.main.url(forResource: "FluidR3Mono_GM", withExtension: "sf3") else { return }
+        guard let url = Bundle.main.url(forResource: "GrandPiano", withExtension: "sf2") else { return }
         do {
             try sampler.loadSoundBankInstrument(at: url, program: 0,
                 bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
