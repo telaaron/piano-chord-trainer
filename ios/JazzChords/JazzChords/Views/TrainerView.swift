@@ -136,11 +136,18 @@ struct TrainerSetupView: View {
 struct TrainerPlayingView: View {
     @Environment(\.palette) private var palette
     @Environment(\.verticalSizeClass) private var vSize
+    @Environment(\.horizontalSizeClass) private var hSize
     @Bindable var store: TrainerStore
 
     var onClose: () -> Void
 
     private var isLandscape: Bool { vSize == .compact }
+    private var isPad: Bool { hSize == .regular }
+    /// iPad shows a roomier 3-octave keyboard.
+    private var keyboardOctaves: OctaveCount? {
+        if isPad { return .three }
+        return store.sessionOctaves
+    }
 
     var body: some View {
         VStack(spacing: Theme.space3) {
@@ -166,6 +173,8 @@ struct TrainerPlayingView: View {
             }
         }
         .padding(Theme.space4)
+        .frame(maxWidth: isLandscape ? .infinity : 760)
+        .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)
         .navigationBarBackButtonHidden()
     }
@@ -210,7 +219,7 @@ struct TrainerPlayingView: View {
                 chordData: store.currentData,
                 accidentalPref: store.accidentals,
                 showVoicing: store.shouldShowVoicing,
-                forceOctaves: store.sessionOctaves,
+                forceOctaves: keyboardOctaves,
                 heldNotes: store.heldNotes,
                 expectedPitchClasses: store.expectedPitchClasses,
                 showInput: store.inputActive

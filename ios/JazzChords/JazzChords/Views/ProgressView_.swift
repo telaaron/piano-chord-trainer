@@ -47,6 +47,7 @@ struct ProgressView_: View {
                 personalBestsSection
             }
             .padding(Theme.space4)
+            .readableWidth(720)
             .id(refresh)
         }
     }

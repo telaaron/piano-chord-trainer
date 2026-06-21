@@ -9,11 +9,17 @@ extension PracticePlan: @retroactive Identifiable {}
 
 struct PracticeView: View {
     @Environment(\.palette) private var palette
+    @Environment(\.horizontalSizeClass) private var hSize
     @State private var activePlan: PracticePlan?
     @State private var freePlay = false
     @State private var customOpen = false
 
-    private let columns = [GridItem(.flexible(), spacing: Theme.space3), GridItem(.flexible(), spacing: Theme.space3)]
+    // iPad (regular width) gets a wider auto-fitting grid; iPhone stays 2-up.
+    private var columns: [GridItem] {
+        hSize == .regular
+            ? [GridItem(.adaptive(minimum: 200), spacing: Theme.space3)]
+            : [GridItem(.flexible(), spacing: Theme.space3), GridItem(.flexible(), spacing: Theme.space3)]
+    }
 
     var body: some View {
         ScrollView {
@@ -28,6 +34,8 @@ struct PracticeView: View {
                 }
             }
             .padding(Theme.space4)
+            .frame(maxWidth: 900)
+            .frame(maxWidth: .infinity)
         }
         .navigationTitle("Practice")
         .screenBackground()

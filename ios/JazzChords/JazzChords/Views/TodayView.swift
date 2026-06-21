@@ -37,6 +37,7 @@ struct TodayView: View {
             }
             .padding(.horizontal, Theme.space4)
             .padding(.bottom, Theme.space5)
+            .readableWidth()
             .id(refreshToken)
         }
         .navigationTitle("Today")

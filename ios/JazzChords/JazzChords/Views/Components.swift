@@ -135,4 +135,8 @@ struct ScreenBackground: ViewModifier {
 
 extension View {
     func screenBackground() -> some View { modifier(ScreenBackground()) }
+    /// Constrain content to a comfortable reading width, centered (great on iPad).
+    func readableWidth(_ max: CGFloat = 640) -> some View {
+        frame(maxWidth: max).frame(maxWidth: .infinity)
+    }
 }

@@ -22,6 +22,7 @@ struct LearnView: View {
                 }
             }
             .padding(Theme.space4)
+            .readableWidth()
         }
         .navigationTitle("Learn")
         .screenBackground()
