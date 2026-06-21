@@ -89,19 +89,21 @@ final class AudioEngine: @unchecked Sendable {
 
     private init() {
         setupGraph()
-        loadSoundFont()
     }
 
-    private func loadSoundFont() {
+    /// Load the SoundFont once, after the engine is running. Failure is
+    /// non-fatal — the synth voice covers grand piano if the sampler can't load.
+    private func loadSoundFontIfNeeded() {
+        guard !samplerLoaded else { return }
         guard let url = Bundle.main.url(forResource: "FluidR3Mono_GM", withExtension: "sf3") else { return }
         do {
-            // Program 0 = Acoustic Grand Piano (GM), melodic bank.
             try sampler.loadSoundBankInstrument(at: url, program: 0,
                 bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
                 bankLSB: UInt8(kAUSampler_DefaultBankLSB))
             samplerLoaded = true
         } catch {
             print("[AudioEngine] SoundFont load failed: \(error)")
+            samplerLoaded = false
         }
     }
 
@@ -156,7 +158,9 @@ final class AudioEngine: @unchecked Sendable {
         reverb.loadFactoryPreset(.mediumHall)
         reverb.wetDryMix = 18
         engine.connect(sourceNode, to: reverb, format: format)
-        engine.connect(sampler, to: reverb, format: nil)
+        // Sampler → reverb at the same explicit stereo format (nil can mismatch
+        // the already-connected reverb input and crash the graph).
+        engine.connect(sampler, to: reverb, format: format)
         engine.connect(reverb, to: engine.mainMixerNode, format: format)
     }
 
@@ -168,6 +172,7 @@ final class AudioEngine: @unchecked Sendable {
         do {
             try engine.start()
             started = true
+            loadSoundFontIfNeeded()
         } catch {
             print("[AudioEngine] start failed: \(error)")
         }
