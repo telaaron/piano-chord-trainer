@@ -10,6 +10,12 @@ export interface ChordTiming {
 	root: string;
 	/** Duration in ms for this specific chord */
 	durationMs: number;
+	/**
+	 * Whether the player answered this chord correctly (verify/MIDI modes).
+	 * Absent in older sessions and in modes that don't validate input —
+	 * consumers must treat `undefined` as "unknown" (fall back to timing only).
+	 */
+	correct?: boolean;
 }
 
 export interface SessionResult {
@@ -34,6 +40,11 @@ export interface SessionResult {
 		enabled: boolean;
 		accuracy: number;
 	};
+	/**
+	 * Which Coach block produced this session (warmup|review|focus|new|apply|calibrate).
+	 * Absent for manually-started sessions and older history.
+	 */
+	blockKind?: string;
 }
 
 export interface PersonalBest {

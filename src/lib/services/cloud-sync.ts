@@ -12,6 +12,7 @@ const SYNC_KEYS = [
 	'chord-trainer-habit-profile',
 	'chord-trainer-celebrations',
 	'chord-trainer-course-progress',
+	'chord-trainer-coach-state',
 	'chord-trainer-theme',
 	'chord-trainer-locale',
 ] as const;
