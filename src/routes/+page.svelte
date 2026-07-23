@@ -159,7 +159,7 @@
 		</div>
 
 		<!-- Titles -->
-		<h1 class="hero-title text-[clamp(2rem,3.7vw,3.9rem)] font-black leading-[1.04] tracking-[-0.03em] mb-5 max-w-[16ch] max-[968px]:text-[clamp(1.62rem,8.2vw,2.32rem)] max-[968px]:leading-[1.07] max-[968px]:max-w-[11ch] max-[968px]:mb-3">
+		<h1 class="hero-title text-[clamp(2rem,3.7vw,3.9rem)] font-black leading-[1.04] tracking-[-0.03em] mb-5 max-w-[16ch] max-[968px]:mb-3">
 			<span class="block text-[rgba(255, 200, 130,0.96)]">{t('landing.hero_title_line1')}</span>
 			<span class="block text-(--text)">{t('landing.hero_title_line2')}</span>
 		</h1>
@@ -491,16 +491,30 @@
 
 
 	@media (max-width: 968px) {
+		/* Keep the piano photo — but as a full-bleed background with a vertical
+		   fade so the image reads at the top and the copy sits on solid dark
+		   below. Portrait-tuned version of the desktop cinematic hero. */
 		.hero-media {
-			display: none;
+			display: block;
 		}
 
+		/* Swap the desktop left-to-right scrim for a top-to-bottom one:
+		   image visible up top, deep dark under the text. */
 		.hero-media::before {
-			display: none;
+			display: block;
+			background: linear-gradient(
+				180deg,
+				rgba(9, 7, 16, 0.15) 0%,
+				rgba(9, 7, 16, 0.42) 34%,
+				rgba(9, 7, 16, 0.82) 58%,
+				rgba(11, 9, 22, 0.96) 74%,
+				#0b0918 90%
+			);
 		}
 
 		.hero-canvas {
-			filter: saturate(1.03) contrast(1.02) brightness(0.8);
+			object-position: 62% center;
+			filter: saturate(1.05) contrast(1.04) brightness(0.82);
 		}
 
 		.hero-copy-shell {
@@ -518,30 +532,39 @@
 		.hero-stage {
 			height: auto;
 			min-height: calc(100svh - 3.5rem);
-			padding-top: 4.5rem;
-			padding-bottom: 2rem;
-			background:
-				radial-gradient(75% 58% at 88% 12%, rgba(245, 166, 35, 0.22) 0%, transparent 72%),
-				linear-gradient(180deg, #0b0918 0%, #0c0a1c 38%, #0e0b20 100%);
+			/* Push the copy toward the lower half so it lands on the dark part
+			   of the scrim, letting the photo breathe up top. */
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			padding-top: 30vh;
+			padding-bottom: 2.25rem;
+			background: #0b0918;
 		}
 
 		.hero-content-frame {
 			padding: 0 1.25rem;
+			align-items: flex-end;
+			height: auto;
 		}
 
-		.hero-badge,
+		.hero-badge {
+			display: inline-flex;
+		}
+
 		.hero-support {
 			display: none;
 		}
 
+		/* Vignette handled by hero-media::before now; keep a faint bottom anchor. */
 		.hero-vignette {
-			background: linear-gradient(180deg, rgba(11, 9, 22, 0.08) 0%, rgba(11, 9, 22, 0.42) 50%, rgba(11, 9, 22, 0.76) 100%);
+			background: linear-gradient(180deg, transparent 0%, transparent 62%, rgba(11, 9, 22, 0.35) 100%);
 		}
 
 		.hero-title {
-			font-size: clamp(1.55rem, 8.6vw, 2.1rem);
-			line-height: 1.1;
-			max-width: 15ch;
+			font-size: clamp(1.5rem, 8vw, 2rem);
+			line-height: 1.12;
+			max-width: 100%;
 			margin-bottom: 0.9rem;
 		}
 
