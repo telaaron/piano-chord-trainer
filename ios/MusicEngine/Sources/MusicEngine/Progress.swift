@@ -42,9 +42,13 @@ public struct SessionResult: Sendable, Equatable, Codable, Identifiable {
     public let chordTimings: [ChordTiming]?
     public let settings: SessionSettings
     public let midi: SessionMidi
+    /// Which Coach block produced this session (warmup|review|focus|new|apply|calibrate).
+    /// Absent for manually-started sessions and older history.
+    public let blockKind: String?
 
     public init(id: String, timestamp: Double, elapsedMs: Double, totalChords: Int, avgMs: Double,
-                chordTimings: [ChordTiming]?, settings: SessionSettings, midi: SessionMidi) {
+                chordTimings: [ChordTiming]?, settings: SessionSettings, midi: SessionMidi,
+                blockKind: String? = nil) {
         self.id = id
         self.timestamp = timestamp
         self.elapsedMs = elapsedMs
@@ -53,6 +57,21 @@ public struct SessionResult: Sendable, Equatable, Codable, Identifiable {
         self.chordTimings = chordTimings
         self.settings = settings
         self.midi = midi
+        self.blockKind = blockKind
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        timestamp = try c.decode(Double.self, forKey: .timestamp)
+        elapsedMs = try c.decode(Double.self, forKey: .elapsedMs)
+        totalChords = try c.decode(Int.self, forKey: .totalChords)
+        avgMs = try c.decode(Double.self, forKey: .avgMs)
+        chordTimings = try c.decodeIfPresent([ChordTiming].self, forKey: .chordTimings)
+        settings = try c.decode(SessionSettings.self, forKey: .settings)
+        midi = try c.decode(SessionMidi.self, forKey: .midi)
+        // Older persisted sessions predate `blockKind`.
+        blockKind = try c.decodeIfPresent(String.self, forKey: .blockKind)
     }
 }
 

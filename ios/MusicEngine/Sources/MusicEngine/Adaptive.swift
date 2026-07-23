@@ -9,11 +9,25 @@ public struct ChordTiming: Sendable, Equatable, Codable {
     public let chord: String
     public let root: String
     public let durationMs: Double
+    /// Whether the player answered this chord correctly (verify/MIDI modes).
+    /// Absent in older sessions and in modes that don't validate input —
+    /// consumers must treat `nil` as "unknown" (fall back to timing only).
+    public let correct: Bool?
 
-    public init(chord: String, root: String, durationMs: Double) {
+    public init(chord: String, root: String, durationMs: Double, correct: Bool? = nil) {
         self.chord = chord
         self.root = root
         self.durationMs = durationMs
+        self.correct = correct
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        chord = try c.decode(String.self, forKey: .chord)
+        root = try c.decode(String.self, forKey: .root)
+        durationMs = try c.decode(Double.self, forKey: .durationMs)
+        // Older persisted sessions predate `correct` — decode it optionally.
+        correct = try c.decodeIfPresent(Bool.self, forKey: .correct)
     }
 }
 
