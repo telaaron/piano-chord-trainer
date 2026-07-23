@@ -258,7 +258,7 @@
 							<span class="w-2 h-2 rounded-full bg-(--border) shrink-0"></span>
 						{/if}
 						<span class="{block.state === 'now' ? 'font-semibold' : ''}">{t(block.labelKey)}</span>
-						<span class="ml-auto tabular-nums text-[0.78rem] text-(--text-dim,inherit) opacity-70">{block.min} min</span>
+						<span class="ml-auto tabular-nums whitespace-nowrap text-[0.78rem] text-(--text-dim,inherit) opacity-70">{block.min} min</span>
 					</div>
 				{/each}
 			</div>
@@ -539,9 +539,9 @@
 		}
 
 		.hero-title {
-			font-size: clamp(1.72rem, 10.2vw, 2.34rem);
-			line-height: 1.06;
-			max-width: 10.5ch;
+			font-size: clamp(1.55rem, 8.6vw, 2.1rem);
+			line-height: 1.1;
+			max-width: 15ch;
 			margin-bottom: 0.9rem;
 		}
 

@@ -175,9 +175,10 @@
 		{#if showSyncBanner && !isEmbedRoute}
 			<div class="bg-[var(--primary)]/10 border-b border-[var(--primary)]/20 px-4 py-2.5">
 				<div class="max-w-[1600px] mx-auto flex items-center justify-between gap-4 text-sm">
-					<div class="flex items-center gap-2">
+					<div class="flex items-center gap-2 min-w-0">
 						<Cloud size={16} class="text-[var(--primary)] shrink-0" aria-hidden="true" />
-						<span class="text-[var(--text-muted)]">{t('nav_auth.sync_banner_desc')}</span>
+						<span class="text-[var(--text-muted)] max-sm:hidden">{t('nav_auth.sync_banner_desc')}</span>
+						<span class="text-[var(--text-muted)] hidden max-sm:block text-[0.8rem] leading-snug">{t('nav_auth.sync_banner')}</span>
 					</div>
 					<div class="flex items-center gap-2 shrink-0">
 						<a
