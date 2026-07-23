@@ -1,14 +1,57 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
 	import {
-		Piano,
-		Music,
-		BarChart3,
-		BookOpen,
 		ArrowRight,
+		Check,
+		Flame,
+		GraduationCap,
 		Keyboard,
-		Target,
+		Lock,
+		Mic,
+		Play,
+		Sparkles,
+		Trophy,
 	} from 'lucide-svelte';
+
+	const curriculumSteps = [
+		{ state: 'done', titleKey: 'landing.cur_s1_t', descKey: 'landing.cur_s1_d', chord: 'Cmaj7', notes: 'C · E · B' },
+		{ state: 'done', titleKey: 'landing.cur_s2_t', descKey: 'landing.cur_s2_d', chord: 'C6/9', notes: 'C · E · A · D' },
+		{ state: 'active', titleKey: 'landing.cur_s3_t', descKey: 'landing.cur_s3_d', chord: 'Dm9', notes: 'F · A · C · E' },
+		{ state: 'locked', titleKey: 'landing.cur_s4_t', descKey: 'landing.cur_s4_d', chord: 'G7/B', notes: 'B · F · G' },
+		{ state: 'locked', titleKey: 'landing.cur_s5_t', descKey: 'landing.cur_s5_d', chord: 'G7♯5♭9', notes: 'B · F · A♭ · E♭' }
+	] as const;
+
+	const sessionBlocks = [
+		{ labelKey: 'landing.coach_mock_b1', min: '2', state: 'done' },
+		{ labelKey: 'landing.coach_mock_b2', min: '3', state: 'done' },
+		{ labelKey: 'landing.coach_mock_b3', min: '3', state: 'now' },
+		{ labelKey: 'landing.coach_mock_b4', min: '3', state: 'next' },
+		{ labelKey: 'landing.coach_mock_b5', min: '2', state: 'next' }
+	] as const;
+
+	const faqItems = [
+		{ qKey: 'landing.faq1_q', aKey: 'landing.faq1_a' },
+		{ qKey: 'landing.faq2_q', aKey: 'landing.faq2_a' },
+		{ qKey: 'landing.faq3_q', aKey: 'landing.faq3_a' },
+		{ qKey: 'landing.faq4_q', aKey: 'landing.faq4_a' },
+		{ qKey: 'landing.faq5_q', aKey: 'landing.faq5_a' }
+	] as const;
+
+	// White-key layout for the CSS keyboard; lit = Cmaj7 shell (C E B)
+	const whiteKeys = [
+		{ note: 'C', lit: true },
+		{ note: 'D', lit: false },
+		{ note: 'E', lit: true },
+		{ note: 'F', lit: false },
+		{ note: 'G', lit: false },
+		{ note: 'A', lit: false },
+		{ note: 'B', lit: true },
+		{ note: 'C', lit: false },
+		{ note: 'D', lit: false },
+		{ note: 'E', lit: false }
+	] as const;
+	// Black keys positioned between white keys (index = gap after that white key)
+	const blackKeys = [0, 1, 3, 4, 5, 7, 8] as const;
 </script>
 
 <svelte:head>
@@ -70,7 +113,7 @@
 				"name": "Is Chord Trainer free to use?",
 				"acceptedAnswer": {
 					"@type": "Answer",
-					"text": "Yes, Chord Trainer is completely free. No account, no signup, no subscription required. Open jazzchords.app in Chrome or Edge and start practicing immediately. All voicing types, progressions, guided practice plans, MIDI support, and progress tracking are included at no cost."
+					"text": "Yes. All training features are free — the adaptive coach, every voicing type, progressions, MIDI support, and progress tracking. No account or signup required: open jazzchords.app and start practicing immediately. An optional Pro plan adds cloud sync and deeper statistics."
 				}
 			}
 		]
@@ -157,92 +200,220 @@
 	</div>
 </section>
 
-<!-- See · Play · Master — cinematic rows (intentionally always dark, art is rendered for dark) -->
-<section class="cinematic-dark overflow-x-hidden" style="background: linear-gradient(180deg, #0c0a18 0%, #100d22 20%, #100d22 80%, #0c0a18 100%)">
+<!-- ═══ S1 · Meet your coach ═══ -->
+<section class="py-24 max-[968px]:py-14 px-6">
+	<div class="max-w-6xl mx-auto grid grid-cols-[1.05fr_1fr] gap-16 items-center max-[968px]:grid-cols-1 max-[968px]:gap-10">
+		<div>
+			<span class="landing-eyebrow"><Sparkles size={13} /> {t('landing.coach_eyebrow')}</span>
+			<h2 class="landing-h2">{t('landing.coach_title')}</h2>
+			<p class="landing-lead">{t('landing.coach_desc')}</p>
+			<ul class="mt-8 flex flex-col gap-5">
+				<li class="flex gap-3.5">
+					<span class="landing-bullet-icon"><GraduationCap size={17} /></span>
+					<div>
+						<div class="font-semibold text-(--text)">{t('landing.coach_b1_t')}</div>
+						<div class="text-[0.95rem] text-(--text-muted) leading-[1.6]">{t('landing.coach_b1_d')}</div>
+					</div>
+				</li>
+				<li class="flex gap-3.5">
+					<span class="landing-bullet-icon"><Sparkles size={17} /></span>
+					<div>
+						<div class="font-semibold text-(--text)">{t('landing.coach_b2_t')}</div>
+						<div class="text-[0.95rem] text-(--text-muted) leading-[1.6]">{t('landing.coach_b2_d')}</div>
+					</div>
+				</li>
+				<li class="flex gap-3.5">
+					<span class="landing-bullet-icon"><Trophy size={17} /></span>
+					<div>
+						<div class="font-semibold text-(--text)">{t('landing.coach_b3_t')}</div>
+						<div class="text-[0.95rem] text-(--text-muted) leading-[1.6]">{t('landing.coach_b3_d')}</div>
+					</div>
+				</li>
+			</ul>
+		</div>
 
-	<!-- Step 1: Plug In -->
-	<div class="grid grid-cols-2 items-center min-h-[55vh] border-b border-[rgba(255,255,255,0.04)] max-w-400 mx-auto w-full max-[968px]:grid-cols-1 max-[968px]:min-h-auto">
-		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[78vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
-			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(245, 166, 35, 0.12) 0%, transparent 65%)"></div>
-			<!-- Piano image (cord curls behind via z-index) -->
-			<img src="/bilder/pluged-in-piano.webp" alt="A jazz chord voicing on screen, ready to play"
-				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-square group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
-				width="1024" height="1024" loading="lazy"
-				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
-			<!-- Floating chord label — layered over the piano for depth -->
-			<div class="step1-chord pointer-events-none absolute z-2 left-1/2 top-[14%] text-center select-none">
-				<div class="text-gradient text-[clamp(2.4rem,5.2vw,4rem)] font-black leading-none tracking-[-0.02em] [filter:drop-shadow(0_10px_28px_rgba(0,0,0,0.55))]">CMaj7</div>
-				<div class="mt-1.5 text-[0.72rem] uppercase tracking-[0.16em] text-[rgba(244,228,210,0.72)] font-medium [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">Shell Voicing</div>
-				<div class="mt-1 flex items-center justify-center gap-2 font-mono text-[1.05rem] font-bold text-(--text) [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
-					<span>C</span><span class="text-(--primary)">–</span><span>E</span><span class="text-(--primary)">–</span><span>B</span>
+		<!-- Product-true coach session mockup -->
+		<div class="coach-mock rounded-2xl border border-(--border) bg-(--bg-card) p-6 max-[968px]:p-5" aria-hidden="true">
+			<div class="flex items-center gap-2.5 text-[0.85rem] text-(--text-muted) leading-[1.5]">
+				<span class="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full bg-(--primary-muted) text-(--primary)"><GraduationCap size={15} /></span>
+				{t('landing.coach_mock_say')}
+			</div>
+			<div class="coach-mock-btn mt-4 flex items-center gap-3 rounded-[0.85rem] py-3.5 px-5 font-semibold text-(--primary-text)">
+				<Play size={18} fill="currentColor" />
+				{t('landing.coach_mock_btn')}
+			</div>
+			<div class="mt-5 flex flex-col gap-2">
+				{#each sessionBlocks as block}
+					<div class="flex items-center gap-3 rounded-lg border py-2 px-3 text-[0.86rem]
+						{block.state === 'now'
+							? 'border-(--primary) bg-(--primary-muted) text-(--text)'
+							: 'border-(--border) text-(--text-muted)'}
+						{block.state === 'next' ? 'opacity-55' : ''}"
+					>
+						{#if block.state === 'done'}
+							<span class="text-(--accent-green) inline-flex shrink-0"><Check size={14} /></span>
+						{:else if block.state === 'now'}
+							<span class="w-2 h-2 rounded-full bg-(--primary) animate-pulse shrink-0"></span>
+						{:else}
+							<span class="w-2 h-2 rounded-full bg-(--border) shrink-0"></span>
+						{/if}
+						<span class="{block.state === 'now' ? 'font-semibold' : ''}">{t(block.labelKey)}</span>
+						<span class="ml-auto tabular-nums text-[0.78rem] text-(--text-dim,inherit) opacity-70">{block.min} min</span>
+					</div>
+				{/each}
+			</div>
+			<div class="mt-5 pt-4 border-t border-(--border)">
+				<p class="text-[0.9rem] italic leading-[1.55] text-(--text)">{t('landing.coach_mock_fb')}</p>
+				<p class="mt-1.5 text-[0.75rem] uppercase tracking-[0.08em] text-(--text-muted)">{t('landing.coach_mock_fb_label')}</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- ═══ S2 · The curriculum ladder ═══ -->
+<section class="py-24 max-[968px]:py-14 px-6 landing-tint">
+	<div class="max-w-6xl mx-auto">
+		<div class="max-w-2xl">
+			<span class="landing-eyebrow"><Check size={13} /> {t('landing.cur_eyebrow')}</span>
+			<h2 class="landing-h2">{t('landing.cur_title')}</h2>
+			<p class="landing-lead">{t('landing.cur_desc')}</p>
+		</div>
+		<div class="mt-12 max-w-3xl flex flex-col">
+			{#each curriculumSteps as step, i}
+				<div class="cur-row relative flex items-start gap-5 pb-9 last:pb-0 {step.state === 'locked' ? 'opacity-55' : ''}">
+					{#if i < curriculumSteps.length - 1}
+						<span class="cur-line" aria-hidden="true"></span>
+					{/if}
+					<span class="cur-dot shrink-0
+						{step.state === 'done' ? 'cur-dot-done' : step.state === 'active' ? 'cur-dot-active' : 'cur-dot-locked'}">
+						{#if step.state === 'done'}<Check size={15} />{:else if step.state === 'active'}<Play size={13} fill="currentColor" />{:else}<Lock size={13} />{/if}
+					</span>
+					<div class="flex-1 flex items-baseline justify-between gap-6 max-[640px]:flex-col max-[640px]:gap-1">
+						<div>
+							<div class="font-bold text-[1.08rem] text-(--text) flex items-center gap-2.5">
+								{t(step.titleKey)}
+								{#if step.state === 'active'}<span class="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-(--primary) border border-(--primary) rounded-full py-0.5 px-2">{t('landing.cur_now')}</span>{/if}
+							</div>
+							<div class="text-[0.92rem] text-(--text-muted) mt-0.5 leading-[1.55]">{t(step.descKey)}</div>
+						</div>
+						<div class="font-mono text-[0.88rem] text-(--text-muted) whitespace-nowrap shrink-0">
+							<span class="font-bold text-(--primary)">{step.chord}</span>
+							<span class="mx-1.5 opacity-40">·</span>{step.notes}
+						</div>
+					</div>
+				</div>
+			{/each}
+		</div>
+		<p class="mt-10 text-[0.95rem] text-(--text-muted) max-w-2xl flex items-center gap-2">
+			<GraduationCap size={16} class="shrink-0 text-(--primary)" />
+			{t('landing.cur_foot')}
+		</p>
+	</div>
+</section>
+
+<!-- ═══ S3 · It listens ═══ -->
+<section class="py-24 max-[968px]:py-14 px-6">
+	<div class="max-w-6xl mx-auto grid grid-cols-[1fr_1.05fr] gap-16 items-center max-[968px]:grid-cols-1 max-[968px]:gap-10">
+		<!-- CSS keyboard (order swapped on mobile: copy first) -->
+		<div class="max-[968px]:order-2" aria-hidden="true">
+			<div class="rounded-2xl border border-(--border) bg-(--bg-card) p-6 max-[968px]:p-4">
+				<div class="landing-kbd relative flex h-40 max-[640px]:h-30 rounded-lg overflow-hidden">
+					{#each whiteKeys as key}
+						<div class="landing-key-white relative flex-1 {key.lit ? 'is-lit' : ''}">
+							{#if key.lit}<span class="landing-key-label">{key.note}</span>{/if}
+						</div>
+					{/each}
+					{#each blackKeys as gap}
+						<div class="landing-key-black" style="left: {((gap + 1) / whiteKeys.length) * 100}%"></div>
+					{/each}
+				</div>
+				<div class="mt-4 flex items-center justify-between gap-3 flex-wrap">
+					<span class="inline-flex items-center gap-2 text-[0.9rem] font-semibold text-(--accent-green)">
+						<Check size={15} /> {t('landing.listen_caption')}
+					</span>
+					<span class="font-mono text-[0.85rem] text-(--text-muted)">Cmaj7 = C · E · B</span>
 				</div>
 			</div>
 		</div>
-		<div class="p-[3rem_5%_3rem_6%] max-[968px]:p-[1.5rem_1.5rem_3rem]">
-			<span class="block text-[5rem] font-black leading-none mb-2 opacity-35 tabular-nums bg-linear-to-br from-(--primary) to-(--accent-amber) bg-clip-text text-transparent max-[968px]:text-[3.5rem]" style="-webkit-text-fill-color: transparent">01</span>
-			<h2 class="text-[clamp(2.5rem,3.5vw,4rem)] font-extrabold leading-[1.1] text-(--text) mb-4 max-[968px]:text-[2rem]">{t('landing.step1_title')}</h2>
-			<p class="text-[1.15rem] leading-[1.7] text-(--text-muted) mb-8 max-w-105 max-[968px]:text-base">{t('landing.step1_desc')}</p>
-			<div class="flex flex-wrap gap-[0.6rem]">
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><Piano size={14} />{t('landing.step1_chip1')}</span>
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><Music size={14} />{t('landing.step1_chip2')}</span>
+		<div class="max-[968px]:order-1">
+			<span class="landing-eyebrow"><Mic size={13} /> {t('landing.listen_eyebrow')}</span>
+			<h2 class="landing-h2">{t('landing.listen_title')}</h2>
+			<p class="landing-lead">{t('landing.listen_desc')}</p>
+			<div class="mt-7 flex flex-wrap gap-2.5">
+				<span class="landing-chip"><Keyboard size={14} /> {t('landing.listen_chip1')}</span>
+				<span class="landing-chip"><Mic size={14} /> {t('landing.listen_chip2')}</span>
+				<span class="landing-chip"><Play size={14} /> {t('landing.listen_chip3')}</span>
 			</div>
 		</div>
 	</div>
-
-	<!-- Step 2: Play -->
-	<div class="grid grid-cols-2 items-center min-h-[55vh] border-b border-[rgba(255,255,255,0.04)] max-w-400 mx-auto w-full [direction:rtl] *:[direction:ltr] max-[968px]:grid-cols-1 max-[968px]:min-h-auto max-[968px]:[direction:ltr]">
-		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[72vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
-			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(245, 166, 35, 0.1) 0%, transparent 65%)"></div>
-			<img src="/bilder/hands-on-piano.webp" alt="Play the voicing and get instant feedback"
-				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-square group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
-				width="1024" height="1024" loading="lazy"
-				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
-		</div>
-		<div class="p-[3rem_6%_3rem_5%] max-[968px]:p-[1.5rem_1.5rem_3rem]">
-			<span class="block text-[5rem] font-black leading-none mb-2 opacity-35 tabular-nums bg-linear-to-br from-(--primary) to-(--accent-amber) bg-clip-text text-transparent max-[968px]:text-[3.5rem]" style="-webkit-text-fill-color: transparent">02</span>
-			<h2 class="text-[clamp(2.5rem,3.5vw,4rem)] font-extrabold leading-[1.1] text-(--text) mb-4 max-[968px]:text-[2rem]">{t('landing.step2_title')}</h2>
-			<p class="text-[1.15rem] leading-[1.7] text-(--text-muted) mb-8 max-w-105 max-[968px]:text-base">{t('landing.step2_desc')}</p>
-			<div class="flex flex-wrap gap-[0.6rem]">
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><Target size={14} />{t('landing.step2_chip1')}</span>
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><Keyboard size={14} />{t('landing.step2_chip2')}</span>
-			</div>
-		</div>
-	</div>
-
-	<!-- Step 3: Get Faster -->
-	<div class="grid grid-cols-2 items-center min-h-[55vh] border-b border-[rgba(255,255,255,0.04)] max-w-400 mx-auto w-full max-[968px]:grid-cols-1 max-[968px]:min-h-auto">
-		<div class="group relative w-full h-full min-h-[55vh] flex items-center justify-center contain-[layout] max-[968px]:min-h-[72vw] max-[968px]:pt-10 max-[968px]:overflow-visible">
-			<div class="absolute inset-0 pointer-events-none z-0" style="background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(255, 170, 50, 0.15) 0%, transparent 65%)"></div>
-			<img src="/bilder/lvl-up-piano.webp" alt="Level up and get faster"
-				class="relative z-1 w-[85%] h-auto object-contain transition-transform duration-[0.6s] ease-in-out aspect-square group-hover:scale-[1.04] max-[968px]:w-[115%] max-[968px]:max-w-none"
-				width="1024" height="1024" loading="lazy"
-				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 567px" />
-		</div>
-		<div class="p-[3rem_5%_3rem_6%] max-[968px]:p-[1.5rem_1.5rem_3rem]">
-			<span class="block text-[5rem] font-black leading-none mb-2 opacity-35 tabular-nums bg-linear-to-br from-(--primary) to-(--accent-amber) bg-clip-text text-transparent max-[968px]:text-[3.5rem]" style="-webkit-text-fill-color: transparent">03</span>
-			<h2 class="text-[clamp(2.5rem,3.5vw,4rem)] font-extrabold leading-[1.1] text-(--text) mb-4 max-[968px]:text-[2rem]">{t('landing.step3_title')}</h2>
-			<p class="text-[1.15rem] leading-[1.7] text-(--text-muted) mb-8 max-w-105 max-[968px]:text-base">{t('landing.step3_desc')}</p>
-			<div class="flex flex-wrap gap-[0.6rem]">
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><BarChart3 size={14} />{t('landing.step3_chip1')}</span>
-				<span class="story-chip inline-flex items-center gap-[0.4rem] py-[0.4rem] px-[0.9rem] rounded-2xl border border-[rgba(245, 166, 35,0.3)] bg-[rgba(245, 166, 35,0.06)] text-[0.85rem] text-(--text-muted)"><BookOpen size={14} />{t('landing.step3_chip2')}</span>
-			</div>
-		</div>
-	</div>
-
 </section>
 
-<!-- Bottom CTA -->
-<section class="pt-8 pb-24">
-	<div class="max-w-xl mx-auto text-center px-4">
-		<h2 class="text-2xl sm:text-3xl font-bold mb-3">{t('landing.bottom_cta_title')}</h2>
-		<p class="text-(--text-muted) mb-6">{t('landing.bottom_cta_desc')}</p>
+<!-- ═══ S4 · Five minutes a day ═══ -->
+<section class="py-24 max-[968px]:py-14 px-6 landing-tint">
+	<div class="max-w-6xl mx-auto grid grid-cols-[1.05fr_1fr] gap-16 items-center max-[968px]:grid-cols-1 max-[968px]:gap-10">
+		<div>
+			<span class="landing-eyebrow"><Flame size={13} /> {t('landing.habit_eyebrow')}</span>
+			<h2 class="landing-h2">{t('landing.habit_title')}</h2>
+			<p class="landing-lead">{t('landing.habit_desc')}</p>
+		</div>
+		<div aria-hidden="true">
+			<div class="grid grid-cols-3 gap-3 max-[640px]:grid-cols-3 max-[640px]:gap-2">
+				<div class="landing-stat">
+					<Flame size={18} class="text-(--primary)" />
+					<div class="landing-stat-num">12</div>
+					<div class="landing-stat-label">{t('landing.habit_stat1')}</div>
+				</div>
+				<div class="landing-stat">
+					<Check size={18} class="text-(--accent-green)" />
+					<div class="landing-stat-num">5/5</div>
+					<div class="landing-stat-label">{t('landing.habit_stat2')}</div>
+				</div>
+				<div class="landing-stat">
+					<Trophy size={18} class="text-(--accent-amber)" />
+					<div class="landing-stat-num">Lv.4</div>
+					<div class="landing-stat-label">{t('landing.habit_stat3')}</div>
+				</div>
+			</div>
+			<div class="mt-3 rounded-xl border border-(--border) bg-(--bg-card) p-5">
+				<p class="text-[0.92rem] italic leading-[1.6] text-(--text)">{t('landing.habit_quote')}</p>
+				<p class="mt-2 text-[0.75rem] uppercase tracking-[0.08em] text-(--text-muted)">{t('landing.habit_quote_label')}</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- ═══ S5 · FAQ (visible content matching the FAQPage schema) ═══ -->
+<section class="py-24 max-[968px]:py-14 px-6">
+	<div class="max-w-3xl mx-auto">
+		<h2 class="landing-h2 text-center">{t('landing.faq_title')}</h2>
+		<div class="mt-10 flex flex-col gap-3">
+			{#each faqItems as item}
+				<details class="landing-faq group rounded-xl border border-(--border) bg-(--bg-card)">
+					<summary class="flex items-center justify-between gap-4 cursor-pointer list-none py-4 px-5 font-semibold text-(--text) text-[0.98rem]">
+						{t(item.qKey)}
+						<span class="landing-faq-marker shrink-0" aria-hidden="true">+</span>
+					</summary>
+					<p class="px-5 pb-5 text-[0.93rem] leading-[1.65] text-(--text-muted)">{t(item.aKey)}</p>
+				</details>
+			{/each}
+		</div>
+	</div>
+</section>
+
+<!-- ═══ S6 · Final CTA ═══ -->
+<section class="pb-28 pt-4 px-6">
+	<div class="max-w-2xl mx-auto text-center">
+		<h2 class="landing-h2">{t('landing.cta2_title')}</h2>
+		<p class="landing-lead mt-3">{t('landing.cta2_desc')}</p>
 		<a
 			href="/train"
-			class="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg bg-(--primary) hover:bg-(--primary-hover) text-white font-semibold text-lg transition-colors"
+			class="mt-8 inline-flex items-center gap-2.5 px-9 py-4 rounded-[0.85rem] font-semibold text-[1.05rem] no-underline text-(--primary-text) transition-all duration-300 shadow-[0_6px_30px_rgba(245,166,35,0.35)] hover:-translate-y-0.5 hover:shadow-[0_12px_38px_rgba(245,166,35,0.45)]"
+			style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent-amber) 100%)"
 		>
 			{t('landing.cta_start')}
 			<ArrowRight size={20} />
 		</a>
+		<p class="mt-5 text-[0.88rem] text-(--text-muted)">{t('landing.footnote')}</p>
 	</div>
 </section>
 
@@ -410,15 +581,9 @@
 		}
 	}
 
-	:global(.story-chip svg) {
-		color: var(--primary);
-		flex-shrink: 0;
-	}
-
-	/* Cinematic zones (hero + story rows) stay dark in every theme — re-pin
-	   indigo-dark tokens locally so text/borders read over the dark art. */
-	.hero-stage,
-	.cinematic-dark {
+	/* The hero stays dark in every theme — re-pin indigo-dark tokens locally
+	   so text/borders read over the dark art. Sections below follow the theme. */
+	.hero-stage {
 		--text: #f1eff8;
 		--text-muted: #a9a3c6;
 		--text-dim: #6f6992;
@@ -427,23 +592,192 @@
 		--border: #2d2952;
 	}
 
-	.step1-chord {
-		animation: step1-chord-float 5.5s ease-in-out infinite;
-		will-change: transform;
+	/* ── Landing design system (below hero, theme-aware) ─────────────── */
+
+	.landing-eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		font-size: 0.76rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--primary);
+		margin-bottom: 1rem;
 	}
 
-	@keyframes step1-chord-float {
-		0%, 100% {
-			transform: translate(-50%, 0);
-		}
-		50% {
-			transform: translate(-50%, -7px);
-		}
+	.landing-h2 {
+		font-size: clamp(1.7rem, 2.6vw, 2.5rem);
+		font-weight: 800;
+		line-height: 1.14;
+		letter-spacing: -0.02em;
+		color: var(--text);
+		text-wrap: balance;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.step1-chord {
-			animation: none;
-		}
+	.landing-lead {
+		margin-top: 1.1rem;
+		font-size: 1.05rem;
+		line-height: 1.7;
+		color: var(--text-muted);
+		max-width: 54ch;
+	}
+
+	.landing-bullet-icon {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.3rem;
+		height: 2.3rem;
+		border-radius: 0.7rem;
+		background: var(--primary-muted);
+		color: var(--primary);
+	}
+
+	.landing-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.45rem 0.95rem;
+		border-radius: 999px;
+		border: 1px solid var(--border);
+		background: var(--bg-card);
+		font-size: 0.87rem;
+		color: var(--text-muted);
+	}
+	.landing-chip :global(svg) {
+		color: var(--primary);
+		flex-shrink: 0;
+	}
+
+	/* Alternating section tint */
+	.landing-tint {
+		background: color-mix(in srgb, var(--bg-card) 42%, transparent);
+	}
+
+	/* Coach mockup */
+	.coach-mock {
+		box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+	}
+	.coach-mock-btn {
+		background: linear-gradient(135deg, var(--primary) 0%, var(--accent-amber) 100%);
+		box-shadow: 0 6px 22px rgba(245, 166, 35, 0.3);
+	}
+
+	/* Curriculum ladder */
+	.cur-line {
+		position: absolute;
+		left: 0.95rem;
+		top: 2.2rem;
+		bottom: 0.35rem;
+		width: 2px;
+		background: var(--border);
+	}
+	.cur-dot {
+		position: relative;
+		z-index: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 999px;
+		margin-top: 0.1rem;
+	}
+	.cur-dot-done {
+		background: color-mix(in srgb, var(--accent-green) 16%, transparent);
+		color: var(--accent-green);
+		border: 1px solid color-mix(in srgb, var(--accent-green) 45%, transparent);
+	}
+	.cur-dot-active {
+		background: var(--primary-muted);
+		color: var(--primary);
+		border: 1px solid var(--primary);
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 14%, transparent);
+	}
+	.cur-dot-locked {
+		background: var(--bg-card);
+		color: var(--text-muted);
+		border: 1px solid var(--border);
+	}
+
+	/* CSS keyboard */
+	.landing-kbd {
+		background: #0d0b1a;
+		padding: 0.55rem 0.55rem 0;
+		border: 1px solid var(--border);
+	}
+	.landing-key-white {
+		background: linear-gradient(180deg, #fdfcf8 0%, #f0ede4 100%);
+		border-right: 1px solid rgba(0, 0, 0, 0.18);
+		border-radius: 0 0 4px 4px;
+	}
+	.landing-key-white:last-child {
+		border-right: none;
+	}
+	.landing-key-white.is-lit {
+		background: linear-gradient(180deg, var(--accent-amber) 0%, var(--primary) 100%);
+		box-shadow: inset 0 -10px 18px rgba(0, 0, 0, 0.15), 0 0 18px rgba(245, 166, 35, 0.5);
+	}
+	.landing-key-label {
+		position: absolute;
+		bottom: 0.5rem;
+		left: 50%;
+		transform: translateX(-50%);
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: #1a1206;
+	}
+	.landing-key-black {
+		position: absolute;
+		top: 0;
+		width: 6%;
+		height: 58%;
+		transform: translateX(-50%);
+		background: linear-gradient(180deg, #201d33 0%, #0b0918 100%);
+		border-radius: 0 0 3px 3px;
+		z-index: 1;
+		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+	}
+
+	/* Habit stat tiles */
+	.landing-stat {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.3rem;
+		padding: 1rem;
+		border-radius: 0.9rem;
+		border: 1px solid var(--border);
+		background: var(--bg-card);
+	}
+	.landing-stat-num {
+		font-size: 1.45rem;
+		font-weight: 800;
+		color: var(--text);
+		letter-spacing: -0.02em;
+		line-height: 1;
+	}
+	.landing-stat-label {
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--text-muted);
+	}
+
+	/* FAQ */
+	.landing-faq summary::-webkit-details-marker {
+		display: none;
+	}
+	.landing-faq-marker {
+		font-size: 1.25rem;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--primary);
+		transition: transform 0.2s ease;
+	}
+	.landing-faq[open] .landing-faq-marker {
+		transform: rotate(45deg);
 	}
 </style>
