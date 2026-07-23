@@ -164,7 +164,7 @@
 			<span class="block text-(--text)">{t('landing.hero_title_line2')}</span>
 		</h1>
 
-		<p class="hero-subtitle text-[0.98rem] leading-[1.62] text-[rgba(220, 214, 240,0.9)] max-w-[56ch] mb-4 max-[968px]:text-[0.92rem] max-[968px]:leading-[1.55]">
+		<p class="hero-subtitle text-[0.98rem] leading-[1.62] text-[rgba(220, 214, 240,0.9)] max-w-[56ch] mb-4 max-[968px]:hidden">
 			{t('landing.hero_subtitle')}
 		</p>
 
@@ -183,7 +183,7 @@
 				{t('landing.cta_start')}
 				<span>→</span>
 			</a>
-			<a href="/learn" class="hero-cta-secondary py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-[rgba(14, 11, 28,0.56)] text-(--text) border border-[rgba(80, 72, 120,0.32)] hover:bg-[rgba(24, 20, 44,0.72)] hover:border-[rgba(245, 166, 35,0.62)] max-[968px]:py-2.5 max-[968px]:px-4 max-[968px]:text-[0.95rem]">
+			<a href="/learn" class="hero-cta-secondary py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-[rgba(14, 11, 28,0.56)] text-(--text) border border-[rgba(80, 72, 120,0.32)] hover:bg-[rgba(24, 20, 44,0.72)] hover:border-[rgba(245, 166, 35,0.62)] max-[968px]:hidden">
 				{t('landing.cta_learn')}
 			</a>
 			<a href="/for-educators" class="py-3 px-5.5 rounded-[0.85rem] text-base font-semibold no-underline transition-all duration-300 inline-flex items-center gap-2 whitespace-nowrap bg-[rgba(14, 11, 28,0.56)] text-(--text) border border-[rgba(80, 72, 120,0.32)] hover:bg-[rgba(24, 20, 44,0.72)] hover:border-[rgba(245, 166, 35,0.62)] max-[968px]:hidden">
@@ -192,10 +192,6 @@
 		</div>
 
 		<p class="hero-footnote text-[0.9rem] text-[rgba(140, 134, 168,0.92)] max-[968px]:hidden">{t('landing.footnote')}</p>
-		<p class="hero-footnote-mobile text-[0.9rem] text-[rgba(140, 134, 168,0.92)] hidden max-[968px]:block">{t('landing.footnote_mobile')}</p>
-		<a href="/for-educators" class="hero-edu-link hidden max-[968px]:inline-block max-[968px]:mt-3 text-[0.8rem] text-(--text-muted) no-underline transition-colors duration-150 hover:text-(--text)">
-			{t('landing.cta_educators')} →
-		</a>
 	</div>
 	</div>
 </section>
@@ -531,27 +527,27 @@
 
 		.hero-stage {
 			height: auto;
-			min-height: calc(100svh - 3.5rem);
-			/* Push the copy toward the lower half so it lands on the dark part
-			   of the scrim, letting the photo breathe up top. */
-			display: flex;
-			flex-direction: column;
-			justify-content: flex-end;
-			padding-top: 30vh;
-			padding-bottom: 2.25rem;
+			/* Short hero — just the photo band + headline + one CTA, top-left. */
+			min-height: 0;
+			display: block;
+			padding-top: 1.75rem;
+			padding-bottom: 2rem;
 			background: #0b0918;
 		}
 
+		/* Photo fills the compact hero; the vertical scrim fades it out behind
+		   the headline and CTA. */
+		.hero-media {
+			inset: 0;
+		}
+
 		.hero-content-frame {
-			padding: 0 1.25rem;
-			align-items: flex-end;
+			padding: 3rem 1.25rem 0;
+			align-items: flex-start;
 			height: auto;
 		}
 
-		.hero-badge {
-			display: inline-flex;
-		}
-
+		.hero-badge,
 		.hero-support {
 			display: none;
 		}
@@ -568,39 +564,17 @@
 			margin-bottom: 0.9rem;
 		}
 
-		.hero-subtitle {
-			font-size: 1rem;
-			line-height: 1.56;
-			max-width: 36ch;
-			margin-bottom: 1.25rem;
-		}
-
 		.hero-cta-row {
 			gap: 0.65rem;
-			margin-bottom: 1.15rem;
+			margin-bottom: 0;
+			justify-content: flex-start;
 		}
 
-		.hero-cta-primary,
-		.hero-cta-secondary {
-			width: 100%;
+		.hero-cta-primary {
 			justify-content: center;
-			padding-top: 0.9rem;
-			padding-bottom: 0.9rem;
-			font-size: 1rem;
-		}
-
-		.hero-footnote-mobile {
-			display: block;
-			font-size: 0.82rem;
-			line-height: 1.45;
-			color: rgba(180, 159, 140, 0.9);
-		}
-
-		.hero-edu-link {
-			margin-top: 0.8rem;
-			font-size: 0.95rem;
-			font-weight: 500;
-			color: rgba(211, 192, 170, 0.95);
+			padding-top: 0.95rem;
+			padding-bottom: 0.95rem;
+			font-size: 1.02rem;
 		}
 	}
 
