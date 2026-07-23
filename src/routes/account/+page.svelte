@@ -5,7 +5,9 @@
 	import { getSubscription, isBeta, createPortalSession } from '$lib/services/subscription';
 	import { getSupabase } from '$lib/services/supabase';
 	import { toastSuccess, toastError, toastInfo } from '$lib/services/toast';
+	import { isTelemetryEnabled, setTelemetryEnabled } from '$lib/services/telemetry';
 	import { goto } from '$app/navigation';
+	import { PartyPopper } from 'lucide-svelte';
 	import type { AuthState } from '$lib/services/auth';
 	import type { SubscriptionInfo } from '$lib/services/subscription';
 
@@ -19,6 +21,12 @@
 	let passwordError = $state('');
 	let displayName = $state('');
 	let savingName = $state(false);
+	let telemetryEnabled = $state(isTelemetryEnabled());
+
+	function handleTelemetryToggle() {
+		telemetryEnabled = !telemetryEnabled;
+		setTelemetryEnabled(telemetryEnabled);
+	}
 
 	$effect(() => {
 		const unsub = onAuthChange(async (s) => {
@@ -163,7 +171,7 @@
 				<h2 class="text-lg font-semibold">{t('account.subscription')}</h2>
 				{#if isBeta()}
 					<div class="status-glass flex items-center gap-3">
-						<span class="text-xl">🎉</span>
+						<PartyPopper size={20} class="text-[var(--gold)] shrink-0" aria-hidden="true" />
 						<div>
 							<p class="font-medium text-[var(--gold)]">{t('account.beta_active')}</p>
 							<p class="text-sm text-[var(--text-muted)]">{t('account.beta_description')}</p>
@@ -229,5 +237,21 @@
 				{/if}
 			</div>
 		{/if}
+
+		<!-- Privacy / Telemetry -->
+		<div class="card surface-glass p-6 space-y-4">
+			<h2 class="text-lg font-semibold">{t('account.privacy')}</h2>
+			<p class="text-sm text-[var(--text-muted)]">{t('account.privacy_desc')}</p>
+			<label class="flex items-center gap-3 text-sm cursor-pointer w-fit">
+				<input
+					type="checkbox"
+					checked={telemetryEnabled}
+					onchange={handleTelemetryToggle}
+					class="accent-[var(--primary)]"
+					aria-label={t('account.privacy_toggle_label')}
+				/>
+				{t('account.privacy_toggle_label')}
+			</label>
+		</div>
 	</div>
 </main>

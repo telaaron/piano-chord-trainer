@@ -3,6 +3,8 @@
 	import { PRACTICE_PLANS, type PracticePlan } from '$lib/engine';
 	import { Card, Icon } from '$lib/components/ui';
 
+	import { Play } from 'lucide-svelte';
+
 	interface Props {
 		/** Plan id to resume, if the user has a recent session. null = no resume card. */
 		resumePlanId?: string | null;
@@ -11,9 +13,15 @@
 		onstart: (plan: PracticePlan) => void;
 		onstartdefault: () => void;
 		oncustomize: () => void;
+		/** Launch a focused drill on the player's weakest chords (weak-spots card). */
+		onweakdrill?: () => void;
+		/** Start today's Auto-Mode ("Coach") session — the dominant hero action. */
+		onstartcoach?: () => void;
+		/** One-line, already-localized coach announcement shown under the hero button. */
+		coachAnnouncement?: string;
 	}
 
-	let { resumePlanId = null, hasHistory = false, onstart, onstartdefault, oncustomize }: Props = $props();
+	let { resumePlanId = null, hasHistory = false, onstart, onstartdefault, oncustomize, onweakdrill, onstartcoach, coachAnnouncement }: Props = $props();
 
 	const byId = (id: string) => PRACTICE_PLANS.find((p) => p.id === id);
 
@@ -56,7 +64,8 @@
 					titleKey: 'quickstart.weakspots_title',
 					descKey: 'quickstart.weakspots_desc',
 					accent: 'var(--success)',
-					run: () => onstart(adaptive),
+					// Focused drill on the actual weak roots (falls back to plain adaptive).
+					run: () => (onweakdrill ? onweakdrill() : onstart(adaptive)),
 				});
 			}
 		}
@@ -98,7 +107,37 @@
 	});
 </script>
 
-<section aria-label={t('quickstart.section_label')} class="flex flex-col gap-3">
+<section aria-label={t('quickstart.section_label')} class="flex flex-col gap-4">
+	{#if onstartcoach}
+		<!-- Coach hero — the single dominant "just start" action. -->
+		<div class="flex flex-col gap-2">
+			<button
+				type="button"
+				onclick={onstartcoach}
+				class="group flex w-full items-center gap-4 rounded-2xl bg-[var(--primary)] px-5 py-4 text-left text-white shadow-lg transition-all hover:opacity-95 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+			>
+				<span class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white/20" aria-hidden="true">
+					<Play size={26} fill="currentColor" />
+				</span>
+				<span class="min-w-0 flex-1">
+					<span class="block text-lg font-bold">{t('quickstart.coach_hero_title')}</span>
+					{#if coachAnnouncement}
+						<span class="mt-0.5 block truncate text-sm text-white/85">{coachAnnouncement}</span>
+					{:else}
+						<span class="mt-0.5 block truncate text-sm text-white/85">{t('quickstart.coach_hero_sub')}</span>
+					{/if}
+				</span>
+			</button>
+		</div>
+
+		<!-- "Pick it yourself" — the manual cards live below the coach. -->
+		<div class="flex items-center gap-3">
+			<span class="h-px flex-1 bg-[var(--border)]"></span>
+			<span class="text-xs font-medium uppercase tracking-[0.06em] text-(--text-muted)">{t('quickstart.pick_yourself')}</span>
+			<span class="h-px flex-1 bg-[var(--border)]"></span>
+		</div>
+	{/if}
+
 	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		{#each cards as card (card.key)}
 			<Card interactive onclick={card.run} ariaLabel={t(card.titleKey)} padding="md">

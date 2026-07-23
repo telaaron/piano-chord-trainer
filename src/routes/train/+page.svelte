@@ -10,7 +10,7 @@
 	import { canUse, showLock } from '$lib/services/subscription-store.svelte';
 	import { hasUsedTeaser, markTeaserUsed } from '$lib/utils/teaser';
 	import { toggleLightDark, isLightActive } from '$lib/services/theme';
-	import { Sun, Moon } from 'lucide-svelte';
+	import { Sun, Moon, Eye, Settings, TabletSmartphone, Piano, RefreshCw, Ear, Volume2, VolumeX, Music, Target, Check, X, CornerDownLeft, ArrowDown, Play, Pause, RotateCcw, ArrowLeft } from 'lucide-svelte';
 	import ChordCard from '$lib/components/ChordCard.svelte';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import Results from '$lib/components/Results.svelte';
@@ -33,7 +33,7 @@
 	import { MidiSoundEngine } from '$lib/services/midi-sound';
 	import { AudioInputService } from '$lib/services/audio-input';
 	import type { AudioInputState } from '$lib/services/audio-input';
-	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadRecentPlanIds, loadHistory, computeStats, type ProgressStats, type StreakData, type ChordTiming } from '$lib/services/progress';
+	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadRecentPlanIds, loadHistory, computeStats, analyzeWeakSpots, type ProgressStats, type StreakData, type ChordTiming, type SessionResult } from '$lib/services/progress';
 	import { playChord, playChordAtTime, playNote, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll, setSoundPreset, getSoundPreset, SOUND_PRESETS, type SoundPreset } from '$lib/services/audio';
 	import {
 		CHORDS_BY_DIFFICULTY,
@@ -76,6 +76,24 @@
 	} from '$lib/engine';
 
 	import { formatTime } from '$lib/utils/format';
+	import {
+		buildCoachPlan,
+		applySessionToCoach,
+		applyFeedback,
+		teacherFeedback,
+		describeCoachPlan,
+		createInitialCoachState,
+		buildSkillLadder,
+		type CoachState,
+		type CoachPlan,
+		type CoachBlock,
+		type TeacherStatement,
+		type FeedbackSignal,
+	} from '$lib/engine/coach';
+	import { DEFAULT_COACH_PARAMS, type CoachParams } from '$lib/engine/coach-params';
+	import { loadCoachState, saveCoachState } from '$lib/services/coach-state';
+	import { getDeviceId, trackCoachEvent } from '$lib/services/telemetry';
+	import { getCohort, fetchCoachParams } from '$lib/services/coach-config';
 
 	const VOICING_KEYS: Record<VoicingType, string> = {
 		'root': 'settings.voicing_root',
@@ -88,6 +106,26 @@
 		'inversion-2': 'settings.voicing_inversion_2',
 		'inversion-3': 'settings.voicing_inversion_3',
 	};
+
+	/** Localize a raw voicing value (e.g. "shell", "rootless-a") for coach labels. */
+	function voicingLabel(v: string | undefined): string {
+		if (!v) return '';
+		const key = VOICING_KEYS[v as VoicingType];
+		return key ? t(key) : v;
+	}
+
+	/**
+	 * Localize the params a Coach label/say/feedback key carries. Voicing values
+	 * arrive raw and need translating; quality/root/count/etc. are passed through.
+	 */
+	function localizeCoachParams(params: Record<string, string> | undefined): Record<string, string> {
+		if (!params) return {};
+		const out: Record<string, string> = { ...params };
+		if (out.voicing) out.voicing = voicingLabel(out.voicing);
+		// The key-tier ('easy'|'med'|'all') becomes a localized suffix like " (easy keys)".
+		if (out.tier) out.tier = t(`coach.tier.${out.tier}`);
+		return out;
+	}
 
 	const PROGRESSION_KEYS: Record<ProgressionMode, string> = {
 		'random': 'settings.progression_random',
@@ -117,7 +155,7 @@
 	let difficulty: Difficulty = $state('beginner');
 	let notation: NotationStyle = $state('standard');
 	let voicing: VoicingType = $state('root');
-	let displayMode: DisplayMode = $state('always');
+	let displayMode: DisplayMode = $state('verify' as DisplayMode);
 	let accidentals: AccidentalPreference = $state('both');
 	let notationSystem: NotationSystem = $state('international');
 	let totalChords = $state(20);
@@ -160,7 +198,7 @@
 	const isIpadOS = isIOSorIPadOS();
 
 	// ─── Game state ──────────────────────────────────────────────
-	type Screen = 'setup' | 'playing' | 'finished' | 'custom-editor' | 'custom-playing' | 'custom-results' | 'ear-training';
+	type Screen = 'setup' | 'playing' | 'finished' | 'custom-editor' | 'custom-playing' | 'custom-results' | 'ear-training' | 'coach-feedback';
 	type PlayPhase = 'playing' | 'verifying';
 
 	// ─── New mode settings ───────────────────────────────────────
@@ -172,6 +210,38 @@
 	let focusVoicing: string | null = $state(null);
 	let voiceLeadingEnabled = $state(false);
 	let showExplain = $state(false);
+
+	// ─── Coach (Auto-Mode) state ─────────────────────────────────
+	// Additive path: the Coach drives a sequence of normal drill blocks. All existing
+	// modes are untouched — `coachMode` gates every Coach-specific branch.
+	/** True while an auto-session (Coach) is running its block sequence. */
+	let coachMode = $state(false);
+	/** The plan being played; its `blocks` are run one after another. */
+	let coachPlan: CoachPlan | null = $state(null);
+	/** Index of the block currently playing (0-based). */
+	let coachBlockIdx = $state(0);
+	/** Snapshot of CoachState BEFORE this session — feeds teacherFeedback(before, …). */
+	let coachStateBefore: CoachState | null = $state(null);
+	/** Per-block SessionResults accumulated across the whole auto-session, for the 'session_end' telemetry payload. */
+	let coachSessionBlocks: SessionResult[] = $state([]);
+	/** Wall-clock start of the whole auto-session (all blocks), for 'session_end' durationMs. */
+	let coachSessionStartedAt = 0;
+	/** Working CoachState, advanced once per block via applySessionToCoach. */
+	let coachStateWorking: CoachState | null = $state(null);
+	/**
+	 * Coach params in effect. Starts as DEFAULT_COACH_PARAMS; onMount kicks off a
+	 * non-blocking fetchCoachParams() that swaps in the remote-merged values once
+	 * ready (falls back to defaults on timeout/error — never blocks or spinners).
+	 */
+	let coachParams: CoachParams = $state(DEFAULT_COACH_PARAMS);
+	/** Mini transition screen shown between blocks (null = not showing). */
+	let coachTransition: { doneKind: string; next: CoachBlock } | null = $state(null);
+	/** Auto-advance handle for the transition screen. */
+	let coachTransitionTimeout: ReturnType<typeof setTimeout> | null = $state(null);
+	/** Localized teacher statements for the post-session feedback screen. */
+	let coachFeedback: TeacherStatement[] = $state([]);
+	/** True once the player has used the "too easy / passt / too hard" valve this session. */
+	let coachFeedbackGiven = $state(false);
 
 	// ─── In-Time mode state ──────────────────────────────────────
 	let inTimeBeatCount = $state(0);
@@ -193,6 +263,12 @@
 	let earSelectMode = $state(false);
 	/** Result of the last guess submission */
 	let earGuessResult: 'correct' | 'wrong' | null = $state(null);
+
+	// ─── Tap-guess state (verify mode, no MIDI/mic) ──────────────
+	/** Pitch classes (0-11) the user tapped to build their guess before revealing. */
+	let tapGuessNotes: Set<number> = $state(new Set());
+	/** Outcome of the last checked tap-guess (drives green/red). */
+	let tapGuessResult: 'correct' | 'wrong' | null = $state(null);
 
 	// ─── Voice Leading state ─────────────────────────────────────
 	let voiceLeadingInfo: VoiceLeadingInfo | null = $state(null);
@@ -262,6 +338,24 @@
 	let timerHandle: ReturnType<typeof setInterval> | null = $state(null);
 	let chordTimings: ChordTiming[] = $state([]);
 	let chordStartTime = $state(0);
+	/**
+	 * Correctness verdict for the chord currently on screen, set the moment a
+	 * right/wrong decision is made (tap-guess, MIDI/mic match, VL validation).
+	 * `undefined` = no verdict yet (e.g. answer read in 'always' mode, or "show me").
+	 * Read into each ChordTiming as it's pushed, then reset on advance. This runs in
+	 * ALL modes (not just Coach) — it only enriches the timing data, never gates flow.
+	 */
+	let currentChordCorrect: boolean | undefined = $state(undefined);
+
+	/** Push a timing for `data`, stamping the current correctness verdict + optional block kind. */
+	function pushTiming(data: ChordWithNotes, durationMs: number): void {
+		chordTimings.push({
+			chord: data.chord,
+			root: data.root,
+			durationMs,
+			...(currentChordCorrect !== undefined ? { correct: currentChordCorrect } : {}),
+		});
+	}
 
 	// ─── Custom Progression state ────────────────────────────────
 	let customChords: CustomChord[] = $state([]);
@@ -299,6 +393,17 @@
 			: displayMode === 'always' || (displayMode === 'verify' && playPhase === 'verifying'),
 	);
 	const actualTotalChords = $derived(chords.length || totalChords);
+	/** True while the player builds a guess: verify mode, no input device, not yet revealed. */
+	const isTapGuessMode = $derived(
+		screen === 'playing' &&
+		timerStarted &&
+		!paused &&
+		!inTimeMode &&
+		!inputActive &&
+		!(voiceLeadingEnabled && vlMode !== 'guided') &&
+		displayMode === 'verify' &&
+		playPhase === 'playing',
+	);
 	const progress = $derived(((currentIdx + 1) / actualTotalChords) * 100);
 	const elapsedMs = $derived(
 		screen === 'playing' && timerStarted
@@ -690,6 +795,305 @@
 		startGame();
 	}
 
+	/**
+	 * Build today's coach announcement string for the QuickStart hero.
+	 * Uses the persisted CoachState + current history/profile to preview the plan,
+	 * then localizes its say-key. Returns '' if the profile isn't ready yet.
+	 */
+	function coachAnnouncement(): string {
+		if (!habitProfile) return '';
+		try {
+			const state = loadCoachState() ?? createInitialCoachState();
+			const plan = buildCoachPlan(
+				loadHistory(),
+				habitProfile,
+				undefined,
+				state,
+				coachParams,
+				Date.now(),
+			);
+			const { sayKey, sayParams } = describeCoachPlan(plan);
+			return t(sayKey, localizeCoachParams(sayParams));
+		} catch {
+			return '';
+		}
+	}
+
+	/** True once there's enough history to name any weak spots. */
+	function hasWeakSpots(): boolean {
+		return analyzeWeakSpots(loadHistory(), 5).length > 0;
+	}
+
+	/**
+	 * Re-run as a focused, answer-hidden drill on the player's weakest chords.
+	 * Mirrors iOS makeWeakDrillPlan: pick the voicing that dominates the weak
+	 * list, drill its worst roots (10× weight), and hide the answer ('verify')
+	 * so it's a real test, not a copy. No-op if there isn't enough history.
+	 */
+	function startWeakDrill() {
+		const spots = analyzeWeakSpots(loadHistory(), 5);
+		if (spots.length === 0) return;
+
+		// Group by voicing; drill the voicing with the most weak spots.
+		const byVoicing = new Map<string, typeof spots>();
+		for (const s of spots) {
+			const arr = byVoicing.get(s.voicing) ?? [];
+			arr.push(s);
+			byVoicing.set(s.voicing, arr);
+		}
+		let bestVoicing = spots[0].voicing;
+		let bestGroup = spots;
+		for (const [v, group] of byVoicing) {
+			if (group.length > bestGroup.length) {
+				bestVoicing = v as VoicingType;
+				bestGroup = group;
+			}
+		}
+		focusRoots = bestGroup.slice(0, 5).map((s) => s.root);
+		focusVoicing = bestVoicing;
+
+		const adaptive = PRACTICE_PLANS.find((p) => p.id === 'adaptive-drill');
+		if (!adaptive) return;
+		// Hide the answer for the weak drill — a real test, not look-and-copy.
+		startPlan({ ...adaptive, settings: { ...adaptive.settings, displayMode: 'verify' } });
+	}
+
+	// ─── Coach (Auto-Mode) session flow ──────────────────────────
+	// The Coach plays a CoachPlan's blocks in sequence. Each block is a normal drill
+	// run with the block's settings + focus plumbing. Between blocks we show a mini
+	// transition screen; after the last block, applySessionToCoach + a teacher screen.
+	//
+	// Telemetry hook points:
+	//   startCoachSession()  → trackCoachEvent('session_start', …)
+	//   applyCoachBlockResult() (per block) → trackCoachEvent('block_result', …) [+ 'calibration_result' on first calibration]
+	//   finishCoachSession() → trackCoachEvent('session_end' + 'coach_decision', …)
+	//   applyCoachFeedback() → trackCoachEvent('feedback_valve', …)
+	//   resetToSetup() (Coach mid-block quit path — Escape/back while screen === 'playing')
+	//     → trackCoachEvent('quit_midblock', …)
+
+	/** Fraction of chords answered correctly this session, or undefined if unknown (no verify/MIDI grading). */
+	function correctRateOf(session: SessionResult): number | undefined {
+		const graded = (session.chordTimings ?? []).filter((t) => t.correct !== undefined);
+		if (graded.length === 0) return undefined;
+		return graded.filter((t) => t.correct).length / graded.length;
+	}
+
+	/**
+	 * Diffs two CoachStates' unit progress against the skill ladder to emit one
+	 * 'coach_decision' telemetry event per unit transition (promoted/held/demoted/placed),
+	 * mirroring teacherFeedback()'s transition logic but keeping the unitId (which the
+	 * localized TeacherStatement params drop in favor of quality/voicing display strings).
+	 */
+	function trackCoachDecisions(before: CoachState, after: CoachState): void {
+		const ladder = buildSkillLadder();
+		const justCalibrated = !before.calibrated && after.calibrated;
+		for (const unit of ladder) {
+			const b = before.unitStates[unit.id]?.state ?? 'locked';
+			const a = after.unitStates[unit.id]?.state ?? 'locked';
+			if (b === a) continue;
+			if (a === 'mastered') {
+				trackCoachEvent('coach_decision', {
+					decision: justCalibrated ? 'placed' : 'promoted',
+					unitId: unit.id,
+				});
+			} else if (b === 'mastered' && a === 'practicing') {
+				trackCoachEvent('coach_decision', { decision: 'demoted', unitId: unit.id });
+			}
+		}
+		// Held frontier: holds increased on the pre-session frontier without a promotion.
+		const frontierId = before.lastPlan?.frontierUnitId;
+		if (frontierId) {
+			const bh = before.unitStates[frontierId]?.holds ?? 0;
+			const ah = after.unitStates[frontierId]?.holds ?? 0;
+			if (ah > bh && after.unitStates[frontierId]?.state !== 'mastered') {
+				trackCoachEvent('coach_decision', { decision: 'held', unitId: frontierId });
+			}
+		}
+	}
+
+	/**
+	 * Entry point for the Auto-Mode "Weiter üben" hero. Loads (or seeds) the
+	 * CoachState, builds today's plan and starts the first block. No-op if the
+	 * plan has no blocks (defensive — the engine always returns ≥1).
+	 */
+	function startCoachSession() {
+		const state = loadCoachState() ?? createInitialCoachState();
+		const plan = buildCoachPlan(
+			loadHistory(),
+			habitProfile,
+			undefined,
+			state,
+			coachParams,
+			Date.now(),
+		);
+		if (!plan.blocks.length) return;
+
+		coachStateBefore = { ...state, lastPlan: plan };
+		coachStateWorking = { ...state };
+		coachPlan = plan;
+		coachBlockIdx = 0;
+		coachMode = true;
+		coachTransition = null;
+		coachFeedback = [];
+		coachFeedbackGiven = false;
+		coachSessionBlocks = [];
+		coachSessionStartedAt = Date.now();
+		trackCoachEvent('session_start', {
+			estMinutes: plan.estMinutes,
+			blocks: plan.blocks.map((b) => b.kind),
+			frontierUnitId: plan.frontierUnitId,
+			dayIndex: state.dayIndex,
+		});
+		startCoachBlock(0);
+	}
+
+	/** Map a CoachBlock's settings onto the drill state and start it. */
+	function startCoachBlock(idx: number) {
+		if (!coachPlan) return;
+		const block = coachPlan.blocks[idx];
+		if (!block) return;
+		coachBlockIdx = idx;
+
+		const s = block.settings;
+		difficulty = s.difficulty;
+		notation = s.notation;
+		voicing = (block.focusVoicing as VoicingType) ?? s.voicing;
+		displayMode = s.displayMode;
+		accidentals = s.accidentals;
+		progressionMode = s.progressionMode;
+		totalChords = block.targetChords || s.totalChords;
+
+		// Focus plumbing (same axes the weak-drill uses). Adaptive weighting only
+		// bites when progressionMode === 'random' — exactly as intended.
+		focusRoots = block.focusRoots ?? [];
+		focusVoicing = block.focusVoicing ?? null;
+		adaptiveEnabled = s.progressionMode === 'random';
+
+		// Coach never uses the special exercise sub-modes.
+		inTimeMode = false;
+		voiceLeadingEnabled = false;
+
+		startGame();
+	}
+
+	/**
+	 * Called from endGame() when a Coach block finishes. Aggregates one SessionResult
+	 * per block into the CoachState (keeps existing history semantics: one row/block),
+	 * then either shows the between-block transition or ends the session.
+	 */
+	function applyCoachBlockResult(session: SessionResult) {
+		if (!coachPlan || !coachStateWorking) return;
+		coachSessionBlocks = [...coachSessionBlocks, session];
+		const block = coachPlan.blocks[coachBlockIdx];
+		trackCoachEvent('block_result', {
+			kind: block.kind,
+			unitId: coachPlan.frontierUnitId,
+			chords: session.totalChords,
+			avgMs: session.avgMs,
+			correctRate: correctRateOf(session),
+			completed: session.totalChords >= block.targetChords,
+		});
+		const wasCalibrated = coachStateWorking.calibrated;
+		coachStateWorking = applySessionToCoach(
+			coachStateWorking,
+			coachPlan,
+			session,
+			coachParams,
+			Date.now(),
+		);
+		saveCoachState(coachStateWorking);
+		if (!wasCalibrated && coachStateWorking.calibrated) {
+			const placedUnits = Object.values(coachStateWorking.unitStates).filter(
+				(u) => u.state === 'mastered',
+			).length;
+			trackCoachEvent('calibration_result', {
+				placedUnits,
+				frontierIndex: coachStateWorking.frontierIndex,
+			});
+		}
+
+		const nextIdx = coachBlockIdx + 1;
+		if (nextIdx < coachPlan.blocks.length) {
+			// Show a 1–2 line transition, auto-advancing after ~2.5s (tap to skip).
+			coachTransition = {
+				doneKind: coachPlan.blocks[coachBlockIdx].kind,
+				next: coachPlan.blocks[nextIdx],
+			};
+			if (coachTransitionTimeout) clearTimeout(coachTransitionTimeout);
+			coachTransitionTimeout = setTimeout(() => advanceCoachBlock(), 2500);
+		} else {
+			finishCoachSession(session);
+		}
+	}
+
+	/** Dismiss the transition screen and start the next block. */
+	function advanceCoachBlock() {
+		if (coachTransitionTimeout) {
+			clearTimeout(coachTransitionTimeout);
+			coachTransitionTimeout = null;
+		}
+		if (!coachPlan) return;
+		const nextIdx = coachBlockIdx + 1;
+		coachTransition = null;
+		if (nextIdx < coachPlan.blocks.length) {
+			startCoachBlock(nextIdx);
+		}
+	}
+
+	/** Last block done: build teacher feedback, persist, land on the feedback screen. */
+	function finishCoachSession(lastSession: SessionResult) {
+		if (!coachStateBefore || !coachPlan || !coachStateWorking) return;
+		coachFeedback = teacherFeedback(
+			coachStateBefore,
+			coachStateWorking,
+			lastSession,
+			coachParams,
+		);
+		saveCoachState(coachStateWorking);
+
+		const totalChords = coachSessionBlocks.reduce((s, b) => s + b.totalChords, 0);
+		const totalMs = coachSessionBlocks.reduce((s, b) => s + b.avgMs * b.totalChords, 0);
+		trackCoachEvent('session_end', {
+			durationMs: Date.now() - coachSessionStartedAt,
+			totalChords,
+			avgMs: totalChords > 0 ? totalMs / totalChords : 0,
+			completedBlocks: coachSessionBlocks.length,
+			totalBlocks: coachPlan.blocks.length,
+			frontierUnitId: coachPlan.frontierUnitId,
+		});
+		trackCoachDecisions(coachStateBefore, coachStateWorking);
+		screen = 'coach-feedback';
+	}
+
+	/** Feedback valve: "too easy / just right / too hard" biases the controller. */
+	function applyCoachFeedback(signal: FeedbackSignal) {
+		if (!coachStateWorking || coachFeedbackGiven) return;
+		coachStateWorking = applyFeedback(coachStateWorking, signal, coachParams);
+		saveCoachState(coachStateWorking);
+		coachFeedbackGiven = true;
+		trackCoachEvent('feedback_valve', { signal });
+	}
+
+	/** Restart a fresh auto-session from the feedback screen ("Nochmal"). */
+	function restartCoachSession() {
+		endCoachMode();
+		startCoachSession();
+	}
+
+	/** Leave Coach mode cleanly (from feedback screen "Fertig" or on abort). */
+	function endCoachMode() {
+		if (coachTransitionTimeout) {
+			clearTimeout(coachTransitionTimeout);
+			coachTransitionTimeout = null;
+		}
+		coachMode = false;
+		coachPlan = null;
+		coachTransition = null;
+		coachFeedback = [];
+		coachStateBefore = null;
+		coachStateWorking = null;
+	}
+
 	function nextChord() {
 		if (screen !== 'playing' || paused) return;
 
@@ -705,32 +1109,26 @@
 			autoAdvanceTimeout = null;
 		}
 
-		// Verify mode: first press shows voicing, second press advances
-		// Skip verify phase when an input device is doing the verification
+		// Verify mode: first press reveals, second advances. With no input device,
+		// grade the built tap-guess on reveal (so recall is measured, not read speed).
 		if (displayMode === 'verify' && playPhase === 'playing' && !inputActive) {
-			playPhase = 'verifying';
-			// Play chord audio when revealing the voicing
-			if (audioEnabled && currentData) {
-				suppressMicForPlayback();
-				playChord(currentData.voicing).catch(() => {});
-			}
+			submitTapGuess();
 			return;
 		}
 
 		playPhase = 'playing';
 		midiMatchResult = null;
 		vlValidation = null;
+		tapGuessNotes = new Set();
+		tapGuessResult = null;
 		midi.releaseAll();
 
 		// Record timing for the chord we're leaving
 		const nowMs = Date.now();
 		if (currentData) {
-			chordTimings.push({
-				chord: currentData.chord,
-				root: currentData.root,
-				durationMs: nowMs - chordStartTime,
-			});
+			pushTiming(currentData, nowMs - chordStartTime);
 		}
+		currentChordCorrect = undefined; // fresh verdict for the next chord
 		chordStartTime = nowMs;
 
 		if (currentIdx < actualTotalChords - 1) {
@@ -749,16 +1147,15 @@
 
 	function endGame() {
 		endTime = Date.now();
-		screen = 'finished';
+		// In Coach mode the block loop decides the next screen (transition or
+		// feedback); a normal drill lands on the results screen.
+		if (!coachMode) screen = 'finished';
 
 		// Record timing for the last chord
 		if (currentData) {
-			chordTimings.push({
-				chord: currentData.chord,
-				root: currentData.root,
-				durationMs: endTime - chordStartTime,
-			});
+			pushTiming(currentData, endTime - chordStartTime);
 		}
+		currentChordCorrect = undefined;
 
 		if (timerHandle) clearInterval(timerHandle);
 		timerHandle = null;
@@ -776,6 +1173,7 @@
 			totalChords: actualTotalChords,
 			avgMs: (endTime - startTime) / actualTotalChords,
 			chordTimings: [...chordTimings],
+			blockKind: coachMode ? coachPlan?.blocks[coachBlockIdx]?.kind : undefined,
 			settings: {
 				difficulty,
 				notation,
@@ -815,6 +1213,10 @@
 			sessionWasAdaptive = false;
 			setTimeout(() => openUpgrade('adaptive-difficulty', true), 900);
 		}
+
+		// Coach mode: fold this block's result into the CoachState and drive the
+		// block loop (transition screen, or the teacher-feedback screen at the end).
+		if (coachMode) applyCoachBlockResult(sessionResult);
 	}
 
 	function restartGame() {
@@ -822,6 +1224,25 @@
 	}
 
 	function resetToSetup() {
+		// Leaving mid-Coach-session (back / Escape): persist the progress made so
+		// far, then drop out of Coach mode. Safe if Coach isn't active.
+		if (coachMode) {
+			// Only a genuine mid-block quit (still on the 'playing' screen — not the
+			// between-block transition or the end-of-session feedback screen) counts
+			// as 'quit_midblock'.
+			if (screen === 'playing') {
+				const block = coachPlan?.blocks[coachBlockIdx];
+				if (block) {
+					trackCoachEvent('quit_midblock', {
+						kind: block.kind,
+						atChord: currentIdx,
+						targetChords: block.targetChords,
+					});
+				}
+			}
+			if (coachStateWorking) saveCoachState(coachStateWorking);
+			endCoachMode();
+		}
 		screen = 'setup';
 		currentIdx = 0;
 		chords = [];
@@ -931,6 +1352,7 @@
 		if (result.correct && activeNotes.size > 0) {
 			midiTotalAttempts++;
 			midiCorrectCount++;
+			currentChordCorrect = true;
 
 			if (inTimeMode && inTimeChordPlayedAt === null) {
 				const timeSinceBeatOne = Date.now() - inTimeBeatOneTime;
@@ -947,6 +1369,9 @@
 			const expectedCount = currentData.voicing.length;
 			if (activeNotes.size >= expectedCount) {
 				midiTotalAttempts++;
+				// A full-note attempt that didn't match is a miss — but never
+				// downgrade a chord the player already got right this turn.
+				if (currentChordCorrect !== true) currentChordCorrect = false;
 			}
 		}
 	}
@@ -976,6 +1401,7 @@
 			if (result.valid) {
 				midiTotalAttempts++;
 				midiCorrectCount++;
+				currentChordCorrect = true;
 				vlMovementScores.push(result.playerMovement);
 				if (result.grade === 'optimal') vlOptimalCount++;
 
@@ -992,6 +1418,7 @@
 			} else {
 				midiMatchResult = { correct: false, missing: [], extra: [], accuracy: 0 };
 				midiTotalAttempts++;
+				if (currentChordCorrect !== true) currentChordCorrect = false;
 			}
 		} else if (vlMode === 'free') {
 			// Get all valid pitch-class sets for this chord
@@ -1002,6 +1429,7 @@
 			if (result.valid) {
 				midiTotalAttempts++;
 				midiCorrectCount++;
+				currentChordCorrect = true;
 				vlMovementScores.push(result.playerMovement);
 
 				midiMatchResult = { correct: true, missing: [], extra: [], accuracy: 1 };
@@ -1014,7 +1442,10 @@
 				}
 			} else {
 				midiMatchResult = { correct: false, missing: [], extra: [], accuracy: 0 };
-				if (midiNotes.length >= 3) midiTotalAttempts++;
+				if (midiNotes.length >= 3) {
+					midiTotalAttempts++;
+					if (currentChordCorrect !== true) currentChordCorrect = false;
+				}
 			}
 		}
 	}
@@ -1094,12 +1525,9 @@
 				// Advance to next chord
 				const nowMs = Date.now();
 				if (currentData) {
-					chordTimings.push({
-						chord: currentData.chord,
-						root: currentData.root,
-						durationMs: nowMs - chordStartTime,
-					});
+					pushTiming(currentData, nowMs - chordStartTime);
 				}
+				currentChordCorrect = undefined;
 				chordStartTime = nowMs;
 
 				if (currentIdx < actualTotalChords - 1) {
@@ -1183,12 +1611,9 @@
 		// Record timing
 		const nowMs = Date.now();
 		if (currentData) {
-			chordTimings.push({
-				chord: currentData.chord,
-				root: currentData.root,
-				durationMs: nowMs - chordStartTime,
-			});
+			pushTiming(currentData, nowMs - chordStartTime);
 		}
+		currentChordCorrect = undefined;
 		chordStartTime = nowMs;
 
 		earTrainingRevealed = false;
@@ -1208,12 +1633,9 @@
 			endTime = Date.now();
 			screen = 'finished';
 			if (currentData) {
-				chordTimings.push({
-					chord: currentData.chord,
-					root: currentData.root,
-					durationMs: endTime - chordStartTime,
-				});
+				pushTiming(currentData, endTime - chordStartTime);
 			}
+			currentChordCorrect = undefined;
 			if (timerHandle) clearInterval(timerHandle);
 			timerHandle = null;
 			saveSession({
@@ -1241,6 +1663,7 @@
 			earTrainingCorrect++;
 			earTrainingTotal++;
 			earTrainingRevealed = true;
+			currentChordCorrect = true;
 
 			// Auto-advance after a delay
 			if (!autoAdvanceTimeout) {
@@ -1296,6 +1719,7 @@
 			earTrainingCorrect++;
 			earTrainingTotal++;
 			earTrainingRevealed = true;
+			currentChordCorrect = true;
 
 			// Auto-advance after a delay
 			if (!autoAdvanceTimeout) {
@@ -1306,6 +1730,7 @@
 			}
 		} else {
 			earGuessResult = 'wrong';
+			if (currentChordCorrect !== true) currentChordCorrect = false;
 			// Don't count as attempt yet — let user correct
 			setTimeout(() => { if (earGuessResult === 'wrong') earGuessResult = null; }, 1500);
 		}
@@ -1315,6 +1740,44 @@
 	function clearEarGuess() {
 		earGuessNotes = new Set();
 		earGuessResult = null;
+	}
+
+	// ─── Tap-guess (main drill, verify mode, no MIDI/mic) ────────
+
+	/** Toggle a pitch class in the tap-guess and preview the note. Starts the timer. */
+	function handleTapPianoClick(chrIdx: number, _shiftKey: boolean) {
+		if (!isTapGuessMode) return;
+		suppressMicForPlayback();
+		playNote(chrIdxToNoteName(chrIdx), '4n');
+		const pc = chrIdx % 12;
+		const next = new Set(tapGuessNotes);
+		if (next.has(pc)) next.delete(pc); else next.add(pc);
+		tapGuessNotes = next;
+	}
+
+	/**
+	 * Reveal the answer after a tap-guess, grading it green/red first so weak-spot
+	 * data reflects real recall. Mirrors iOS checkTapGuess + submitEarGuess.
+	 */
+	function submitTapGuess() {
+		const expected = expectedPitchClasses;
+		// An empty guess is a "Show me" (reveal without attempting) — not graded/counted.
+		if (tapGuessNotes.size > 0) {
+			const correct =
+				expected.size > 0 &&
+				tapGuessNotes.size === expected.size &&
+				[...tapGuessNotes].every((pc) => expected.has(pc));
+			tapGuessResult = correct ? 'correct' : 'wrong';
+			currentChordCorrect = correct;
+			midiTotalAttempts++;
+			if (correct) midiCorrectCount++;
+		}
+		// Reveal (reuse verify phase) + play the chord; Space/Next advances from here.
+		playPhase = 'verifying';
+		if (audioEnabled && currentData) {
+			suppressMicForPlayback();
+			playChord(currentData.voicing).catch(() => {});
+		}
 	}
 
 	// ─── Voice Leading computation on chord change ───────────────
@@ -1474,6 +1937,15 @@
 			navigator.serviceWorker.register('/sw.js').catch(() => {});
 		}
 
+		// Coach remote config: fetch once, non-blocking. Defaults remain in effect
+		// until this resolves (no wait, no spinner); on error/timeout it stays defaults.
+		const deviceId = getDeviceId();
+		if (deviceId) {
+			fetchCoachParams(DEFAULT_COACH_PARAMS, getCohort(deviceId)).then((merged) => {
+				coachParams = merged;
+			});
+		}
+
 		// MIDI setup — always probe for devices so we can show auto-detection
 		midi.onNotes(handleMidiNotes);
 		midi.onNoteOn((note, velocity) => midiSoundEngine.noteOn(note, velocity));
@@ -1616,7 +2088,7 @@
 							<a href="/midi-test?tab=midi" class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs no-underline transition-opacity hover:opacity-80 {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[var(--success-muted)] text-(--success)' : 'bg-(--bg-muted) text-(--text-dim)'}">
 								<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
 								<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : t('settings.no_midi')}</span>
-								<span class="opacity-50">⚙</span>
+								<span class="opacity-50"><Settings size={14} aria-hidden="true" /></span>
 							</a>
 						</div>
 					{/if}
@@ -1647,11 +2119,14 @@
 						{/if}
 
 						<QuickStart
+							onweakdrill={startWeakDrill}
 							resumePlanId={loadRecentPlanIds()[0] ?? null}
 							hasHistory={loadHistory().length > 0}
 							onstart={startPlan}
 							onstartdefault={startGame}
 							oncustomize={() => (settingsOpen = true)}
+							onstartcoach={startCoachSession}
+							coachAnnouncement={coachAnnouncement()}
 						/>
 					</section>
 
@@ -1739,13 +2214,13 @@
 						class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-muted)] transition-colors text-2xl leading-none cursor-pointer text-[var(--text-dim)] hover:text-[var(--text)]"
 						onclick={closeSettingsModal}
 						aria-label="Schließen"
-					>×</button>
+					><X size={20} aria-hidden="true" /></button>
 				</div>
 				<div class="overflow-y-auto p-5 pb-[max(20px,env(safe-area-inset-bottom))] flex-1 space-y-6">
 					<button
-						class="w-full h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
+						class="w-full h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
 						onclick={() => { settingsOpen = false; settingsOpenedFromScreen = null; startGame(); }}
-					>{settingsOpenedFromScreen ? `↺ ${t('settings.restart_with_settings')}` : `▶ ${t('settings.start_training')}`}</button>
+					>{#if settingsOpenedFromScreen}<RotateCcw size={18} aria-hidden="true" /> {t('settings.restart_with_settings')}{:else}<Play size={18} aria-hidden="true" /> {t('settings.start_training')}{/if}</button>
 					<fieldset>
 						<legend class="text-sm font-medium mb-1">{t('settings.progression_mode')}</legend>
 						<p class="text-xs text-[var(--text-dim)] mb-3">{t('settings.progression_desc')}</p>
@@ -1797,7 +2272,7 @@
 											{@const romans = ['I','ii','iii','IV','V','vi','vii°']}
 											<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[var(--primary-muted)] border border-[var(--primary)]/30 text-xs font-semibold">
 												{romans[di]}
-												<button class="text-[var(--text-dim)] hover:text-[var(--accent-red)] leading-none cursor-pointer" onclick={() => { customDegrees = customDegrees.filter((_, idx) => idx !== i); }}>×</button>
+												<button class="text-[var(--text-dim)] hover:text-[var(--accent-red)] leading-none cursor-pointer inline-flex items-center" onclick={() => { customDegrees = customDegrees.filter((_, idx) => idx !== i); }}><X size={12} aria-hidden="true" /></button>
 											</span>
 										{/each}
 										<button class="text-[10px] text-[var(--text-dim)] hover:text-[var(--accent-red)] underline cursor-pointer" onclick={() => { customDegrees = []; }}>{t('ui.clear')}</button>
@@ -1832,7 +2307,7 @@
 								rel="noopener noreferrer"
 								class="inline-flex items-center gap-1.5 mt-1.5 text-xs text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors"
 							>
-								📲 {t('midi.ipad_open_app')}
+								<span class="inline-flex items-center gap-1.5"><TabletSmartphone size={14} aria-hidden="true" /> {t('midi.ipad_open_app')}</span>
 							</a>
 						{/if}
 					</fieldset>
@@ -1911,7 +2386,7 @@
 								</button>
 							{/each}
 						</div>
-						<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">🎹 {t('settings.voicing_left_hand')}</div>
+						<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4 flex items-center gap-1.5"><Piano size={14} aria-hidden="true" /> {t('settings.voicing_left_hand')}</div>
 						<div class="grid grid-cols-2 gap-3">
 							{#each [
 								{ val: 'rootless-a' as VoicingType, label: t('settings.voicing_rootless_a'), sub: t('settings.voicing_rootless_a_sub') },
@@ -1922,7 +2397,7 @@
 								</button>
 							{/each}
 						</div>
-						<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4">🔄 {t('settings.voicing_inversions_group')}</div>
+						<div class="text-xs font-medium text-[var(--text-muted)] mb-2 mt-4 flex items-center gap-1.5"><RefreshCw size={14} aria-hidden="true" /> {t('settings.voicing_inversions_group')}</div>
 						<div class="grid grid-cols-3 gap-3">
 							{#each [
 								{ val: 'inversion-1' as VoicingType, label: t('settings.voicing_inversion_1'), sub: t('settings.voicing_inversion_1_sub') },
@@ -1989,7 +2464,7 @@
 									{/each}
 								</div>
 								<div class="mt-3">
-									<div class="text-xs font-medium text-[var(--text-muted)] mb-1">👁 Vorschau (Look-ahead)</div>
+									<div class="text-xs font-medium text-[var(--text-muted)] mb-1 flex items-center gap-1.5"><Eye size={14} aria-hidden="true" /> Vorschau (Look-ahead)</div>
 									<p class="text-xs text-[var(--text-dim)] mb-2">Siehst du den nächsten Chord schon im letzten Bar?</p>
 									<div class="grid grid-cols-2 gap-3">
 										{#each [
@@ -2041,7 +2516,7 @@
 						onclick={() => { settingsOpen = false; settingsOpenedFromScreen = null; startEarTraining(); }}
 					>
 						<div class="flex items-center gap-3">
-							<span class="text-2xl">👂</span>
+							<Ear size={24} class="text-[var(--text-muted)]" aria-hidden="true" />
 							<div>
 								<div class="font-semibold text-sm group-hover:text-[var(--accent-amber)] transition-colors">{t('settings.ear_training_title')}</div>
 								<div class="text-xs text-[var(--text-dim)] mt-0.5">{t('settings.ear_training_desc')}</div>
@@ -2102,7 +2577,7 @@
 						onclick={resetToSetup}
 						title={t('ui.back_setup')}
 					>
-						← {t('ui.back')}
+						<ArrowLeft size={16} aria-hidden="true" /> {t('ui.back')}
 					</button>
 					<div class="flex items-center gap-2 sm:gap-3 min-w-0">
 						<div class="hidden sm:flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
@@ -2142,7 +2617,7 @@
 						<button
 							class="text-[var(--text-muted)] hover:text-[var(--text)] cursor-pointer text-sm shrink-0"
 							onclick={() => (showExerciseInfo = false)}
-						>✕</button>
+						><X size={16} aria-hidden="true" /></button>
 					</div>
 				</div>
 			{/if}
@@ -2162,7 +2637,7 @@
 						<span class="text-xs text-[var(--text-muted)] font-mono min-w-[5rem] text-right">
 							Accuracy: {midiTotalAttempts > 0 ? `${midiAccuracy}%` : '—'}
 						</span>
-						<a href="/midi-test?tab=midi" class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors" title={t('nav.midi_test')}>⚙</a>
+						<a href="/midi-test?tab=midi" class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors" title={t('nav.midi_test')}><Settings size={14} aria-hidden="true" /></a>
 					</div>
 				{:else if inputMode === 'microphone'}
 					<div class="flex items-center justify-between gap-3">
@@ -2171,7 +2646,7 @@
 							activeNoteCount={midiActiveNotes.size}
 							onConnect={() => audioInput.init()}
 						/>
-						<a href="/midi-test?tab=mic" class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors shrink-0" title={t('nav.midi_test')}>⚙</a>
+						<a href="/midi-test?tab=mic" class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors shrink-0" title={t('nav.midi_test')}><Settings size={14} aria-hidden="true" /></a>
 					</div>
 				{/if}
 
@@ -2183,7 +2658,7 @@
 						aria-pressed={audioEnabled}
 						title={audioEnabled ? t('ui.audio') : t('ui.audio')}
 					>
-						{audioEnabled ? '🔊' : '🔇'} {t('ui.audio')}
+						{#if audioEnabled}<Volume2 size={16} aria-hidden="true" />{:else}<VolumeX size={16} aria-hidden="true" />{/if} {t('ui.audio')}
 					</button>
 					{#if audioEnabled}
 						<select
@@ -2204,7 +2679,7 @@
 							aria-pressed={midiSoundEnabled}
 							title={midiSoundEnabled ? t('settings.midi_sound_on') : t('settings.midi_sound_off')}
 						>
-							🎹 {t('settings.midi_sound')}
+							<Piano size={16} aria-hidden="true" /> {t('settings.midi_sound')}
 						</button>
 					{/if}
 
@@ -2215,7 +2690,7 @@
 						onclick={toggleMetronome}
 						aria-pressed={metronomeEnabled}
 					>
-						{metronomeEnabled ? '⏸' : '▶'} {t('ui.metronome')}
+						{#if metronomeEnabled}<Pause size={16} aria-hidden="true" />{:else}<Play size={16} aria-hidden="true" />{/if} {t('ui.metronome')}
 					</button>
 					{#if metronomeEnabled}
 						<div class="flex items-center gap-1.5">
@@ -2257,7 +2732,7 @@
 												? 'border-[var(--accent-amber)] bg-[var(--accent-amber)]/15 text-[var(--accent-amber)]'
 												: 'border-[var(--primary)]/50 bg-[var(--primary-muted)] text-[var(--primary)]')
 											: 'border-[var(--border)] text-[var(--text-dim)]'}">{barNum}</div>
-									<span class="text-[9px] leading-tight {barNum === 1 ? 'text-[var(--accent-amber)]' : 'text-[var(--text-dim)]'}">{barNum === 1 ? '▶ spielen' : 'halten'}</span>
+									<span class="text-[9px] leading-tight inline-flex items-center gap-0.5 {barNum === 1 ? 'text-[var(--accent-amber)]' : 'text-[var(--text-dim)]'}">{#if barNum === 1}<Play size={9} aria-hidden="true" /> spielen{:else}halten{/if}</span>
 								</div>
 							{/each}
 						</div>
@@ -2278,18 +2753,18 @@
 									class="flex items-center gap-1 text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
 									onclick={togglePause}
 									title={`${t('ui.pause')} (P)`}
-								>{paused ? `▶ ${t('ui.resume')}` : `⏸ ${t('ui.pause')}`}</button>
+								>{#if paused}<Play size={14} aria-hidden="true" /> {t('ui.resume')}{:else}<Pause size={14} aria-hidden="true" /> {t('ui.pause')}{/if}</button>
 								<button
 									class="flex items-center gap-1 text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
 									onclick={restartGame}
 									title={t('ui.restart')}
-								>↺ {t('ui.restart')}</button>
+								><RotateCcw size={14} aria-hidden="true" /> {t('ui.restart')}</button>
 								{#if inTimeMode && !inTimeLookAhead}
 									<button
 										class="flex items-center gap-1 text-xs px-2 py-0.5 rounded border border-[var(--accent-amber)]/50 text-[var(--accent-amber)] hover:border-[var(--accent-amber)] hover:bg-[var(--accent-amber)]/10 transition-colors cursor-pointer"
 										onclick={promptLookAhead}
 										title="Vorschau aktivieren — zeigt nächsten Chord im letzten Bar (H)"
-									>👁 Vorschau <kbd class="ml-0.5 px-1 py-0.5 rounded border border-[var(--accent-amber)]/40 font-mono text-[10px] not-italic">H</kbd></button>
+									><Eye size={14} aria-hidden="true" /> Vorschau <kbd class="ml-0.5 px-1 py-0.5 rounded border border-[var(--accent-amber)]/40 font-mono text-[10px] not-italic">H</kbd></button>
 								{/if}
 							{/if}
 						</div>
@@ -2306,10 +2781,10 @@
 				{#if !timerStarted}
 					<div class="text-center py-4">
 						<button
-							class="px-8 py-3 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-semibold text-lg hover:bg-[var(--primary-hover)] transition-colors cursor-pointer shadow-lg"
+							class="px-8 py-3 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-semibold text-lg hover:bg-[var(--primary-hover)] transition-colors cursor-pointer shadow-lg inline-flex items-center justify-center gap-2"
 							onclick={beginTimer}
 						>
-							▶ Start
+							<Play size={20} aria-hidden="true" /> Start
 						</button>
 						<p class="mt-3 text-xs text-[var(--text-muted)]">Press <strong>Space</strong> to start</p>
 					</div>
@@ -2318,12 +2793,12 @@
 				<!-- Pause overlay -->
 				{#if paused}
 					<div class="text-center py-8">
-						<div class="text-2xl font-bold text-[var(--text-muted)] mb-4">⏸ Paused</div>
+						<div class="text-2xl font-bold text-[var(--text-muted)] mb-4 inline-flex items-center justify-center gap-2"><Pause size={22} aria-hidden="true" /> Paused</div>
 						<button
-							class="px-6 py-2 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
+							class="px-6 py-2 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
 							onclick={togglePause}
 						>
-							▶ Resume
+							<Play size={18} aria-hidden="true" /> Resume
 						</button>
 						<p class="mt-2 text-xs text-[var(--text-muted)]">Press <strong>P</strong> or <strong>Space</strong> to resume</p>
 					</div>
@@ -2345,6 +2820,9 @@
 							voiceLeading={voiceLeadingInfo}
 							showVoiceLeading={voiceLeadingEnabled}
 							forceOctaves={sessionOctaves}
+							interactive={isTapGuessMode}
+							selectedPitchClasses={tapGuessNotes}
+							onKeyClick={isTapGuessMode ? handleTapPianoClick : undefined}
 						/>
 					</div>
 
@@ -2352,7 +2830,7 @@
 					{#if voiceLeadingEnabled && vlMode !== 'guided' && vlValidation && midiActiveNotes.size > 0}
 						<div class="mt-4 text-center">
 							{#if vlValidation.grade === 'optimal'}
-								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Optimal!</span>
+								<span class="text-[var(--accent-green)] font-semibold text-lg inline-flex items-center gap-1"><Check size={18} aria-hidden="true" /> Optimal!</span>
 								<div class="text-xs text-[var(--text-muted)] mt-0.5">{t('ui.vl_movement', { n: vlValidation.playerMovement })}</div>
 							{:else if vlValidation.grade === 'correct'}
 								<span class="text-[var(--accent-amber)] font-semibold">{t('ui.correct_but_not_closest')}</span>
@@ -2367,7 +2845,7 @@
 					{:else if inputActive && midiMatchResult && midiActiveNotes.size > 0}
 						<div class="mt-4 text-center">
 							{#if midiMatchResult.correct}
-								<span class="text-[var(--accent-green)] font-semibold text-lg">✓ Correct!</span>
+								<span class="text-[var(--accent-green)] font-semibold text-lg inline-flex items-center gap-1"><Check size={18} aria-hidden="true" /> Correct!</span>
 							{:else if midiMatchResult.missing.length === 0 && voicing.startsWith('inversion-') && currentData}
 								<span class="text-[var(--accent-amber)] text-sm">
 									Right notes — wrong bass! Put <strong>{currentData.voicing[0]}</strong> on bottom
@@ -2387,10 +2865,10 @@
 						<div class="mt-4 text-center flex items-center justify-center gap-2">
 							<!-- svelte-ignore a11y_click_events_have_key_events -->
 							<button
-								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
 								onclick={(e) => { e.stopPropagation(); replayChord(); }}
 							>
-								🎵 Listen
+								<Music size={16} aria-hidden="true" /> Listen
 							</button>
 							<button
 								class="px-2.5 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
@@ -2420,8 +2898,8 @@
 								{formatVoicing(currentData, voicing, notationSystem)}
 							</div>
 							{#if voicing.startsWith('inversion-') && currentData.voicing.length > 0}
-								<div class="text-xs text-[var(--accent-gold)] mt-1">
-									↓ Bass: {currentData.voicing[0]}
+								<div class="text-xs text-[var(--accent-gold)] mt-1 flex items-center gap-1">
+									<ArrowDown size={12} aria-hidden="true" /> Bass: {currentData.voicing[0]}
 								</div>
 							{/if}
 						</div>
@@ -2456,8 +2934,12 @@
 						<p>{t('ui.play_mic')}</p>
 					{:else if inputMode === 'midi' && midiState === 'connected' && midiDevices.length > 0}
 						<p>{t('ui.play_auto')}</p>
-					{:else if displayMode === 'verify' && playPhase === 'playing'}
-						<p>{t('ui.play_verify')}</p>
+					{:else if tapGuessResult === 'correct'}
+						<p class="text-[var(--accent-green)] font-semibold">{t('ui.tap_correct')}</p>
+					{:else if tapGuessResult === 'wrong'}
+						<p class="text-[var(--accent-red)] font-semibold">{t('ui.tap_wrong')}</p>
+					{:else if isTapGuessMode}
+						<p>{t('ui.tap_build')}</p>
 					{:else if displayMode === 'verify' && playPhase === 'verifying'}
 						<p>{t('ui.check_verify')}</p>
 					{:else}
@@ -2466,13 +2948,17 @@
 				</div>
 
 				<!-- Primary action — visible on all viewports (no more hidden Space-only advance) -->
-				{#if timerStarted && !paused && inputMode === 'none' && !inTimeMode && displayMode !== 'verify'}
+				{#if timerStarted && !paused && inputMode === 'none' && !inTimeMode}
 					<div class="flex flex-col items-center gap-2 pt-1">
 						<button
 							class="btn btn-primary min-h-[var(--tap-min)] px-8 text-base font-semibold"
 							onclick={nextChord}
 						>
-							{currentIdx < actualTotalChords - 1 ? t('ui.next_chord') : t('ui.finish')}
+							{#if isTapGuessMode}
+								{tapGuessNotes.size === 0 ? t('ui.show_me') : t('ui.check')}
+							{:else}
+								{currentIdx < actualTotalChords - 1 ? t('ui.next_chord') : t('ui.finish')}
+							{/if}
 						</button>
 						<div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-[var(--text-dim)]">
 							<span><kbd class="kbd">Space</kbd> {t('ui.shortcut_next')}</span>
@@ -2511,7 +2997,7 @@
 						class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-muted)] transition-colors text-2xl leading-none cursor-pointer text-[var(--text-dim)] hover:text-[var(--text)] shrink-0 ml-4"
 						onclick={cancelLookAhead}
 						aria-label="Abbrechen"
-					>×</button>
+					><X size={20} aria-hidden="true" /></button>
 				</div>
 				<div class="grid grid-cols-2 gap-3">
 					<button
@@ -2519,9 +3005,9 @@
 						onclick={cancelLookAhead}
 					>{t('ui.continue_playing')}</button>
 					<button
-						class="h-12 rounded-[var(--radius)] bg-[var(--accent-amber)] text-[var(--bg)] font-semibold hover:opacity-90 transition-opacity cursor-pointer text-sm"
+						class="h-12 rounded-[var(--radius)] bg-[var(--accent-amber)] text-[var(--bg)] font-semibold hover:opacity-90 transition-opacity cursor-pointer text-sm inline-flex items-center justify-center gap-2"
 						onclick={confirmLookAhead}
-					>👁 Neu starten mit Vorschau</button>
+					><Eye size={16} aria-hidden="true" /> Neu starten mit Vorschau</button>
 				</div>
 			</div>
 		{/if}
@@ -2535,7 +3021,7 @@
 					onclick={resetToSetup}
 					title={`${t('ui.back_setup')} (ESC)`}
 				>
-					← {t('ui.back')}
+					<ArrowLeft size={16} aria-hidden="true" /> {t('ui.back')}
 				</button>
 				<div class="flex items-center gap-3">
 					<div class="text-sm text-[var(--text-muted)]">
@@ -2547,7 +3033,7 @@
 						class="w-7 h-7 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-amber)] hover:text-[var(--accent-amber)] transition-colors cursor-pointer flex items-center justify-center text-sm"
 						onclick={openSettingsFromGame}
 						title="Settings (S)"
-					>⚙</button>
+					><Settings size={16} aria-hidden="true" /></button>
 				</div>
 			</div>
 
@@ -2590,10 +3076,10 @@
 				{#if !timerStarted}
 					<div class="text-center py-4">
 						<button
-							class="px-8 py-3 rounded-[var(--radius)] bg-[var(--accent-amber)] text-black font-semibold text-lg hover:brightness-110 transition-all cursor-pointer shadow-lg"
+							class="px-8 py-3 rounded-[var(--radius)] bg-[var(--accent-amber)] text-black font-semibold text-lg hover:brightness-110 transition-all cursor-pointer shadow-lg inline-flex items-center justify-center gap-2"
 							onclick={beginEarTraining}
 						>
-							👂 {t('ui.ear_training_start')}
+							<Ear size={20} aria-hidden="true" /> {t('ui.ear_training_start')}
 						</button>
 						<p class="mt-3 text-xs text-[var(--text-muted)]">{t('ui.ear_training_desc')}</p>
 					</div>
@@ -2644,14 +3130,14 @@
 								<!-- Mode toggle + note count -->
 								<div class="flex items-center gap-3">
 									<button
-										class="px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer
+										class="px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5
 											{earSelectMode
 												? 'border-[var(--accent-amber)] bg-[var(--accent-amber)]/15 text-[var(--accent-amber)]'
 												: 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-amber)] hover:text-[var(--accent-amber)]'}"
 										onclick={(e) => { e.stopPropagation(); earSelectMode = !earSelectMode; }}
 										title={earSelectMode ? t('ui.ear_mode_preview') : t('ui.ear_mode_select')}
 									>
-										{earSelectMode ? '🎯 ' + t('ui.ear_mode_select') : '🎹 ' + t('ui.ear_mode_preview')}
+										{#if earSelectMode}<Target size={14} aria-hidden="true" /> {t('ui.ear_mode_select')}{:else}<Piano size={14} aria-hidden="true" /> {t('ui.ear_mode_preview')}{/if}
 									</button>
 									{#if earGuessNotes.size > 0}
 										<span class="text-xs text-[var(--text-muted)]">
@@ -2664,7 +3150,7 @@
 								{#if earGuessNotes.size > 0}
 									<div class="flex gap-2" transition:fade={{ duration: 150 }}>
 										<button
-											class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] font-medium transition-all cursor-pointer
+											class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] font-medium transition-all cursor-pointer inline-flex items-center justify-center gap-1.5
 												{earGuessResult === 'correct'
 													? 'bg-[var(--accent-green)] text-white'
 													: earGuessResult === 'wrong'
@@ -2672,7 +3158,7 @@
 														: 'bg-[var(--accent-amber)] text-black hover:brightness-110'}"
 											onclick={(e) => { e.stopPropagation(); submitEarGuess(); }}
 										>
-											{earGuessResult === 'correct' ? '✓ ' + t('ui.correct') : earGuessResult === 'wrong' ? '✗ ' + t('ui.ear_try_again') : '⏎ ' + t('ui.ear_check')}
+											{#if earGuessResult === 'correct'}<Check size={16} aria-hidden="true" /> {t('ui.correct')}{:else if earGuessResult === 'wrong'}<X size={16} aria-hidden="true" /> {t('ui.ear_try_again')}{:else}<CornerDownLeft size={16} aria-hidden="true" /> {t('ui.ear_check')}{/if}
 										</button>
 										<button
 											class="px-3 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
@@ -2689,7 +3175,7 @@
 						{#if inputActive && midiMatchResult && midiActiveNotes.size > 0}
 							<div class="mt-4 text-center">
 								{#if midiMatchResult.correct}
-									<span class="text-[var(--accent-green)] font-semibold text-lg">✓ {t('ui.correct')}</span>
+									<span class="text-[var(--accent-green)] font-semibold text-lg inline-flex items-center gap-1"><Check size={18} aria-hidden="true" /> {t('ui.correct')}</span>
 								{:else if midiMatchResult.accuracy > 0}
 									<span class="text-[var(--accent-amber)] text-sm">
 										{t('ui.keep_trying', { percent: Math.round(midiMatchResult.accuracy * 100) })}
@@ -2703,10 +3189,10 @@
 						<!-- Listen again button -->
 						<div class="mt-4 text-center">
 							<button
-								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-amber)] hover:text-[var(--accent-amber)] transition-colors cursor-pointer"
+								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-amber)] hover:text-[var(--accent-amber)] transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
 								onclick={(e) => { e.stopPropagation(); replayChord(); }}
 							>
-								🎵 {t('ui.listen_again')}
+								<Music size={16} aria-hidden="true" /> {t('ui.listen_again')}
 							</button>
 						</div>
 					</ChordCard>
@@ -2735,7 +3221,7 @@
 					class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
 					onclick={resetToSetup}
 				>
-					← {t('ui.back_setup')}
+					<ArrowLeft size={16} aria-hidden="true" /> {t('ui.back_setup')}
 				</button>
 			</div>
 			<Results
@@ -2763,11 +3249,114 @@
 				vlTotalChords={vlMovementScores.length}
 				onrestart={restartGame}
 				onreset={resetToSetup}
+				candrillweak={hasWeakSpots()}
+				ondrillweak={startWeakDrill}
 			/>
+			</div>
+		{/if}
+
+		<!-- ─────── Coach: Teacher Feedback Screen ─────── -->
+		{#if screen === 'coach-feedback'}
+			<div in:scale={{ start: 0.95, duration: 300, delay: 50 }} style="transform-origin: center top" class="mx-auto max-w-[560px]">
+				<div class="surface-glass rounded-2xl p-6 sm:p-8 flex flex-col gap-6">
+					<div class="flex flex-col items-center gap-3 text-center">
+						<span class="grid h-14 w-14 place-items-center rounded-full bg-[var(--primary-muted)] text-[var(--primary)]" aria-hidden="true">
+							<Icon name="weak-spots" size={30} />
+						</span>
+						<h1 class="text-xl sm:text-2xl font-bold text-(--text)">{t('coach.feedback.title')}</h1>
+					</div>
+
+					<!-- Teacher statements (honest, from promotion/hold decisions) -->
+					{#if coachFeedback.length > 0}
+						<ul class="flex flex-col gap-2.5">
+							{#each coachFeedback as stmt, i (i)}
+								<li class="flex items-start gap-2.5 text-[var(--text-base)] leading-relaxed text-(--text)">
+									<span class="mt-1 shrink-0 text-[var(--primary)]" aria-hidden="true"><Check size={16} /></span>
+									<span>{t(stmt.key, localizeCoachParams(stmt.params))}</span>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+
+					<!-- Feedback valve: too easy / just right / too hard -->
+					<div class="flex flex-col gap-2">
+						<span class="text-sm font-medium text-(--text-muted)">{t('coach.valve.prompt')}</span>
+						<div class="grid grid-cols-3 gap-2">
+							<button
+								type="button"
+								disabled={coachFeedbackGiven}
+								onclick={() => applyCoachFeedback('tooEasy')}
+								class="rounded-[var(--radius)] border-2 px-3 py-2.5 text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--primary-muted)] text-(--text)"
+							>
+								{t('coach.valve.too_easy')}
+							</button>
+							<button
+								type="button"
+								disabled={coachFeedbackGiven}
+								onclick={() => applyCoachFeedback('justRight')}
+								class="rounded-[var(--radius)] border-2 px-3 py-2.5 text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed border-[var(--border)] hover:border-[var(--success)] hover:bg-[var(--success-muted)] text-(--text)"
+							>
+								{t('coach.valve.just_right')}
+							</button>
+							<button
+								type="button"
+								disabled={coachFeedbackGiven}
+								onclick={() => applyCoachFeedback('tooHard')}
+								class="rounded-[var(--radius)] border-2 px-3 py-2.5 text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed border-[var(--border)] hover:border-[var(--accent-red)] hover:bg-[color-mix(in_srgb,var(--accent-red)_16%,transparent)] text-(--text)"
+							>
+								{t('coach.valve.too_hard')}
+							</button>
+						</div>
+						{#if coachFeedbackGiven}
+							<span class="text-xs text-(--text-dim)" in:fade={{ duration: 150 }}>{t('coach.valve.thanks')}</span>
+						{/if}
+					</div>
+
+					<!-- Again / Done -->
+					<div class="flex gap-3">
+						<button
+							type="button"
+							onclick={restartCoachSession}
+							class="flex-1 rounded-[var(--radius)] bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+						>
+							{t('coach.feedback.again')}
+						</button>
+						<button
+							type="button"
+							onclick={() => { endCoachMode(); resetToSetup(); }}
+							class="flex-1 rounded-[var(--radius)] border border-[var(--border)] px-4 py-3 text-base font-medium text-(--text-muted) transition-colors hover:border-[var(--text)] hover:text-(--text)"
+						>
+							{t('coach.feedback.done')}
+						</button>
+					</div>
+				</div>
 			</div>
 		{/if}
 	</div>
 </main>
+
+<!-- ─────── Coach: Between-block Transition Overlay ─────── -->
+{#if coachTransition}
+	<button
+		type="button"
+		class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg)]/85 backdrop-blur-sm p-6"
+		onclick={advanceCoachBlock}
+		in:fade={{ duration: 180 }}
+		aria-label={t('coach.transition.tap_continue')}
+	>
+		<div class="surface-glass flex max-w-[420px] flex-col items-center gap-4 rounded-2xl px-6 py-8 text-center" in:scale={{ start: 0.94, duration: 220 }}>
+			<div class="flex items-center gap-2 text-[var(--success)]">
+				<Check size={20} aria-hidden="true" />
+				<span class="text-base font-semibold">{t('coach.done.' + coachTransition.doneKind)}</span>
+			</div>
+			<div class="h-px w-16 bg-[var(--border)]" aria-hidden="true"></div>
+			<p class="text-lg font-medium text-(--text)">
+				{t(coachTransition.next.labelKey, localizeCoachParams(coachTransition.next.labelParams))}
+			</p>
+			<span class="text-xs text-(--text-dim)">{t('coach.transition.tap_continue')}</span>
+		</div>
+	</button>
+{/if}
 
 {#if midiDisconnectToast}
 	<MidiToast
