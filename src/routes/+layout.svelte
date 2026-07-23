@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import { t, setLocale, getLocale, type Locale } from '$lib/i18n';
 	import { initTheme, applyThemeForRoute, isLightActive, toggleLightDark, routeAllowsLight } from '$lib/services/theme';
-	import { Sun, Moon } from 'lucide-svelte';
+	import { Sun, Moon, Cloud } from 'lucide-svelte';
 	import { initAuth, onAuthChange, type AuthState } from '$lib/services/auth';
 	import { initSubscriptionStore } from '$lib/services/subscription-store.svelte';
 	import { getSupabase } from '$lib/services/supabase';
@@ -176,7 +176,7 @@
 			<div class="bg-[var(--primary)]/10 border-b border-[var(--primary)]/20 px-4 py-2.5">
 				<div class="max-w-[1600px] mx-auto flex items-center justify-between gap-4 text-sm">
 					<div class="flex items-center gap-2">
-						<span>☁️</span>
+						<Cloud size={16} class="text-[var(--primary)] shrink-0" aria-hidden="true" />
 						<span class="text-[var(--text-muted)]">{t('nav_auth.sync_banner_desc')}</span>
 					</div>
 					<div class="flex items-center gap-2 shrink-0">

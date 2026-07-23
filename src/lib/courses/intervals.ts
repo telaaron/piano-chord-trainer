@@ -21,7 +21,7 @@ export const intervalsCourse: Course = {
 	titleKey: 'course.intervals.title',
 	descriptionKey: 'course.intervals.description',
 	subtitleKey: 'course.intervals.subtitle',
-	icon: '📏',
+	icon: '',
 	level: 'beginner',
 	modules: [
 		// ── Module 1: Sekunden & Terzen ──────────────────────────────

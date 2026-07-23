@@ -4,6 +4,7 @@
 	import { playCelebrationSound } from '$lib/services/audio';
 	import { fade, scale } from 'svelte/transition';
 	import { onMount } from 'svelte';
+	import { PartyPopper, Target, Flame, Trophy, Zap, type Icon as LucideIcon } from 'lucide-svelte';
 
 	interface Props {
 		celebrations: CelebrationEvent[];
@@ -16,17 +17,18 @@
 	let visible = $state(true);
 	let confettiPieces: { x: number; y: number; rotation: number; color: string; delay: number; size: number }[] = $state([]);
 
-	const TYPE_CONFIG: Record<string, { emoji: string; bg: string; glow: string }> = {
-		'level-up': { emoji: '🎉', bg: 'linear-gradient(135deg, rgba(251,146,60,0.15) 0%, rgba(245,158,11,0.1) 100%)', glow: 'rgba(251,146,60,0.4)' },
-		'goal-complete': { emoji: '🎯', bg: 'linear-gradient(135deg, rgba(74,222,128,0.12) 0%, rgba(34,197,94,0.08) 100%)', glow: 'rgba(74,222,128,0.35)' },
-		'streak-milestone': { emoji: '🔥', bg: 'linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(251,146,60,0.08) 100%)', glow: 'rgba(239,68,68,0.35)' },
-		'personal-best': { emoji: '🏆', bg: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(251,146,60,0.08) 100%)', glow: 'rgba(245,158,11,0.4)' },
-		'xp-gain': { emoji: '⚡', bg: 'linear-gradient(135deg, rgba(251,146,60,0.1) 0%, rgba(245,158,11,0.05) 100%)', glow: 'rgba(251,146,60,0.25)' },
+	const TYPE_CONFIG: Record<string, { icon: typeof LucideIcon; bg: string; glow: string }> = {
+		'level-up': { icon: PartyPopper, bg: 'linear-gradient(135deg, rgba(251,146,60,0.15) 0%, rgba(245,158,11,0.1) 100%)', glow: 'rgba(251,146,60,0.4)' },
+		'goal-complete': { icon: Target, bg: 'linear-gradient(135deg, rgba(74,222,128,0.12) 0%, rgba(34,197,94,0.08) 100%)', glow: 'rgba(74,222,128,0.35)' },
+		'streak-milestone': { icon: Flame, bg: 'linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(251,146,60,0.08) 100%)', glow: 'rgba(239,68,68,0.35)' },
+		'personal-best': { icon: Trophy, bg: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(251,146,60,0.08) 100%)', glow: 'rgba(245,158,11,0.4)' },
+		'xp-gain': { icon: Zap, bg: 'linear-gradient(135deg, rgba(251,146,60,0.1) 0%, rgba(245,158,11,0.05) 100%)', glow: 'rgba(251,146,60,0.25)' },
 	};
 
 	const current = $derived(celebrations[currentIndex]);
 	const hasMore = $derived(currentIndex < celebrations.length - 1);
 	const currentConfig = $derived(current ? (TYPE_CONFIG[current.type] || TYPE_CONFIG['xp-gain']) : TYPE_CONFIG['xp-gain']);
+	const CurrentIcon = $derived(currentConfig.icon);
 
 	onMount(() => {
 		// Play celebration sound for the first event
@@ -94,7 +96,7 @@
 			style="background: {currentConfig.bg}; box-shadow: 0 0 40px {currentConfig.glow};"
 			onclick={(e) => e.stopPropagation()}
 		>
-			<div class="celebration-emoji text-5xl mb-3">{currentConfig.emoji}</div>
+			<div class="celebration-emoji mb-3 flex justify-center text-[#fb923c]"><CurrentIcon size={64} aria-hidden="true" /></div>
 			<h2 class="text-xl font-extrabold text-[var(--text,#fff)] m-0 mb-1.5">
 				{t(current.titleKey, current.titleParams) || current.title}
 			</h2>

@@ -3,6 +3,7 @@
 	import type { SmartGoal } from '$lib/engine/habits';
 	import { Icon } from '$lib/components/ui';
 	import { goalIconName } from '$lib/utils/goal-icon';
+	import { Check } from 'lucide-svelte';
 
 	interface Props {
 		goal: SmartGoal;
@@ -57,7 +58,7 @@
 			{/if}
 		</div>
 		{#if isCompleted}
-			<span class="text-[var(--accent-green,#4ade80)] font-bold text-[0.85rem] max-sm:text-[0.95rem]">✓</span>
+			<span class="text-[var(--accent-green,#4ade80)] inline-flex"><Check size={16} aria-hidden="true" /></span>
 		{/if}
 	</div>
 

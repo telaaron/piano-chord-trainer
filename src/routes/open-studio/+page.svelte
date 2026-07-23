@@ -11,6 +11,11 @@
 		Layers,
 		Bookmark,
 		User,
+		Lock,
+		Users,
+		Menu,
+		Sparkles,
+		Piano,
 	} from 'lucide-svelte';
 	import { t } from '$lib/i18n';
 </script>
@@ -174,7 +179,7 @@
 				<div class="bg-[#2b2b2b] px-3 py-[0.6rem] flex items-center gap-3">
 					<div class="flex gap-[0.35rem]"><span class="w-2.75 h-2.75 rounded-full bg-[#ff5f57]"></span><span class="w-2.75 h-2.75 rounded-full bg-[#ffbd2e]"></span><span class="w-2.75 h-2.75 rounded-full bg-[#28c840]"></span></div>
 					<div class="flex-1 bg-[#3a3a3a] px-3 py-[0.35rem] rounded-md text-[0.8rem] text-[#ccc] flex items-center gap-[0.4rem]">
-						<span class="text-[0.65rem]">🔒</span>
+						<Lock size={11} class="text-[#ccc] shrink-0" aria-hidden="true" />
 						app.openstudiojazz.com
 					</div>
 				</div>
@@ -191,7 +196,7 @@
 							<span class="text-[0.7rem]">⦿</span> Live Sessions
 						</span>
 						<span class="text-[0.8rem] text-[#555] flex items-center gap-[0.3rem] cursor-default">
-							<span class="text-[0.7rem]">👥</span> The Hang
+							<Users size={11} class="text-[#555] shrink-0" aria-hidden="true" /> The Hang
 						</span>
 					</div>
 					<div class="flex items-center gap-3 max-md:hidden">
@@ -205,7 +210,7 @@
 					<!-- Breadcrumb -->
 					<div class="px-6 py-3 flex justify-between items-center text-[0.85rem] text-[#333]">
 						<span>← Harmony Games Unlimited</span>
-						<span class="text-[0.8rem] text-[#555] border border-[#ddd] px-3 py-[0.35rem] rounded-md cursor-default">☰ View Chapters</span>
+						<span class="text-[0.8rem] text-[#555] border border-[#ddd] px-3 py-[0.35rem] rounded-md cursor-default inline-flex items-center gap-[0.3rem]"><Menu size={13} class="text-[#555] shrink-0" aria-hidden="true" /> View Chapters</span>
 					</div>
 
 					<!-- Video Thumbnail -->
@@ -232,7 +237,7 @@
 						<span class="px-4 py-3 text-[0.85rem] text-[#888] border-b-2 border-transparent cursor-default">Overview</span>
 						<span class="px-4 py-3 text-[0.85rem] text-[#888] border-b-2 border-transparent cursor-default">Materials</span>
 						<span class="px-4 py-3 text-[0.85rem] text-[#888] border-b-2 border-transparent cursor-default">Shortcuts</span>
-						<span class="px-4 py-3 text-[0.85rem] border-b-2 cursor-default text-[#1a1a1a] border-b-[#1a1a1a] font-semibold">Practice ✨</span>
+						<span class="px-4 py-3 text-[0.85rem] border-b-2 cursor-default text-[#1a1a1a] border-b-[#1a1a1a] font-semibold inline-flex items-center gap-[0.3rem]">Practice <Sparkles size={13} class="text-[#1a1a1a] shrink-0" aria-hidden="true" /></span>
 					</div>
 
 					<!-- Chord Trainer Embedded -->
@@ -240,7 +245,7 @@
 						<div class="absolute top-[-0.6rem] left-5 bg-[#004E89] text-white text-[0.65rem] font-bold px-2 py-[0.15rem] rounded uppercase tracking-[0.04em]">Preview · Chord Trainer Integration</div>
 
 						<div class="flex justify-between items-center mb-5 pb-3 border-b border-[rgba(0,78,137,0.2)] text-[0.8rem]">
-							<span class="text-[#00a86b] font-semibold">🎹 MIDI Connected</span>
+							<span class="text-[#00a86b] font-semibold inline-flex items-center gap-[0.3rem]"><Piano size={14} class="text-[#00a86b] shrink-0" aria-hidden="true" /> MIDI Connected</span>
 							<span class="text-[#666]">ii-V-I Progression · All Keys</span>
 							<span class="text-xl font-bold text-[#004E89]" style="font-family: var(--font-mono)">1:47</span>
 						</div>

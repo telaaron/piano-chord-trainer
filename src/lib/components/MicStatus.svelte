@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { AudioInputState } from '$lib/services/audio-input';
 	import { t } from '$lib/i18n';
+	import { Mic, Music, Settings } from 'lucide-svelte';
 
 	interface Props {
 		state: AudioInputState;
@@ -45,7 +46,7 @@
 	<!-- Status dot + label -->
 	<div class="flex items-center gap-2">
 		<div class="w-2 h-2 rounded-full {stateColor}"></div>
-		<span class="text-[var(--text-muted)]">🎙 {stateLabel}</span>
+		<span class="text-[var(--text-muted)] inline-flex items-center gap-1.5"><Mic size={14} aria-hidden="true" /> {stateLabel}</span>
 	</div>
 
 	{#if state === 'idle'}
@@ -70,14 +71,14 @@
 	{/if}
 
 	{#if (state === 'listening' || state === 'analyzing') && activeNoteCount > 0}
-		<span class="text-xs text-[var(--text-dim)] font-mono">
-			♪ {activeNoteCount}
+		<span class="text-xs text-[var(--text-dim)] font-mono inline-flex items-center gap-1">
+			<Music size={12} aria-hidden="true" /> {activeNoteCount}
 		</span>
 	{/if}
 
 	<a
 		href="/midi-test?tab=mic"
-		class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors ml-auto leading-none"
+		class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors ml-auto leading-none inline-flex items-center"
 		title={t('nav.midi_test')}
-	>⚙</a>
+	><Settings size={14} aria-hidden="true" /></a>
 </div>

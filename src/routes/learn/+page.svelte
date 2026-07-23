@@ -4,6 +4,18 @@
 	import { getCourseProgress, getLessonProgress } from '$lib/services/course-progress';
 	import { courseCompletionPercent, moduleCompletionPercent, getNextLesson } from '$lib/engine/courses';
 	import type { Course, CourseProgress, MasteryLevel } from '$lib/engine/courses';
+	import { Ruler, Piano, Rocket, BookOpen, Play, ArrowRight, Check } from 'lucide-svelte';
+
+	/** Pick a lucide icon component for a course by its id */
+	function courseIcon(id: string) {
+		switch (id) {
+			case 'intervals': return Ruler;
+			case 'shell-voicings': return Piano;
+			case 'ultimate':
+			case 'ultimate-plan': return Rocket;
+			default: return BookOpen;
+		}
+	}
 
 	// Load progress for all courses
 	let progressMap = $state<Record<string, CourseProgress>>({});
@@ -82,14 +94,14 @@
 			href="/learn/{globalContinue.course.id}/{globalContinue.lessonId}"
 			class="surface-glass flex items-center gap-4 mb-8 p-4 sm:p-5 rounded-2xl border-[var(--primary)]/40 bg-[var(--primary-muted)]/60 hover:bg-[var(--primary-muted)]/80 transition-colors"
 		>
-			<span class="text-2xl">▶</span>
+			<Play size={24} class="text-[var(--primary)] shrink-0" aria-hidden="true" />
 			<div class="flex-1 min-w-0">
 				<span class="text-sm font-bold text-[var(--primary)] block">{t('learn.global_continue')}</span>
 				<span class="text-xs text-[var(--text-muted)] block truncate mt-0.5">
 					{t('learn.global_continue_sub', { course: t(globalContinue.course.titleKey), lesson: globalContinue.lessonTitle })}
 				</span>
 			</div>
-			<span class="text-[var(--primary)] text-lg shrink-0">→</span>
+			<ArrowRight size={18} class="text-[var(--primary)] shrink-0" aria-hidden="true" />
 		</a>
 	{/if}
 
@@ -99,11 +111,12 @@
 			{@const progress = progressMap[course.id]}
 			{@const percent = progress ? courseCompletionPercent(progress) : 0}
 			{@const next = progress ? getNextLesson(course, progress) : null}
-			
+			{@const CourseIcon = courseIcon(course.id)}
+
 			<div class="card surface-glass p-5 sm:p-6">
 				<!-- Course header -->
 				<div class="flex items-start gap-4">
-					<span class="text-3xl" role="img" aria-label={t(course.titleKey)}>{course.icon}</span>
+					<CourseIcon size={30} class="text-[var(--primary)] shrink-0" aria-hidden="true" />
 					<div class="flex-1 min-w-0">
 						<h2 class="text-lg sm:text-xl font-bold text-[var(--text)]">
 							{t(course.titleKey)}
@@ -177,7 +190,7 @@
 							{percent > 0 ? t('learn.continue') : t('learn.start')}
 						</a>
 					{:else if percent === 100}
-						<span class="text-sm text-[var(--accent-green)] font-medium">✓ {t('learn.complete')}</span>
+						<span class="text-sm text-[var(--accent-green)] font-medium inline-flex items-center gap-1"><Check size={16} class="text-[var(--accent-green)]" aria-hidden="true" /> {t('learn.complete')}</span>
 					{/if}
 				</div>
 			</div>

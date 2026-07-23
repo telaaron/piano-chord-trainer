@@ -16,6 +16,7 @@
 	import type { ChordWithNotes } from '$lib/engine';
 	import { formatTime as fmt } from '$lib/utils/format';
 	import { t } from '$lib/i18n';
+	import { Target, Piano, Rocket, Repeat, Zap, Music, BookOpen, type Icon as LucideIcon } from 'lucide-svelte';
 
 	interface Props {
 		chordsWithNotes: ChordWithNotes[];
@@ -46,8 +47,12 @@
 		vlTotalChords?: number;
 		/** Voice Leading mode active */
 		vlModeActive?: string;
+		/** Whether the player has enough history to drill weak spots. */
+		candrillweak?: boolean;
 		onrestart: () => void;
 		onreset: () => void;
+		/** Launch a focused drill on the player's weakest chords. */
+		ondrillweak?: () => void;
 	}
 
 	let {
@@ -71,41 +76,44 @@
 		vlOptimalCount = 0,
 		vlTotalChords = 0,
 		vlModeActive = '',
+		candrillweak = false,
 		onrestart,
 		onreset,
+		ondrillweak,
 	}: Props = $props();
 
 	// ─── Performance-based recommendation ──────────────────────
 	const secondsPerChord = $derived(elapsedMs / totalChords / 1000);
 
-	const recommendation = $derived.by(() => {
+	const recommendation = $derived.by<{ icon: typeof LucideIcon; key: string; link: string }>(() => {
 		// Low MIDI accuracy → focus on correct notes
 		if (midiEnabled && midiAccuracy > 0 && midiAccuracy < 80) {
-			return { icon: '🎯', key: 'results.tip_low_accuracy', link: '' };
+			return { icon: Target, key: 'results.tip_low_accuracy', link: '' };
 		}
 		// Using root voicing → suggest shell
 		if (voicing === 'root') {
-			return { icon: '🎹', key: 'results.tip_try_shell', link: '' };
+			return { icon: Piano, key: 'results.tip_try_shell', link: '' };
 		}
 		// Using shell → suggest rootless
 		if (voicing === 'shell' || voicing === 'half-shell') {
-			return { icon: '🚀', key: 'results.tip_try_rootless', link: '' };
+			return { icon: Rocket, key: 'results.tip_try_rootless', link: '' };
 		}
 		// Slow pace (> 5s per chord)
 		if (secondsPerChord > 5) {
-			return { icon: '🔁', key: 'results.tip_slow_pace', link: '' };
+			return { icon: Repeat, key: 'results.tip_slow_pace', link: '' };
 		}
 		// Fast pace (< 2s per chord) → raise difficulty
 		if (secondsPerChord < 2) {
-			return { icon: '⚡', key: 'results.tip_fast_pace', link: '' };
+			return { icon: Zap, key: 'results.tip_fast_pace', link: '' };
 		}
 		// Random mode → suggest ii-V-I
 		if (progressionMode === 'random') {
-			return { icon: '🎵', key: 'results.tip_try_progression', link: '' };
+			return { icon: Music, key: 'results.tip_try_progression', link: '' };
 		}
 		// Default: suggest learning
-		return { icon: '📚', key: 'results.tip_explore_course', link: '/learn' };
+		return { icon: BookOpen, key: 'results.tip_explore_course', link: '/learn' };
 	});
+	const RecoIcon = $derived(recommendation.icon);
 </script>
 
 <div class="card surface-glass p-6 sm:p-8 w-full max-w-4xl mx-auto text-center space-y-6">
@@ -184,7 +192,7 @@
 	<!-- Next up recommendation -->
 	{#if recommendation}
 		<div class="bg-[var(--bg-muted)]/30 rounded-[var(--radius-lg)] p-4 text-left flex items-start gap-3 border border-[var(--border)]/55 backdrop-blur-sm">
-			<span class="text-2xl shrink-0 mt-0.5">{recommendation.icon}</span>
+			<RecoIcon size={24} class="shrink-0 mt-0.5 text-[var(--primary)]" aria-hidden="true" />
 			<div>
 				<div class="text-xs font-semibold text-[var(--primary)] uppercase tracking-wide mb-1">{t('results.next_up')}</div>
 				<p class="text-sm text-[var(--text-muted)] leading-relaxed">{t(recommendation.key)}</p>
@@ -198,20 +206,45 @@
 	{/if}
 
 	<!-- Action buttons -->
-	<div class="flex gap-3">
+	{#if candrillweak && ondrillweak}
+		<!-- Peak-motivation moment: drill the chords you were slowest at. -->
 		<button
-			class="flex-1 h-11 pill-btn pill-btn-secondary text-[var(--text)] font-medium transition-colors cursor-pointer"
-			onclick={onrestart}
+			class="w-full h-11 pill-btn pill-btn-primary text-[var(--primary-text)] font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
+			onclick={ondrillweak}
 		>
-			{t('results.play_again')}
+			<Target size={18} aria-hidden="true" />
+			{t('results.drill_weak')}
 		</button>
-		<button
-			class="flex-1 h-11 pill-btn pill-btn-primary text-[var(--primary-text)] font-medium transition-colors cursor-pointer"
-			onclick={onreset}
-		>
-			{t('results.back_to_setup')}
-		</button>
-	</div>
+		<div class="flex gap-3">
+			<button
+				class="flex-1 h-11 pill-btn pill-btn-secondary text-[var(--text)] font-medium transition-colors cursor-pointer"
+				onclick={onrestart}
+			>
+				{t('results.play_again')}
+			</button>
+			<button
+				class="flex-1 h-11 pill-btn pill-btn-secondary text-[var(--text)] font-medium transition-colors cursor-pointer"
+				onclick={onreset}
+			>
+				{t('results.back_to_setup')}
+			</button>
+		</div>
+	{:else}
+		<div class="flex gap-3">
+			<button
+				class="flex-1 h-11 pill-btn pill-btn-secondary text-[var(--text)] font-medium transition-colors cursor-pointer"
+				onclick={onrestart}
+			>
+				{t('results.play_again')}
+			</button>
+			<button
+				class="flex-1 h-11 pill-btn pill-btn-primary text-[var(--primary-text)] font-medium transition-colors cursor-pointer"
+				onclick={onreset}
+			>
+				{t('results.back_to_setup')}
+			</button>
+		</div>
+	{/if}
 
 	<!-- Chord list with mini keyboards -->
 	{#if chordsWithNotes.length > 0}

@@ -144,12 +144,14 @@ struct ProgressView_: View {
         }
     }
 
-    /// Build a focused adaptive drill for a weak spot.
+    /// Build a focused adaptive drill for a weak spot — concentrates on this root
+    /// (10× weight) and hides the answer (`.verify`) so it's a real test, not a copy.
     private func drillPlan(for spot: WeakSpot) -> PracticePlan {
         PracticePlan(
-            id: "weak-drill", name: "", tagline: "", description: "", icon: "🎯", accent: "var(--primary)", level: .intermediate,
+            id: "weak-drill", name: "", tagline: "", description: "", icon: "", accent: "var(--primary)", level: .intermediate,
             settings: PlanSettings(difficulty: .beginner, notation: .standard, voicing: spot.voicing,
-                                   displayMode: .always, accidentals: .both, progressionMode: .random, totalChords: 20))
+                                   displayMode: .verify, accidentals: .both, progressionMode: .random, totalChords: 20),
+            focusRoots: [spot.root], focusVoicing: spot.voicing.rawValue)
     }
 }
 

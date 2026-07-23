@@ -5,6 +5,7 @@
 	import { toastSuccess, toastError } from '$lib/services/toast';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { Cloud } from 'lucide-svelte';
 
 	let mode: 'login' | 'signup' | 'reset' = $state('login');
 	let email = $state('');
@@ -98,7 +99,7 @@
 			<!-- Sync hint -->
 			{#if mode === 'signup' || mode === 'login'}
 				<div class="status-glass flex items-start gap-3 text-sm">
-					<span class="text-[var(--primary)] text-lg mt-0.5">☁️</span>
+					<Cloud size={18} class="text-[var(--primary)] mt-0.5 shrink-0" aria-hidden="true" />
 					<p class="text-[var(--text-muted)]">{t('auth.sync_hint')}</p>
 				</div>
 			{/if}

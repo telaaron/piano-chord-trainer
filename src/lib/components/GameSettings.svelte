@@ -19,6 +19,7 @@
 	import type { MidiConnectionState, MidiDevice } from '$lib/services/midi';
 	import { onMount } from 'svelte';
 	import { t } from '$lib/i18n';
+	import { Eye, Search, Piano, Play, type Icon as LucideIcon } from 'lucide-svelte';
 
 	interface Props {
 		difficulty: Difficulty;
@@ -70,10 +71,10 @@
 		onstartplan,
 	}: Props = $props();
 
-	const VL_MODE_CONFIG: Record<VoiceLeadingMode, { labelKey: string; descKey: string; icon: string }> = {
-		guided:          { labelKey: 'ui.vl_guided_label', descKey: 'ui.vl_guided_desc', icon: '👁️' },
-		'find-inversion': { labelKey: 'ui.vl_find_label',  descKey: 'ui.vl_find_desc',   icon: '🔍' },
-		free:            { labelKey: 'ui.vl_free_label',   descKey: 'ui.vl_free_desc',    icon: '🎹' },
+	const VL_MODE_CONFIG: Record<VoiceLeadingMode, { labelKey: string; descKey: string; icon: typeof LucideIcon }> = {
+		guided:          { labelKey: 'ui.vl_guided_label', descKey: 'ui.vl_guided_desc', icon: Eye },
+		'find-inversion': { labelKey: 'ui.vl_find_label',  descKey: 'ui.vl_find_desc',   icon: Search },
+		free:            { labelKey: 'ui.vl_free_label',   descKey: 'ui.vl_free_desc',    icon: Piano },
 	};
 
 	let suggested: PracticePlan = $state(PRACTICE_PLANS[0]);
@@ -152,7 +153,7 @@
 				<p class="text-xs text-[var(--text-dim)] mt-2 overflow-hidden transition-all duration-300 max-h-0 group-hover:max-h-24">{t(suggested.description)}</p>
 			</div>
 			<div class="flex flex-col items-end justify-center gap-2 self-center">
-				<span class="text-[var(--primary)] text-2xl opacity-60 group-hover:opacity-100 transition-opacity">▶</span>
+				<span class="text-[var(--primary)] opacity-60 group-hover:opacity-100 transition-opacity flex"><Play size={24} aria-hidden="true" /></span>
 				<span class="pill-btn pill-btn-primary text-xs px-3 py-1.5">{t('settings.start_training')}</span>
 			</div>
 		</div>
@@ -210,11 +211,12 @@
 						<div class="grid grid-cols-3 gap-3 px-4 pb-4">
 							{#each (['guided', 'find-inversion', 'free'] as VoiceLeadingMode[]) as mode}
 								{@const cfg = VL_MODE_CONFIG[mode]}
+									{@const VlIcon = cfg.icon}
 								<button
 									class="vl-mode-btn flex flex-col items-start p-3 rounded-[var(--radius)] border cursor-pointer transition-all text-left hover:scale-105 hover:z-10 {vlMode === mode ? 'border-[var(--primary)] bg-[var(--primary-muted)]' : 'border-[var(--border)] bg-[var(--bg)]/60 hover:border-[var(--border-hover)]'}"
 									onclick={() => { vlMode = mode; onstartplan(plan); }}
 								>
-									<span class="vl-mode-icon text-2xl mb-2 leading-none">{cfg.icon}</span>
+									<span class="vl-mode-icon mb-2 leading-none flex"><VlIcon size={24} aria-hidden="true" /></span>
 									<span class="vl-mode-label text-xs font-bold {vlMode === mode ? 'text-[var(--primary)]' : ''} mb-1">{t(cfg.labelKey)}</span>
 									<span class="text-[10px] text-[var(--text-dim)] leading-snug">{t(cfg.descKey)}</span>
 								</button>

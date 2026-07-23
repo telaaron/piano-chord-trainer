@@ -3,6 +3,7 @@
 	import { convertChordNotation, type NotationSystem } from '$lib/engine';
 	import type { VoiceLeadingInfo, VoiceLeadingMode } from '$lib/engine';
 	import { formatVoiceLeading } from '$lib/engine';
+	import { Headphones } from 'lucide-svelte';
 
 	import type { Snippet } from 'svelte';
 
@@ -37,8 +38,8 @@
 	onkeydown={(e) => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); onclick?.(); } }}
 >
 	{#if hideChordName}
-		<div class="text-6xl sm:text-8xl font-bold text-[var(--text-dim)] animate-pulse-slow">
-			🎧
+		<div class="flex justify-center text-[var(--text-dim)] animate-pulse-slow">
+			<Headphones size={80} aria-hidden="true" />
 		</div>
 		<div class="text-sm text-[var(--text-muted)] mt-2">{t('ui.listen_and_play')}</div>
 	{:else}

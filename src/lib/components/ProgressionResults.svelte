@@ -3,6 +3,7 @@
 	import { t } from '$lib/i18n';
 	import type { SessionEvaluation } from '$lib/engine';
 	import { formatTime } from '$lib/utils/format';
+	import { Sparkles, Target, ThumbsUp, Dumbbell, Piano, Check, X, RefreshCw, ArrowLeft, type Icon as LucideIcon } from 'lucide-svelte';
 
 	interface Props {
 		evaluation: SessionEvaluation;
@@ -14,22 +15,23 @@
 
 	let { evaluation, name, bpm, onback, onreplay }: Props = $props();
 
-	function gradeLabel(accuracy: number): { text: string; color: string; emoji: string } {
-		if (accuracy >= 0.95) return { text: t('ui.grade_perfect'), color: 'var(--accent-green)', emoji: '🌟' };
-		if (accuracy >= 0.8) return { text: t('ui.grade_excellent'), color: 'var(--accent-green)', emoji: '🎯' };
-		if (accuracy >= 0.6) return { text: t('ui.grade_good'), color: 'var(--accent-amber)', emoji: '👍' };
-		if (accuracy >= 0.4) return { text: t('ui.grade_room_to_grow'), color: 'var(--accent-amber)', emoji: '💪' };
-		return { text: t('ui.grade_keep_practicing'), color: 'var(--accent-red)', emoji: '🎹' };
+	function gradeLabel(accuracy: number): { text: string; color: string; icon: typeof LucideIcon } {
+		if (accuracy >= 0.95) return { text: t('ui.grade_perfect'), color: 'var(--accent-green)', icon: Sparkles };
+		if (accuracy >= 0.8) return { text: t('ui.grade_excellent'), color: 'var(--accent-green)', icon: Target };
+		if (accuracy >= 0.6) return { text: t('ui.grade_good'), color: 'var(--accent-amber)', icon: ThumbsUp };
+		if (accuracy >= 0.4) return { text: t('ui.grade_room_to_grow'), color: 'var(--accent-amber)', icon: Dumbbell };
+		return { text: t('ui.grade_keep_practicing'), color: 'var(--accent-red)', icon: Piano };
 	}
 
 	const grade = $derived(gradeLabel(evaluation.overallAccuracy));
+	const GradeIcon = $derived(grade.icon);
 	const accuracyPercent = $derived(Math.round(evaluation.overallAccuracy * 100));
 </script>
 
 <div class="max-w-2xl mx-auto space-y-6" in:scale={{ start: 0.95, duration: 300 }}>
 	<!-- Hero -->
 	<div class="card surface-glass p-8 text-center">
-		<div class="text-5xl mb-3">{grade.emoji}</div>
+		<div class="mb-3 flex justify-center" style="color: {grade.color}"><GradeIcon size={48} aria-hidden="true" /></div>
 		<div class="text-3xl font-bold" style="color: {grade.color}">{grade.text}</div>
 		<div class="text-sm text-[var(--text-muted)] mt-2">{name} · {bpm} BPM</div>
 	</div>
@@ -96,8 +98,8 @@
 					<div
 						class="p-2 rounded-[var(--radius-sm)] text-center text-xs font-mono border {ce.hit ? 'border-[var(--accent-green)]/30 bg-[var(--accent-green)]/5' : 'border-[var(--accent-red)]/30 bg-[var(--accent-red)]/5'}"
 					>
-						<div class="font-semibold {ce.hit ? 'text-[var(--accent-green)]' : 'text-[var(--accent-red)]'}">
-							{ce.hit ? '✓' : '✗'}
+						<div class="font-semibold flex justify-center {ce.hit ? 'text-[var(--accent-green)]' : 'text-[var(--accent-red)]'}">
+							{#if ce.hit}<Check size={14} aria-hidden="true" />{:else}<X size={14} aria-hidden="true" />{/if}
 						</div>
 						<div class="mt-0.5 text-[var(--text-muted)] truncate">{ce.chord.display}</div>
 					</div>
@@ -109,16 +111,16 @@
 	<!-- Actions -->
 	<div class="flex gap-3">
 		<button
-			class="flex-1 h-12 pill-btn pill-btn-primary text-[var(--primary-text)] text-base font-semibold transition-colors cursor-pointer"
+			class="flex-1 h-12 pill-btn pill-btn-primary text-[var(--primary-text)] text-base font-semibold transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
 			onclick={onreplay}
 		>
-			🔄 {t('ui.play_again')}
+			<RefreshCw size={16} aria-hidden="true" /> {t('ui.play_again')}
 		</button>
 		<button
-			class="flex-1 h-12 pill-btn pill-btn-secondary text-[var(--text-muted)] transition-colors cursor-pointer"
+			class="flex-1 h-12 pill-btn pill-btn-secondary text-[var(--text-muted)] transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
 			onclick={onback}
 		>
-			← {t('ui.back_editor')}
+			<ArrowLeft size={16} aria-hidden="true" /> {t('ui.back_editor')}
 		</button>
 	</div>
 </div>

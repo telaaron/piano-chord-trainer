@@ -5,6 +5,18 @@
 	import { getCourseProgress, getLessonProgress } from '$lib/services/course-progress';
 	import { courseCompletionPercent, moduleCompletionPercent, getNextLesson } from '$lib/engine/courses';
 	import type { CourseProgress, MasteryLevel } from '$lib/engine/courses';
+	import { Ruler, Piano, Rocket, BookOpen, Check } from 'lucide-svelte';
+
+	/** Pick a lucide icon component for a course by its id */
+	function courseIcon(id: string) {
+		switch (id) {
+			case 'intervals': return Ruler;
+			case 'shell-voicings': return Piano;
+			case 'ultimate':
+			case 'ultimate-plan': return Rocket;
+			default: return BookOpen;
+		}
+	}
 
 	const courseId = $derived(page.params.courseId ?? '');
 	const course = $derived(getCourse(courseId));
@@ -54,6 +66,7 @@
 		<a href="/learn" class="text-[var(--primary)] hover:underline mt-4 inline-block">{t('learn.back_to_courses')}</a>
 	</main>
 {:else}
+	{@const CourseIcon = courseIcon(course.id)}
 	<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 		<!-- Breadcrumb -->
 		<div class="mb-6">
@@ -64,7 +77,7 @@
 
 		<!-- Course header -->
 		<div class="flex items-start gap-4 mb-8">
-					<span class="text-4xl" role="img" aria-label={t(course.titleKey)}>{course.icon}</span>
+			<CourseIcon size={36} class="text-[var(--primary)] shrink-0" aria-hidden="true" />
 			<div class="flex-1 min-w-0">
 				<h1 class="text-xl sm:text-2xl font-bold text-[var(--text)]">
 					{t(course.titleKey)}
@@ -151,7 +164,7 @@
 					{percent > 0 ? t('learn.continue') : t('learn.start')} →
 				</a>
 			{:else if percent === 100}
-				<span class="text-sm text-[var(--accent-green)] font-medium">✓ {t('learn.complete')}</span>
+				<span class="text-sm text-[var(--accent-green)] font-medium inline-flex items-center gap-1"><Check size={16} class="text-[var(--accent-green)]" aria-hidden="true" /> {t('learn.complete')}</span>
 			{/if}
 		</div>
 	</main>

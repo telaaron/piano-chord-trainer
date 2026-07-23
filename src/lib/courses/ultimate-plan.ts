@@ -180,7 +180,7 @@ export const ultimatePlanCourse: Course = {
 	titleKey: 'course.ultimate.title',
 	descriptionKey: 'course.ultimate.description',
 	subtitleKey: 'course.ultimate.subtitle',
-	icon: '🚀',
+	icon: '',
 	level: 'beginner', // starts easy, grows to advanced
 	modules: [
 		mod1_fundamentals,

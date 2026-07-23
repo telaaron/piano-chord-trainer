@@ -5,6 +5,7 @@
 	import { toastError } from '$lib/services/toast';
 	import { goto } from '$app/navigation';
 	import { Icon } from '$lib/components/ui';
+	import { PartyPopper, Check } from 'lucide-svelte';
 
 	const offerItems = [
 		{ icon: 'warmup', titleKey: 'pricing.offer_trial_title', descKey: 'pricing.offer_trial_desc' },
@@ -126,7 +127,7 @@
 		<!-- Beta banner -->
 		{#if beta}
 			<div class="max-w-2xl mx-auto p-4 surface-glass text-center">
-				<p class="font-semibold text-[var(--accent-gold)]">🎉 {t('pricing.beta_banner_title')}</p>
+				<p class="font-semibold text-[var(--accent-gold)] inline-flex items-center gap-1.5"><PartyPopper size={18} class="text-[var(--accent-gold)]" aria-hidden="true" /> {t('pricing.beta_banner_title')}</p>
 				<p class="text-sm text-[var(--text-muted)] mt-1">{t('pricing.beta_banner_desc')}</p>
 			</div>
 		{/if}
@@ -183,7 +184,7 @@
 					<ul class="flex-1 space-y-2 mb-6">
 						{#each plan.features as feat}
 							<li class="flex items-start gap-2 text-sm text-[var(--text-muted)]">
-								<span class="text-[var(--primary)] mt-0.5 shrink-0">✓</span>
+								<Check size={16} class="text-[var(--primary)] mt-0.5 shrink-0" aria-hidden="true" />
 								{t(feat)}
 							</li>
 						{/each}

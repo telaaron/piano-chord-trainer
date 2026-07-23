@@ -334,7 +334,7 @@ public func generateGoals(_ profile: HabitProfile, _ history: [SessionResult], _
             titleParams: ["days": "\(targetDays)"],
             description: "Building the habit is more important than any single session",
             descriptionKey: "habit.goal_consistency_desc", descriptionParams: nil,
-            icon: "📅", target: Double(targetDays), current: Double(weekDays.count),
+            icon: "", target: Double(targetDays), current: Double(weekDays.count),
             xpReward: XP_GOAL_COMPLETED, createdAt: createdAt, completedAt: nil, expiresAt: expiresAt))
     }
 
@@ -350,7 +350,7 @@ public func generateGoals(_ profile: HabitProfile, _ history: [SessionResult], _
             titleParams: ["root": ws.root, "voicing": vLabel, "target": "\(targetTime)"],
             description: "Currently \(currentSec)s average — aim for \(targetTime)s",
             descriptionKey: "habit.goal_speed_desc", descriptionParams: ["current": "\(currentSec)", "target": "\(targetTime)"],
-            icon: "⚡", target: targetTime, current: currentSec,
+            icon: "", target: targetTime, current: currentSec,
             xpReward: XP_GOAL_COMPLETED, createdAt: createdAt, completedAt: nil, expiresAt: expiresAt))
     }
 
@@ -370,7 +370,7 @@ public func generateGoals(_ profile: HabitProfile, _ history: [SessionResult], _
             titleParams: ["voicing": first.label],
             description: "Expand your voicing vocabulary — \(unused.count) types still unexplored",
             descriptionKey: "habit.goal_exploration_desc", descriptionParams: ["remaining": "\(unused.count)"],
-            icon: "🔍", target: 1, current: 0,
+            icon: "", target: 1, current: 0,
             xpReward: XP_NEW_VOICING, createdAt: createdAt, completedAt: nil, expiresAt: expiresAt))
     }
 
@@ -383,7 +383,7 @@ public func generateGoals(_ profile: HabitProfile, _ history: [SessionResult], _
             title: "Complete a 50-chord session", titleKey: "habit.goal_endurance", titleParams: nil,
             description: "Push your stamina with a longer session",
             descriptionKey: "habit.goal_endurance_desc", descriptionParams: nil,
-            icon: "💪", target: 50, current: 0,
+            icon: "", target: 50, current: 0,
             xpReward: XP_GOAL_COMPLETED, createdAt: createdAt, completedAt: nil, expiresAt: expiresAt))
     }
 
@@ -397,7 +397,7 @@ public func generateGoals(_ profile: HabitProfile, _ history: [SessionResult], _
             titleParams: ["count": "\(dueChords.count)"],
             description: "Keep your skills sharp — these chords need refreshing",
             descriptionKey: "habit.goal_review_desc", descriptionParams: nil,
-            icon: "🔄", target: Double(dueChords.count), current: 0,
+            icon: "", target: Double(dueChords.count), current: 0,
             xpReward: 20, createdAt: createdAt, completedAt: nil, expiresAt: expiresAt))
     }
 
@@ -414,7 +414,7 @@ public func generateGoals(_ profile: HabitProfile, _ history: [SessionResult], _
                 titleParams: ["target": "\(target)"],
                 description: "Currently \(avgAccuracy)% — clean playing beats fast playing",
                 descriptionKey: "habit.goal_accuracy_desc", descriptionParams: ["current": "\(avgAccuracy)", "target": "\(target)"],
-                icon: "🎯", target: Double(target), current: Double(avgAccuracy),
+                icon: "", target: Double(target), current: Double(avgAccuracy),
                 xpReward: XP_GOAL_COMPLETED, createdAt: createdAt, completedAt: nil, expiresAt: expiresAt))
         }
     }
@@ -430,7 +430,7 @@ public func generateGoals(_ profile: HabitProfile, _ history: [SessionResult], _
                 title: "ii-V-I in all keys under 2.5s/chord", titleKey: "habit.goal_mastery_251", titleParams: nil,
                 description: "The ultimate jazz drill — smooth through every key",
                 descriptionKey: "habit.goal_mastery_251_desc", descriptionParams: nil,
-                icon: "🏆", target: 2.5, current: current,
+                icon: "", target: 2.5, current: current,
                 xpReward: 50, createdAt: createdAt, completedAt: nil, expiresAt: expiresAt))
         }
     }
@@ -545,7 +545,7 @@ public func getQuickStartSuggestion(_ profile: HabitProfile, _ history: [Session
             title: "Quick restart: 4 chords", titleKey: "habit.quick_restart", titleParams: nil,
             description: "Just 4 chords. That's all it takes to start again.",
             descriptionKey: "habit.quick_restart_desc", descriptionParams: nil,
-            planId: nil, minutes: 1, icon: "🔥", focusRoots: nil, focusVoicing: nil)
+            planId: nil, minutes: 1, icon: "", focusRoots: nil, focusVoicing: nil)
     }
 
     let weakSpots = analyzeWeakSpots(history, 10)
@@ -567,7 +567,7 @@ public func getQuickStartSuggestion(_ profile: HabitProfile, _ history: [Session
             titleParams: ["voicing": voicingLabel, "root": rootsStr, "target": "\(targetTime)"],
             description: "Focused drill — \(rootsStr) in \(voicingLabel) appear most often",
             descriptionKey: "habit.quick_weak_focus_desc", descriptionParams: ["voicing": voicingLabel, "roots": rootsStr],
-            planId: "adaptive-drill", minutes: 3, icon: "🎯", focusRoots: Array(roots), focusVoicing: worstVoicing)
+            planId: "adaptive-drill", minutes: 3, icon: "", focusRoots: Array(roots), focusVoicing: worstVoicing)
     }
 
     return QuickStartSuggestion(
@@ -575,7 +575,7 @@ public func getQuickStartSuggestion(_ profile: HabitProfile, _ history: [Session
         titleParams: ["minutes": "\(profile.dailyGoalMinutes)"],
         description: "Your daily practice — start with what you know",
         descriptionKey: "habit.quick_warmup_desc", descriptionParams: nil,
-        planId: "warmup", minutes: profile.dailyGoalMinutes, icon: "☀️", focusRoots: nil, focusVoicing: nil)
+        planId: "warmup", minutes: profile.dailyGoalMinutes, icon: "", focusRoots: nil, focusVoicing: nil)
 }
 
 // ─── Goal Progress Check ────────────────────────────────────
@@ -734,20 +734,20 @@ public func getDailyMotivation(_ profile: HabitProfile, _ streak: StreakData, no
     let practicedToday = profile.lastSessionDate == today && profile.sessionsToday > 0
 
     if !practicedToday && hour >= 18 && streak.current >= 2 {
-        return DailyMotivation(type: .streakAtRisk, messageKey: "habit.motivation_streak_risk", messageParams: ["days": "\(streak.current)"], emoji: "🔥")
+        return DailyMotivation(type: .streakAtRisk, messageKey: "habit.motivation_streak_risk", messageParams: ["days": "\(streak.current)"], emoji: "")
     }
     if !practicedToday || progress.progressPercent == 0 {
-        return DailyMotivation(type: .notStarted, messageKey: "habit.motivation_not_started", messageParams: ["minutes": "\(progress.goalMinutes)"], emoji: "🎹")
+        return DailyMotivation(type: .notStarted, messageKey: "habit.motivation_not_started", messageParams: ["minutes": "\(progress.goalMinutes)"], emoji: "")
     }
     if progress.goalMet && profile.sessionsToday > 1 {
-        return DailyMotivation(type: .extraCredit, messageKey: "habit.motivation_extra", messageParams: ["practiced": "\(progress.practicedMinutes)"], emoji: "⭐")
+        return DailyMotivation(type: .extraCredit, messageKey: "habit.motivation_extra", messageParams: ["practiced": "\(progress.practicedMinutes)"], emoji: "")
     }
     if progress.goalMet {
-        return DailyMotivation(type: .goalReached, messageKey: "habit.motivation_goal_reached", messageParams: [:], emoji: "🎉")
+        return DailyMotivation(type: .goalReached, messageKey: "habit.motivation_goal_reached", messageParams: [:], emoji: "")
     }
     if progress.progressPercent >= 70 {
-        return DailyMotivation(type: .almostThere, messageKey: "habit.motivation_almost", messageParams: ["remaining": "\(progress.remainingMinutes)"], emoji: "💪")
+        return DailyMotivation(type: .almostThere, messageKey: "habit.motivation_almost", messageParams: ["remaining": "\(progress.remainingMinutes)"], emoji: "")
     }
     return DailyMotivation(type: .justStarted, messageKey: "habit.motivation_keep_going",
-                           messageParams: ["remaining": "\(progress.remainingMinutes)", "practiced": "\(progress.practicedMinutes)"], emoji: "🎵")
+                           messageParams: ["remaining": "\(progress.remainingMinutes)", "practiced": "\(progress.practicedMinutes)"], emoji: "")
 }

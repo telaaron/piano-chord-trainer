@@ -22,6 +22,7 @@
 	import { startMetronome, stopMetronome, playChord, playChordAtTime, stopAll, setMetronomeBpm } from '$lib/services/audio';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
 	import { MidiService } from '$lib/services/midi';
+	import { X, Check } from 'lucide-svelte';
 
 	interface Props {
 		chords: CustomChord[];
@@ -281,10 +282,10 @@
 			</p>
 		</div>
 		<button
-			class="px-3 py-1.5 pill-btn pill-btn-secondary text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer text-sm font-medium"
+			class="px-3 py-1.5 pill-btn pill-btn-secondary text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer text-sm font-medium inline-flex items-center gap-1.5"
 			onclick={handleStop}
 		>
-			✕ {t('ui.stop')}
+			<X size={14} aria-hidden="true" /> {t('ui.stop')}
 		</button>
 	</div>
 
@@ -351,7 +352,7 @@
 			{#if midiEnabled && midiMatchResult && midiActiveNotes.size > 0}
 				<div class="mt-4">
 					{#if midiMatchResult.correct}
-						<span class="text-[var(--accent-green)] font-semibold text-lg">✓ {t('ui.correct')}</span>
+						<span class="text-[var(--accent-green)] font-semibold text-lg inline-flex items-center gap-1.5"><Check size={18} aria-hidden="true" /> {t('ui.correct')}</span>
 					{:else if midiMatchResult.accuracy > 0}
 						<span class="text-[var(--accent-amber)] text-sm">
 							{Math.round(midiMatchResult.accuracy * 100)}% – {t('ui.notes_missing', { count: midiMatchResult.missing.length })}

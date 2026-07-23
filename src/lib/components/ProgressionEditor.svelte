@@ -12,6 +12,7 @@
 		type CustomChord,
 		type ProgressionPreset,
 	} from '$lib/engine';
+	import { ArrowLeft, ArrowRight, ChevronDown, ChevronRight, Play, Save, Trash2 } from 'lucide-svelte';
 
 	interface Props {
 		/** Called when the user starts playing a progression */
@@ -99,11 +100,12 @@
 	<!-- Header -->
 	<div class="flex items-center gap-3">
 		<button
-			class="p-2 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] transition-colors cursor-pointer"
+			class="p-2 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-hover)] transition-colors cursor-pointer inline-flex items-center justify-center"
 			onclick={onback}
 			title={t('ui.back_editor')}
+			aria-label={t('ui.back_editor')}
 		>
-			←
+			<ArrowLeft size={18} aria-hidden="true" />
 		</button>
 		<div>
 			<h2 class="text-2xl font-bold">{t('ui.custom_progression')}</h2>
@@ -114,13 +116,13 @@
 	<!-- Preset Quick-Load -->
 	<div>
 		<button
-			class="text-sm text-[var(--primary)] hover:underline cursor-pointer"
+			class="text-sm text-[var(--primary)] hover:underline cursor-pointer inline-flex items-center gap-1.5"
 			onclick={() => (showPresets = !showPresets)}
 		>
 			{#if showPresets}
-				▾ {t('ui.hide_templates')}
+				<ChevronDown size={14} aria-hidden="true" /> {t('ui.hide_templates')}
 			{:else}
-				▸ {t('ui.load_templates')}
+				<ChevronRight size={14} aria-hidden="true" /> {t('ui.load_templates')}
 			{/if}
 		</button>
 
@@ -187,7 +189,7 @@
 							{/if}
 						</div>
 						{#if i < parsedChords.length - 1}
-							<span class="text-[var(--text-dim)] self-center">→</span>
+							<span class="text-[var(--text-dim)] self-center inline-flex"><ArrowRight size={14} aria-hidden="true" /></span>
 						{/if}
 					{/each}
 				</div>
@@ -229,19 +231,19 @@
 		<!-- Action row -->
 		<div class="flex gap-3 pt-2">
 			<button
-				class="flex-1 h-12 pill-btn pill-btn-primary text-[var(--primary-text)] text-base font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+				class="flex-1 h-12 pill-btn pill-btn-primary text-[var(--primary-text)] text-base font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
 				onclick={handlePlay}
 				disabled={parsedChords.length === 0}
 			>
-				▶ {t('ui.progression_play')}
+				<Play size={16} aria-hidden="true" /> {t('ui.progression_play')}
 			</button>
 			<button
-				class="h-12 px-5 pill-btn pill-btn-secondary text-[var(--text-muted)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+				class="h-12 px-5 pill-btn pill-btn-secondary text-[var(--text-muted)] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
 				onclick={handleSave}
 				disabled={parsedChords.length === 0}
 				title={t('ui.progression_save')}
 			>
-				💾 {t('ui.progression_save')}
+				<Save size={16} aria-hidden="true" /> {t('ui.progression_save')}
 			</button>
 		</div>
 	</div>
@@ -262,17 +264,18 @@
 							<div class="text-xs text-[var(--text-dim)] mt-1">{prog.bpm} BPM · {prog.loops === 0 ? '∞' : `${prog.loops}×`} · {prog.chords.length} chords</div>
 						</button>
 						<button
-							class="flex-1 max-w-[80px] text-center px-3 py-2 pill-btn pill-btn-primary text-[var(--primary-text)] text-xs font-semibold transition-colors cursor-pointer"
+							class="flex-1 max-w-[80px] px-3 py-2 pill-btn pill-btn-primary text-[var(--primary-text)] text-xs font-semibold transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
 							onclick={() => onplay(prog.chords, prog.bpm, prog.loops, prog.name)}
 						>
-							▶ Go
+							<Play size={14} aria-hidden="true" /> Go
 						</button>
 						<button
-							class="p-2 text-[var(--text-dim)] hover:text-[var(--accent-red)] transition-colors cursor-pointer"
+							class="p-2 text-[var(--text-dim)] hover:text-[var(--accent-red)] transition-colors cursor-pointer inline-flex items-center justify-center"
 							onclick={() => handleDelete(prog.id)}
 							title={t('ui.progression_delete')}
+							aria-label={t('ui.progression_delete')}
 						>
-							🗑
+							<Trash2 size={16} aria-hidden="true" />
 						</button>
 					</div>
 				{/each}

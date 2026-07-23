@@ -13,6 +13,7 @@
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import { MidiService } from '$lib/services/midi';
 	import type { ChordMatchResult } from '$lib/services/midi';
+	import { Check, Zap, Volume2, Star } from 'lucide-svelte';
 
 	// ─── Route params ─────────────────────────────────────────────
 	const courseId = $derived(page.params.courseId ?? '');
@@ -247,10 +248,13 @@
 		return t(`learn.step_${type}`);
 	}
 
-	function stepIcon(type: string, index: number): string {
+	/** Whether a step is completed — completed steps render a lucide Check icon */
+	function stepCompleted(index: number): boolean {
 		const progress = course ? getLessonProgress(course, lessonId) : null;
-		const stepProg = progress?.steps[index];
-		if (stepProg?.completed) return '✓';
+		return !!progress?.steps[index]?.completed;
+	}
+
+	function stepIcon(type: string, index: number): string {
 		if (index === currentStepIndex) return '●';
 		return '○';
 	}
@@ -534,7 +538,7 @@
 		<!-- Quick-test success overlay -->
 		{#if quickTestDone}
 			<div class="card p-8 text-center space-y-4 mb-6">
-				<span class="text-4xl">✓</span>
+				<Check size={40} class="text-[var(--accent-green)] mx-auto" aria-hidden="true" />
 				<p class="text-lg font-bold text-[var(--accent-green)]">{t('learn.quick_test_success')}</p>
 				<a
 					href="/learn/{courseId}"
@@ -555,7 +559,7 @@
 						onclick={enterQuickTest}
 						class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--accent-amber)] transition-colors"
 					>
-						⚡ {t('learn.quick_test')}
+						<Zap size={16} class="text-[var(--accent-amber)]" aria-hidden="true" /> {t('learn.quick_test')}
 					</button>
 					<span class="text-xs text-[var(--text-dim)]">{t('learn.quick_test_desc')}</span>
 				</div>
@@ -573,7 +577,9 @@
 							? 'bg-[var(--primary-muted)] border-[var(--primary)]/40' 
 							: 'border-transparent hover:bg-[var(--bg-card-hover)]'}"
 				>
-					<span class="{stepClass(i)} text-lg">{stepIcon(step.type, i)}</span>
+					<span class="{stepClass(i)} text-lg flex items-center justify-center h-[1.5rem]">
+						{#if stepCompleted(i)}<Check size={18} aria-hidden="true" />{:else}{stepIcon(step.type, i)}{/if}
+					</span>
 					<span class="{stepClass(i)} font-medium">{stepLabel(step.type)}</span>
 				</button>
 			{/each}
@@ -612,7 +618,7 @@
 									onclick={playTheoryChord}
 									class="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--border-hover)] transition-colors self-start sm:self-auto"
 								>
-									🔊 {t('learn.listen')}
+									<Volume2 size={16} class="text-[var(--text-muted)]" aria-hidden="true" /> {t('learn.listen')}
 								</button>
 							</div>
 							<!-- Note pills -->
@@ -684,7 +690,7 @@
 					<!-- Phase indicator -->
 					<div class="text-sm text-[var(--text-muted)]">
 						{#if practicePoolComplete}
-							<span class="text-[var(--accent-green)] font-medium">✓ {t('learn.complete')}</span>
+							<span class="text-[var(--accent-green)] font-medium inline-flex items-center gap-1"><Check size={16} class="text-[var(--accent-green)]" aria-hidden="true" /> {t('learn.complete')}</span>
 						{:else if practicePhase === 'guided'}
 							<p>{practiceIsInterval ? t('learn.practice_guided_interval') : t('learn.practice_guided')}</p>
 						{:else if practicePhase === 'find'}
@@ -712,8 +718,8 @@
 										</span>
 									</div>
 									{#if practiceCorrect}
-										<p class="text-sm text-[var(--accent-green)] mt-3 font-medium">
-											✓ {practiceCurrentInterval.root} → {practiceCurrentInterval.target}
+										<p class="text-sm text-[var(--accent-green)] mt-3 font-medium inline-flex items-center gap-1">
+											<Check size={16} class="text-[var(--accent-green)]" aria-hidden="true" /> {practiceCurrentInterval.root} → {practiceCurrentInterval.target}
 										</p>
 									{/if}
 								{:else}
@@ -855,8 +861,8 @@
 							{#if challengePassed && challengeAvgMs < MASTERY_THRESHOLD_MS}
 								<!-- MASTERED! -->
 								<div class="space-y-2">
-									<p class="text-[var(--accent-green)] font-bold text-lg">
-										⭐ {t('learn.challenge_mastered')}
+									<p class="text-[var(--accent-green)] font-bold text-lg inline-flex items-center gap-1.5">
+										<Star size={20} class="text-[var(--accent-gold)]" aria-hidden="true" /> {t('learn.challenge_mastered')}
 									</p>
 									<p class="text-sm text-[var(--text-muted)]">
 										{t('learn.challenge_mastered_sub', { threshold: String(MASTERY_THRESHOLD_MS) })}
@@ -873,8 +879,8 @@
 								{@const masteryProgress = Math.min(100, Math.max(5, Math.round(((step.masteryThresholdMs - challengeAvgMs) / (step.masteryThresholdMs - MASTERY_THRESHOLD_MS)) * 100)))}
 								<!-- Passed but not mastered -->
 								<div class="space-y-2">
-									<p class="text-[var(--accent-green)] font-medium">
-										✓ {t('learn.challenge_pass')}
+									<p class="text-[var(--accent-green)] font-medium inline-flex items-center gap-1.5">
+										<Check size={18} class="text-[var(--accent-green)]" aria-hidden="true" /> {t('learn.challenge_pass')}
 									</p>
 									<!-- Mastery encouragement -->
 									<div class="rounded-lg bg-[var(--border)]/15 border border-[var(--border)]/30 p-3 mt-3">
@@ -902,9 +908,9 @@
 									</button>
 									<button
 										onclick={startChallenge}
-										class="px-6 py-2.5 rounded-lg border border-[var(--accent-amber)]/50 text-[var(--accent-amber)] font-medium hover:bg-[var(--accent-amber)]/10 transition-colors"
+										class="inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-lg border border-[var(--accent-amber)]/50 text-[var(--accent-amber)] font-medium hover:bg-[var(--accent-amber)]/10 transition-colors"
 									>
-										⭐ {t('learn.challenge_try_mastery')}
+										<Star size={18} class="text-[var(--accent-amber)]" aria-hidden="true" /> {t('learn.challenge_try_mastery')}
 									</button>
 								</div>
 

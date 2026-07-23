@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fly, fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
+	import { TriangleAlert } from 'lucide-svelte';
 
 	interface Props {
 		message: string;
@@ -25,7 +26,7 @@
 	       rounded-[var(--radius)] px-4 py-3 shadow-xl
 	       text-sm max-w-sm w-[calc(100%-2rem)]"
 >
-	<span class="text-[var(--accent-amber)] text-base shrink-0">⚠</span>
+	<span class="text-[var(--accent-amber)] shrink-0 inline-flex"><TriangleAlert size={16} aria-hidden="true" /></span>
 	<span class="flex-1 text-[var(--text)]">{message}</span>
 	{#if onReconnect}
 		<button

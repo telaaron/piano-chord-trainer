@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
-	import type { HabitProfile, SmartGoal, QuickStartSuggestion, LevelInfo, DailyProgress, DailyMotivation } from '$lib/engine/habits';
+	import type { HabitProfile, SmartGoal, QuickStartSuggestion, LevelInfo, DailyProgress, DailyMotivation, MotivationType } from '$lib/engine/habits';
 	import { getLevelInfo, getQuickStartSuggestion, getDailyProgress, getDailyMotivation } from '$lib/engine/habits';
 	import type { StreakData, SessionResult } from '$lib/services/progress';
 	import { loadHistory, loadStreak } from '$lib/services/progress';
@@ -8,6 +8,20 @@
 	import LevelBadge from './LevelBadge.svelte';
 	import { Icon } from '$lib/components/ui';
 	import { onMount } from 'svelte';
+	import { Flame, Piano, Star, PartyPopper, Dumbbell, Music, Check, ArrowRight, type Icon as LucideIcon } from 'lucide-svelte';
+
+	/** Map a motivation type to its lucide icon component. */
+	function motivationIcon(type: MotivationType): typeof LucideIcon {
+		switch (type) {
+			case 'streak-at-risk': return Flame;
+			case 'not-started': return Piano;
+			case 'extra-credit': return Star;
+			case 'goal-reached': return PartyPopper;
+			case 'almost-there': return Dumbbell;
+			case 'just-started': return Music;
+			default: return Music;
+		}
+	}
 
 	/** plan id → Icon key (custom webp art); falls back to 'warmup'. */
 	const PLAN_ICON_KEY: Record<string, string> = {
@@ -39,6 +53,7 @@
 	const levelInfo: LevelInfo = $derived(getLevelInfo(profile.totalXP));
 	const dailyProgress: DailyProgress = $derived(getDailyProgress(profile));
 	const motivation: DailyMotivation = $derived(getDailyMotivation(profile, streak));
+	const MotivationIcon = $derived(motivationIcon(motivation.type));
 
 	/** Motivation text color based on state */
 	const motivationColor = $derived.by(() => {
@@ -73,7 +88,7 @@
 		descriptionParams: {},
 		planId: 'warmup',
 		minutes: 5,
-		icon: '☀️',
+		icon: '',
 	});
 
 	onMount(() => {
@@ -124,7 +139,11 @@
 		</div>
 		<a href="/midi-test?tab=midi" class="midi-pill flex items-center gap-1.25 py-1 px-2.5 rounded-full text-[0.65rem] font-medium border no-underline hover:opacity-80 transition-opacity {midiConnected ? 'bg-[rgba(74,222,128,0.08)] border-[rgba(74,222,128,0.2)] text-[#4ade80]' : 'bg-(--bg-muted) border-(--border) text-(--text-dim)'}">
 			<img src="/elements/images/midi-connect.webp" width="12" height="12" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
-			<span>{midiConnected ? 'MIDI ✓' : 'No MIDI'}</span>
+			{#if midiConnected}
+				<span class="inline-flex items-center gap-1">MIDI <Check size={12} aria-hidden="true" /></span>
+			{:else}
+				<span>No MIDI</span>
+			{/if}
 		</a>
 	</div>
 
@@ -149,7 +168,7 @@
 			</svg>
 			<div class="absolute inset-0 flex flex-col items-center justify-center gap-0 leading-none">
 				{#if dailyProgress.goalMet}
-					<span class="text-[1.3rem] text-[#4ade80] font-bold">✓</span>
+					<span class="text-[#4ade80] flex"><Check size={22} aria-hidden="true" /></span>
 				{:else}
 					<span class="ring-num text-[1.1rem] max-sm:text-[1.2rem] font-extrabold text-[#fb923c] tabular-nums leading-none">{Math.floor(dailyProgress.practicedMinutes)}</span>
 					<span class="ring-denom text-[0.6rem] max-sm:text-[0.65rem] text-(--text-dim) font-medium mt-px">/{dailyProgress.goalMinutes}m</span>
@@ -159,8 +178,8 @@
 
 		<!-- Right: motivation + week strip -->
 		<div class="flex-1 flex flex-col gap-2.25 min-w-0">
-			<p class="motivation-text m-0 text-[0.78rem] max-sm:text-[0.88rem] font-semibold leading-[1.3] transition-colors duration-400 ease-in-out whitespace-nowrap max-sm:whitespace-normal overflow-hidden text-ellipsis" style="color: {motivationColor}">
-				{motivation.emoji}&nbsp;{t(motivation.messageKey, motivation.messageParams)}
+			<p class="motivation-text m-0 text-[0.78rem] max-sm:text-[0.88rem] font-semibold leading-[1.3] transition-colors duration-400 ease-in-out whitespace-nowrap max-sm:whitespace-normal overflow-hidden text-ellipsis inline-flex items-center gap-1.5" style="color: {motivationColor}">
+				<MotivationIcon size={15} aria-hidden="true" class="shrink-0" />{t(motivation.messageKey, motivation.messageParams)}
 			</p>
 
 			<div class="flex items-center justify-between gap-2.5">
@@ -213,7 +232,7 @@
 			<span class="qs-title text-[0.78rem] max-sm:text-[0.85rem] font-bold text-(--text) whitespace-nowrap overflow-hidden text-ellipsis">{t(quickSuggestion.titleKey, quickSuggestion.titleParams) || quickSuggestion.title}</span>
 			<span class="qs-meta text-[0.62rem] max-sm:text-[0.68rem] text-(--text-dim) whitespace-nowrap overflow-hidden text-ellipsis">{quickSuggestion.minutes} min · {t(quickSuggestion.descriptionKey, quickSuggestion.descriptionParams) || quickSuggestion.description}</span>
 		</div>
-		<span class="qs-cta text-[0.72rem] max-sm:text-[0.78rem] font-bold text-[#fb923c] shrink-0 tracking-[0.02em]">{t('habit.start_arrow')} →</span>
+		<span class="qs-cta text-[0.72rem] max-sm:text-[0.78rem] font-bold text-[#fb923c] shrink-0 tracking-[0.02em] inline-flex items-center gap-1">{t('habit.start_arrow')} <ArrowRight size={14} aria-hidden="true" /></span>
 	</button>
 </div>
 

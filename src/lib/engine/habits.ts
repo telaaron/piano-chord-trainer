@@ -349,7 +349,7 @@ export function generateGoals(
 			titleParams: { days: targetDays },
 			description: 'Building the habit is more important than any single session',
 			descriptionKey: 'habit.goal_consistency_desc',
-			icon: '📅',
+			icon: '',
 			target: targetDays,
 			current: weekDays.size,
 			xpReward: XP_GOAL_COMPLETED,
@@ -373,7 +373,7 @@ export function generateGoals(
 			description: `Currently ${(ws.avgMs / 1000).toFixed(1)}s average — aim for ${targetTime}s`,
 			descriptionKey: 'habit.goal_speed_desc',
 			descriptionParams: { current: Number((ws.avgMs / 1000).toFixed(1)), target: targetTime },
-			icon: '⚡',
+			icon: '',
 			target: targetTime,
 			current: Number((ws.avgMs / 1000).toFixed(1)),
 			xpReward: XP_GOAL_COMPLETED,
@@ -409,7 +409,7 @@ export function generateGoals(
 			description: `Expand your voicing vocabulary — ${unused.length} types still unexplored`,
 			descriptionKey: 'habit.goal_exploration_desc',
 			descriptionParams: { remaining: unused.length },
-			icon: '🔍',
+			icon: '',
 			target: 1,
 			current: 0,
 			xpReward: XP_NEW_VOICING,
@@ -431,7 +431,7 @@ export function generateGoals(
 			titleKey: 'habit.goal_endurance',
 			description: 'Push your stamina with a longer session',
 			descriptionKey: 'habit.goal_endurance_desc',
-			icon: '💪',
+			icon: '',
 			target: 50,
 			current: 0,
 			xpReward: XP_GOAL_COMPLETED,
@@ -453,7 +453,7 @@ export function generateGoals(
 			titleParams: { count: dueChords.length },
 			description: 'Keep your skills sharp — these chords need refreshing',
 			descriptionKey: 'habit.goal_review_desc',
-			icon: '🔄',
+			icon: '',
 			target: dueChords.length,
 			current: 0,
 			xpReward: 20,
@@ -480,7 +480,7 @@ export function generateGoals(
 				description: `Currently ${avgAccuracy}% — clean playing beats fast playing`,
 				descriptionKey: 'habit.goal_accuracy_desc',
 				descriptionParams: { current: avgAccuracy, target },
-				icon: '🎯',
+				icon: '',
 				target,
 				current: avgAccuracy,
 				xpReward: XP_GOAL_COMPLETED,
@@ -504,7 +504,7 @@ export function generateGoals(
 				titleKey: 'habit.goal_mastery_251',
 				description: 'The ultimate jazz drill — smooth through every key',
 				descriptionKey: 'habit.goal_mastery_251_desc',
-				icon: '🏆',
+				icon: '',
 				target: 2.5,
 				current: bestAvg === Infinity ? 0 : Number((bestAvg / 1000).toFixed(1)),
 				xpReward: 50,
@@ -664,7 +664,7 @@ export function getQuickStartSuggestion(
 			description: "Just 4 chords. That's all it takes to start again.",
 			descriptionKey: 'habit.quick_restart_desc',
 			minutes: 1,
-			icon: '🔥',
+			icon: '',
 		};
 	}
 
@@ -694,7 +694,7 @@ export function getQuickStartSuggestion(
 			descriptionParams: { voicing: voicingLabel, roots: roots.join(', ') },
 			planId: 'adaptive-drill',
 			minutes: 3,
-			icon: '🎯',
+			icon: '',
 			focusRoots: roots,
 			focusVoicing: worstVoicing,
 		};
@@ -709,7 +709,7 @@ export function getQuickStartSuggestion(
 		descriptionKey: 'habit.quick_warmup_desc',
 		planId: 'warmup',
 		minutes: profile.dailyGoalMinutes,
-		icon: '☀️',
+		icon: '',
 	};
 }
 
@@ -952,7 +952,7 @@ export function getDailyMotivation(
 			type: 'streak-at-risk',
 			messageKey: 'habit.motivation_streak_risk',
 			messageParams: { days: streak.current },
-			emoji: '🔥',
+			emoji: '',
 		};
 	}
 
@@ -962,7 +962,7 @@ export function getDailyMotivation(
 			type: 'not-started',
 			messageKey: 'habit.motivation_not_started',
 			messageParams: { minutes: progress.goalMinutes },
-			emoji: '🎹',
+			emoji: '',
 		};
 	}
 
@@ -972,7 +972,7 @@ export function getDailyMotivation(
 			type: 'extra-credit',
 			messageKey: 'habit.motivation_extra',
 			messageParams: { practiced: progress.practicedMinutes },
-			emoji: '⭐',
+			emoji: '',
 		};
 	}
 
@@ -982,7 +982,7 @@ export function getDailyMotivation(
 			type: 'goal-reached',
 			messageKey: 'habit.motivation_goal_reached',
 			messageParams: {},
-			emoji: '🎉',
+			emoji: '',
 		};
 	}
 
@@ -992,7 +992,7 @@ export function getDailyMotivation(
 			type: 'almost-there',
 			messageKey: 'habit.motivation_almost',
 			messageParams: { remaining: progress.remainingMinutes },
-			emoji: '💪',
+			emoji: '',
 		};
 	}
 
@@ -1001,6 +1001,6 @@ export function getDailyMotivation(
 		type: 'just-started',
 		messageKey: 'habit.motivation_keep_going',
 		messageParams: { remaining: progress.remainingMinutes, practiced: progress.practicedMinutes },
-		emoji: '🎵',
+		emoji: '',
 	};
 }

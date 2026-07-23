@@ -22,6 +22,7 @@
 	import { MidiService, type MidiConnectionState, type MidiDevice, type ChordMatchResult } from '$lib/services/midi';
 	import { formatTime } from '$lib/utils/format';
 	import { t } from '$lib/i18n';
+	import { Piano, Check, Flame } from 'lucide-svelte';
 
 	// ─── Config ────────────────────────────────────────────────────
 	interface EmbedConfig {
@@ -430,7 +431,7 @@
 		<div class="flex-1 flex items-center justify-center p-6">
 			<div class="text-center max-w-90 w-full">
 				<!-- Logo mark -->
-				<div class="text-[2.5rem] mb-3 block" aria-hidden="true">🎹</div>
+				<div class="mb-3 flex justify-center" aria-hidden="true"><Piano size={40} class="text-(--primary)" /></div>
 
 				<h1 class="text-2xl font-bold mb-1 text-(--text)">{t('embed.setup_title')}</h1>
 
@@ -548,7 +549,7 @@
 	{#if screen === 'finished'}
 		<div class="flex-1 flex items-center justify-center p-6">
 			<div class="text-center max-w-90 w-full">
-				<div class="w-12 h-12 rounded-full bg-[color-mix(in_srgb,var(--accent-green)_15%,transparent)] border-2 border-(--accent-green) text-(--accent-green) text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true">✓</div>
+				<div class="w-12 h-12 rounded-full bg-[color-mix(in_srgb,var(--accent-green)_15%,transparent)] border-2 border-(--accent-green) text-(--accent-green) text-xl font-bold flex items-center justify-center mx-auto mb-4" aria-hidden="true"><Check size={22} /></div>
 				<h2 class="text-xl font-bold mb-5 text-(--text)">{t('embed.session_complete')}</h2>
 
 				<div class="grid grid-cols-[repeat(auto-fit,minmax(80px,1fr))] gap-3 mb-6 p-4 bg-(--bg-card) border border-(--border) rounded-lg">
@@ -572,7 +573,7 @@
 					{/if}
 					{#if bestStreak >= STREAK_THRESHOLD}
 						<div class="text-center">
-							<div class="text-xl font-extrabold text-(--primary) tabular-nums">🔥 {bestStreak}</div>
+							<div class="text-xl font-extrabold text-(--primary) tabular-nums inline-flex items-center justify-center gap-1"><Flame size={18} class="text-(--accent-amber)" aria-hidden="true" /> {bestStreak}</div>
 							<div class="text-[0.65rem] uppercase tracking-[0.06em] text-(--text-dim) mt-[0.15rem]">{t('embed.stat_best_streak')}</div>
 						</div>
 					{/if}

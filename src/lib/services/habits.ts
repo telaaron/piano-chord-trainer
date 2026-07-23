@@ -386,10 +386,10 @@ export function scheduleDailyReminder(profile: HabitProfile): (() => void) | nul
 		const suggestion = getQuickStartSuggestion(profile, history, streak);
 
 		const body = streak.current > 0
-			? `🔥 ${streak.current}-day streak — ${suggestion.title}`
+			? `${streak.current}-day streak — ${suggestion.title}`
 			: suggestion.description;
 
-		new Notification('🎹 Time to practice!', {
+		new Notification('Time to practice!', {
 			body,
 			icon: '/favicon/favicon-192.png',
 			badge: '/favicon/favicon-96.png',
@@ -429,7 +429,7 @@ export function scheduleStreakSaver(profile: HabitProfile): (() => void) | null 
 		const currentProfile = loadHabitProfile();
 		if (currentProfile.lastSessionDate === todayStr) return;
 
-		new Notification('🔥 Don\'t lose your streak!', {
+		new Notification('Don\'t lose your streak!', {
 			body: `${streak.current} days strong — just 2 minutes keeps it alive!`,
 			icon: '/favicon/favicon-192.png',
 			tag: 'streak-saver',

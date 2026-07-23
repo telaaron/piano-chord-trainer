@@ -35,7 +35,7 @@ private func ivPool(_ roots: [String], _ semitones: Int, _ label: String) -> [In
 
 public let shellVoicingsCourse = Course(
     id: "shell-voicings", titleKey: "course.shell.title", descriptionKey: "course.shell.description",
-    subtitleKey: "course.shell.subtitle", icon: "🎹", level: .beginner,
+    subtitleKey: "course.shell.subtitle", icon: "", level: .beginner,
     modules: [
         CourseModule(id: "basics", titleKey: "course.shell.mod1.title", lessons: [
             makeChordLesson("maj7", "course.shell.maj7.title", "course.shell.maj7.subtitle",
@@ -67,7 +67,7 @@ private func makeIntervalLesson(
 
 public let intervalsCourse = Course(
     id: "intervals", titleKey: "course.intervals.title", descriptionKey: "course.intervals.description",
-    subtitleKey: "course.intervals.subtitle", icon: "📏", level: .beginner,
+    subtitleKey: "course.intervals.subtitle", icon: "", level: .beginner,
     modules: [
         CourseModule(id: "seconds-thirds", titleKey: "course.intervals.mod1.title", lessons: [
             makeIntervalLesson("major-minor-3rd", "course.intervals.major_minor_3rd.title", "course.intervals.major_minor_3rd.subtitle",
@@ -184,7 +184,7 @@ public let scaleDegreesCourse = Course(
 
 public let ultimatePlanCourse = Course(
     id: "ultimate-plan", titleKey: "course.ultimate.title", descriptionKey: "course.ultimate.description",
-    subtitleKey: "course.ultimate.subtitle", icon: "🚀", level: .beginner,
+    subtitleKey: "course.ultimate.subtitle", icon: "", level: .beginner,
     modules: [
         CourseModule(id: "fundamentals", titleKey: "course.ultimate.mod1.title", lessons: [
             makeChordLesson("fund-maj7", "course.ultimate.fund-maj7.title", "course.ultimate.fund-maj7.subtitle", quality: "Maj7", voicing: .root, exampleRoot: "C", practiceKeys: EASY_KEYS_4, challengeKeys: ALL_KEYS, masteryMs: 4000),

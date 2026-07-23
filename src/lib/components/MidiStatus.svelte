@@ -2,6 +2,7 @@
 	import type { MidiConnectionState, MidiDevice } from '$lib/services/midi';
 	import { isIOSorIPadOS } from '$lib/services/midi';
 	import { t } from '$lib/i18n';
+	import { TabletSmartphone, Music, Settings } from 'lucide-svelte';
 
 	interface Props {
 		state: MidiConnectionState;
@@ -85,7 +86,7 @@
 			rel="noopener noreferrer"
 			class="inline-flex items-center gap-1.5 text-xs text-[var(--accent-amber)] underline underline-offset-2 hover:text-[var(--primary)] transition-colors"
 		>
-			📲 {t('midi.ipad_open_app')}
+			<TabletSmartphone size={14} aria-hidden="true" /> {t('midi.ipad_open_app')}
 		</a>
 	{:else if state === 'unsupported'}
 		<span class="text-xs text-[var(--text-dim)]">
@@ -112,14 +113,14 @@
 	{/if}
 
 	{#if state === 'connected' && devices.length > 0 && activeNoteCount > 0}
-		<span class="text-xs text-[var(--text-dim)] font-mono">
-			♪ {activeNoteCount}
+		<span class="text-xs text-[var(--text-dim)] font-mono inline-flex items-center gap-1">
+			<Music size={12} aria-hidden="true" /> {activeNoteCount}
 		</span>
 	{/if}
 
 	<a
 		href="/midi-test?tab=midi"
-		class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors ml-auto leading-none"
+		class="text-xs text-[var(--text-dim)] hover:text-[var(--primary)] transition-colors ml-auto leading-none inline-flex items-center"
 		title={t('nav.midi_test')}
-	>⚙</a>
+	><Settings size={14} aria-hidden="true" /></a>
 </div>

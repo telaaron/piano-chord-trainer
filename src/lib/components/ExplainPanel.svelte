@@ -4,6 +4,7 @@
 	import type { VoicingType, ChordWithNotes } from '$lib/engine';
 	import { playChord } from '$lib/services/audio';
 	import PianoKeyboard from './PianoKeyboard.svelte';
+	import { X, Volume2, ChevronDown, ChevronRight } from 'lucide-svelte';
 
 	interface Props {
 		/** The chord currently displayed, e.g. "CMaj7" */
@@ -118,9 +119,9 @@
 			</div>
 			<button
 				onclick={onclose}
-				class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-muted)] text-[var(--text-muted)] transition-colors text-lg"
+				class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-muted)] text-[var(--text-muted)] transition-colors"
 				aria-label="Close"
-			>✕</button>
+			><X size={18} aria-hidden="true" /></button>
 		</div>
 
 		<!-- Content -->
@@ -191,9 +192,9 @@
 					</span>
 					<button
 						onclick={listen}
-						class="text-xs px-2.5 py-1 rounded-md border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--border-hover)] transition-colors"
+						class="text-xs px-2.5 py-1 rounded-md border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--border-hover)] transition-colors inline-flex items-center gap-1.5"
 					>
-						🔊 {t('explain.listen')}
+						<Volume2 size={14} aria-hidden="true" /> {t('explain.listen')}
 					</button>
 				</div>
 				<PianoKeyboard
@@ -210,7 +211,7 @@
 					onclick={() => showGlossary = !showGlossary}
 					class="text-xs text-[var(--text-dim)] hover:text-[var(--text-muted)] transition-colors flex items-center gap-1"
 				>
-					<span class="text-sm">{showGlossary ? '▾' : '▸'}</span>
+					{#if showGlossary}<ChevronDown size={14} aria-hidden="true" />{:else}<ChevronRight size={14} aria-hidden="true" />{/if}
 					{t('explain.glossary_toggle')}
 				</button>
 				{#if showGlossary}

@@ -11,7 +11,7 @@ export const shellVoicingsCourse: Course = {
 	titleKey: 'course.shell.title',
 	descriptionKey: 'course.shell.description',
 	subtitleKey: 'course.shell.subtitle',
-	icon: '🎹',
+	icon: '',
 	level: 'beginner',
 	modules: [
 		{

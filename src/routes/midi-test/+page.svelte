@@ -8,6 +8,7 @@
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import { NOTES_SHARPS } from '$lib/engine';
 	import { t } from '$lib/i18n';
+	import { Piano, Mic, X, Volume2 } from 'lucide-svelte';
 
 	// ─── Tab ─────────────────────────────────────────────────────
 	type Tab = 'midi' | 'mic';
@@ -128,7 +129,7 @@
 				midiNoteOnCount++;
 				const delta = midiLastNoteOnTime > 0 ? Date.now() - midiLastNoteOnTime : 0;
 				midiLastNoteOnTime = Date.now();
-				addMidiLog('note-on', `🎹 ${name} (MIDI ${n}, PC ${n % 12})${delta > 0 ? ` +${delta}ms` : ''}`);
+				addMidiLog('note-on', `${name} (MIDI ${n}, PC ${n % 12})${delta > 0 ? ` +${delta}ms` : ''}`);
 			}
 		}
 		for (const n of prevMidiNotes) {
@@ -171,7 +172,7 @@
 			micDetectionCount++;
 			addMicLog(
 				'note-on',
-				`🎙 +[${names}] — ${current.size} note${current.size !== 1 ? 's' : ''} active`
+				`+[${names}] — ${current.size} note${current.size !== 1 ? 's' : ''} active`
 			);
 		}
 		if (disappeared.length > 0) {
@@ -187,7 +188,7 @@
 				.join(' ');
 			if (pcs !== micLastNoteSet) {
 				micLastNoteSet = pcs;
-				addMicLog('detect', `✶ Pitch classes: ${pcs}`);
+				addMicLog('detect', `Pitch classes: ${pcs}`);
 			}
 		}
 		prevMicNotes = new Set(current);
@@ -306,7 +307,7 @@
 					: 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
 			onclick={() => (activeTab = 'midi')}
 		>
-			🎹 MIDI
+			<span class="inline-flex items-center gap-1.5"><Piano size={16} aria-hidden="true" /> MIDI</span>
 		</button>
 		<button
 			class="px-5 py-2 rounded-[var(--radius-sm)] text-sm font-medium transition-all cursor-pointer
@@ -315,7 +316,7 @@
 					: 'text-[var(--text-muted)] hover:text-[var(--text)]'}"
 			onclick={() => (activeTab = 'mic')}
 		>
-			🎙 {t('mic_test.title')}
+			<span class="inline-flex items-center gap-1.5"><Mic size={16} aria-hidden="true" /> {t('mic_test.title')}</span>
 		</button>
 	</div>
 
@@ -365,7 +366,7 @@
 								class="p-2 rounded-[var(--radius-sm)] text-[var(--text-dim)] hover:text-[var(--accent-red,#ef4444)] hover:bg-[var(--accent-red,#ef4444)]/10 transition-colors"
 								onclick={() => hideMidiDevice(device.id)}
 								title={t('midi_test.hide_device')}
-							>✕</button>
+							><X size={16} aria-hidden="true" /></button>
 						</div>
 					{/each}
 					{#if midiHiddenCount > 0}
@@ -388,7 +389,7 @@
 							: 'bg-[var(--bg)] text-[var(--text-muted)] border border-[var(--border)] hover:border-[var(--border-hover)]'}"
 					onclick={toggleMidiSound}
 				>
-					🔊 {t(midiSoundEnabled ? 'settings.midi_sound_on' : 'settings.midi_sound_off')}
+					<Volume2 size={16} aria-hidden="true" /> {t(midiSoundEnabled ? 'settings.midi_sound_on' : 'settings.midi_sound_off')}
 				</button>
 				<span class="text-xs text-[var(--text-dim)]">{t('settings.midi_sound_desc')}</span>
 			</div>
