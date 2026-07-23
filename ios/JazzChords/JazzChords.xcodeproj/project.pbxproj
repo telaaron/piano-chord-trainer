@@ -10,6 +10,9 @@
 		041450E2866996B225A35323 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12BE9B7FC3E12658EBF8BA6 /* Typography.swift */; };
 		04C58489DBA3E4BFFD5351E4 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7702795829A5ABB75729E310 /* Glass.swift */; };
 		1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */; };
+		CA0C4001C0AC4001C0AC4001 /* CoachStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C4002C0AC4002C0AC4002 /* CoachStore.swift */; };
+		CA0C4003C0AC4003C0AC4003 /* TelemetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C4004C0AC4004C0AC4004 /* TelemetryService.swift */; };
+		CA0C4005C0AC4005C0AC4005 /* CoachL10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C4006C0AC4006C0AC4006 /* CoachL10n.swift */; };
 		23E6837096744F2101283969 /* empty.webp in Resources */ = {isa = PBXBuildFile; fileRef = CEA73CE363D55D87924D64F4 /* empty.webp */; };
 		2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0867EC7118FCB35AE3C9028E /* TodayView.swift */; };
 		44B8C4456407179C239F8054 /* HabitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */; };
@@ -52,6 +55,9 @@
 		0DD8D24429AD88D4ED75C2AE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		2090908BA45B8DDA83185B8A /* EarTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarTrainingView.swift; sourceTree = "<group>"; };
 		25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseProgressStore.swift; sourceTree = "<group>"; };
+		CA0C4002C0AC4002C0AC4002 /* CoachStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachStore.swift; sourceTree = "<group>"; };
+		CA0C4004C0AC4004C0AC4004 /* TelemetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryService.swift; sourceTree = "<group>"; };
+		CA0C4006C0AC4006C0AC4006 /* CoachL10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachL10n.swift; sourceTree = "<group>"; };
 		2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
 		3205430E7105BBD412ED8C3D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		32B429969FAC364D67B4C639 /* hero2.webp */ = {isa = PBXFileReference; path = hero2.webp; sourceTree = "<group>"; };
@@ -127,10 +133,12 @@
 		2C99DD2E23C7FCA38EFF5F6F /* Store */ = {
 			isa = PBXGroup;
 			children = (
+				CA0C4002C0AC4002C0AC4002 /* CoachStore.swift */,
 				25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */,
 				795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */,
 				558859E350F645BD0FB4B81E /* Persistence.swift */,
 				D7F32C4DA0908BF4BB3691E1 /* SubscriptionStore.swift */,
+				CA0C4004C0AC4004C0AC4004 /* TelemetryService.swift */,
 				7B56736703494CD04E7B1D17 /* TrainerStore.swift */,
 			);
 			path = Store;
@@ -152,6 +160,7 @@
 			isa = PBXGroup;
 			children = (
 				3C3E965AC4FC3825ACC4C530 /* AppIcons.swift */,
+				CA0C4006C0AC4006C0AC4006 /* CoachL10n.swift */,
 				EED3F6CD3AAF7D0157D6B50D /* Strings.swift */,
 				3205430E7105BBD412ED8C3D /* Theme.swift */,
 				A12BE9B7FC3E12658EBF8BA6 /* Typography.swift */,
@@ -322,6 +331,9 @@
 				DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */,
 				4B82778E6A2032DE544806F7 /* Components.swift in Sources */,
 				1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */,
+				CA0C4001C0AC4001C0AC4001 /* CoachStore.swift in Sources */,
+				CA0C4003C0AC4003C0AC4003 /* TelemetryService.swift in Sources */,
+				CA0C4005C0AC4005C0AC4005 /* CoachL10n.swift in Sources */,
 				B0219DF12B3E321CF940F1D5 /* CustomProgressionView.swift in Sources */,
 				9BD73F877ED7093B33A938E2 /* EarTrainingView.swift in Sources */,
 				8F862844F36AA90408308D72 /* Gamification.swift in Sources */,

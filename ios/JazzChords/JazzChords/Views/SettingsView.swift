@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var accidentals: AccidentalPreference = .both
     @State private var soundPreset = "grand-piano"
     @State private var showBluetooth = false
+    @State private var telemetryEnabled = TelemetryService.shared.isEnabled
 
     private let soundPresets = ["grand-piano", "electric-piano", "vibraphone", "organ", "synth-pad"]
 
@@ -55,6 +56,16 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+            }
+
+            Section(CoachL10n.t(CoachL10n.privacyTitle)) {
+                Toggle(CoachL10n.t(CoachL10n.privacyToggle), isOn: $telemetryEnabled)
+                    .onChange(of: telemetryEnabled) { _, on in
+                        TelemetryService.shared.setEnabled(on)
+                    }
+                Text(CoachL10n.t(CoachL10n.privacyDesc))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
 
             Section {

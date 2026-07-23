@@ -53,6 +53,7 @@ enum StoreKey {
     static let planHistory = "plan-history"
     static let habitProfile = "habit-profile"
     static let courseProgress = "course-progress"
+    static let coachState = "coach-state"
 }
 
 /// Convenience wrappers used by the stores.

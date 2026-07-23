@@ -9,6 +9,8 @@ struct TodayView: View {
     @Environment(\.horizontalSizeClass) private var hSize
     @State private var habits = HabitStore.shared
     @State private var startSuggested = false
+    @State private var startWeakDrill = false
+    @State private var startCoach = false
     @State private var refreshToken = 0
 
     private var isPad: Bool { hSize == .regular }
@@ -19,6 +21,10 @@ struct TodayView: View {
     private var suggested: PracticePlan {
         suggestPlan(recentPlanIds(), history.count)
     }
+    /// A focused "drill your weak spots" plan, if there's enough history to name any.
+    private var weakDrillPlan: PracticePlan? {
+        makeWeakDrillPlan(history)
+    }
     private func recentPlanIds() -> [String] {
         Store.load([String].self, StoreKey.planHistory) ?? []
     }
@@ -28,6 +34,14 @@ struct TodayView: View {
         if h < 12 { return "Good morning" }
         if h < 18 { return "Good afternoon" }
         return "Good evening"
+    }
+
+    /// Localized coach announcement for the hero ("Today: warm up, …"). Previews
+    /// today's plan from the persisted CoachState + live history/profile.
+    private var coachSay: String {
+        let plan = CoachStore.shared.currentPlan(history: history, profile: habits.profile)
+        let (sayKey, sayParams) = describeCoachPlan(plan)
+        return CoachL10n.t(sayKey, sayParams)
     }
 
     var body: some View {
@@ -42,13 +56,23 @@ struct TodayView: View {
         .fullScreenCover(isPresented: $startSuggested, onDismiss: { habits.reload(); refreshToken += 1 }) {
             NavigationStack { TrainerView(plan: suggested) }
         }
+        .fullScreenCover(isPresented: $startWeakDrill, onDismiss: { habits.reload(); refreshToken += 1 }) {
+            NavigationStack { if let p = weakDrillPlan { TrainerView(plan: p) } }
+        }
+        .fullScreenCover(isPresented: $startCoach, onDismiss: { habits.reload(); refreshToken += 1 }) {
+            NavigationStack { TrainerView(coachSession: true) }
+        }
     }
 
     private var phoneStack: some View {
         VStack(alignment: .leading, spacing: Theme.space5) {
             hero
             weekStrip
-            suggestedCard
+            coachHero
+            pickYourselfSection {
+                suggestedCard
+                if weakDrillPlan != nil { weakDrillCard }
+            }
             motivationCard
         }
         .padding(.horizontal, Theme.space4)
@@ -57,13 +81,17 @@ struct TodayView: View {
         .id(refreshToken)
     }
 
-    // iPad: full-width hero, then a two-column dashboard (suggested + a stats panel).
+    // iPad: full-width hero, then the coach hero, then a two-column dashboard.
     private var iPadDashboard: some View {
         VStack(alignment: .leading, spacing: Theme.space5) {
             hero
+            coachHero
             HStack(alignment: .top, spacing: Theme.space5) {
                 VStack(spacing: Theme.space5) {
-                    suggestedCard
+                    pickYourselfSection {
+                        suggestedCard
+                        if weakDrillPlan != nil { weakDrillCard }
+                    }
                     motivationCard
                 }
                 .frame(maxWidth: .infinity)
@@ -75,6 +103,47 @@ struct TodayView: View {
         .frame(maxWidth: 1100)
         .frame(maxWidth: .infinity)
         .id(refreshToken)
+    }
+
+    /// The dominant Auto-Mode entry point: one big "Keep practicing" button with
+    /// the coach's announcement underneath (localized, incl. voicing names).
+    private var coachHero: some View {
+        Button { startCoach = true } label: {
+            HStack(spacing: Theme.space4) {
+                ZStack {
+                    Circle().fill(palette.primaryText.opacity(0.18)).frame(width: 52, height: 52)
+                    Image(systemName: "play.fill")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(palette.primaryText)
+                }
+                VStack(alignment: .leading, spacing: Theme.space1) {
+                    Text(CoachL10n.t(CoachL10n.heroTitle))
+                        .font(Display.headline(24))
+                        .foregroundStyle(palette.primaryText)
+                    Text(coachSay)
+                        .font(.subheadline)
+                        .foregroundStyle(palette.primaryText.opacity(0.85))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(Theme.space4)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Wraps the manual-choice cards under a "Pick it yourself" section divider.
+    @ViewBuilder
+    private func pickYourselfSection<C: View>(@ViewBuilder _ content: () -> C) -> some View {
+        VStack(alignment: .leading, spacing: Theme.space4) {
+            Text(CoachL10n.t(CoachL10n.pickYourself).uppercased())
+                .font(.caption2.weight(.semibold)).tracking(1.5)
+                .foregroundStyle(palette.textDim)
+            content()
+        }
     }
 
     /// Right-hand stats panel (iPad): level, streak, weekly goal, quick stats.
@@ -180,6 +249,53 @@ struct TodayView: View {
         }
     }
 
+    /// Weakness-aware card: drill the chords you're slowest at (focused + answer-hidden).
+    @ViewBuilder
+    private var weakDrillCard: some View {
+        if let plan = weakDrillPlan {
+            CardSurface {
+                VStack(alignment: .leading, spacing: Theme.space3) {
+                    HStack(spacing: Theme.space2) {
+                        ZStack {
+                            Circle().fill(palette.accentRed.opacity(0.16)).frame(width: 40, height: 40)
+                            Image(systemName: "target")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(palette.accentRed)
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        Text("WEAK SPOTS")
+                            .font(.caption2.weight(.semibold)).tracking(1.5)
+                            .foregroundStyle(palette.accentRed)
+                        Spacer()
+                    }
+                    Text("Drill your weak spots")
+                        .font(Display.headline(24))
+                        .foregroundStyle(palette.text)
+                    Text(weakDrillSubtitle(plan))
+                        .font(.subheadline)
+                        .foregroundStyle(palette.textMuted)
+                    Button { startWeakDrill = true } label: {
+                        Text("Start")
+                            .font(.body.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Theme.space3)
+                            .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
+                            .foregroundStyle(palette.primaryText)
+                    }
+                    .padding(.top, Theme.space1)
+                }
+            }
+        }
+    }
+
+    /// "Shell · Db, F#, B — your slowest chords"
+    private func weakDrillSubtitle(_ plan: PracticePlan) -> String {
+        let v = VOICING_LABELS[plan.settings.voicing] ?? ""
+        let roots = (plan.focusRoots ?? []).joined(separator: ", ")
+        if roots.isEmpty { return "Your slowest chords" }
+        return "\(v) · \(roots) — your slowest chords"
+    }
+
     @ViewBuilder
     private var motivationCard: some View {
         let m = getDailyMotivation(habits.profile, streak)
@@ -242,7 +358,7 @@ struct TodayView: View {
         case .notStarted: return "Ready for your \(m.messageParams["minutes"] ?? "")-minute practice?"
         case .justStarted: return "Nice start — \(m.messageParams["remaining"] ?? "") min to today's goal."
         case .almostThere: return "Almost there — \(m.messageParams["remaining"] ?? "") min to go."
-        case .goalReached: return "Daily goal reached. 🎉"
+        case .goalReached: return "Daily goal reached."
         case .extraCredit: return "Extra credit — \(m.messageParams["practiced"] ?? "") min today."
         }
     }

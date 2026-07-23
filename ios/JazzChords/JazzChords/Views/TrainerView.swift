@@ -12,22 +12,189 @@ struct TrainerView: View {
     /// Optional plan to apply + auto-start on appear (from Practice / Today).
     var plan: PracticePlan?
 
+    /// When true, launch the Auto-Mode (Coach) session on appear instead of a plan.
+    var coachSession = false
+
     var body: some View {
         Group {
             switch store.screen {
             case .setup: TrainerSetupView(store: store, onClose: { dismiss() })
-            case .playing: TrainerPlayingView(store: store, onClose: { store.resetToSetup() })
+            case .playing:
+                ZStack {
+                    TrainerPlayingView(store: store, onClose: { store.resetToSetup() })
+                    // Between-block transition overlay (Coach only).
+                    if let t = store.coachTransition {
+                        CoachTransitionView(transition: t) { store.advanceCoachBlock() }
+                    }
+                }
             case .earTraining: EarTrainingView(store: store, onClose: { store.resetToSetup() })
-            case .finished: TrainerFinishedView(store: store, onClose: { dismiss() })
+            case .finished:
+                // Coach sessions land on a teacher-feedback screen; normal drills on stats.
+                if store.coachShowFeedback {
+                    CoachFeedbackView(store: store,
+                                      onAgain: { store.restartCoachSession() },
+                                      onDone: { store.endCoachMode(); dismiss() })
+                } else {
+                    TrainerFinishedView(store: store, onClose: { dismiss() })
+                }
             }
         }
         .screenBackground()
         .onAppear {
             store.loadSettings()
-            if let plan {
+            if coachSession {
+                store.startCoachSession()
+            } else if let plan {
                 store.apply(plan: plan)
                 store.startSession()
             }
+        }
+    }
+}
+
+// ─── Coach: between-block transition ────────────────────────
+
+/// A calm 1-line "block done → next up" screen. Auto-advances after ~2.5s
+/// (handled by the store); tapping anywhere advances immediately.
+struct CoachTransitionView: View {
+    @Environment(\.palette) private var palette
+    let transition: TrainerStore.CoachTransition
+    var onContinue: () -> Void
+
+    var body: some View {
+        ZStack {
+            palette.bg.opacity(0.96).ignoresSafeArea()
+            VStack(spacing: Theme.space5) {
+                Spacer()
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundStyle(palette.accentGreen)
+                    .symbolRenderingMode(.hierarchical)
+                Text(CoachL10n.blockDone(transition.doneKind))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(palette.textMuted)
+                Text(CoachL10n.t(transition.nextLabelKey, transition.nextLabelParams))
+                    .font(Display.headline(26))
+                    .foregroundStyle(palette.text)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Theme.space5)
+                Spacer()
+                Text(CoachL10n.t(CoachL10n.transitionContinue))
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(palette.textDim)
+                    .padding(.bottom, Theme.space5)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { onContinue() }
+        .transition(.opacity)
+    }
+}
+
+// ─── Coach: post-session teacher feedback ───────────────────
+
+/// Teacher talk + the "too easy / just right / too hard" valve + Again/Done.
+struct CoachFeedbackView: View {
+    @Environment(\.palette) private var palette
+    @Bindable var store: TrainerStore
+    var onAgain: () -> Void
+    var onDone: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Theme.space5) {
+                Text(CoachL10n.t(CoachL10n.feedbackTitle))
+                    .font(Display.title(32))
+                    .foregroundStyle(palette.text)
+                    .padding(.top, Theme.space4)
+
+                // Teacher statements (localized).
+                VStack(alignment: .leading, spacing: Theme.space3) {
+                    ForEach(Array(store.coachFeedback.enumerated()), id: \.offset) { _, stmt in
+                        HStack(alignment: .top, spacing: Theme.space3) {
+                            Image(systemName: statementIcon(stmt.kind))
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(palette.primary)
+                                .symbolRenderingMode(.hierarchical)
+                                .frame(width: 24)
+                            Text(CoachL10n.t(stmt.key, stmt.params))
+                                .font(.body)
+                                .foregroundStyle(palette.text)
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+                .padding(Theme.space4)
+                .glassCard()
+
+                // Feedback valve.
+                VStack(alignment: .leading, spacing: Theme.space3) {
+                    Text(CoachL10n.t(CoachL10n.valvePrompt))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(palette.textMuted)
+                    if store.coachFeedbackGiven {
+                        Label(CoachL10n.t(CoachL10n.valveThanks), systemImage: "checkmark.circle.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(palette.accentGreen)
+                    } else {
+                        HStack(spacing: Theme.space2) {
+                            valveButton(CoachL10n.valveTooEasy, .tooEasy)
+                            valveButton(CoachL10n.valveJustRight, .justRight)
+                            valveButton(CoachL10n.valveTooHard, .tooHard)
+                        }
+                    }
+                }
+
+                Spacer(minLength: Theme.space5)
+
+                VStack(spacing: Theme.space3) {
+                    Button { onAgain() } label: {
+                        Text(CoachL10n.t(CoachL10n.feedbackAgain))
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Theme.space4)
+                            .background(palette.primary)
+                            .foregroundStyle(palette.primaryText)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
+                    }
+                    Button { onDone() } label: {
+                        Text(CoachL10n.t(CoachL10n.feedbackDone))
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Theme.space4)
+                            .foregroundStyle(palette.text)
+                            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
+                    }
+                }
+            }
+            .padding(Theme.space4)
+            .frame(maxWidth: 760)
+            .frame(maxWidth: .infinity)
+        }
+        .navigationBarBackButtonHidden()
+    }
+
+    private func valveButton(_ key: String, _ signal: FeedbackSignal) -> some View {
+        Button { store.applyCoachFeedback(signal) } label: {
+            Text(CoachL10n.t(key))
+                .font(.subheadline.weight(.medium))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Theme.space3)
+                .foregroundStyle(palette.text)
+                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
+        }
+    }
+
+    private func statementIcon(_ kind: TeacherStatement.Kind) -> String {
+        switch kind {
+        case .promoted: return "checkmark.seal.fill"
+        case .held: return "arrow.clockwise"
+        case .demoted: return "arrow.down.circle"
+        case .improved: return "bolt.fill"
+        case .placed: return "forward.fill"
+        case .nextGoal: return "target"
+        case .calibrated: return "checkmark.circle.fill"
         }
     }
 }
@@ -206,12 +373,22 @@ struct TrainerPlayingView: View {
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
             if store.shouldShowVoicing, let d = store.currentData {
+                if let r = store.tapResult {
+                    // Reveal after a tap-guess: show whether the built chord was right.
+                    Label(r ? "Correct" : "Not quite", systemImage: r ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font((isPad ? Font.body : Font.caption).weight(.semibold))
+                        .foregroundStyle(r ? palette.accentGreen : palette.accentRed)
+                }
                 Text(VOICING_LABELS[store.voicing]?.uppercased() ?? "")
                     .font((isPad ? Font.body : Font.caption).weight(.semibold)).tracking(1.5)
                     .foregroundStyle(palette.primary)
                 Text(formatVoicing(d, store.voicing, store.notationSystem))
                     .font(.system(isPad ? .title3 : .body, design: .monospaced))
                     .foregroundStyle(palette.textMuted)
+            } else if store.isTapGuessMode {
+                Text("Build the chord, then Check")
+                    .font((isPad ? Font.body : Font.caption).weight(.medium))
+                    .foregroundStyle(palette.textDim)
             }
         }
     }
@@ -223,15 +400,18 @@ struct TrainerPlayingView: View {
 
     @ViewBuilder
     private var keyboardBlock: some View {
-        if store.shouldShowVoicing || store.inputActive {
+        if store.shouldShowVoicing || store.inputActive || store.isTapGuessMode {
             PianoKeyboard(
                 chordData: store.currentData,
                 accidentalPref: store.accidentals,
                 showVoicing: store.shouldShowVoicing,
                 forceOctaves: keyboardOctaves,
+                interactive: store.isTapGuessMode,
+                selectedPitchClasses: store.tapGuess,
                 heldNotes: store.heldNotes,
                 expectedPitchClasses: store.expectedPitchClasses,
                 showInput: store.inputActive,
+                onKeyTap: store.isTapGuessMode ? { store.tapToggle($0) } : nil,
                 maxHeight: isPad ? (isLandscape ? 240 : 320) : 200
             )
         }
@@ -284,6 +464,8 @@ struct TrainerPlayingView: View {
         convertChordNotation(store.currentChord, store.notationSystem)
     }
     private var nextLabel: String {
+        // Tap-guess: the primary action reveals + grades before advancing.
+        if store.isTapGuessMode { return store.tapGuess.isEmpty ? "Show me" : "Check" }
         if store.currentIdx >= store.actualTotalChords - 1 { return "Finish" }
         return "Next chord"
     }
@@ -334,14 +516,35 @@ struct TrainerFinishedView: View {
             Spacer()
 
             VStack(spacing: Theme.space3) {
-                Button { store.restart() } label: {
-                    Text("Again")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Theme.space4)
-                        .background(palette.primary)
-                        .foregroundStyle(palette.primaryText)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
+                if store.canDrillWeakSpots {
+                    // Peak-motivation moment: drill the chords you were slowest at.
+                    Button { store.startWeakDrill() } label: {
+                        Label("Drill your weak spots", systemImage: "target")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Theme.space4)
+                            .background(palette.primary)
+                            .foregroundStyle(palette.primaryText)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
+                    }
+                    Button { store.restart() } label: {
+                        Text("Again (same session)")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Theme.space4)
+                            .foregroundStyle(palette.text)
+                            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
+                    }
+                } else {
+                    Button { store.restart() } label: {
+                        Text("Again")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Theme.space4)
+                            .background(palette.primary)
+                            .foregroundStyle(palette.primaryText)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
+                    }
                 }
                 Button { onClose() } label: {
                     Text("Done")
