@@ -24,6 +24,8 @@ final class TrainerStore {
     var voiceLeadingEnabled = false
     var adaptiveEnabled = false
     var focusRoots: [String] = []
+    /// When a Coach block promises one quality (new/focus), restrict the pool to it.
+    var qualityFilter: [String] = []
     var audioEnabled = true
     var soundPreset: SoundPreset = .grandPiano
 
@@ -132,6 +134,8 @@ final class TrainerStore {
         inTimeMode = (plan.id == "in-time-comping")
         // Weak-spot drills carry the roots to concentrate practice on (10× weight).
         focusRoots = plan.focusRoots ?? []
+        // Manual plans never pin a single quality — that's a Coach-only restriction.
+        qualityFilter = []
     }
 
     /// Plan-selected modes that change which screen startSession opens.
@@ -211,7 +215,14 @@ final class TrainerStore {
         }
 
         // Random mode
-        let available = CHORDS_BY_DIFFICULTY[difficulty] ?? []
+        var available = CHORDS_BY_DIFFICULTY[difficulty] ?? []
+        // Coach 'new'/'focus' blocks pin the pool to the promised quality so the
+        // block delivers exactly what its label says. Fall back to the full pool
+        // if the filter would empty it (defensive — shouldn't happen).
+        if !qualityFilter.isEmpty {
+            let filtered = available.filter { qualityFilter.contains($0.display) }
+            if !filtered.isEmpty { available = filtered }
+        }
         let pool = getNotePool(accidentals)
         var newChords: [String] = []
         var newData: [ChordWithNotes] = []
@@ -532,6 +543,15 @@ final class TrainerStore {
         }
     }
 
+    /// "Show me the chord" — reveal the voicing without grading, whatever's been
+    /// tapped. A dedicated help for beginners who don't yet recognise a chord
+    /// name like "E♭9". Clears the pending guess so it isn't scored, then reveals.
+    func revealTapGuess() {
+        guard isTapGuessMode else { return }
+        tapGuess = []
+        checkTapGuess()
+    }
+
     private func endGame() {
         endTime = Date().timeIntervalSince1970
         if let d = currentData {
@@ -803,6 +823,7 @@ final class TrainerStore {
         // Focus plumbing (same axes the weak-drill uses). Adaptive weighting only
         // bites when progressionMode == .random — exactly as intended.
         focusRoots = block.focusRoots ?? []
+        qualityFilter = block.focusQualities ?? []
         adaptiveEnabled = (s.progressionMode == .random)
 
         // Coach never uses the special exercise sub-modes.

@@ -208,6 +208,8 @@
 	let adaptiveEnabled = $state(false);
 	let focusRoots: string[] = $state([]);
 	let focusVoicing: string | null = $state(null);
+	// When a Coach block promises one quality (new/focus), restrict the pool to it.
+	let qualityFilter: string[] = $state([]);
 	let voiceLeadingEnabled = $state(false);
 	let showExplain = $state(false);
 
@@ -492,7 +494,14 @@
 		}
 
 		// Random mode (original logic, with optional adaptive weighting)
-		const available = CHORDS_BY_DIFFICULTY[difficulty];
+		let available = CHORDS_BY_DIFFICULTY[difficulty];
+		// Coach 'new'/'focus' blocks pin the pool to the promised quality so the
+		// block delivers exactly what its label says. Fall back to the full pool
+		// if the filter would empty it (defensive — shouldn't happen).
+		if (qualityFilter.length > 0) {
+			const filtered = available.filter((c) => qualityFilter.includes(c.display));
+			if (filtered.length > 0) available = filtered;
+		}
 		const pool = getNotePool(accidentals);
 		const newChords: string[] = [];
 		const newData: ChordWithNotes[] = [];
@@ -748,6 +757,8 @@
 			focusRoots = [];
 			focusVoicing = null;
 		}
+		// Manual plans never pin a single quality — that's a Coach-only restriction.
+		qualityFilter = [];
 		// Apply plan settings
 		difficulty = plan.settings.difficulty;
 		notation = plan.settings.notation;
@@ -967,6 +978,7 @@
 		// bites when progressionMode === 'random' — exactly as intended.
 		focusRoots = block.focusRoots ?? [];
 		focusVoicing = block.focusVoicing ?? null;
+		qualityFilter = block.focusQualities ?? [];
 		adaptiveEnabled = s.progressionMode === 'random';
 
 		// Coach never uses the special exercise sub-modes.
@@ -1778,6 +1790,17 @@
 			suppressMicForPlayback();
 			playChord(currentData.voicing).catch(() => {});
 		}
+	}
+
+	/**
+	 * "Show me the chord" — reveal the voicing on the keyboard without grading,
+	 * regardless of what's been tapped. A dedicated help for beginners who don't
+	 * yet recognise a chord name like "E♭9". Clears the pending guess so it isn't
+	 * scored, then reveals.
+	 */
+	function revealTapGuess() {
+		tapGuessNotes = new Set();
+		submitTapGuess();
 	}
 
 	// ─── Voice Leading computation on chord change ───────────────
@@ -2960,6 +2983,17 @@
 								{currentIdx < actualTotalChords - 1 ? t('ui.next_chord') : t('ui.finish')}
 							{/if}
 						</button>
+						<!-- Dedicated, always-available "show me the chord" help — for
+						     beginners who don't yet recognise a name like E♭9. Only in
+						     tap-guess mode, before the answer is revealed. -->
+						{#if isTapGuessMode && playPhase !== 'verifying' && tapGuessNotes.size > 0}
+							<button
+								class="text-[13px] font-medium text-[var(--accent-amber)] underline decoration-dotted underline-offset-4 hover:text-[var(--primary)] transition-colors"
+								onclick={revealTapGuess}
+							>
+								{t('ui.show_me_chord')}
+							</button>
+						{/if}
 						<div class="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-[var(--text-dim)]">
 							<span><kbd class="kbd">Space</kbd> {t('ui.shortcut_next')}</span>
 							<span><kbd class="kbd">P</kbd> {t('ui.shortcut_pause')}</span>

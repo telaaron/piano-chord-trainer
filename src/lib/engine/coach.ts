@@ -90,6 +90,13 @@ export interface CoachBlock {
 	focusRoots?: string[];
 	/** Voicing to weight heavily (focus). */
 	focusVoicing?: string;
+	/**
+	 * If set, the chord pool is RESTRICTED to exactly these qualities (display
+	 * strings, e.g. ["Maj7"]). Used by 'new' and 'focus' blocks so the block
+	 * delivers precisely the chord it promises. warmup/review/apply leave this
+	 * undefined and draw from the broader mastered/due pool.
+	 */
+	focusQualities?: string[];
 	/** How many chords this block presents. */
 	targetChords: number;
 	/** i18n key for the mid-session mini-screen ("Warm-up done — now your focus: …"). */
@@ -442,6 +449,7 @@ export function buildCoachPlan(
 		let settings: PracticePlanSettings;
 		let focusRoots: string[] | undefined;
 		let focusVoicing: string | undefined;
+		let focusQualities: string[] | undefined;
 		let labelParams: Record<string, string> | undefined;
 
 		switch (part.kind) {
@@ -455,14 +463,19 @@ export function buildCoachPlan(
 				labelParams = { count: String(reviewRoots.length) };
 				break;
 			case 'focus':
+				// Focus drills the frontier's quality in the player's weak keys —
+				// "practise the thing you're learning, in the keys that trip you up".
 				settings = focusSettings(weak, frontier, bias);
 				focusRoots = weak ? [weak.root] : undefined;
 				focusVoicing = weak?.voicing ?? frontier.voicing;
+				focusQualities = [frontier.quality];
 				labelParams = { root: weak?.root ?? frontier.keys[0], voicing: focusVoicing };
 				break;
 			case 'new':
+				// The 'new' block must deliver EXACTLY the promised quality.
 				settings = newSettings(frontier, bias, guided);
 				focusVoicing = frontier.voicing;
+				focusQualities = [frontier.quality];
 				labelParams = { quality: frontier.quality, voicing: frontier.voicing };
 				break;
 			case 'apply':
@@ -471,6 +484,7 @@ export function buildCoachPlan(
 				break;
 			default:
 				settings = newSettings(frontier, bias, guided);
+				focusQualities = [frontier.quality];
 		}
 
 		settings = { ...settings, totalChords: targetChords };
@@ -479,6 +493,7 @@ export function buildCoachPlan(
 			settings,
 			focusRoots,
 			focusVoicing,
+			focusQualities,
 			targetChords,
 			labelKey: COACH_LABEL_KEYS[part.kind],
 			labelParams,

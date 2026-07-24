@@ -132,6 +132,11 @@ public struct CoachBlock: Sendable, Equatable, Codable {
     public var focusRoots: [String]?
     /// Voicing to weight heavily (focus).
     public var focusVoicing: String?
+    /// If set, the chord pool is RESTRICTED to exactly these qualities (display
+    /// strings, e.g. ["Maj7"]). Used by 'new' and 'focus' blocks so the block
+    /// delivers precisely the chord it promises. warmup/review/apply leave this
+    /// nil and draw from the broader mastered/due pool.
+    public var focusQualities: [String]?
     /// How many chords this block presents.
     public var targetChords: Int
     /// i18n key for the mid-session mini-screen ("Warm-up done — now your focus: …").
@@ -140,12 +145,13 @@ public struct CoachBlock: Sendable, Equatable, Codable {
     public var labelParams: [String: String]?
 
     public init(kind: BlockKind, settings: PracticePlanSettings, focusRoots: [String]? = nil,
-                focusVoicing: String? = nil, targetChords: Int, labelKey: String,
-                labelParams: [String: String]? = nil) {
+                focusVoicing: String? = nil, focusQualities: [String]? = nil, targetChords: Int,
+                labelKey: String, labelParams: [String: String]? = nil) {
         self.kind = kind
         self.settings = settings
         self.focusRoots = focusRoots
         self.focusVoicing = focusVoicing
+        self.focusQualities = focusQualities
         self.targetChords = targetChords
         self.labelKey = labelKey
         self.labelParams = labelParams
@@ -546,6 +552,7 @@ public func buildCoachPlan(
         var settings: PracticePlanSettings
         var focusRoots: [String]? = nil
         var focusVoicing: String? = nil
+        var focusQualities: [String]? = nil
         var labelParams: [String: String]? = nil
 
         switch part.kind {
@@ -557,13 +564,18 @@ public func buildCoachPlan(
             focusRoots = reviewRoots
             labelParams = ["count": String(reviewRoots.count)]
         case .focus:
+            // Focus drills the frontier's quality in the player's weak keys —
+            // "practise the thing you're learning, in the keys that trip you up".
             settings = focusSettings(weak, frontier, bias)
             focusRoots = weak != nil ? [weak!.root] : nil
             focusVoicing = weak?.voicing.rawValue ?? frontier.voicing.rawValue
+            focusQualities = [frontier.quality]
             labelParams = ["root": weak?.root ?? frontier.keys[0], "voicing": focusVoicing!]
         case .new:
+            // The 'new' block must deliver EXACTLY the promised quality.
             settings = newSettings(frontier, bias, guided)
             focusVoicing = frontier.voicing.rawValue
+            focusQualities = [frontier.quality]
             labelParams = ["quality": frontier.quality, "voicing": frontier.voicing.rawValue]
         case .apply:
             settings = applySettings(masteredVoicing, bias, applyProg)
@@ -578,6 +590,7 @@ public func buildCoachPlan(
             settings: settings,
             focusRoots: focusRoots,
             focusVoicing: focusVoicing,
+            focusQualities: focusQualities,
             targetChords: targetChords,
             labelKey: CoachLabelKeys.forKind(part.kind),
             labelParams: labelParams

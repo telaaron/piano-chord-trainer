@@ -75,6 +75,26 @@ final class CoachParityTests: XCTestCase {
         }
     }
 
+    // ─── focusQualities — a block delivers only what it promises ──
+
+    func testNewBlockPinsFrontierQuality() {
+        let state = calibratedState()
+        let ladder = buildSkillLadder()
+        let frontier = ladder[state.frontierIndex]
+        let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        let newBlock = plan.blocks.first { $0.kind == .new }
+        XCTAssertNotNil(newBlock)
+        XCTAssertEqual(newBlock?.focusQualities, [frontier.quality])
+    }
+
+    func testWarmupReviewApplyLeaveQualityOpen() {
+        let state = calibratedState()
+        let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        for b in plan.blocks where b.kind == .warmup || b.kind == .review || b.kind == .apply {
+            XCTAssertNil(b.focusQualities)
+        }
+    }
+
     // ─── Promotion / Hold / Demotion ────────────────────────
 
     func testPromotesWhenAboveRatio() {

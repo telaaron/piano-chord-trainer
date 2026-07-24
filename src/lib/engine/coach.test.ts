@@ -120,6 +120,37 @@ describe('applySessionToCoach — promotion', () => {
 	});
 });
 
+describe('focusQualities — a block delivers only what it promises', () => {
+	it('new block pins the pool to exactly the frontier quality', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		const frontier = ladder[state.frontierIndex];
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const newBlock = plan.blocks.find((b) => b.kind === 'new');
+		expect(newBlock).toBeDefined();
+		expect(newBlock!.focusQualities).toEqual([frontier.quality]);
+	});
+
+	it('focus block pins the pool to the frontier quality', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		const frontier = ladder[state.frontierIndex];
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const focusBlock = plan.blocks.find((b) => b.kind === 'focus');
+		if (focusBlock) expect(focusBlock.focusQualities).toEqual([frontier.quality]);
+	});
+
+	it('warmup / review / apply leave the quality pool open (undefined)', () => {
+		const state = calibratedState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		for (const b of plan.blocks) {
+			if (b.kind === 'warmup' || b.kind === 'review' || b.kind === 'apply') {
+				expect(b.focusQualities).toBeUndefined();
+			}
+		}
+	});
+});
+
 describe('hold → guided escalation', () => {
 	it('turns the new-block displayMode to always once the frontier has holds', () => {
 		let state = calibratedState();
