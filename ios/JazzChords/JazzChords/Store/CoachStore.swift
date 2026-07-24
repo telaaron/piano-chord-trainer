@@ -80,4 +80,12 @@ final class CoachStore {
         state = applyFeedback(state, signal, DEFAULT_COACH_PARAMS)
         persist()
     }
+
+    /// System verdict on the just-finished session (carries struggleStreak forward).
+    func assess(_ session: SessionResult) -> SessionVerdict {
+        let result = assessSession(state, session, DEFAULT_COACH_PARAMS)
+        state = result.state
+        persist()
+        return result.verdict
+    }
 }

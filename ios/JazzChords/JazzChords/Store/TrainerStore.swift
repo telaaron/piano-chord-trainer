@@ -173,6 +173,8 @@ final class TrainerStore {
     private(set) var coachFeedback: [TeacherStatement] = []
     /// Whether the "too easy / just right / too hard" valve was already tapped.
     private(set) var coachFeedbackGiven = false
+    /// System-detected verdict for the post-session screen.
+    private(set) var coachVerdict: SessionVerdict = .neutral
     /// True once the last block folded in — TrainerView shows the feedback screen.
     var coachShowFeedback = false
 
@@ -898,6 +900,8 @@ final class TrainerStore {
         // Session-level teacher talk: diff the pre-session snapshot against the now
         // fully-advanced CoachState (web finishCoachSession).
         coachFeedback = teacherFeedback(before, CoachStore.shared.state, lastSession)
+        // The system reads how the session went — the UI never asks "too easy?".
+        coachVerdict = CoachStore.shared.assess(lastSession)
 
         let totalChords = coachSessionBlocks.reduce(0) { $0 + $1.totalChords }
         let totalMs = coachSessionBlocks.reduce(0.0) { $0 + $1.avgMs * Double($1.totalChords) }
@@ -925,7 +929,13 @@ final class TrainerStore {
         TelemetryService.shared.track("feedback_valve", ["signal": signal.rawValue])
     }
 
-    /// Restart a fresh auto-session from the feedback screen ("Again").
+    /// "Yes, start easier" after the struggling offer → bias down, then next session.
+    func startEasierAndContinue() {
+        applyCoachFeedback(.tooHard)
+        restartCoachSession()
+    }
+
+    /// Continue straight into the next building session ("Keep going" / "Again").
     func restartCoachSession() {
         endCoachMode()
         startCoachSession()

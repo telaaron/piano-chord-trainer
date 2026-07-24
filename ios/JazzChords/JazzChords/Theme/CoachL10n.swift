@@ -43,6 +43,24 @@ enum CoachL10n {
         return table[v] ?? raw
     }
 
+    /// One-line "what notes" explanation of a voicing — so the player knows what
+    /// to play from a name like E♭9. Mirrors web settings.voicing_*_sub.
+    static func voicingSub(_ v: VoicingType) -> String {
+        let en: [VoicingType: String] = [
+            .root: "Root + all notes from bottom.", .shell: "Root + 3rd + 7th only.",
+            .halfShell: "3rd/7th around the root.", .full: "All notes in jazz order: 1-7-3-5.",
+            .rootlessA: "3–5–7–9 · Bill Evans style.", .rootlessB: "7–9–3–5 · complement to Type A.",
+            .inversion1: "3rd on bottom.", .inversion2: "5th on bottom.", .inversion3: "7th on bottom.",
+        ]
+        let de: [VoicingType: String] = [
+            .root: "Grundton + alle Töne von unten.", .shell: "Nur Grundton + Terz + Septime.",
+            .halfShell: "Terz/Septime um den Grundton.", .full: "Alle Töne in Jazz-Reihenfolge: 1-7-3-5.",
+            .rootlessA: "3–5–7–9 · Bill-Evans-Stil.", .rootlessB: "7–9–3–5 · Ergänzung zu Typ A.",
+            .inversion1: "Terz im Bass.", .inversion2: "Quinte im Bass.", .inversion3: "Septime im Bass.",
+        ]
+        return (isGerman ? de : en)[v] ?? ""
+    }
+
     /// Copy of `params` with any `voicing` value translated (web `localizeCoachParams`).
     private static func localizeParams(_ params: [String: String]) -> [String: String] {
         var out = params
@@ -61,6 +79,11 @@ enum CoachL10n {
     static let feedbackTitle = "coach.feedback.title"
     static let feedbackAgain = "coach.feedback.again"
     static let feedbackDone = "coach.feedback.done"
+    static let feedbackKeepGoing = "coach.feedback.keep_going"
+    static let feedbackEnoughToday = "coach.feedback.enough_today"
+    static let verdictExcellent = "coach.verdict.excellent"
+    static let verdictStruggling = "coach.verdict.struggling"
+    static let verdictStartEasier = "coach.verdict.start_easier"
     static let valvePrompt = "coach.valve.prompt"
     static let valveTooEasy = "coach.valve.too_easy"
     static let valveJustRight = "coach.valve.just_right"
@@ -126,6 +149,11 @@ enum CoachL10n {
         "coach.feedback.title": "Your lesson",
         "coach.feedback.again": "Again",
         "coach.feedback.done": "Done",
+        "coach.feedback.keep_going": "Keep going",
+        "coach.feedback.enough_today": "Enough for today",
+        "coach.verdict.excellent": "Nailed it — that was fast and clean.",
+        "coach.verdict.struggling": "That one was tough. Want to ease off?",
+        "coach.verdict.start_easier": "Yes, start easier",
         "coach.valve.prompt": "How did that feel?",
         "coach.valve.too_easy": "Too easy",
         "coach.valve.just_right": "Just right",
@@ -170,6 +198,11 @@ enum CoachL10n {
         "coach.feedback.title": "Deine Stunde",
         "coach.feedback.again": "Nochmal",
         "coach.feedback.done": "Fertig",
+        "coach.feedback.keep_going": "Weiter geht's",
+        "coach.feedback.enough_today": "Für heute genug",
+        "coach.verdict.excellent": "Sitzt — das war schnell und sauber.",
+        "coach.verdict.struggling": "Das war zäh. Sollen wir es leichter angehen?",
+        "coach.verdict.start_easier": "Ja, leichter starten",
         "coach.valve.prompt": "Wie war das für dich?",
         "coach.valve.too_easy": "Zu leicht",
         "coach.valve.just_right": "Passt",

@@ -128,29 +128,37 @@ struct CoachFeedbackView: View {
                 .padding(Theme.space4)
                 .glassCard()
 
-                // Feedback valve.
-                VStack(alignment: .leading, spacing: Theme.space3) {
-                    Text(CoachL10n.t(CoachL10n.valvePrompt))
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(palette.textMuted)
-                    if store.coachFeedbackGiven {
-                        Label(CoachL10n.t(CoachL10n.valveThanks), systemImage: "checkmark.circle.fill")
+                // System-detected verdict — the app never asks "too easy?".
+                if store.coachVerdict == .excellent {
+                    Label(CoachL10n.t(CoachL10n.verdictExcellent), systemImage: "checkmark.seal.fill")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(palette.accentGreen)
+                        .padding(Theme.space4)
+                        .frame(maxWidth: .infinity)
+                        .background(palette.primary.opacity(0.15), in: RoundedRectangle(cornerRadius: Theme.radius))
+                } else if store.coachVerdict == .struggling, !store.coachFeedbackGiven {
+                    VStack(alignment: .leading, spacing: Theme.space3) {
+                        Text(CoachL10n.t(CoachL10n.verdictStruggling))
                             .font(.subheadline)
-                            .foregroundStyle(palette.accentGreen)
-                    } else {
-                        HStack(spacing: Theme.space2) {
-                            valveButton(CoachL10n.valveTooEasy, .tooEasy)
-                            valveButton(CoachL10n.valveJustRight, .justRight)
-                            valveButton(CoachL10n.valveTooHard, .tooHard)
+                            .foregroundStyle(palette.textMuted)
+                        Button { store.startEasierAndContinue() } label: {
+                            Text(CoachL10n.t(CoachL10n.verdictStartEasier))
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(palette.primary)
+                                .padding(.vertical, Theme.space2).padding(.horizontal, Theme.space3)
+                                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.primary, lineWidth: 2))
                         }
                     }
+                    .padding(Theme.space4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
                 }
 
                 Spacer(minLength: Theme.space5)
 
                 VStack(spacing: Theme.space3) {
                     Button { onAgain() } label: {
-                        Text(CoachL10n.t(CoachL10n.feedbackAgain))
+                        Text(CoachL10n.t(CoachL10n.feedbackKeepGoing))
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space4)
@@ -159,12 +167,11 @@ struct CoachFeedbackView: View {
                             .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                     }
                     Button { onDone() } label: {
-                        Text(CoachL10n.t(CoachL10n.feedbackDone))
-                            .font(.headline)
+                        Text(CoachL10n.t(CoachL10n.feedbackEnoughToday))
+                            .font(.subheadline.weight(.medium))
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, Theme.space4)
-                            .foregroundStyle(palette.text)
-                            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
+                            .padding(.vertical, Theme.space3)
+                            .foregroundStyle(palette.textMuted)
                     }
                 }
             }
@@ -173,17 +180,6 @@ struct CoachFeedbackView: View {
             .frame(maxWidth: .infinity)
         }
         .navigationBarBackButtonHidden()
-    }
-
-    private func valveButton(_ key: String, _ signal: FeedbackSignal) -> some View {
-        Button { store.applyCoachFeedback(signal) } label: {
-            Text(CoachL10n.t(key))
-                .font(.subheadline.weight(.medium))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Theme.space3)
-                .foregroundStyle(palette.text)
-                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
-        }
     }
 
     private func statementIcon(_ kind: TeacherStatement.Kind) -> String {
@@ -366,6 +362,22 @@ struct TrainerPlayingView: View {
 
     private var chordBlock: some View {
         VStack(spacing: Theme.space2) {
+            // Coach: tell the player which voicing to play (they can't be expected
+            // to know from a name like E♭9), with a one-line what-notes hint.
+            if store.coachMode {
+                VStack(spacing: 2) {
+                    Text((VOICING_LABELS[store.voicing] ?? "").uppercased())
+                        .font(.caption.weight(.bold)).tracking(1.2)
+                        .foregroundStyle(palette.primary)
+                        .padding(.vertical, 4).padding(.horizontal, Theme.space3)
+                        .overlay(Capsule().stroke(palette.primary, lineWidth: 1))
+                    Text(CoachL10n.voicingSub(store.voicing))
+                        .font(.caption2)
+                        .foregroundStyle(palette.textMuted)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.bottom, Theme.space2)
+            }
             Text(displayedChord)
                 .font(Display.chord(chordFontSize))
                 .foregroundStyle(palette.text)
