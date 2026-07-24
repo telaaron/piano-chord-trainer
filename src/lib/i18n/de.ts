@@ -762,6 +762,7 @@ export const de = {
     tap_correct: 'Richtig — gut gemacht!',
     tap_wrong: 'Nicht ganz — so geht er',
     show_me: 'Zeig mir',
+    show_me_chord: 'Zeig mir den Akkord',
     check: 'Prüfen',
     ear_training: 'Gehörtraining',
     ear_training_start: 'Gehörtraining starten',

@@ -766,6 +766,7 @@ export const en = {
     tap_correct: 'Correct — nicely done!',
     tap_wrong: 'Not quite — here it is',
     show_me: 'Show me',
+    show_me_chord: 'Show me the chord',
     check: 'Check',
     ear_training: 'Ear Training',
     ear_training_start: 'Start Ear Training',

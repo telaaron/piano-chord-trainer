@@ -438,23 +438,34 @@ struct TrainerPlayingView: View {
             .glassCard()
             .onAppear { if !store.timerStarted { store.next() } } // kick off timer + metronome
         } else {
-            HStack(spacing: Theme.space3) {
-                Button { store.replayChord() } label: {
-                    Image(systemName: "speaker.wave.2.fill")
-                        .frame(width: Theme.tapMin, height: Theme.tapMin)
-                        .glassCard(cornerRadius: Theme.tapMin / 2)
-                        .foregroundStyle(palette.text)
+            VStack(spacing: Theme.space2) {
+                HStack(spacing: Theme.space3) {
+                    Button { store.replayChord() } label: {
+                        Image(systemName: "speaker.wave.2.fill")
+                            .frame(width: Theme.tapMin, height: Theme.tapMin)
+                            .glassCard(cornerRadius: Theme.tapMin / 2)
+                            .foregroundStyle(palette.text)
+                    }
+                    Button {
+                        UISelectionFeedbackGenerator().selectionChanged()
+                        store.next()
+                    } label: {
+                        Text(nextLabel)
+                            .font(.title3.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Theme.space4)
+                            .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
+                            .foregroundStyle(palette.primaryText)
+                    }
                 }
-                Button {
-                    UISelectionFeedbackGenerator().selectionChanged()
-                    store.next()
-                } label: {
-                    Text(nextLabel)
-                        .font(.title3.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Theme.space4)
-                        .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
-                        .foregroundStyle(palette.primaryText)
+                // Dedicated, always-available "show me the chord" help — for
+                // beginners who don't yet recognise a name like E♭9.
+                if store.isTapGuessMode, store.playPhase != .verifying, !store.tapGuess.isEmpty {
+                    Button { store.revealTapGuess() } label: {
+                        Text("Show me the chord")
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(palette.accentAmber)
+                    }
                 }
             }
         }
