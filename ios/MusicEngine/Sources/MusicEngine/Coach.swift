@@ -83,19 +83,29 @@ public struct CoachState: Sendable, Equatable, Codable {
     public var difficultyBias: Double
     /// Whether the one-time calibration has run.
     public var calibrated: Bool
+    /// Consecutive sessions the player struggled (slow / many wrong). Drives the
+    /// "too hard? start easier" offer only after real, sustained struggle.
+    public var struggleStreak: Int?
     /// Last plan built, for resume / display.
     public var lastPlan: CoachPlan?
 
     public init(version: Int, unitStates: [String: UnitProgress], frontierIndex: Int,
-                dayIndex: Int, difficultyBias: Double, calibrated: Bool, lastPlan: CoachPlan? = nil) {
+                dayIndex: Int, difficultyBias: Double, calibrated: Bool,
+                struggleStreak: Int? = nil, lastPlan: CoachPlan? = nil) {
         self.version = version
         self.unitStates = unitStates
         self.frontierIndex = frontierIndex
         self.dayIndex = dayIndex
         self.difficultyBias = difficultyBias
         self.calibrated = calibrated
+        self.struggleStreak = struggleStreak
         self.lastPlan = lastPlan
     }
+}
+
+/// What the post-session screen should offer, derived from how the session went.
+public enum SessionVerdict: String, Sendable, Equatable {
+    case excellent, struggling, neutral
 }
 
 /// Exactly the settings axes an existing drill session understands.
@@ -311,6 +321,21 @@ public func buildSkillLadder() -> [SkillUnit] {
     return units
 }
 
+/// The distinct qualities in curriculum (easy→hard) order — the ascending test
+/// sequence the calibration drill presents. Derived from the ladder so it stays
+/// in lockstep with the curriculum.
+public let CALIBRATION_QUALITIES: [String] = {
+    var seen = Set<String>()
+    var out: [String] = []
+    for u in buildSkillLadder() {
+        if !seen.contains(u.quality) {
+            seen.insert(u.quality)
+            out.append(u.quality)
+        }
+    }
+    return out
+}()
+
 // ─── State helpers ──────────────────────────────────────────
 
 public func createInitialCoachState() -> CoachState {
@@ -376,6 +401,23 @@ private func dueReviewRoots(_ schedule: [ChordReview], _ now: Double) -> [String
     var out: [String] = []
     for r in roots where !seen.contains(r) { seen.insert(r); out.append(r) }
     return out
+}
+
+/// Qualities the player has actually mastered, for a given voicing. The review
+/// block draws only from these. Falls back to the frontier's quality when nothing
+/// is mastered yet (very first sessions).
+private func masteredQualities(
+    _ ladder: [SkillUnit],
+    _ state: CoachState,
+    _ voicing: VoicingType,
+    _ fallback: String
+) -> [String] {
+    var qs: [String] = []
+    var seen = Set<String>()
+    for u in ladder where u.voicing == voicing && isMastered(state, u.id) {
+        if !seen.contains(u.quality) { seen.insert(u.quality); qs.append(u.quality) }
+    }
+    return qs.isEmpty ? [fallback] : qs
 }
 
 /// Parse an ISO date string to ms-since-epoch (mirrors `new Date(x).getTime()`).
@@ -483,8 +525,12 @@ public func buildCoachPlan(
     // ── Uncalibrated → calibration drill ──────────────────
     if !state.calibrated {
         let firstUnit = ladder[0]
+        // The calibration drill climbs difficulty: it presents the ascending
+        // CALIBRATION_QUALITIES so placeByCalibration can read how far up the
+        // player is solid and place them there — a pro is placed high, a beginner
+        // stays low. `advanced` is the widest pool so 'random' can hit them all.
         let calSettings = PracticePlanSettings(
-            difficulty: .beginner,
+            difficulty: .advanced,
             notation: DEFAULT_NOTATION,
             voicing: firstUnit.voicing,
             displayMode: .verify,
@@ -495,6 +541,7 @@ public func buildCoachPlan(
         let block = CoachBlock(
             kind: .calibrate,
             settings: calSettings,
+            focusQualities: CALIBRATION_QUALITIES,
             targetChords: params.calibrationChords,
             labelKey: CoachLabelKeys.calibrate
         )
@@ -560,8 +607,11 @@ public func buildCoachPlan(
             settings = warmupSettings(masteredVoicing, bias)
             labelParams = ["voicing": masteredVoicing.rawValue]
         case .review:
+            // Review only ever drills qualities the player has already mastered
+            // (in the frontier's voicing) — never the whole difficulty pool.
             settings = reviewSettings(frontier, bias)
             focusRoots = reviewRoots
+            focusQualities = masteredQualities(ladder, state, frontier.voicing, frontier.quality)
             labelParams = ["count": String(reviewRoots.count)]
         case .focus:
             // Focus drills the frontier's quality in the player's weak keys —
@@ -713,8 +763,7 @@ public func applySessionToCoach(
     // ── Frontier promotion / hold / demotion ──────────────
     // Target the unit the plan was built around (plan.frontierUnitId), NOT the
     // live-recomputed frontier. The plan is built once per session and reused for
-    // every block, so this pins promotion to a single unit — the ladder can advance
-    // at most ONE tier per session, however many blocks the session had.
+    // every block, so a normal pass advances one tier per session.
     // Fall back to the live frontier for older plans without a frontierUnitId.
     let planFrontier: SkillUnit =
         (plan.frontierUnitId.flatMap { id in ladder.first { $0.id == id } })
@@ -723,34 +772,48 @@ public func applySessionToCoach(
     // Warmup/apply (mastered voicing) and focus (weak-spot voicing) blocks must
     // never promote the frontier just because their roots happen to overlap.
     let trainsFrontier = session.settings.voicing == planFrontier.voicing
-    // Never act on a unit that is already mastered (e.g. a later block of the same
-    // session after the frontier was promoted by an earlier block).
-    let alreadyMastered = isMastered(next, planFrontier.id)
-    let frontier = planFrontier
-    let stats = (trainsFrontier && !alreadyMastered)
-        ? scoreSessionForUnit(timings, frontier, params)
-        : UnitSessionStats(attempts: 0, underThreshold: 0, avgMs: 0, hasCorrectness: false, good: 0)
 
-    if stats.attempts > 0 {
-        let ratio = Double(stats.good) / Double(stats.attempts)
-        var prog = unitProgress(next, frontier.id)
-        prog.lastTrainedAt = now
-        prog.bestAvgMs = prog.bestAvgMs == nil ? stats.avgMs : min(prog.bestAvgMs!, stats.avgMs)
+    if trainsFrontier {
+        // Climb the ladder from the plan's frontier while this session's timings
+        // keep clearing the next unit. A normal pass promotes at most the plan
+        // frontier (one tier); an EXCELLENT pass (fast + clean) keeps climbing
+        // same-voicing units it also covers — so a player who's clearly on top of
+        // a quality clears easy→med→all in one session instead of one tier each.
+        var unit: SkillUnit? = planFrontier
+        var firstStep = true
+        while let u = unit, u.voicing == planFrontier.voicing, !isMastered(next, u.id) {
+            let stats = scoreSessionForUnit(timings, u, params)
+            if stats.attempts == 0 { break }
+            let ratio = Double(stats.good) / Double(stats.attempts)
+            var prog = unitProgress(next, u.id)
+            prog.lastTrainedAt = now
+            prog.bestAvgMs = prog.bestAvgMs == nil ? stats.avgMs : min(prog.bestAvgMs!, stats.avgMs)
 
-        if ratio >= params.promotionRatio {
-            // Promotion — unit mastered, holds reset.
-            prog.state = .mastered
-            prog.holds = 0
-            next.unitStates[frontier.id] = prog
-        } else {
-            // Hold — count it; escalate to (single-step) demotion after N holds.
-            prog.state = prog.state == .locked ? .learning : prog.state
-            prog.holds = prog.holds + 1
-            next.unitStates[frontier.id] = prog
-
-            if prog.holds >= params.demotionAfterHolds {
-                demoteOneStep(ladder, &next, frontier.index, params)
+            if ratio >= params.promotionRatio {
+                prog.state = .mastered
+                prog.holds = 0
+                next.unitStates[u.id] = prog
+                // Only keep climbing past the plan frontier when the pass was
+                // excellent — otherwise stop after the one planned promotion.
+                let excellent =
+                    stats.avgMs > 0 && stats.avgMs <= params.masteryThresholdMs * params.excellentFactor
+                if !excellent { break }
+                let nextIdx = u.index + 1
+                unit = nextIdx < ladder.count ? ladder[nextIdx] : nil
+            } else {
+                // Hold — count it; escalate to (single-step) demotion after N holds.
+                // Holds only apply to the actual frontier (the first step).
+                if firstStep {
+                    prog.state = prog.state == .locked ? .learning : prog.state
+                    prog.holds = prog.holds + 1
+                    next.unitStates[u.id] = prog
+                    if prog.holds >= params.demotionAfterHolds {
+                        demoteOneStep(ladder, &next, u.index, params)
+                    }
+                }
+                break
             }
+            firstStep = false
         }
     }
 
@@ -775,21 +838,60 @@ private func placeByCalibration(
 ) {
     if timings.isEmpty { return }
 
-    // Overall calibration speed decides how far to place.
-    let avg = timings.reduce(0.0) { $0 + $1.durationMs } / Double(timings.count)
-    let fastEnough = avg <= params.masteryThresholdMs
-    if !fastEnough { return } // slow calibration → stay at the very bottom.
-
-    // Place ONLY the easy-tier beginner units as mastered, contiguous from the
-    // bottom. Calibration proves the easiest keys — it does NOT prove the med/all
-    // key tiers, which must still be earned session by session. (Bulk-clearing
-    // med+all here was the source of the "mastered space explodes after one
-    // session" bug — see docs/auto-mode-design.md §2.2 rule 1: one tier at a time.)
-    for unit in ladder {
-        if unit.difficulty != .beginner { break }
-        if unit.keyTier != .easy { continue }
-        state.unitStates[unit.id] = UnitProgress(state: .mastered, bestAvgMs: avg, holds: 0)
+    // Group the calibration timings by chord quality. The chord name is
+    // "<root><notated>", so strip the leading root to recover the quality.
+    var byQuality: [String: [ChordTiming]] = [:]
+    for t in timings {
+        let q = qualityOfChord(t.chord)
+        if q.isEmpty { continue }
+        byQuality[q, default: []].append(t)
     }
+
+    // Calibration only tests the first curriculum voicing (root) — place only that
+    // voicing's units, never voicings the player never touched.
+    let calVoicing = ladder.first?.voicing
+
+    // Walk the qualities easy→hard. A quality is "solid" when the player was fast
+    // and (where known) correct on it. Place every unit of each solid quality as
+    // mastered — CONTIGUOUS: the first non-solid quality stops the walk, so we
+    // never place a hard quality the player skipped past by luck. A pro who's
+    // solid up to 13 gets placed there; a beginner stops after Maj7 (or nothing).
+    for quality in CALIBRATION_QUALITIES {
+        guard let qt = byQuality[quality], !qt.isEmpty else { break }
+        let avg = qt.reduce(0.0) { $0 + $1.durationMs } / Double(qt.count)
+        let fast = avg <= params.masteryThresholdMs
+        let clean = qt.allSatisfy { $0.correct != false }
+        if !fast || !clean { break } // first shaky quality → placement stops here.
+
+        for unit in ladder where unit.quality == quality && unit.voicing == calVoicing {
+            state.unitStates[unit.id] = UnitProgress(state: .mastered, bestAvgMs: avg, holds: 0)
+        }
+    }
+}
+
+// Map every notated quality form (across all notation styles) back to its
+// canonical `display` key, so placement works whatever notation the drill used.
+private let NOTATED_TO_DISPLAY: [String: String] = {
+    var m: [String: String] = [:]
+    for style in NotationStyle.allCases {
+        for (display, notated) in (CHORD_NOTATIONS[style] ?? [:]) {
+            m[notated] = display
+        }
+    }
+    return m
+}()
+
+/// Recover a chord's canonical quality display from "<root><notated>", e.g. "EbΔ7" → "Maj7".
+private func qualityOfChord(_ chord: String) -> String {
+    // Root = a letter, optionally followed by one accidental (# / b / ♯ / ♭).
+    var rest = Substring(chord)
+    guard let first = rest.first, first >= "A", first <= "G" else { return "" }
+    rest = rest.dropFirst()
+    if let acc = rest.first, acc == "#" || acc == "b" || acc == "♯" || acc == "♭" {
+        rest = rest.dropFirst()
+    }
+    let notated = String(rest)
+    return NOTATED_TO_DISPLAY[notated] ?? notated
 }
 
 /// Demote: frontier back to 'practicing', drop one key tier if possible. Never more than one step.
@@ -867,6 +969,41 @@ public func applyFeedback(
     var next = state
     next.difficultyBias = bias
     return next
+}
+
+/// The post-session verdict — the UI never asks "too easy?" (the system detects
+/// excellence itself). It only offers:
+///  - .excellent  → "nailed it, keep going" (fast AND clean)
+///  - .struggling → "too hard? start easier" — but ONLY after
+///    struggleSessionsBeforeOffer sessions in a row of real struggle.
+///  - .neutral    → nothing special.
+/// `struggleStreak` on the returned state tracks the consecutive-struggle count.
+public func assessSession(
+    _ state: CoachState,
+    _ session: SessionResult,
+    _ params: CoachParams = DEFAULT_COACH_PARAMS
+) -> (verdict: SessionVerdict, state: CoachState) {
+    let timings = session.chordTimings ?? []
+    let avg = session.avgMs
+    let graded = timings.filter { $0.correct != nil }
+    let correctRate = graded.isEmpty
+        ? 1.0
+        : Double(graded.filter { $0.correct == true }.count) / Double(graded.count)
+
+    let excellent =
+        avg > 0 && avg <= params.masteryThresholdMs * params.excellentFactor && correctRate >= 0.9
+    let struggled = avg > params.masteryThresholdMs || correctRate < 0.6
+
+    let prevStreak = state.struggleStreak ?? 0
+    let streak = struggled ? prevStreak + 1 : 0
+    var nextState = state
+    nextState.struggleStreak = streak
+
+    var verdict: SessionVerdict = .neutral
+    if excellent { verdict = .excellent }
+    else if streak >= params.struggleSessionsBeforeOffer { verdict = .struggling }
+
+    return (verdict, nextState)
 }
 
 // ─── UI helpers ─────────────────────────────────────────────

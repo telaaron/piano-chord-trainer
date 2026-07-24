@@ -97,3 +97,15 @@ Modell-Zuteilung: **[O] = Opus** (groß/riskant), **[S] = Sonnet** (klein/mechan
 - **Alte Sessions ohne `correct`-Flag:** Mastery-Logik muss mit `undefined` umgehen (nur Timing zählt dann).
 - **Dirty Working Tree:** Es liegen unkommittete Änderungen auf `ios/native` — vor dem Merge sauber
   in Feature-Commits trennen.
+
+---
+
+## Backlog (nach dem Feedback-Loop 2026-07-24)
+
+- **Voicing-Reihenfolge als eigenes Lernziel.** Aktuell zählt ein Akkord als richtig,
+  egal in welcher Reihenfolge/Oktavlage die Töne kommen. Ein echter Jazz-Pianist soll
+  jede Quality in allen Varianten/Inversionen *gezielt* abrufen können. Künftiges
+  Curriculum-Modul: dieselbe Quality durch ihre Voicing-Varianten (Rootless A/B,
+  Inversionen, Drop-2 …) treiben, mit Reihenfolge-/Lagen-Prüfung statt nur Pitch-Class-Set.
+  Braucht: strengeren Match-Modus (`ChordMatch`), neue Skill-Units pro Voicing-Variante,
+  UI die die Ziel-Lage zeigt.

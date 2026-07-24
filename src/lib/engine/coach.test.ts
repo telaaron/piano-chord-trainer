@@ -120,6 +120,113 @@ describe('applySessionToCoach — promotion', () => {
 	});
 });
 
+// Chord timing with an explicit quality display in the name, for calibration tests.
+function qTiming(root: string, quality: string, durationMs: number, correct?: boolean): ChordTiming {
+	return { root, chord: `${root}${quality}`, durationMs, correct };
+}
+
+describe('adaptive calibration placement', () => {
+	it('a beginner (only Maj7 solid) is placed at Maj7, no further', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// Fast on Maj7, slow on the next quality (7).
+		const timings = [
+			qTiming('C', 'Maj7', 1000, true),
+			qTiming('F', 'Maj7', 1100, true),
+			qTiming('C', '7', 5000, true),
+		];
+		const next = applySessionToCoach(state, plan, session(timings, 'root'), DEFAULT_COACH_PARAMS, 1000);
+		expect(next.calibrated).toBe(true);
+		const ladder = buildSkillLadder();
+		const maj7 = ladder.filter((u) => u.quality === 'Maj7' && u.voicing === 'root');
+		const seven = ladder.filter((u) => u.quality === '7' && u.voicing === 'root');
+		// All Maj7 tiers mastered…
+		expect(maj7.every((u) => next.unitStates[u.id]?.state === 'mastered')).toBe(true);
+		// …but 7 is not (it was slow).
+		expect(seven.some((u) => next.unitStates[u.id]?.state === 'mastered')).toBe(false);
+	});
+
+	it('a pro (solid up several qualities) is placed high, contiguous', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// Fast + clean on Maj7, 7, m7; then slow on 6.
+		const timings = [
+			qTiming('C', 'Maj7', 800, true),
+			qTiming('C', '7', 900, true),
+			qTiming('C', 'm7', 850, true),
+			qTiming('C', '6', 4000, true),
+		];
+		const next = applySessionToCoach(state, plan, session(timings, 'root'), DEFAULT_COACH_PARAMS, 1000);
+		const ladder = buildSkillLadder();
+		for (const q of ['Maj7', '7', 'm7']) {
+			expect(ladder.filter((u) => u.quality === q && u.voicing === 'root').every((u) => next.unitStates[u.id]?.state === 'mastered')).toBe(true);
+		}
+		expect(ladder.filter((u) => u.quality === '6' && u.voicing === 'root').some((u) => next.unitStates[u.id]?.state === 'mastered')).toBe(false);
+	});
+
+	it('stops at the first shaky quality even if a later one was fast (contiguous)', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const timings = [
+			qTiming('C', 'Maj7', 800, true),
+			qTiming('C', '7', 5000, true), // shaky
+			qTiming('C', 'm7', 800, true), // fast but should NOT be placed (gap)
+		];
+		const next = applySessionToCoach(state, plan, session(timings, 'root'), DEFAULT_COACH_PARAMS, 1000);
+		const ladder = buildSkillLadder();
+		expect(ladder.filter((u) => u.quality === 'm7' && u.voicing === 'root').some((u) => next.unitStates[u.id]?.state === 'mastered')).toBe(false);
+	});
+});
+
+describe('excellence threshold — climb several tiers in one excellent session', () => {
+	it('an excellent session on Maj7 masters easy→med→all in one go', () => {
+		const state = calibratedState(); // frontier at Maj7 root easy
+		const ladder = buildSkillLadder();
+		// The frontier is root|Maj7; only those three tiers should climb.
+		const maj7Units = ladder.filter((u) => u.quality === 'Maj7' && u.voicing === 'root');
+		// Excellent (well under 0.6×2000=1200ms), correct, covering all 12 keys.
+		const allKeys = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+		const timings = allKeys.map((k) => qTiming(k, 'Maj7', 700, true));
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const next = applySessionToCoach(state, plan, session(timings, 'root'), DEFAULT_COACH_PARAMS, 1000);
+		// All three root|Maj7 tiers mastered in this one excellent session.
+		expect(maj7Units.every((u) => next.unitStates[u.id]?.state === 'mastered')).toBe(true);
+	});
+
+	it('a merely-passing session promotes only one tier (no explosion)', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		const frontier = ladder[0];
+		// Just under threshold (1500 < 2000) but NOT excellent (> 1200).
+		const timings = frontier.keys.map((k) => qTiming(k, 'Maj7', 1500, true));
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const next = applySessionToCoach(state, plan, session(timings, 'root'), DEFAULT_COACH_PARAMS, 1000);
+		const maj7Units = ladder.filter((u) => u.quality === 'Maj7' && u.voicing === 'root');
+		const masteredCount = maj7Units.filter((u) => next.unitStates[u.id]?.state === 'mastered').length;
+		expect(masteredCount).toBe(1); // only the easy tier
+	});
+});
+
+describe('review block draws only mastered qualities', () => {
+	it('with only Maj7 mastered, review pins to Maj7 (not the full pool)', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		// Master all Maj7 tiers so review has something to draw from.
+		for (const u of ladder.filter((x) => x.quality === 'Maj7')) {
+			state.unitStates[u.id] = { state: 'mastered', holds: 0 };
+		}
+		// Due review roots so a review block is included.
+		const withDue = profile({
+			chordSchedule: [
+				{ chordKey: 'C-Maj7', root: 'C', quality: 'Maj7', lastReviewed: '2020-01-01', nextReview: '2020-01-01', interval: 1, ease: 2, repetitions: 1 },
+			],
+		});
+		const plan = buildCoachPlan([], withDue, undefined, state, DEFAULT_COACH_PARAMS, Date.now());
+		const review = plan.blocks.find((b) => b.kind === 'review');
+		if (review) expect(review.focusQualities).toEqual(['Maj7']);
+	});
+});
+
 describe('focusQualities — a block delivers only what it promises', () => {
 	it('new block pins the pool to exactly the frontier quality', () => {
 		const state = calibratedState();
@@ -233,8 +340,8 @@ describe('calibration placement', () => {
 	it('fast calibration skips beginner units (mastered by placement)', () => {
 		const state = createInitialCoachState();
 		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
-		// Very fast calibration across easy keys.
-		const timings = Array.from({ length: 12 }, (_, i) => timing(['C', 'F', 'Bb', 'Eb'][i % 4], 1200, true));
+		// Very fast calibration, solid on Maj7.
+		const timings = ['C', 'F', 'Bb', 'Eb'].map((k) => qTiming(k, 'Maj7', 1200, true));
 		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
 		expect(next.calibrated).toBe(true);
 		const mastered = Object.values(next.unitStates).filter((u) => u.state === 'mastered');
@@ -246,7 +353,7 @@ describe('calibration placement', () => {
 	it('slow calibration stays at the bottom rung', () => {
 		const state = createInitialCoachState();
 		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
-		const timings = Array.from({ length: 12 }, (_, i) => timing(['C', 'F', 'Bb', 'Eb'][i % 4], 5000, true));
+		const timings = ['C', 'F', 'Bb', 'Eb'].map((k) => qTiming(k, 'Maj7', 5000, true));
 		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
 		expect(next.calibrated).toBe(true);
 		expect(next.frontierIndex).toBe(0);
@@ -400,17 +507,17 @@ describe('promotion cannot explode across tiers (Bug 1)', () => {
 		expect(next.frontierIndex).toBe(0);
 	});
 
-	it('fast calibration masters ONLY easy-tier units (no med/all bulk clear)', () => {
+	it('calibration only places the tested voicing, never other voicings', () => {
 		const state = createInitialCoachState();
 		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
-		// Very fast calibration — previously this bulk-cleared med+all too.
-		const timings = Array.from({ length: 12 }, (_, i) => timing(['C', 'F', 'Bb', 'Eb'][i % 4], 1200, true));
+		// Solid on Maj7 in the calibration (root) voicing.
+		const timings = ['C', 'F', 'Bb', 'Eb'].map((k) => qTiming(k, 'Maj7', 1000, true));
 		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
 		const ladder = buildSkillLadder();
 		for (const [id, prog] of Object.entries(next.unitStates)) {
 			if (prog.state !== 'mastered') continue;
 			const unit = ladder.find((u) => u.id === id)!;
-			expect(unit.keyTier).toBe('easy');
+			expect(unit.voicing).toBe('root');
 		}
 	});
 

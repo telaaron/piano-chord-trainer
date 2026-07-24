@@ -10,7 +10,7 @@
 // free of anything that can't cross that boundary.
 
 import type { Difficulty, VoicingType, DisplayMode, NotationStyle } from './chords';
-import { CHORDS_BY_DIFFICULTY } from './chords';
+import { CHORDS_BY_DIFFICULTY, CHORD_NOTATIONS } from './chords';
 import type { AccidentalPreference } from './notes';
 import type { ProgressionMode } from './progressions';
 import type { SessionResult, ChordTiming, WeakSpot } from '../services/progress';
@@ -66,9 +66,15 @@ export interface CoachState {
 	difficultyBias: number;
 	/** Whether the one-time calibration has run. */
 	calibrated: boolean;
+	/** Consecutive sessions the player struggled (slow / many wrong). Drives the
+	 *  "too hard? start easier" offer only after real, sustained struggle. */
+	struggleStreak?: number;
 	/** Last plan built, for resume / display. */
 	lastPlan?: CoachPlan;
 }
+
+/** What the post-session screen should offer, derived from how the session went. */
+export type SessionVerdict = 'excellent' | 'struggling' | 'neutral';
 
 /** Exactly the settings axes an existing drill session understands. */
 export interface PracticePlanSettings {
@@ -228,6 +234,23 @@ export function buildSkillLadder(): SkillUnit[] {
 	return units;
 }
 
+/**
+ * The distinct qualities in curriculum (easy→hard) order — the ascending test
+ * sequence the calibration drill presents. Derived from the ladder so it stays
+ * in lockstep with the curriculum.
+ */
+export const CALIBRATION_QUALITIES: string[] = (() => {
+	const seen = new Set<string>();
+	const out: string[] = [];
+	for (const u of buildSkillLadder()) {
+		if (!seen.has(u.quality)) {
+			seen.add(u.quality);
+			out.push(u.quality);
+		}
+	}
+	return out;
+})();
+
 // ─── State helpers ──────────────────────────────────────────
 
 export function createInitialCoachState(): CoachState {
@@ -289,6 +312,26 @@ function dueReviewRoots(schedule: ChordReview[], now: number): string[] {
 		if (new Date(r.nextReview).getTime() <= now) roots.push(r.root);
 	}
 	return [...new Set(roots)];
+}
+
+/**
+ * Qualities the player has actually mastered, for a given voicing. The review
+ * block draws only from these — reviewing a quality you've never cleared (which
+ * the old full-difficulty pool did) is nonsense. Falls back to the frontier's
+ * quality when nothing is mastered yet (very first sessions).
+ */
+function masteredQualities(
+	ladder: SkillUnit[],
+	state: CoachState,
+	voicing: VoicingType,
+	fallback: string,
+): string[] {
+	const qs = new Set<string>();
+	for (const u of ladder) {
+		if (u.voicing === voicing && isMastered(state, u.id)) qs.add(u.quality);
+	}
+	if (qs.size === 0) qs.add(fallback);
+	return [...qs];
 }
 
 function warmupSettings(unit: SkillUnit, bias: number): PracticePlanSettings {
@@ -381,8 +424,12 @@ export function buildCoachPlan(
 	// ── Uncalibrated → calibration drill ──────────────────
 	if (!state.calibrated) {
 		const firstUnit = ladder[0];
+		// The calibration drill climbs difficulty: it presents the ascending
+		// CALIBRATION_QUALITIES so placeByCalibration can read how far up the
+		// player is solid and place them there — a pro is placed high, a beginner
+		// stays low. `advanced` is the widest pool so 'random' can hit them all.
 		const calSettings: PracticePlanSettings = {
-			difficulty: 'beginner',
+			difficulty: 'advanced',
 			notation: DEFAULT_NOTATION,
 			voicing: firstUnit.voicing,
 			displayMode: 'verify',
@@ -393,6 +440,9 @@ export function buildCoachPlan(
 		const block: CoachBlock = {
 			kind: 'calibrate',
 			settings: calSettings,
+			// Present the ascending ladder of qualities, not a random spread, so the
+			// placement can find the boundary where the player stops being solid.
+			focusQualities: CALIBRATION_QUALITIES,
 			targetChords: params.calibrationChords,
 			labelKey: COACH_LABEL_KEYS.calibrate,
 		};
@@ -458,8 +508,11 @@ export function buildCoachPlan(
 				labelParams = { voicing: masteredVoicing };
 				break;
 			case 'review':
+				// Review only ever drills qualities the player has already mastered
+				// (in the frontier's voicing) — never the whole difficulty pool.
 				settings = reviewSettings(frontier, bias);
 				focusRoots = reviewRoots;
+				focusQualities = masteredQualities(ladder, state, frontier.voicing, frontier.quality);
 				labelParams = { count: String(reviewRoots.length) };
 				break;
 			case 'focus':
@@ -615,8 +668,7 @@ export function applySessionToCoach(
 	// ── Frontier promotion / hold / demotion ──────────────
 	// Target the unit the plan was built around (plan.frontierUnitId), NOT the
 	// live-recomputed frontier. The plan is built once per session and reused for
-	// every block, so this pins promotion to a single unit — the ladder can advance
-	// at most ONE tier per session, however many blocks the session had.
+	// every block, so a normal pass advances one tier per session.
 	// Fall back to the live frontier for older plans without a frontierUnitId.
 	const planFrontier =
 		(plan.frontierUnitId ? ladder.find((u) => u.id === plan.frontierUnitId) : undefined) ??
@@ -625,35 +677,51 @@ export function applySessionToCoach(
 	// Warmup/apply (mastered voicing) and focus (weak-spot voicing) blocks must
 	// never promote the frontier just because their roots happen to overlap.
 	const trainsFrontier = session.settings.voicing === planFrontier.voicing;
-	// Never act on a unit that is already mastered (e.g. a later block of the same
-	// session after the frontier was promoted by an earlier block).
-	const alreadyMastered = isMastered(next, planFrontier.id);
-	const frontier = planFrontier;
-	const stats = trainsFrontier && !alreadyMastered
-		? scoreSessionForUnit(timings, frontier, params)
-		: { attempts: 0, underThreshold: 0, avgMs: 0, hasCorrectness: false, good: 0 };
 
-	if (stats.attempts > 0) {
-		const ratio = stats.good / stats.attempts;
-		const prog = { ...unitProgress(next, frontier.id) };
-		prog.lastTrainedAt = now;
-		prog.bestAvgMs =
-			prog.bestAvgMs === undefined ? stats.avgMs : Math.min(prog.bestAvgMs, stats.avgMs);
+	if (trainsFrontier) {
+		// Climb the ladder from the plan's frontier while this session's timings
+		// keep clearing the next unit. A normal pass promotes at most the plan
+		// frontier (one tier); an EXCELLENT pass (fast + clean) keeps climbing
+		// same-voicing units it also covers — so a player who's clearly on top of
+		// a quality clears easy→med→all in one session instead of one tier each.
+		// The `alreadyMastered` guard + per-unit re-scoring keep this from
+		// re-introducing the "mastered space explodes" bug: each step needs its
+		// own passing window from the same session's data.
+		let unit: SkillUnit | undefined = planFrontier;
+		let firstStep = true;
+		while (unit && unit.voicing === planFrontier.voicing && !isMastered(next, unit.id)) {
+			const stats = scoreSessionForUnit(timings, unit, params);
+			if (stats.attempts === 0) break;
+			const ratio = stats.good / stats.attempts;
+			const prog = { ...unitProgress(next, unit.id) };
+			prog.lastTrainedAt = now;
+			prog.bestAvgMs =
+				prog.bestAvgMs === undefined ? stats.avgMs : Math.min(prog.bestAvgMs, stats.avgMs);
 
-		if (ratio >= params.promotionRatio) {
-			// Promotion — unit mastered, holds reset.
-			prog.state = 'mastered';
-			prog.holds = 0;
-			next.unitStates[frontier.id] = prog;
-		} else {
-			// Hold — count it; escalate to (single-step) demotion after N holds.
-			prog.state = prog.state === 'locked' ? 'learning' : prog.state;
-			prog.holds = (prog.holds ?? 0) + 1;
-			next.unitStates[frontier.id] = prog;
-
-			if (prog.holds >= params.demotionAfterHolds) {
-				demoteOneStep(ladder, next, frontier.index, params);
+			if (ratio >= params.promotionRatio) {
+				prog.state = 'mastered';
+				prog.holds = 0;
+				next.unitStates[unit.id] = prog;
+				// Only keep climbing past the plan frontier when the pass was
+				// excellent — otherwise stop after the one planned promotion.
+				const excellent =
+					stats.avgMs > 0 && stats.avgMs <= params.masteryThresholdMs * params.excellentFactor;
+				if (!excellent) break;
+				unit = ladder[unit.index + 1];
+			} else {
+				// Hold — count it; escalate to (single-step) demotion after N holds.
+				// Holds only apply to the actual frontier (the first step).
+				if (firstStep) {
+					prog.state = prog.state === 'locked' ? 'learning' : prog.state;
+					prog.holds = (prog.holds ?? 0) + 1;
+					next.unitStates[unit.id] = prog;
+					if (prog.holds >= params.demotionAfterHolds) {
+						demoteOneStep(ladder, next, unit.index, params);
+					}
+				}
+				break;
 			}
+			firstStep = false;
 		}
 	}
 
@@ -680,25 +748,59 @@ function placeByCalibration(
 ): void {
 	if (timings.length === 0) return;
 
-	// Overall calibration speed decides how far to place.
-	const avg = timings.reduce((s, t) => s + t.durationMs, 0) / timings.length;
-	const fastEnough = avg <= params.masteryThresholdMs;
-	if (!fastEnough) return; // slow calibration → stay at the very bottom.
-
-	// Place ONLY the easy-tier beginner units as mastered, contiguous from the
-	// bottom. Calibration proves the easiest keys — it does NOT prove the med/all
-	// key tiers, which must still be earned session by session. (Bulk-clearing
-	// med+all here was the source of the "mastered space explodes after one
-	// session" bug — see docs/auto-mode-design.md §2.2 rule 1: one tier at a time.)
-	for (const unit of ladder) {
-		if (unit.difficulty !== 'beginner') break;
-		if (unit.keyTier !== 'easy') continue;
-		state.unitStates[unit.id] = {
-			state: 'mastered',
-			bestAvgMs: avg,
-			holds: 0,
-		};
+	// Group the calibration timings by chord quality. The chord name is
+	// "<root><display>", so strip the leading root to recover the quality.
+	// (Roots are 1–2 chars: a letter + optional accidental.)
+	const byQuality = new Map<string, ChordTiming[]>();
+	for (const t of timings) {
+		const q = qualityOfChord(t.chord);
+		if (!q) continue;
+		(byQuality.get(q) ?? byQuality.set(q, []).get(q)!).push(t);
 	}
+
+	// Calibration only tests the first curriculum voicing (root) — place only that
+	// voicing's units, never voicings the player never touched.
+	const calVoicing = ladder[0]?.voicing;
+
+	// Walk the qualities easy→hard. A quality is "solid" when the player was fast
+	// and (where known) correct on it. Place every unit of each solid quality as
+	// mastered — CONTIGUOUS: the first non-solid quality stops the walk, so we
+	// never place a hard quality the player skipped past by luck. A pro who's
+	// solid up to 13 gets placed there; a beginner stops after Maj7 (or nothing).
+	for (const quality of CALIBRATION_QUALITIES) {
+		const qt = byQuality.get(quality);
+		// No data for this quality (calibration didn't reach it) → stop climbing.
+		if (!qt || qt.length === 0) break;
+		const avg = qt.reduce((s, t) => s + t.durationMs, 0) / qt.length;
+		const fast = avg <= params.masteryThresholdMs;
+		const clean = qt.every((t) => t.correct !== false);
+		if (!fast || !clean) break; // first shaky quality → placement stops here.
+
+		for (const unit of ladder) {
+			if (unit.quality !== quality || unit.voicing !== calVoicing) continue;
+			state.unitStates[unit.id] = { state: 'mastered', bestAvgMs: avg, holds: 0 };
+		}
+	}
+}
+
+// Map every notated quality form (across all notation styles) back to its
+// canonical `display` key, so placement works whatever notation the drill used.
+const NOTATED_TO_DISPLAY: Record<string, string> = (() => {
+	const m: Record<string, string> = {};
+	for (const style of Object.keys(CHORD_NOTATIONS) as NotationStyle[]) {
+		for (const [display, notated] of Object.entries(CHORD_NOTATIONS[style])) {
+			m[notated] = display;
+		}
+	}
+	return m;
+})();
+
+/** Recover a chord's canonical quality display from "<root><notated>", e.g. "EbΔ7" → "Maj7". */
+function qualityOfChord(chord: string): string {
+	// Root = a letter, optionally followed by one accidental (# / b / ♯ / ♭).
+	const m = chord.match(/^[A-G][#b♯♭]?(.*)$/);
+	const notated = m ? m[1] : '';
+	return NOTATED_TO_DISPLAY[notated] ?? notated;
 }
 
 /** Demote: frontier back to 'practicing', drop one key tier if possible. Never more than one step. */
@@ -777,6 +879,44 @@ export function applyFeedback(
 	const c = params.feedbackBiasClamp;
 	bias = Math.max(-c, Math.min(c, bias));
 	return { ...state, difficultyBias: bias };
+}
+
+/**
+ * The post-session verdict — the UI never asks "too easy?" (the system detects
+ * excellence itself). It only offers:
+ *  - 'excellent'  → "nailed it, keep going" (fast AND clean)
+ *  - 'struggling' → "too hard? start easier" — but ONLY after struggleSessions-
+ *    BeforeOffer sessions in a row of real struggle, so one rough day never nags.
+ *  - 'neutral'    → nothing special.
+ * `struggleStreak` on the returned state tracks the consecutive-struggle count;
+ * feed it back into the next call via the state.
+ */
+export function assessSession(
+	state: CoachState,
+	session: SessionResult,
+	params: CoachParams = DEFAULT_COACH_PARAMS,
+): { verdict: SessionVerdict; state: CoachState } {
+	const timings = session.chordTimings ?? [];
+	const avg = session.avgMs || 0;
+	const graded = timings.filter((t) => t.correct !== undefined);
+	const correctRate = graded.length
+		? graded.filter((t) => t.correct === true).length / graded.length
+		: 1;
+
+	const excellent =
+		avg > 0 && avg <= params.masteryThresholdMs * params.excellentFactor && correctRate >= 0.9;
+	// "Struggled" = slow (over threshold) or error-prone this session.
+	const struggled = avg > params.masteryThresholdMs || correctRate < 0.6;
+
+	const prevStreak = state.struggleStreak ?? 0;
+	const streak = struggled ? prevStreak + 1 : 0;
+	const nextState = { ...state, struggleStreak: streak };
+
+	let verdict: SessionVerdict = 'neutral';
+	if (excellent) verdict = 'excellent';
+	else if (streak >= params.struggleSessionsBeforeOffer) verdict = 'struggling';
+
+	return { verdict, state: nextState };
 }
 
 // ─── UI helpers ─────────────────────────────────────────────

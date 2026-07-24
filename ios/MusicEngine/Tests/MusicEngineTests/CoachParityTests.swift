@@ -18,6 +18,11 @@ final class CoachParityTests: XCTestCase {
         ChordTiming(chord: "\(root)X", root: root, durationMs: durationMs, correct: correct)
     }
 
+    /// Chord timing with an explicit quality display in the name, for calibration tests.
+    private func qTiming(_ root: String, _ quality: String, _ durationMs: Double, _ correct: Bool? = nil) -> ChordTiming {
+        ChordTiming(chord: "\(root)\(quality)", root: root, durationMs: durationMs, correct: correct)
+    }
+
     private func session(_ timings: [ChordTiming], voicing: VoicingType = .root) -> SessionResult {
         let avg = timings.isEmpty ? 0 : timings.reduce(0.0) { $0 + $1.durationMs } / Double(timings.count)
         return SessionResult(
@@ -190,8 +195,7 @@ final class CoachParityTests: XCTestCase {
     func testFastCalibrationSkipsBeginnerUnits() {
         let state = createInitialCoachState()
         let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
-        let keys = ["C", "F", "Bb", "Eb"]
-        let timings = (0..<12).map { timing(keys[$0 % 4], 1200, true) }
+        let timings = ["C", "F", "Bb", "Eb"].map { qTiming($0, "Maj7", 1200, true) }
         let next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, now: 1000)
         XCTAssertTrue(next.calibrated)
         let mastered = next.unitStates.values.filter { $0.state == .mastered }
@@ -202,11 +206,66 @@ final class CoachParityTests: XCTestCase {
     func testSlowCalibrationStaysAtBottom() {
         let state = createInitialCoachState()
         let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
-        let keys = ["C", "F", "Bb", "Eb"]
-        let timings = (0..<12).map { timing(keys[$0 % 4], 5000, true) }
+        let timings = ["C", "F", "Bb", "Eb"].map { qTiming($0, "Maj7", 5000, true) }
         let next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, now: 1000)
         XCTAssertTrue(next.calibrated)
         XCTAssertEqual(next.frontierIndex, 0)
+    }
+
+    func testAdaptiveCalibrationBeginnerPlacedAtMaj7() {
+        let state = createInitialCoachState()
+        let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        let timings = [qTiming("C", "Maj7", 1000, true), qTiming("F", "Maj7", 1100, true), qTiming("C", "7", 5000, true)]
+        let next = applySessionToCoach(state, plan, session(timings, voicing: .root), DEFAULT_COACH_PARAMS, now: 1000)
+        let ladder = buildSkillLadder()
+        let maj7 = ladder.filter { $0.quality == "Maj7" && $0.voicing == .root }
+        let seven = ladder.filter { $0.quality == "7" && $0.voicing == .root }
+        XCTAssertTrue(maj7.allSatisfy { next.unitStates[$0.id]?.state == .mastered })
+        XCTAssertFalse(seven.contains { next.unitStates[$0.id]?.state == .mastered })
+    }
+
+    func testAdaptiveCalibrationProPlacedHighContiguous() {
+        let state = createInitialCoachState()
+        let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        let timings = [qTiming("C", "Maj7", 800, true), qTiming("C", "7", 900, true),
+                       qTiming("C", "m7", 850, true), qTiming("C", "6", 4000, true)]
+        let next = applySessionToCoach(state, plan, session(timings, voicing: .root), DEFAULT_COACH_PARAMS, now: 1000)
+        let ladder = buildSkillLadder()
+        for q in ["Maj7", "7", "m7"] {
+            XCTAssertTrue(ladder.filter { $0.quality == q && $0.voicing == .root }.allSatisfy { next.unitStates[$0.id]?.state == .mastered })
+        }
+        XCTAssertFalse(ladder.filter { $0.quality == "6" && $0.voicing == .root }.contains { next.unitStates[$0.id]?.state == .mastered })
+    }
+
+    func testAdaptiveCalibrationStopsAtFirstShaky() {
+        let state = createInitialCoachState()
+        let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        let timings = [qTiming("C", "Maj7", 800, true), qTiming("C", "7", 5000, true), qTiming("C", "m7", 800, true)]
+        let next = applySessionToCoach(state, plan, session(timings, voicing: .root), DEFAULT_COACH_PARAMS, now: 1000)
+        let ladder = buildSkillLadder()
+        XCTAssertFalse(ladder.filter { $0.quality == "m7" && $0.voicing == .root }.contains { next.unitStates[$0.id]?.state == .mastered })
+    }
+
+    func testExcellentSessionClimbsAllTiers() {
+        let state = calibratedState()
+        let ladder = buildSkillLadder()
+        let maj7 = ladder.filter { $0.quality == "Maj7" && $0.voicing == .root }
+        let allKeys = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
+        let timings = allKeys.map { qTiming($0, "Maj7", 700, true) }
+        let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        let next = applySessionToCoach(state, plan, session(timings, voicing: .root), DEFAULT_COACH_PARAMS, now: 1000)
+        XCTAssertTrue(maj7.allSatisfy { next.unitStates[$0.id]?.state == .mastered })
+    }
+
+    func testMerelyPassingPromotesOneTier() {
+        let state = calibratedState()
+        let ladder = buildSkillLadder()
+        let frontier = ladder[0]
+        let timings = frontier.keys.map { qTiming($0, "Maj7", 1500, true) }
+        let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        let next = applySessionToCoach(state, plan, session(timings, voicing: .root), DEFAULT_COACH_PARAMS, now: 1000)
+        let maj7 = ladder.filter { $0.quality == "Maj7" && $0.voicing == .root }
+        XCTAssertEqual(maj7.filter { next.unitStates[$0.id]?.state == .mastered }.count, 1)
     }
 
     // ─── difficultyBias clamp ───────────────────────────────
@@ -340,15 +399,15 @@ final class CoachParityTests: XCTestCase {
         XCTAssertEqual(next.frontierIndex, 0)
     }
 
-    func testFastCalibrationMastersOnlyEasyTier() {
+    func testCalibrationOnlyPlacesTestedVoicing() {
         let state = createInitialCoachState()
         let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
-        let timings = (0..<12).map { timing(["C", "F", "Bb", "Eb"][$0 % 4], 1200, true) }
+        let timings = ["C", "F", "Bb", "Eb"].map { qTiming($0, "Maj7", 1000, true) }
         let next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, now: 1000)
         let ladder = buildSkillLadder()
         for (id, prog) in next.unitStates where prog.state == .mastered {
             let unit = ladder.first { $0.id == id }
-            XCTAssertEqual(unit?.keyTier, .easy)
+            XCTAssertEqual(unit?.voicing, .root)
         }
     }
 

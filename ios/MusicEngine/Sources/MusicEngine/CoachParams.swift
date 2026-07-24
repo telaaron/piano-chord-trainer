@@ -70,12 +70,19 @@ public struct CoachParams: Sendable, Equatable, Codable {
     public var chordsPerMinute: Double
     /// Minimum number of chords any block will ever request.
     public var minBlockChords: Int
+    /// Fraction of masteryThresholdMs below which a block counts as "excellent".
+    /// An excellent block promotes even the LIVE frontier (not just the plan's),
+    /// so a player who's clearly on top of a quality climbs several key-tiers in a
+    /// single session — one tier per block — instead of one tier per session.
+    public var excellentFactor: Double
+    /// Consecutive sessions of real struggle before offering "too hard? start easier".
+    public var struggleSessionsBeforeOffer: Int
 
     public init(masteryThresholdMs: Double, masteryWindow: Int, promotionRatio: Double,
                 demotionAfterHolds: Int, blockMix: BlockMix, shortSessionCutoffMin: Int,
                 weights: CoachWeights, calibrationChords: Int, feedbackBiasStep: Double,
                 feedbackBiasClamp: Double, srsLapseDemotes: Bool, chordsPerMinute: Double,
-                minBlockChords: Int) {
+                minBlockChords: Int, excellentFactor: Double, struggleSessionsBeforeOffer: Int) {
         self.masteryThresholdMs = masteryThresholdMs
         self.masteryWindow = masteryWindow
         self.promotionRatio = promotionRatio
@@ -89,6 +96,8 @@ public struct CoachParams: Sendable, Equatable, Codable {
         self.srsLapseDemotes = srsLapseDemotes
         self.chordsPerMinute = chordsPerMinute
         self.minBlockChords = minBlockChords
+        self.excellentFactor = excellentFactor
+        self.struggleSessionsBeforeOffer = struggleSessionsBeforeOffer
     }
 }
 
@@ -105,5 +114,7 @@ public let DEFAULT_COACH_PARAMS = CoachParams(
     feedbackBiasClamp: 0.5,
     srsLapseDemotes: true,
     chordsPerMinute: 8,
-    minBlockChords: 4
+    minBlockChords: 4,
+    excellentFactor: 0.6,
+    struggleSessionsBeforeOffer: 2
 )

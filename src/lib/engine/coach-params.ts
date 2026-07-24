@@ -53,6 +53,15 @@ export interface CoachParams {
 	chordsPerMinute: number;
 	/** Minimum number of chords any block will ever request. */
 	minBlockChords: number;
+	/**
+	 * Fraction of masteryThresholdMs below which a block counts as "excellent".
+	 * An excellent block promotes even the LIVE frontier (not just the plan's),
+	 * so a player who's clearly on top of a quality climbs several key-tiers in a
+	 * single session — one tier per block — instead of one tier per session.
+	 */
+	excellentFactor: number;
+	/** Consecutive sessions of real struggle before offering "too hard? start easier". */
+	struggleSessionsBeforeOffer: number;
 }
 
 export const DEFAULT_COACH_PARAMS: CoachParams = {
@@ -80,4 +89,6 @@ export const DEFAULT_COACH_PARAMS: CoachParams = {
 	srsLapseDemotes: true,
 	chordsPerMinute: 8,
 	minBlockChords: 4,
+	excellentFactor: 0.6,
+	struggleSessionsBeforeOffer: 2,
 };
