@@ -66,6 +66,13 @@ export const en = {
       title: 'Your lesson',
       again: 'Again',
       done: 'Done',
+      keep_going: "Keep going",
+      enough_today: 'Enough for today',
+    },
+    verdict: {
+      excellent: 'Nailed it — that was fast and clean.',
+      struggling: 'That one was tough. Want to ease off?',
+      start_easier: 'Yes, start easier',
     },
     valve: {
       prompt: 'How did that feel?',

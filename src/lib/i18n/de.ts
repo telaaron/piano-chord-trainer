@@ -66,6 +66,13 @@ export const de = {
       title: 'Deine Stunde',
       again: 'Nochmal',
       done: 'Fertig',
+      keep_going: "Weiter geht's",
+      enough_today: 'Für heute genug',
+    },
+    verdict: {
+      excellent: 'Sitzt — das war schnell und sauber.',
+      struggling: 'Das war zäh. Sollen wir es leichter angehen?',
+      start_easier: 'Ja, leichter starten',
     },
     valve: {
       prompt: 'Wie war das für dich?',

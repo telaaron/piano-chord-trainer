@@ -80,6 +80,7 @@
 		buildCoachPlan,
 		applySessionToCoach,
 		applyFeedback,
+		assessSession,
 		teacherFeedback,
 		describeCoachPlan,
 		createInitialCoachState,
@@ -89,6 +90,7 @@
 		type CoachBlock,
 		type TeacherStatement,
 		type FeedbackSignal,
+		type SessionVerdict,
 	} from '$lib/engine/coach';
 	import { DEFAULT_COACH_PARAMS, type CoachParams } from '$lib/engine/coach-params';
 	import { loadCoachState, saveCoachState } from '$lib/services/coach-state';
@@ -244,6 +246,8 @@
 	let coachFeedback: TeacherStatement[] = $state([]);
 	/** True once the player has used the "too easy / passt / too hard" valve this session. */
 	let coachFeedbackGiven = $state(false);
+	/** System-detected verdict for the post-session screen (excellent / struggling / neutral). */
+	let coachVerdict: SessionVerdict = $state('neutral');
 
 	// ─── In-Time mode state ──────────────────────────────────────
 	let inTimeBeatCount = $state(0);
@@ -1061,6 +1065,10 @@
 			lastSession,
 			coachParams,
 		);
+		// The system reads how the session went — the UI never asks "too easy?".
+		const assessed = assessSession(coachStateWorking, lastSession, coachParams);
+		coachVerdict = assessed.verdict;
+		coachStateWorking = assessed.state; // carries struggleStreak forward
 		saveCoachState(coachStateWorking);
 
 		const totalChords = coachSessionBlocks.reduce((s, b) => s + b.totalChords, 0);
@@ -1077,7 +1085,8 @@
 		screen = 'coach-feedback';
 	}
 
-	/** Feedback valve: "too easy / just right / too hard" biases the controller. */
+	/** Feedback valve: biases the controller. Only 'tooHard' is user-triggered now
+	 *  (the "start easier" option shown after sustained struggle). */
 	function applyCoachFeedback(signal: FeedbackSignal) {
 		if (!coachStateWorking || coachFeedbackGiven) return;
 		coachStateWorking = applyFeedback(coachStateWorking, signal, coachParams);
@@ -1086,7 +1095,13 @@
 		trackCoachEvent('feedback_valve', { signal });
 	}
 
-	/** Restart a fresh auto-session from the feedback screen ("Nochmal"). */
+	/** "Yes, start easier" after the struggling offer → bias down, then next session. */
+	function startEasierAndContinue() {
+		applyCoachFeedback('tooHard');
+		restartCoachSession();
+	}
+
+	/** Continue straight into the next building session ("Keep going" / "Weiter geht's"). */
 	function restartCoachSession() {
 		endCoachMode();
 		startCoachSession();
@@ -2827,6 +2842,18 @@
 					</div>
 				{/if}
 
+				<!-- Coach: tell the player which voicing to play (they can't be expected
+				     to know from a chord name like E♭9), with a one-line what-notes hint. -->
+				{#if coachMode}
+					<div class="mb-3 flex items-center justify-center gap-2 text-center flex-wrap">
+						<span class="inline-flex items-center gap-1.5 rounded-full border border-[var(--primary)] bg-[var(--primary-muted)] px-3 py-1 text-xs font-semibold text-(--primary)">
+							<Icon name="weak-spots" size={13} />
+							{t('settings.voicing_' + voicing.replace(/-/g, '_'))}
+						</span>
+						<span class="text-xs text-(--text-muted)">{t('settings.voicing_' + voicing.replace(/-/g, '_') + '_sub')}</span>
+					</div>
+				{/if}
+
 				<!-- Chord card + keyboard (dimmed when paused or not started) -->
 				<div class="{paused ? 'opacity-30 pointer-events-none' : ''} flex items-start gap-4">
 				<div class="flex-1 min-w-0">
@@ -3312,55 +3339,40 @@
 						</ul>
 					{/if}
 
-					<!-- Feedback valve: too easy / just right / too hard -->
-					<div class="flex flex-col gap-2">
-						<span class="text-sm font-medium text-(--text-muted)">{t('coach.valve.prompt')}</span>
-						<div class="grid grid-cols-3 gap-2">
+					<!-- System-detected verdict — the app never asks "too easy?". -->
+					{#if coachVerdict === 'excellent'}
+						<div class="flex items-center justify-center gap-2 rounded-[var(--radius)] bg-[var(--success-muted,var(--primary-muted))] px-4 py-3 text-center text-sm font-medium text-(--text)">
+							<Check size={16} class="text-(--accent-green)" />
+							{t('coach.verdict.excellent')}
+						</div>
+					{:else if coachVerdict === 'struggling' && !coachFeedbackGiven}
+						<div class="flex flex-col gap-2 rounded-[var(--radius)] border border-[var(--border)] px-4 py-3">
+							<span class="text-sm text-(--text-muted)">{t('coach.verdict.struggling')}</span>
 							<button
 								type="button"
-								disabled={coachFeedbackGiven}
-								onclick={() => applyCoachFeedback('tooEasy')}
-								class="rounded-[var(--radius)] border-2 px-3 py-2.5 text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--primary-muted)] text-(--text)"
+								onclick={startEasierAndContinue}
+								class="self-start rounded-[var(--radius)] border-2 border-[var(--primary)] px-3 py-2 text-sm font-medium text-(--primary) transition-colors hover:bg-[var(--primary-muted)]"
 							>
-								{t('coach.valve.too_easy')}
-							</button>
-							<button
-								type="button"
-								disabled={coachFeedbackGiven}
-								onclick={() => applyCoachFeedback('justRight')}
-								class="rounded-[var(--radius)] border-2 px-3 py-2.5 text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed border-[var(--border)] hover:border-[var(--success)] hover:bg-[var(--success-muted)] text-(--text)"
-							>
-								{t('coach.valve.just_right')}
-							</button>
-							<button
-								type="button"
-								disabled={coachFeedbackGiven}
-								onclick={() => applyCoachFeedback('tooHard')}
-								class="rounded-[var(--radius)] border-2 px-3 py-2.5 text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed border-[var(--border)] hover:border-[var(--accent-red)] hover:bg-[color-mix(in_srgb,var(--accent-red)_16%,transparent)] text-(--text)"
-							>
-								{t('coach.valve.too_hard')}
+								{t('coach.verdict.start_easier')}
 							</button>
 						</div>
-						{#if coachFeedbackGiven}
-							<span class="text-xs text-(--text-dim)" in:fade={{ duration: 150 }}>{t('coach.valve.thanks')}</span>
-						{/if}
-					</div>
+					{/if}
 
-					<!-- Again / Done -->
-					<div class="flex gap-3">
+					<!-- Keep going (next building session) / Done for today -->
+					<div class="flex flex-col gap-2">
 						<button
 							type="button"
 							onclick={restartCoachSession}
-							class="flex-1 rounded-[var(--radius)] bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+							class="w-full rounded-[var(--radius)] bg-[var(--primary)] px-4 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
 						>
-							{t('coach.feedback.again')}
+							{t('coach.feedback.keep_going')}
 						</button>
 						<button
 							type="button"
 							onclick={() => { endCoachMode(); resetToSetup(); }}
-							class="flex-1 rounded-[var(--radius)] border border-[var(--border)] px-4 py-3 text-base font-medium text-(--text-muted) transition-colors hover:border-[var(--text)] hover:text-(--text)"
+							class="w-full rounded-[var(--radius)] px-4 py-2 text-sm font-medium text-(--text-muted) transition-colors hover:text-(--text)"
 						>
-							{t('coach.feedback.done')}
+							{t('coach.feedback.enough_today')}
 						</button>
 					</div>
 				</div>
