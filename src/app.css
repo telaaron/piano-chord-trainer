@@ -319,11 +319,21 @@ h1, h2, h3, .font-display {
 	background: linear-gradient(180deg, var(--bg) 0%, #110e0a 50%, var(--bg) 100%);
 }
 
+/* Gradient-filled display text (the big chord name).
+   Start from a solid colour so the text is always readable, and only switch on
+   the clip-to-text trick where the browser actually supports it. Without this
+   guard a failed webfont or an unsupported clip paints the raw gradient as a
+   solid block — the chord name became an orange rectangle. */
 .text-gradient {
-	background: linear-gradient(135deg, var(--primary), var(--accent-amber));
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	background-clip: text;
+	color: var(--primary);
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+	.text-gradient {
+		background: linear-gradient(135deg, var(--primary), var(--accent-amber));
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
 }
 
 /* Prose-style for legal pages */
@@ -447,10 +457,15 @@ h1, h2, h3, .font-display {
 }
 
 [data-theme="openstudio"] .text-gradient {
-	background: linear-gradient(135deg, #ff6d42, #ff8555);
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	background-clip: text;
+	color: #ff6d42;
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+	[data-theme="openstudio"] .text-gradient {
+		background: linear-gradient(135deg, #ff6d42, #ff8555);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
 }
 .prose-custom table {
 	width: 100%;

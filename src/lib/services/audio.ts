@@ -129,6 +129,27 @@ async function ensureStarted(): Promise<void> {
 	started = true;
 }
 
+/**
+ * Unlock audio from a click handler — call this FIRST, before any other work.
+ *
+ * Browsers only honour `AudioContext.resume()` while the user's gesture is
+ * still "active". Tone.js is a lazy dynamic import, so the very first
+ * `playChord()` spends that activation downloading ~200 kB before it ever gets
+ * to `start()` — and the context stays suspended, silently, with no error.
+ *
+ * Screens whose first sound follows their first click (the To-Go mode) must
+ * call this at the top of that handler so the unlock wins the race.
+ * Safe to call repeatedly; a no-op once running.
+ */
+export async function unlockAudio(): Promise<void> {
+	try {
+		await ensureStarted();
+	} catch {
+		// A blocked context is not fatal — playback simply stays silent until
+		// the next gesture, and the caller shouldn't crash over it.
+	}
+}
+
 // ─── Instrument factory ─────────────────────────────────────────────────────
 
 function createReverb(): ToneType.Reverb {

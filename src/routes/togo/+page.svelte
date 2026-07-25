@@ -36,6 +36,8 @@
 		stopDrone,
 		stopMetronome,
 		stopAll,
+		unlockAudio,
+		setSoundPreset,
 	} from '$lib/services/audio';
 	import SingInput from '$lib/components/togo/SingInput.svelte';
 	import TapInput from '$lib/components/togo/TapInput.svelte';
@@ -103,8 +105,11 @@
 
 		if (p.type === 'chord') {
 			playing = true;
-			await playChord(p.notes, '1n');
-			playing = false;
+			try {
+				await playChord(p.notes, '1n');
+			} finally {
+				playing = false;
+			}
 			return;
 		}
 
@@ -114,7 +119,12 @@
 			// stream needs each note in its own slot, not re-octaved as an arpeggio.
 			playing = true;
 			// Warm the audio path so the first note isn't late.
-			await playNote(withOctave(p.notes[0]), '8n');
+			try {
+				await playNote(withOctave(p.notes[0]), '8n');
+			} catch {
+				playing = false;
+				return;
+			}
 			for (let i = 1; i < p.notes.length; i++) {
 				seqTimers.push(
 					setTimeout(() => {
@@ -131,7 +141,12 @@
 			// A cadence: each step is a whole chord, so the progression is heard
 			// as harmony rather than a run of single notes.
 			playing = true;
-			await playChord(p.chords[0], '2n');
+			try {
+				await playChord(p.chords[0], '2n');
+			} catch {
+				playing = false;
+				return;
+			}
 			for (let i = 1; i < p.chords.length; i++) {
 				seqTimers.push(
 					setTimeout(() => {
@@ -145,7 +160,12 @@
 		}
 
 		if (p.type === 'drone') {
-			await startDrone(p.note);
+			playing = true;
+			try {
+				await startDrone(p.note);
+			} finally {
+				playing = false;
+			}
 			return;
 		}
 
@@ -155,6 +175,13 @@
 	// ─── Session lifecycle ──────────────────────────────────────
 
 	function begin(only?: ToGoKind) {
+		// FIRST, before any other work: browsers only unlock audio while the
+		// click's activation is still live, and the lazy Tone.js import would
+		// otherwise burn it — leaving the whole session silent.
+		unlockAudio();
+		// To-Go is used on the move: the piano preset streams 17 samples from a
+		// CDN, so use a synthesised voice that needs no network.
+		setSoundPreset('electric-piano');
 		silence();
 		const coach = loadCoachState();
 		const focus = earFocus(coach);
@@ -178,7 +205,7 @@
 		phase = 'run';
 		if (built.exercises[0]) {
 			startedAt = performance.now();
-			sound(built.exercises[0]);
+			void sound(built.exercises[0]).catch(() => {});
 		}
 	}
 
@@ -217,7 +244,7 @@
 		resetRound();
 		startedAt = performance.now();
 		const next = session.exercises[index];
-		if (next) sound(next);
+		if (next) void sound(next).catch(() => {});
 	}
 
 	/** Persist both facets: theory SRS and the shared ear skill map. */
@@ -414,7 +441,7 @@
 			<div class="mb-5 flex justify-center">
 				<button
 					type="button"
-					onclick={() => sound(exercise)}
+					onclick={() => void sound(exercise).catch(() => {})}
 					disabled={!caps.audio}
 					class="inline-flex min-h-[var(--tap-min)] items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-5 font-medium text-[var(--text)] transition hover:border-[var(--primary)]/50 disabled:opacity-40"
 				>
