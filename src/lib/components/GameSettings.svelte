@@ -19,6 +19,7 @@
 	import type { MidiConnectionState, MidiDevice } from '$lib/services/midi';
 	import { onMount } from 'svelte';
 	import { t } from '$lib/i18n';
+	import { Icon } from '$lib/components/ui';
 	import { Eye, Search, Piano, Play, type Icon as LucideIcon } from 'lucide-svelte';
 
 	interface Props {
@@ -97,20 +98,21 @@
 			: 'border-[var(--border)] hover:border-[var(--border-hover)]';
 	}
 
+	/** plan id → semantic Icon name (see Icon.svelte for the full glyph map) */
 	const PLAN_ICON: Record<string, string> = {
-		'warmup':            'icon-warm-up',
-		'speed':             'icon-speed-run',
-		'deepdive':          'icon-deep-dive',
-		'turnaround':        'icon-turnaround',
-		'challenge':         'icon-challenge',
-		'quartenzirkel':     'icon-cycle',
-		'voicing-drill':     'icon-voicing-drill',
-		'left-hand-comping': 'icon-left-hand',
-		'inversions-drill':  'icon-inversions',
-		'in-time-comping':   'icon-in-time-comping',
-		'ear-check':         'icon-ear-check',
-		'adaptive-drill':    'icon-adaptive-drill',
-		'voice-leading-flow':'icon-voice-leading-flow',
+		'warmup':            'warmup',
+		'speed':             'speed',
+		'deepdive':          'deep-dive',
+		'turnaround':        'turnaround',
+		'challenge':         'challenge',
+		'quartenzirkel':     'cycle',
+		'voicing-drill':     'voicing-drill',
+		'left-hand-comping': 'left-hand',
+		'inversions-drill':  'inversions',
+		'in-time-comping':   'in-time',
+		'ear-check':         'ear-check',
+		'adaptive-drill':    'adaptive',
+		'voice-leading-flow':'voice-leading',
 	};
 
 	const LEVEL_CONFIG: Record<'beginner' | 'intermediate' | 'advanced', { color: string; shadow: string; dotsFilled: number }> = {
@@ -137,14 +139,12 @@
 			{t('settings.difficulty_' + suggested.level)}
 		</div>
 		<div class="flex items-start gap-4">
-			<img
-				src="/elements/icons/{PLAN_ICON[suggested.id]}.webp"
-				alt="{suggested.name}"
-				width="52"
-				height="52"
-				loading="lazy"
-				class="suggested-icon"
-				style="width:52px; height:52px; mix-blend-mode:lighten; object-fit:contain; flex-shrink:0; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));"
+			<Icon
+				name={PLAN_ICON[suggested.id]}
+				size={52}
+				class="suggested-icon shrink-0"
+				glow
+				label={t(suggested.name)}
 			/>
 			<div class="flex-1 min-w-0">
 				<div class="text-xs text-[var(--text-dim)] font-medium mb-1">{t('settings.suggested_plan')}</div>
@@ -179,7 +179,7 @@
 						onclick={() => onstartplan(quick)}
 					>
 						<div class="flex items-center gap-2.5">
-							<img src="/elements/icons/{PLAN_ICON[quick.id]}.webp" alt="{t(quick.name)}" width="28" height="28" loading="lazy" style="mix-blend-mode:lighten; object-fit:contain; flex-shrink:0;" />
+							<Icon name={PLAN_ICON[quick.id]} size={28} class="shrink-0" label={t(quick.name)} />
 							<div class="min-w-0 flex-1">
 								<div class="text-sm font-semibold truncate">{t(quick.name)}</div>
 								<div class="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('settings.difficulty_' + quick.level)}</div>
@@ -203,8 +203,7 @@
 						</div>
 						<!-- Header: icon + name -->
 						<div class="flex items-center gap-3 p-4 pb-3">
-							<img src="/elements/icons/{PLAN_ICON[plan.id]}.webp" alt="{t(plan.name)}" width="44" height="44"
-								loading="lazy" style="width:44px; height:44px; mix-blend-mode:lighten; object-fit:contain; flex-shrink:0; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));" />
+							<Icon name={PLAN_ICON[plan.id]} size={44} class="shrink-0" glow label={t(plan.name)} />
 							<div class="font-semibold text-sm">{t(plan.name)}</div>
 						</div>
 						<!-- 3 equal mode sub-cards -->
@@ -232,8 +231,7 @@
 					<div class="absolute top-2 right-2 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
 						{t('settings.difficulty_' + plan.level)}
 					</div>
-					<img src="/elements/icons/{PLAN_ICON[plan.id]}.webp" alt="{t(plan.name)}" width="56" height="56"
-						loading="lazy" class="plan-icon" style="width:56px; height:56px; mix-blend-mode:lighten; object-fit:contain; margin-bottom:0.5rem; filter: drop-shadow(0 0 10px rgba(251,146,60,0.5));" />
+					<Icon name={PLAN_ICON[plan.id]} size={56} class="plan-icon mb-2" glow label={t(plan.name)} />
 					<div class="plan-name font-semibold text-sm group-hover:text-[var(--primary)] transition-colors">{t(plan.name)}</div>
 						<div class="absolute inset-x-0 bottom-0 translate-y-full pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
 							<div class="rounded-[var(--radius)] border border-[var(--border-hover)] bg-[var(--bg-card,#1a1a1a)] p-3 shadow-xl"
@@ -266,7 +264,7 @@
 		}
 
 		/* Bigger icons */
-		.plan-icon {
+		:global(.plan-icon) {
 			width: 76px !important;
 			height: 76px !important;
 			margin-bottom: 0.75rem !important;
@@ -287,7 +285,7 @@
 		}
 
 		/* Bigger suggested plan icon */
-		.suggested-icon {
+		:global(.suggested-icon) {
 			width: 72px !important;
 			height: 72px !important;
 		}
@@ -313,7 +311,7 @@
 			transform: scale(0.97) !important;
 		}
 		/* VL header icon */
-		.vl-flow-card .flex img {
+		.vl-flow-card .flex :global(svg) {
 			width: 56px !important;
 			height: 56px !important;
 		}

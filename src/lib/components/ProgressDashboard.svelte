@@ -274,7 +274,7 @@
 			{#if Object.keys(stats.personalBests).length > 0}
 				<details class="group/bests text-sm">
 					<summary class="flex items-center gap-2 cursor-pointer hover:text-[var(--primary-hover)] transition-colors list-none select-none">
-						<img src="/elements/icons/icon-personal-best.webp" alt="Trophy" width="20" height="20" style="mix-blend-mode:lighten;" />
+						<Icon name="personal-best" size={20} />
 						<span class="font-medium text-[var(--text-muted)] group-hover/bests:text-[var(--text)]">{t('ui.personal_bests')} ({Object.keys(stats.personalBests).length})</span>
 						<span class="text-[var(--text-dim)] text-xs rotate-0 group-open/bests:rotate-180 transition-transform ml-auto">▼</span>
 					</summary>

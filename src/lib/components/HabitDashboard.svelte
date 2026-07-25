@@ -129,7 +129,7 @@
 			</div>
 			<div class="flex items-center gap-1.75">
 				<div class="flex items-center gap-0.75">
-					<img src="/elements/images/streak-flame.webp" width="14" height="14" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
+					<Icon name="streak" size={14} />
 					<span class="streak-num text-[0.82rem] max-sm:text-[0.9rem] font-bold text-[#fb923c]">{streak.current}</span>
 					<span class="streak-days text-[0.68rem] max-sm:text-[0.75rem] text-[rgba(251,146,60,0.6)] font-medium">{streak.current === 1 ? t('habit.day') : t('habit.days')}</span>
 				</div>
@@ -138,7 +138,7 @@
 			</div>
 		</div>
 		<a href="/midi-test?tab=midi" class="midi-pill flex items-center gap-1.25 py-1 px-2.5 rounded-full text-[0.65rem] font-medium border no-underline hover:opacity-80 transition-opacity {midiConnected ? 'bg-[rgba(74,222,128,0.08)] border-[rgba(74,222,128,0.2)] text-[#4ade80]' : 'bg-(--bg-muted) border-(--border) text-(--text-dim)'}">
-			<img src="/elements/images/midi-connect.webp" width="12" height="12" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
+			<Icon name="midi" size={12} label="MIDI" />
 			{#if midiConnected}
 				<span class="inline-flex items-center gap-1">MIDI <Check size={12} aria-hidden="true" /></span>
 			{:else}

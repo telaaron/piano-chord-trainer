@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fly, fade, scale, slide } from 'svelte/transition';
-	import { t } from '$lib/i18n';
+	import { t, getLocale, setLocale } from '$lib/i18n';
 	import GameSettings from '$lib/components/GameSettings.svelte';
 	import QuickStart from '$lib/components/QuickStart.svelte';
 	import { Icon } from '$lib/components/ui';
@@ -331,6 +331,11 @@
 	function flipTheme() {
 		toggleLightDark();
 		themeIsLight = isLightActive();
+	}
+
+	/** The global nav is hidden here, so /train carries its own language switch. */
+	function toggleLanguage() {
+		setLocale(getLocale() === 'en' ? 'de' : 'en');
 	}
 	$effect(() => {
 		themeIsLight = isLightActive();
@@ -2111,6 +2116,16 @@
 							<span class="text-gradient font-bold">{t('settings.back_to_home')}</span>
 						</a>
 					<div class="flex items-center gap-2">
+						<!-- The global nav is hidden on /train, so the language switch has
+						     to live here — otherwise it is unreachable while practising. -->
+						<button
+							onclick={toggleLanguage}
+							class="grid h-9 min-w-9 place-items-center rounded-full border border-[var(--border)] px-2 text-xs font-semibold tracking-wide text-(--text-muted) transition-colors hover:border-(--primary) hover:text-(--text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+							title={t('nav.language')}
+							aria-label={t('nav.language')}
+						>
+							{getLocale().toUpperCase()}
+						</button>
 						<button
 							onclick={flipTheme}
 							class="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] text-(--text-muted) transition-colors hover:border-(--primary) hover:text-(--text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
@@ -2149,13 +2164,13 @@
 							<div class="flex items-center gap-4 min-w-0">
 								<span class="text-lg font-bold text-(--text) truncate">{greeting}!</span>
 								<div class="flex items-center gap-1.5 text-sm font-semibold text-(--xp)">
-									<img src="/elements/images/streak-flame.webp" width="18" height="18" alt="" style="mix-blend-mode: lighten; object-fit: contain;" />
+									<Icon name="streak" size={18} />
 									<span>{streak.current}</span>
 									<span class="text-(--text-dim) font-normal">{streak.current === 1 ? t('habit.day') : t('habit.days')}</span>
 								</div>
 							</div>
 							<a href="/midi-test?tab=midi" class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs no-underline transition-opacity hover:opacity-80 {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[var(--success-muted)] text-(--success)' : 'bg-(--bg-muted) text-(--text-dim)'}">
-								<img src="/elements/images/midi-connect.webp" width="14" height="14" alt="MIDI" style="mix-blend-mode: lighten; object-fit: contain;" />
+								<Icon name="midi" size={14} label="MIDI" />
 								<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : t('settings.no_midi')}</span>
 								<span class="opacity-50"><Settings size={14} aria-hidden="true" /></span>
 							</a>
