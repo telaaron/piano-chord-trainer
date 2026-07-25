@@ -130,6 +130,82 @@ function qTiming(root: string, quality: string, durationMs: number, correct?: bo
 	return { root, chord: `${root}${quality}`, durationMs, correct };
 }
 
+describe('session sizing — a session is as long as it promises', () => {
+	it('a 5-minute session stays around 20 chords, not 40', () => {
+		const state = calibratedState();
+		const plan = buildCoachPlan([], profile({ dailyGoalMinutes: 5 }), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const total = plan.blocks.reduce((s, b) => s + b.targetChords, 0);
+		expect(total).toBeLessThanOrEqual(24);
+		expect(total).toBeGreaterThanOrEqual(12);
+	});
+
+	it('no single block becomes a slog', () => {
+		const state = calibratedState();
+		for (const mins of [2, 5, 10, 20, 45]) {
+			const plan = buildCoachPlan([], profile({ dailyGoalMinutes: mins }), undefined, state, DEFAULT_COACH_PARAMS, 0);
+			for (const b of plan.blocks) {
+				expect(b.targetChords).toBeLessThanOrEqual(DEFAULT_COACH_PARAMS.maxBlockChords);
+				expect(b.targetChords).toBeGreaterThanOrEqual(DEFAULT_COACH_PARAMS.minBlockChords);
+			}
+		}
+	});
+
+	it('a longer daily goal really does give more practice', () => {
+		const state = calibratedState();
+		const short = buildCoachPlan([], profile({ dailyGoalMinutes: 5 }), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const long = buildCoachPlan([], profile({ dailyGoalMinutes: 15 }), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const sum = (p: typeof short) => p.blocks.reduce((s, b) => s + b.targetChords, 0);
+		expect(sum(long)).toBeGreaterThan(sum(short));
+	});
+});
+
+describe('review stays focused — the announcement must stay true', () => {
+	it('mixes at most reviewQualityCap qualities, however many are mastered', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		// Master five different root-voicing qualities, each trained at a
+		// different time so recency ordering is well-defined.
+		const qualities = ['Maj7', '7', 'm7', '6', 'm6'];
+		qualities.forEach((q, i) => {
+			for (const u of ladder.filter((x) => x.voicing === 'root' && x.quality === q)) {
+				state.unitStates[u.id] = { state: 'mastered', holds: 0, lastTrainedAt: (i + 1) * 1000 };
+			}
+		});
+		const withDue = profile({
+			chordSchedule: [
+				{ chordKey: 'C-Maj7', root: 'C', quality: 'Maj7', lastReviewed: '2020-01-01', nextReview: '2020-01-01', interval: 1, ease: 2, repetitions: 1 },
+			],
+		});
+		const plan = buildCoachPlan([], withDue, undefined, state, DEFAULT_COACH_PARAMS, Date.now());
+		const review = plan.blocks.find((b) => b.kind === 'review');
+		expect(review?.focusQualities?.length).toBeLessThanOrEqual(DEFAULT_COACH_PARAMS.reviewQualityCap);
+	});
+
+	it('refreshes the most recently practised qualities', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		// Master only the easy tier of each, so the frontier stays in the root
+		// voicing — review draws from the frontier's voicing.
+		const stamp: Record<string, number> = { Maj7: 100, '7': 900, m7: 500 };
+		for (const [q, at] of Object.entries(stamp)) {
+			for (const u of ladder.filter(
+				(x) => x.voicing === 'root' && x.quality === q && x.keyTier === 'easy',
+			)) {
+				state.unitStates[u.id] = { state: 'mastered', holds: 0, lastTrainedAt: at };
+			}
+		}
+		const withDue = profile({
+			chordSchedule: [
+				{ chordKey: 'C-Maj7', root: 'C', quality: 'Maj7', lastReviewed: '2020-01-01', nextReview: '2020-01-01', interval: 1, ease: 2, repetitions: 1 },
+			],
+		});
+		const plan = buildCoachPlan([], withDue, undefined, state, DEFAULT_COACH_PARAMS, Date.now());
+		const review = plan.blocks.find((b) => b.kind === 'review');
+		// '7' (900) and 'm7' (500) are the two most recent; 'Maj7' (100) drops out.
+		expect(review?.focusQualities).toEqual(['7', 'm7']);
+	});
+});
+
 describe('ear facet — one skill map, two senses', () => {
 	it('earFocus points at the quality the piano side is teaching', () => {
 		const state = calibratedState();

@@ -54,6 +54,12 @@ export interface CoachParams {
 	/** Minimum number of chords any block will ever request. */
 	minBlockChords: number;
 	/**
+	 * Ceiling on a single block. Past roughly this many chords of one quality a
+	 * block stops being a focused drill and becomes a slog — and the player
+	 * loses track of where they are in the session.
+	 */
+	maxBlockChords: number;
+	/**
 	 * Fraction of masteryThresholdMs below which a block counts as "excellent".
 	 * An excellent block promotes even the LIVE frontier (not just the plan's),
 	 * so a player who's clearly on top of a quality climbs several key-tiers in a
@@ -62,6 +68,8 @@ export interface CoachParams {
 	excellentFactor: number;
 	/** Consecutive sessions of real struggle before offering "too hard? start easier". */
 	struggleSessionsBeforeOffer: number;
+	/** How many recently-mastered qualities the review block may mix. */
+	reviewQualityCap: number;
 }
 
 export const DEFAULT_COACH_PARAMS: CoachParams = {
@@ -87,8 +95,13 @@ export const DEFAULT_COACH_PARAMS: CoachParams = {
 	feedbackBiasStep: 0.15,
 	feedbackBiasClamp: 0.5,
 	srsLapseDemotes: true,
-	chordsPerMinute: 8,
+	// A chord takes real thinking time: recall it, find it, play it, check it,
+	// read the feedback. Four a minute (~15s each) matches how a session
+	// actually plays out — eight made a "5 minute" session run to forty chords.
+	chordsPerMinute: 4,
 	minBlockChords: 4,
+	maxBlockChords: 10,
 	excellentFactor: 0.6,
 	struggleSessionsBeforeOffer: 2,
+	reviewQualityCap: 2,
 };

@@ -70,6 +70,10 @@ public struct CoachParams: Sendable, Equatable, Codable {
     public var chordsPerMinute: Double
     /// Minimum number of chords any block will ever request.
     public var minBlockChords: Int
+    /// Ceiling on a single block. Past roughly this many chords of one quality a
+    /// block stops being a focused drill and becomes a slog — and the player
+    /// loses track of where they are in the session.
+    public var maxBlockChords: Int
     /// Fraction of masteryThresholdMs below which a block counts as "excellent".
     /// An excellent block promotes even the LIVE frontier (not just the plan's),
     /// so a player who's clearly on top of a quality climbs several key-tiers in a
@@ -77,12 +81,15 @@ public struct CoachParams: Sendable, Equatable, Codable {
     public var excellentFactor: Double
     /// Consecutive sessions of real struggle before offering "too hard? start easier".
     public var struggleSessionsBeforeOffer: Int
+    /// How many recently-mastered qualities the review block may mix.
+    public var reviewQualityCap: Int
 
     public init(masteryThresholdMs: Double, masteryWindow: Int, promotionRatio: Double,
                 demotionAfterHolds: Int, blockMix: BlockMix, shortSessionCutoffMin: Int,
                 weights: CoachWeights, calibrationChords: Int, feedbackBiasStep: Double,
                 feedbackBiasClamp: Double, srsLapseDemotes: Bool, chordsPerMinute: Double,
-                minBlockChords: Int, excellentFactor: Double, struggleSessionsBeforeOffer: Int) {
+                minBlockChords: Int, maxBlockChords: Int, excellentFactor: Double,
+                struggleSessionsBeforeOffer: Int, reviewQualityCap: Int) {
         self.masteryThresholdMs = masteryThresholdMs
         self.masteryWindow = masteryWindow
         self.promotionRatio = promotionRatio
@@ -96,8 +103,10 @@ public struct CoachParams: Sendable, Equatable, Codable {
         self.srsLapseDemotes = srsLapseDemotes
         self.chordsPerMinute = chordsPerMinute
         self.minBlockChords = minBlockChords
+        self.maxBlockChords = maxBlockChords
         self.excellentFactor = excellentFactor
         self.struggleSessionsBeforeOffer = struggleSessionsBeforeOffer
+        self.reviewQualityCap = reviewQualityCap
     }
 }
 
@@ -113,8 +122,13 @@ public let DEFAULT_COACH_PARAMS = CoachParams(
     feedbackBiasStep: 0.15,
     feedbackBiasClamp: 0.5,
     srsLapseDemotes: true,
-    chordsPerMinute: 8,
+    // A chord takes real thinking time: recall it, find it, play it, check it,
+    // read the feedback. Four a minute (~15s each) matches how a session
+    // actually plays out — eight made a "5 minute" session run to forty chords.
+    chordsPerMinute: 4,
     minBlockChords: 4,
+    maxBlockChords: 10,
     excellentFactor: 0.6,
-    struggleSessionsBeforeOffer: 2
+    struggleSessionsBeforeOffer: 2,
+    reviewQualityCap: 2
 )

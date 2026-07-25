@@ -393,7 +393,8 @@ private let DEFAULT_NOTATION: NotationStyle = .standard
 private let DEFAULT_ACCIDENTALS: AccidentalPreference = .flats
 
 private func chordsForMinutes(_ minutes: Double, _ params: CoachParams) -> Int {
-    max(params.minBlockChords, Int((minutes * params.chordsPerMinute).rounded()))
+    let raw = Int((minutes * params.chordsPerMinute).rounded())
+    return min(params.maxBlockChords, max(params.minBlockChords, raw))
 }
 
 /// Roots that are due for SRS review right now, mapped from the chord schedule.
@@ -416,14 +417,19 @@ private func masteredQualities(
     _ ladder: [SkillUnit],
     _ state: CoachState,
     _ voicing: VoicingType,
-    _ fallback: String
+    _ fallback: String,
+    _ cap: Int
 ) -> [String] {
-    var qs: [String] = []
-    var seen = Set<String>()
+    // Most-recently-trained first; never-timed units sort last.
+    var seen: [String: Double] = [:]
     for u in ladder where u.voicing == voicing && isMastered(state, u.id) {
-        if !seen.contains(u.quality) { seen.insert(u.quality); qs.append(u.quality) }
+        let at = state.unitStates[u.id]?.lastTrainedAt ?? 0
+        seen[u.quality] = Swift.max(seen[u.quality] ?? 0, at)
     }
-    return qs.isEmpty ? [fallback] : qs
+    if seen.isEmpty { return [fallback] }
+    return seen.sorted { $0.value > $1.value }
+        .prefix(Swift.max(1, cap))
+        .map { $0.key }
 }
 
 /// Parse an ISO date string to ms-since-epoch (mirrors `new Date(x).getTime()`).
@@ -617,7 +623,8 @@ public func buildCoachPlan(
             // (in the frontier's voicing) — never the whole difficulty pool.
             settings = reviewSettings(frontier, bias)
             focusRoots = reviewRoots
-            focusQualities = masteredQualities(ladder, state, frontier.voicing, frontier.quality)
+            focusQualities = masteredQualities(
+                ladder, state, frontier.voicing, frontier.quality, params.reviewQualityCap)
             labelParams = ["count": String(reviewRoots.count)]
         case .focus:
             // Focus drills the frontier's quality in the player's weak keys —

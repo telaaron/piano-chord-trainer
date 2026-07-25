@@ -308,7 +308,8 @@ const DEFAULT_NOTATION: NotationStyle = 'standard';
 const DEFAULT_ACCIDENTALS: AccidentalPreference = 'flats';
 
 function chordsForMinutes(minutes: number, params: CoachParams): number {
-	return Math.max(params.minBlockChords, Math.round(minutes * params.chordsPerMinute));
+	const raw = Math.round(minutes * params.chordsPerMinute);
+	return Math.min(params.maxBlockChords, Math.max(params.minBlockChords, raw));
 }
 
 /** Roots that are due for SRS review right now, mapped from the chord schedule. */
@@ -321,23 +322,34 @@ function dueReviewRoots(schedule: ChordReview[], now: number): string[] {
 }
 
 /**
- * Qualities the player has actually mastered, for a given voicing. The review
- * block draws only from these — reviewing a quality you've never cleared (which
- * the old full-difficulty pool did) is nonsense. Falls back to the frontier's
- * quality when nothing is mastered yet (very first sessions).
+ * Qualities the review block should refresh: the ones most recently practised,
+ * capped at `reviewQualityCap`.
+ *
+ * Drawing on EVERY mastered quality made review a grab-bag — the announcement
+ * promised one focus and the block delivered six different chord types, which
+ * read as "the coach ignores what it just said". Recency is also the better
+ * pedagogy: refresh what is still settling, not everything you ever cleared.
+ * Falls back to the frontier's quality on the very first sessions.
  */
 function masteredQualities(
 	ladder: SkillUnit[],
 	state: CoachState,
 	voicing: VoicingType,
 	fallback: string,
+	cap: number,
 ): string[] {
-	const qs = new Set<string>();
+	// Most-recently-trained first; never-timed units sort last.
+	const seen = new Map<string, number>();
 	for (const u of ladder) {
-		if (u.voicing === voicing && isMastered(state, u.id)) qs.add(u.quality);
+		if (u.voicing !== voicing || !isMastered(state, u.id)) continue;
+		const at = state.unitStates[u.id]?.lastTrainedAt ?? 0;
+		seen.set(u.quality, Math.max(seen.get(u.quality) ?? 0, at));
 	}
-	if (qs.size === 0) qs.add(fallback);
-	return [...qs];
+	if (seen.size === 0) return [fallback];
+	return [...seen.entries()]
+		.sort((a, b) => b[1] - a[1])
+		.slice(0, Math.max(1, cap))
+		.map(([quality]) => quality);
 }
 
 function warmupSettings(unit: SkillUnit, bias: number): PracticePlanSettings {
@@ -518,7 +530,13 @@ export function buildCoachPlan(
 				// (in the frontier's voicing) — never the whole difficulty pool.
 				settings = reviewSettings(frontier, bias);
 				focusRoots = reviewRoots;
-				focusQualities = masteredQualities(ladder, state, frontier.voicing, frontier.quality);
+				focusQualities = masteredQualities(
+					ladder,
+					state,
+					frontier.voicing,
+					frontier.quality,
+					params.reviewQualityCap,
+				);
 				labelParams = { count: String(reviewRoots.length) };
 				break;
 			case 'focus':

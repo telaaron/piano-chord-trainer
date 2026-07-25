@@ -26,6 +26,16 @@ export const de = {
       apply: 'Anwenden: {voicing} in Progression',
       calibrate: 'Kurzer Check, wo du stehst',
     },
+    // Wo du in der Session stehst — während des Spielens sichtbar.
+    block_of: 'Teil {n} von {total}',
+    kind: {
+      warmup: 'Aufwärmen',
+      review: 'Auffrischen',
+      focus: 'Fokus',
+      new: 'Neu',
+      apply: 'Anwenden',
+      calibrate: 'Check',
+    },
     // Kurzbestätigung des abgeschlossenen Blocks (Zwischenscreen, ohne Params).
     done: {
       warmup: 'Aufgewärmt',

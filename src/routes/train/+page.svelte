@@ -1030,13 +1030,15 @@
 
 		const nextIdx = coachBlockIdx + 1;
 		if (nextIdx < coachPlan.blocks.length) {
-			// Show a 1–2 line transition, auto-advancing after ~2.5s (tap to skip).
+			// Between blocks: say what just finished and what comes next. 2.5s was
+			// not enough to read two lines while still in drill focus, so it holds
+			// long enough to actually land — a tap skips it.
 			coachTransition = {
 				doneKind: coachPlan.blocks[coachBlockIdx].kind,
 				next: coachPlan.blocks[nextIdx],
 			};
 			if (coachTransitionTimeout) clearTimeout(coachTransitionTimeout);
-			coachTransitionTimeout = setTimeout(() => advanceCoachBlock(), 2500);
+			coachTransitionTimeout = setTimeout(() => advanceCoachBlock(), 4500);
 		} else {
 			finishCoachSession(session);
 		}
@@ -1082,6 +1084,18 @@
 			frontierUnitId: coachPlan.frontierUnitId,
 		});
 		trackCoachDecisions(coachStateBefore, coachStateWorking);
+
+		// Now — once for the whole session — award the streak, XP, goal progress
+		// and any celebrations. They land on the feedback screen, where there is
+		// room to read them, instead of interrupting the blocks.
+		awardSessionHabits({
+			...lastSession,
+			totalChords,
+			avgMs: totalChords > 0 ? totalMs / totalChords : lastSession.avgMs,
+			elapsedMs: Date.now() - coachSessionStartedAt,
+			chordTimings: coachSessionBlocks.flatMap((b) => b.chordTimings ?? []),
+		});
+
 		screen = 'coach-feedback';
 	}
 
@@ -1172,6 +1186,30 @@
 		}
 	}
 
+	/**
+	 * Streak, XP, goal progress and celebrations for one completed SESSION.
+	 * Split out of endGame so the Coach can call it once after its last block
+	 * instead of once per block.
+	 */
+	function awardSessionHabits(sessionResult: SessionResult) {
+		streak = recordPracticeDay();
+		if (!habitProfile) return;
+		const history = loadHistory();
+		const sameKey = history.filter(
+			(h) =>
+				h.id !== sessionResult.id &&
+				h.settings.difficulty === sessionResult.settings.difficulty &&
+				h.settings.voicing === sessionResult.settings.voicing &&
+				h.settings.progressionMode === sessionResult.settings.progressionMode,
+		);
+		const previousBestAvg = sameKey.length > 0 ? Math.min(...sameKey.map((h) => h.avgMs)) : undefined;
+		const habitResult = processSessionHabits(sessionResult, previousBestAvg);
+		habitProfile = loadHabitProfile(); // reload after processing
+		if (habitResult.celebrations.length > 0) {
+			pendingCelebrations = habitResult.celebrations;
+		}
+	}
+
 	function endGame() {
 		endTime = Date.now();
 		// In Coach mode the block loop decides the next screen (transition or
@@ -1215,20 +1253,13 @@
 			},
 		});
 
-		// Update streak
-		streak = recordPracticeDay();
-
-		// ─── Habit Engine: process session ───────────────────────
-		if (habitProfile) {
-			// Compute previous best avg for PB detection
-			const history = loadHistory();
-			const sameKey = history.filter(h => h.id !== sessionResult.id && h.settings.difficulty === difficulty && h.settings.voicing === voicing && h.settings.progressionMode === progressionMode);
-			const previousBestAvg = sameKey.length > 0 ? Math.min(...sameKey.map(h => h.avgMs)) : undefined;
-			const habitResult = processSessionHabits(sessionResult, previousBestAvg);
-			habitProfile = loadHabitProfile(); // reload after processing
-			if (habitResult.celebrations.length > 0) {
-				pendingCelebrations = habitResult.celebrations;
-			}
+		// A Coach session is several blocks long. Streak, XP, goals and
+		// celebrations belong to the SESSION, not to each block — running them
+		// per block fired three lots of XP cards mid-session and buried the
+		// block transition underneath them. In Coach mode this runs once, at
+		// the end, from finishCoachSession().
+		if (!coachMode) {
+			awardSessionHabits(sessionResult);
 		}
 
 		// Refresh dashboard stats
@@ -2618,13 +2649,31 @@
 						<ArrowLeft size={16} aria-hidden="true" /> {t('ui.back')}
 					</button>
 					<div class="flex items-center gap-2 sm:gap-3 min-w-0">
-						<div class="hidden sm:flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
-							<span class="font-semibold text-[var(--text)]">{t(VOICING_KEYS[voicing])}</span>
-							<span class="text-[var(--text-dim)]">·</span>
-							<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
-							<span class="text-[var(--text-dim)]">·</span>
-							<span>{t(PROGRESSION_KEYS[progressionMode])}</span>
-						</div>
+						{#if coachMode && coachPlan}
+							<!-- In a Coach session the useful context is where you are in the
+							     session and what this block actually drills — not the static
+							     settings triple, which never changes between blocks. -->
+							<div class="flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
+								<span class="rounded-full border border-[var(--primary)]/40 bg-[var(--primary-muted)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--primary)]">
+									{t('coach.block_of', { n: String(coachBlockIdx + 1), total: String(coachPlan.blocks.length) })}
+								</span>
+								<span class="font-semibold text-[var(--text)]">{t('coach.kind.' + coachPlan.blocks[coachBlockIdx].kind)}</span>
+								{#if qualityFilter.length === 1}
+									<span class="text-[var(--text-dim)]">·</span>
+									<span class="font-mono">{qualityFilter[0]}</span>
+								{/if}
+								<span class="text-[var(--text-dim)] hidden sm:inline">·</span>
+								<span class="hidden sm:inline">{t(VOICING_KEYS[voicing])}</span>
+							</div>
+						{:else}
+							<div class="hidden sm:flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
+								<span class="font-semibold text-[var(--text)]">{t(VOICING_KEYS[voicing])}</span>
+								<span class="text-[var(--text-dim)]">·</span>
+								<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
+								<span class="text-[var(--text-dim)]">·</span>
+								<span>{t(PROGRESSION_KEYS[progressionMode])}</span>
+							</div>
+						{/if}
 						<button
 							class="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
 							onclick={openSettingsFromGame}

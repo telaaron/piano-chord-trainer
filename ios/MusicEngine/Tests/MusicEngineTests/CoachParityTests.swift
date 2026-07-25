@@ -100,6 +100,48 @@ final class CoachParityTests: XCTestCase {
         }
     }
 
+    // ─── Session sizing ─────────────────────────────────────
+
+    func testFiveMinuteSessionStaysAroundTwentyChords() {
+        let state = calibratedState()
+        let plan = buildCoachPlan([], profile(dailyGoalMinutes: 5), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        let total = plan.blocks.reduce(0) { $0 + $1.targetChords }
+        XCTAssertLessThanOrEqual(total, 24)
+        XCTAssertGreaterThanOrEqual(total, 12)
+    }
+
+    func testNoSingleBlockBecomesASlog() {
+        let state = calibratedState()
+        for mins in [2, 5, 10, 20, 45] {
+            let plan = buildCoachPlan([], profile(dailyGoalMinutes: mins), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+            for b in plan.blocks {
+                XCTAssertLessThanOrEqual(b.targetChords, DEFAULT_COACH_PARAMS.maxBlockChords)
+                XCTAssertGreaterThanOrEqual(b.targetChords, DEFAULT_COACH_PARAMS.minBlockChords)
+            }
+        }
+    }
+
+    // ─── Review stays focused ───────────────────────────────
+
+    func testReviewRefreshesTheMostRecentlyPractisedQualities() {
+        var state = calibratedState()
+        let ladder = buildSkillLadder()
+        let stamp: [String: Double] = ["Maj7": 100, "7": 900, "m7": 500]
+        for (q, at) in stamp {
+            for u in ladder where u.voicing == .root && u.quality == q && u.keyTier == .easy {
+                state.unitStates[u.id] = UnitProgress(state: .mastered, lastTrainedAt: at, holds: 0)
+            }
+        }
+        var p = profile()
+        p.chordSchedule = [ChordReview(chordKey: "C-Maj7", root: "C", quality: "Maj7",
+                                       lastReviewed: "2020-01-01", nextReview: "2020-01-01",
+                                       interval: 1, ease: 2, repetitions: 1)]
+        let plan = buildCoachPlan([], p, nil, state, DEFAULT_COACH_PARAMS,
+                                  now: Date().timeIntervalSince1970 * 1000)
+        let review = plan.blocks.first { $0.kind == .review }
+        XCTAssertEqual(review?.focusQualities, ["7", "m7"])
+    }
+
     // ─── Promotion / Hold / Demotion ────────────────────────
 
     func testPromotesWhenAboveRatio() {

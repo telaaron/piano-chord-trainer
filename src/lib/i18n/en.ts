@@ -26,6 +26,16 @@ export const en = {
       apply: 'Apply: {voicing} in a progression',
       calibrate: 'A quick check of where you stand',
     },
+    // Where you are in the session, shown while playing.
+    block_of: 'Part {n} of {total}',
+    kind: {
+      warmup: 'Warm-up',
+      review: 'Refresher',
+      focus: 'Focus',
+      new: 'New',
+      apply: 'Apply',
+      calibrate: 'Check',
+    },
     // Short confirmation of the finished block (transition screen, no params).
     done: {
       warmup: 'Warmed up',
