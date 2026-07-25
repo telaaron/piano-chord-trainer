@@ -6,6 +6,11 @@ import {
 	applyFeedback,
 	teacherFeedback,
 	createInitialCoachState,
+	earFocus,
+	applyEarTallies,
+	tallyEarResults,
+	isEarMastered,
+	skillMapProgress,
 	type CoachState,
 	type CoachPlan,
 	type SkillUnit,
@@ -124,6 +129,64 @@ describe('applySessionToCoach — promotion', () => {
 function qTiming(root: string, quality: string, durationMs: number, correct?: boolean): ChordTiming {
 	return { root, chord: `${root}${quality}`, durationMs, correct };
 }
+
+describe('ear facet — one skill map, two senses', () => {
+	it('earFocus points at the quality the piano side is teaching', () => {
+		const state = calibratedState();
+		const focus = earFocus(state)!;
+		const ladder = buildSkillLadder();
+		expect(focus.unitId).toBe(ladder[0].id);
+		expect(focus.quality).toBe(ladder[0].quality);
+	});
+
+	it('hearing a unit reliably masters its ear facet — without touching the hands facet', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		const id = ladder[0].id;
+		const next = applyEarTallies(state, [{ unitId: id, attempts: 5, correct: 5 }], DEFAULT_COACH_PARAMS, 1000);
+		expect(isEarMastered(next, id)).toBe(true);
+		// The piano side is untouched — you still have to play it.
+		expect(next.unitStates[id]?.state).not.toBe('mastered');
+	});
+
+	it('does not master on too few attempts', () => {
+		const state = calibratedState();
+		const id = buildSkillLadder()[0].id;
+		const next = applyEarTallies(state, [{ unitId: id, attempts: 2, correct: 2 }], DEFAULT_COACH_PARAMS, 1000);
+		expect(isEarMastered(next, id)).toBe(false);
+	});
+
+	it('knocks a mastered ear unit back when it slips', () => {
+		const state = calibratedState();
+		const id = buildSkillLadder()[0].id;
+		let next = applyEarTallies(state, [{ unitId: id, attempts: 5, correct: 5 }], DEFAULT_COACH_PARAMS, 1000);
+		expect(isEarMastered(next, id)).toBe(true);
+		next = applyEarTallies(next, [{ unitId: id, attempts: 4, correct: 1 }], DEFAULT_COACH_PARAMS, 2000);
+		expect(isEarMastered(next, id)).toBe(false);
+	});
+
+	it('tallies only results that carry a unit id', () => {
+		const tallies = tallyEarResults([
+			{ unitId: 'a', correct: true },
+			{ unitId: 'a', correct: false },
+			{ correct: true }, // an interval drill — not tied to a unit
+		]);
+		expect(tallies).toEqual([{ unitId: 'a', attempts: 2, correct: 1 }]);
+	});
+
+	it('reports both facets for the progress display', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		const id = ladder[0].id;
+		state.unitStates[id] = { state: 'mastered', holds: 0 };
+		const withEar = applyEarTallies(state, [{ unitId: id, attempts: 5, correct: 5 }], DEFAULT_COACH_PARAMS, 1);
+		const p = skillMapProgress(withEar);
+		expect(p.total).toBe(ladder.length);
+		expect(p.handsMastered).toBe(1);
+		expect(p.earMastered).toBe(1);
+		expect(p.bothMastered).toBe(1);
+	});
+});
 
 describe('adaptive calibration placement', () => {
 	it('a beginner (only Maj7 solid) is placed at Maj7, no further', () => {

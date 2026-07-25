@@ -69,6 +69,12 @@ export interface CoachState {
 	/** Consecutive sessions the player struggled (slow / many wrong). Drives the
 	 *  "too hard? start easier" offer only after real, sustained struggle. */
 	struggleStreak?: number;
+	/**
+	 * Ear-side progress, keyed by the SAME SkillUnit ids as `unitStates`.
+	 * The piano side proves you can BUILD a chord; the ear side proves you can
+	 * HEAR it. One curriculum, two senses — To-Go work moves this map.
+	 */
+	earStates?: Record<string, UnitProgress>;
 	/** Last plan built, for resume / display. */
 	lastPlan?: CoachPlan;
 }
@@ -917,6 +923,113 @@ export function assessSession(
 	else if (streak >= params.struggleSessionsBeforeOffer) verdict = 'struggling';
 
 	return { verdict, state: nextState };
+}
+
+// ─── Ear facet (To-Go) ──────────────────────────────────────
+// The ear side runs on the same ladder as the piano side. A unit has two
+// facets: can you BUILD it (unitStates) and can you HEAR it (earStates).
+
+/** Has the player mastered hearing this unit? */
+export function isEarMastered(state: CoachState, unitId: string): boolean {
+	return state.earStates?.[unitId]?.state === 'mastered';
+}
+
+/**
+ * The quality the ear side should drill right now: whatever the piano side is
+ * currently teaching. This is what makes To-Go feel like the same teacher —
+ * you hear the chord you're learning to play.
+ */
+export function earFocus(state: CoachState): { quality: string; unitId: string; voicing: VoicingType } | undefined {
+	const ladder = buildSkillLadder();
+	const frontier = ladder[computeFrontierIndex(ladder, state)];
+	if (!frontier) return undefined;
+	return { quality: frontier.quality, unitId: frontier.id, voicing: frontier.voicing };
+}
+
+/** One unit's tally from a To-Go run: how many times it was heard right. */
+export interface EarTally {
+	unitId: string;
+	attempts: number;
+	correct: number;
+}
+
+/**
+ * Fold To-Go results into ear progress.
+ *
+ * A unit becomes ear-mastered when the player hears it correctly at least
+ * `promotionRatio` of the time over enough attempts — the same bar the piano
+ * side uses, so the two facets mean the same thing. Missing it knocks a
+ * mastered ear unit back to practicing (you clearly can't hear it yet).
+ */
+export function applyEarTallies(
+	state: CoachState,
+	tallies: EarTally[],
+	params: CoachParams = DEFAULT_COACH_PARAMS,
+	now: number = 0,
+	minAttempts: number = 3,
+): CoachState {
+	if (tallies.length === 0) return state;
+	const earStates = { ...(state.earStates ?? {}) };
+
+	for (const t of tallies) {
+		if (t.attempts <= 0) continue;
+		const prev = earStates[t.unitId] ?? { state: 'locked' as UnitState, holds: 0 };
+		const prog: UnitProgress = { ...prev, lastTrainedAt: now };
+		const ratio = t.correct / t.attempts;
+
+		if (t.attempts >= minAttempts && ratio >= params.promotionRatio) {
+			prog.state = 'mastered';
+			prog.holds = 0;
+		} else if (prog.state === 'mastered' && ratio < params.promotionRatio) {
+			// Heard it wrong after mastering — it slipped.
+			prog.state = 'practicing';
+		} else if (prog.state === 'locked') {
+			prog.state = 'learning';
+		}
+		earStates[t.unitId] = prog;
+	}
+
+	return { ...state, earStates };
+}
+
+/**
+ * Roll a To-Go run's per-exercise outcomes into per-unit tallies.
+ * Only exercises that carry a `unitId` (i.e. the quality drill mirroring the
+ * Coach frontier) count toward the shared skill map.
+ */
+export function tallyEarResults(
+	results: { unitId?: string; correct: boolean }[],
+): EarTally[] {
+	const byUnit = new Map<string, EarTally>();
+	for (const r of results) {
+		if (!r.unitId) continue;
+		const t = byUnit.get(r.unitId) ?? { unitId: r.unitId, attempts: 0, correct: 0 };
+		t.attempts++;
+		if (r.correct) t.correct++;
+		byUnit.set(r.unitId, t);
+	}
+	return [...byUnit.values()];
+}
+
+/** How far along both facets are — for the progress display. */
+export function skillMapProgress(state: CoachState): {
+	total: number;
+	handsMastered: number;
+	earMastered: number;
+	bothMastered: number;
+} {
+	const ladder = buildSkillLadder();
+	let handsMastered = 0;
+	let earMastered = 0;
+	let bothMastered = 0;
+	for (const u of ladder) {
+		const h = isMastered(state, u.id);
+		const e = isEarMastered(state, u.id);
+		if (h) handsMastered++;
+		if (e) earMastered++;
+		if (h && e) bothMastered++;
+	}
+	return { total: ladder.length, handsMastered, earMastered, bothMastered };
 }
 
 // ─── UI helpers ─────────────────────────────────────────────
