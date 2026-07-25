@@ -1905,4 +1905,129 @@ export const de = {
     no_data: 'Keine Daten verfügbar',
     signups_chart: 'Registrierungen (letzte 30 Tage)',
   },
+
+  // ── To-Go — Üben ohne Klavier ────────────────────────────────────────────
+  // Lehrer-Stimme, gleiche Wärme wie `coach`. Die Keys unter prompt/tap/lick/
+  // card/say kommen aus der Engine (src/lib/engine/togo.ts) — Namen fix lassen.
+  togo: {
+    entry: 'Ohne Klavier üben',
+    title: 'To-Go',
+    subtitle: 'Ohr, Time und Theorie — alles, was du mit bloßen Kopfhörern trainieren kannst.',
+    intro:
+      'Sieben Wege, auch fern der Tasten besser zu werden. Acht kurze Runden, etwa drei Minuten. Kopfhörer helfen.',
+    start: 'Los geht\'s',
+    start_sub: 'Eine Mischung aus allem, was gerade möglich ist',
+    pick_one: 'Oder eine Sache üben',
+    kind: {
+      interval: 'Intervalle',
+      quality: 'Akkordfarben',
+      progression: 'Progressionen',
+      sing: 'Singen',
+      time: 'Time',
+      lick: 'Licks',
+      theory: 'Theorie',
+    },
+    kind_desc: {
+      interval: 'Zwei Töne — nenne den Abstand.',
+      quality: 'Akkord hören, Qualität benennen.',
+      progression: 'Kadenz hören, Form erkennen.',
+      sing: 'Eine Stufe mit der Stimme finden.',
+      time: 'Den Groove zum Klick mittappen.',
+      lick: 'Phrase hören, zurücktippen.',
+      theory: 'Stille Karten — geht überall.',
+    },
+    needs_audio: 'Braucht Ton',
+    needs_mic: 'Braucht ein Mikrofon',
+    silent_ok: 'Geht auch lautlos',
+    audio_off: 'Der Ton ist aus — es gibt nur Theoriekarten.',
+    mic_off: 'Kein Mikrofon — Singen setzt diesmal aus.',
+    enable_audio: 'Ton einschalten',
+    enable_mic: 'Mikrofon erlauben',
+
+    // Prompts aus der Engine.
+    prompt: {
+      interval: 'Wie weit liegen diese zwei Töne auseinander?',
+      quality: 'Welche Farbe hat dieser Akkord?',
+      progression: 'Welche Form ist das, in {key}?',
+      sing: 'Sing die {degree} über {root}.',
+      lick: 'Tippe die {count} Töne zurück.',
+    },
+    tap: {
+      quarters: 'Tappe jeden Schlag — {bpm} bpm.',
+      backbeat: 'Tappe nur 2 und 4 — {bpm} bpm.',
+      downbeats: 'Tappe nur 1 und 3 — {bpm} bpm.',
+      two_only: 'Tappe nur die 2 — {bpm} bpm.',
+    },
+    lick: {
+      scale_up: 'Skala, aufwärts',
+      triad_down: 'Dreiklang, abwärts',
+      arpeggio: 'Septakkord-Arpeggio',
+      enclosure: 'Umspielung',
+      guide_down: 'Leittöne fallend',
+      blues_climb: 'Blues-Aufstieg',
+      descent: 'Langer Abstieg',
+      chromatic_fall: 'Chromatischer Fall',
+    },
+    card: {
+      chord_notes: 'Welche Töne stecken in {chord}?',
+      chord_degree: 'Was ist die {degree} von {chord}?',
+      tritone_sub: 'Was ist die Tritonus-Substitution von {chord}?',
+      relative_minor: 'Was ist die Moll-Parallele von {key}?',
+    },
+    say: {
+      mixed: 'Von allem etwas — {count} Runden, ganz ohne Klavier.',
+      single: '{count} Runden {kind}.',
+    },
+
+    // Übungslauf.
+    round: 'Runde {current} von {total}',
+    replay: 'Nochmal hören',
+    play: 'Abspielen',
+    listen: 'Hör hin …',
+    reveal_correct: 'Genau das.',
+    reveal_wrong: 'Nicht ganz.',
+    answer_was: 'Es war {answer}',
+    next: 'Weiter',
+    finish: 'Abschließen',
+    quit: 'Beenden',
+
+    // Singen.
+    sing_start: 'Zuhören starten',
+    sing_hint: 'Halte den Ton einen Moment ruhig — gib dem Mikro Zeit, dich zu hören.',
+    sing_heard: 'Bisher gehört',
+    sing_nothing_yet: 'Noch nichts',
+    sing_check: 'Ton prüfen',
+    sing_level: 'Eingangspegel',
+    sing_denied: 'Das Mikrofon blieb zu. Schau in die Browser-Berechtigungen.',
+
+    // Tappen.
+    tap_ready: 'Zähl dich ein, dann tappe mit.',
+    tap_button: 'Tap',
+    tap_hint: 'Die Leertaste geht auch.',
+    tap_start: 'Klick starten',
+    tap_score: '{hits} von {expected} getroffen',
+    tap_rushing: 'Du bist eine Spur zu früh — lass den Klick führen.',
+    tap_dragging: 'Du bist eine Spur zu spät — leg dich in den Beat.',
+    tap_locked: 'Genau im Pocket.',
+
+    // Töne zurücktippen.
+    notes_hint: 'Tippe die gehörten Töne, dann prüfen.',
+    notes_check: 'Prüfen',
+    notes_clear: 'Leeren',
+
+    // Ergebnis.
+    results_title: 'Session fertig',
+    results_score: '{correct} von {total} richtig',
+    results_accuracy: 'Trefferquote',
+    results_avg: 'Ø Zeit',
+    results_breakdown: 'Wie die Teile liefen',
+    results_perfect: 'Alles sauber. Dein Ohr ist heute wach.',
+    results_good: 'Gute Arbeit — das meiste saß.',
+    results_mixed: 'Einiges ist hängen geblieben. Der Rest braucht noch einen Durchgang.',
+    results_rough: 'Zäh diesmal. So lernt das Ohr — komm noch mal darauf zurück.',
+    again: 'Nochmal',
+    done: 'Fertig',
+    back_to_train: 'Zurück zum Training',
+    ear_progress: 'Ohr-Fortschritt: {ear} von {total} Einheiten',
+  },
 };

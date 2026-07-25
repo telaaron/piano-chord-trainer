@@ -1910,4 +1910,129 @@ export const en = {
     no_data: 'No data available',
     signups_chart: 'Signups (last 30 days)',
   },
+
+  // ── To-Go — practice away from the piano ─────────────────────────────────
+  // Teacher's voice, same warmth as `coach`. Keys under prompt/tap/lick/card/say
+  // are produced by the engine (src/lib/engine/togo.ts) and must keep their names.
+  togo: {
+    entry: 'Practice without a piano',
+    title: 'To-Go',
+    subtitle: 'Ear, time and theory — everything you can train with nothing but headphones.',
+    intro:
+      'Seven ways to keep getting better away from the keys. Eight quick rounds, about three minutes. Headphones help.',
+    start: 'Let\'s go',
+    start_sub: 'A mix of everything you can train right now',
+    pick_one: 'Or train one thing',
+    kind: {
+      interval: 'Intervals',
+      quality: 'Chord colours',
+      progression: 'Progressions',
+      sing: 'Singing',
+      time: 'Time',
+      lick: 'Licks',
+      theory: 'Theory',
+    },
+    kind_desc: {
+      interval: 'Two notes — name the distance.',
+      quality: 'Hear a chord, name its quality.',
+      progression: 'Hear a cadence, name the shape.',
+      sing: 'Find a scale degree with your voice.',
+      time: 'Tap the groove against the click.',
+      lick: 'Hear a phrase, tap it back.',
+      theory: 'Silent flashcards — works anywhere.',
+    },
+    needs_audio: 'Needs sound',
+    needs_mic: 'Needs a microphone',
+    silent_ok: 'Works in silence',
+    audio_off: 'Sound is off — only theory cards are available.',
+    mic_off: 'No microphone — singing is sitting this one out.',
+    enable_audio: 'Turn sound on',
+    enable_mic: 'Allow microphone',
+
+    // Engine-supplied prompts.
+    prompt: {
+      interval: 'How far apart are these two notes?',
+      quality: 'What colour is this chord?',
+      progression: 'Which shape is this, in {key}?',
+      sing: 'Sing the {degree} over {root}.',
+      lick: 'Tap the {count} notes back.',
+    },
+    tap: {
+      quarters: 'Tap every beat — {bpm} bpm.',
+      backbeat: 'Tap only 2 and 4 — {bpm} bpm.',
+      downbeats: 'Tap only 1 and 3 — {bpm} bpm.',
+      two_only: 'Tap only the 2 — {bpm} bpm.',
+    },
+    lick: {
+      scale_up: 'Scale, climbing',
+      triad_down: 'Triad, coming down',
+      arpeggio: 'Seventh arpeggio',
+      enclosure: 'Enclosure',
+      guide_down: 'Guide tones falling',
+      blues_climb: 'Blues climb',
+      descent: 'Long descent',
+      chromatic_fall: 'Chromatic fall',
+    },
+    card: {
+      chord_notes: 'Which notes are in {chord}?',
+      chord_degree: 'What is the {degree} of {chord}?',
+      tritone_sub: 'What is the tritone sub of {chord}?',
+      relative_minor: 'What is the relative minor of {key}?',
+    },
+    say: {
+      mixed: 'A bit of everything — {count} rounds, no piano needed.',
+      single: '{count} rounds of {kind}.',
+    },
+
+    // Run screen.
+    round: 'Round {current} of {total}',
+    replay: 'Play again',
+    play: 'Play',
+    listen: 'Listening…',
+    reveal_correct: 'That\'s it.',
+    reveal_wrong: 'Not quite.',
+    answer_was: 'It was {answer}',
+    next: 'Next',
+    finish: 'Finish',
+    quit: 'Stop',
+
+    // Singing.
+    sing_start: 'Start listening',
+    sing_hint: 'Hold the note steadily for a moment — give the mic time to hear you.',
+    sing_heard: 'Heard so far',
+    sing_nothing_yet: 'Nothing yet',
+    sing_check: 'Check my note',
+    sing_level: 'Input level',
+    sing_denied: 'The microphone stayed shut. Check your browser permissions.',
+
+    // Tapping.
+    tap_ready: 'Count yourself in, then tap along.',
+    tap_button: 'Tap',
+    tap_hint: 'Space bar works too.',
+    tap_start: 'Start the click',
+    tap_score: '{hits} of {expected} on target',
+    tap_rushing: 'You\'re a touch ahead — let the click lead.',
+    tap_dragging: 'You\'re a touch behind — lean into the beat.',
+    tap_locked: 'Right in the pocket.',
+
+    // Note tap-back.
+    notes_hint: 'Tap the notes you heard, then check.',
+    notes_check: 'Check',
+    notes_clear: 'Clear',
+
+    // Results.
+    results_title: 'Session done',
+    results_score: '{correct} of {total} right',
+    results_accuracy: 'Accuracy',
+    results_avg: 'Average time',
+    results_breakdown: 'How each part went',
+    results_perfect: 'Clean sweep. Your ear is sharp today.',
+    results_good: 'Solid work — most of it landed.',
+    results_mixed: 'Some of it stuck. The rest just needs another pass.',
+    results_rough: 'A rough one. That\'s how the ear learns — come back to it.',
+    again: 'Again',
+    done: 'Done',
+    back_to_train: 'Back to training',
+    ear_progress: 'Ear progress: {ear} of {total} units',
+  },
 };

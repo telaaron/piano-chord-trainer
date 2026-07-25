@@ -402,6 +402,79 @@ export function disposeAudio(): void {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+//  Drone — a held reference tone for singing against (To-Go mode)
+// ══════════════════════════════════════════════════════════════════════════════
+//
+// Independent of the chord instrument: singing over a warm pad works better than
+// over a decaying piano sample, and the drone must survive while other sounds
+// come and go. Uses triggerAttack / triggerRelease so it sustains indefinitely.
+
+let droneSynth: ToneType.PolySynth | null = null;
+let droneNote: string | null = null;
+/** Guards against a stopDrone() that lands while startDrone() is still awaiting. */
+let droneGeneration = 0;
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function getDroneSynth(): ToneType.PolySynth {
+	if (!droneSynth) {
+		const T = _tone!;
+		const cfg = SYNTH_CONFIGS['synth-pad'];
+		droneSynth = new T.PolySynth(T.Synth as any, { ...cfg.config, volume: -18 });
+		droneSynth.maxPolyphony = 4;
+		droneSynth.toDestination();
+	}
+	return droneSynth;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/**
+ * Hold a reference tone until `stopDrone()`.
+ *
+ * @param note  bare note name ("Bb") or octave-qualified ("Bb3"). Bare names are
+ *              placed in octave 3 — comfortably under most singing ranges.
+ */
+export async function startDrone(note: string): Promise<void> {
+	const toneNote = /\d/.test(note) ? note : `${note}3`;
+	const gen = ++droneGeneration;
+
+	await getTone();
+	await ensureStarted();
+	// A stopDrone() (or another startDrone) landed while we were awaiting — bail.
+	if (gen !== droneGeneration) return;
+
+	const synth = getDroneSynth();
+	if (droneNote) synth.triggerRelease([droneNote]);
+	droneNote = toneNote;
+	synth.triggerAttack([toneNote]);
+}
+
+/** Release the held tone. Safe to call when nothing is sounding. */
+export function stopDrone(): void {
+	droneGeneration++;
+	if (!droneSynth) {
+		droneNote = null;
+		return;
+	}
+	if (droneNote) droneSynth.triggerRelease([droneNote]);
+	else droneSynth.releaseAll();
+	droneNote = null;
+}
+
+/** Is a reference tone currently sounding? */
+export function isDroneRunning(): boolean {
+	return droneNote !== null;
+}
+
+/** Tear the drone synth down entirely. */
+export function disposeDrone(): void {
+	stopDrone();
+	if (droneSynth) {
+		droneSynth.dispose();
+		droneSynth = null;
+	}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 //  Metronome
 // ══════════════════════════════════════════════════════════════════════════════
 let metronomeLoop: ToneType.Loop | null = null;
@@ -774,6 +847,7 @@ export async function playCelebrationSound(type: CelebrationSoundType): Promise<
 export function disposeAll(): void {
 	stopMetronome();
 	stopBackingTrack();
+	disposeDrone();
 	disposeAudio();
 	if (metronomeSynth) {
 		metronomeSynth.dispose();

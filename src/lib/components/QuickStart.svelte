@@ -171,5 +171,12 @@
 		>
 			{t('quickstart.customize')}
 		</button>
+		<span class="text-[var(--text-dim)]">·</span>
+		<a
+			href="/togo"
+			class="font-medium text-[var(--text-muted)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded px-1"
+		>
+			{t('togo.entry')}
+		</a>
 	</div>
 </section>

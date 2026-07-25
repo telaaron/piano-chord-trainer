@@ -13,6 +13,7 @@ const SYNC_KEYS = [
 	'chord-trainer-celebrations',
 	'chord-trainer-course-progress',
 	'chord-trainer-coach-state',
+	'chord-trainer-togo-cards',
 	'chord-trainer-theme',
 	'chord-trainer-locale',
 ] as const;
