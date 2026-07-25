@@ -54,6 +54,8 @@ enum StoreKey {
     static let habitProfile = "habit-profile"
     static let courseProgress = "course-progress"
     static let coachState = "coach-state"
+    /// To-Go theory-card SRS states, keyed by card id (see MusicEngine.TheoryCardState).
+    static let togoCards = "togo-cards"
 }
 
 /// Convenience wrappers used by the stores.

@@ -86,12 +86,17 @@ public struct CoachState: Sendable, Equatable, Codable {
     /// Consecutive sessions the player struggled (slow / many wrong). Drives the
     /// "too hard? start easier" offer only after real, sustained struggle.
     public var struggleStreak: Int?
+    /// Ear-side progress, keyed by the SAME SkillUnit ids as `unitStates`.
+    /// The piano side proves you can BUILD a chord; the ear side proves you can
+    /// HEAR it. One curriculum, two senses — To-Go work moves this map.
+    public var earStates: [String: UnitProgress]?
     /// Last plan built, for resume / display.
     public var lastPlan: CoachPlan?
 
     public init(version: Int, unitStates: [String: UnitProgress], frontierIndex: Int,
                 dayIndex: Int, difficultyBias: Double, calibrated: Bool,
-                struggleStreak: Int? = nil, lastPlan: CoachPlan? = nil) {
+                struggleStreak: Int? = nil, earStates: [String: UnitProgress]? = nil,
+                lastPlan: CoachPlan? = nil) {
         self.version = version
         self.unitStates = unitStates
         self.frontierIndex = frontierIndex
@@ -99,6 +104,7 @@ public struct CoachState: Sendable, Equatable, Codable {
         self.difficultyBias = difficultyBias
         self.calibrated = calibrated
         self.struggleStreak = struggleStreak
+        self.earStates = earStates
         self.lastPlan = lastPlan
     }
 }
@@ -1004,6 +1010,126 @@ public func assessSession(
     else if streak >= params.struggleSessionsBeforeOffer { verdict = .struggling }
 
     return (verdict, nextState)
+}
+
+// ─── Ear facet (To-Go) ──────────────────────────────────────
+// The ear side runs on the same ladder as the piano side. A unit has two
+// facets: can you BUILD it (unitStates) and can you HEAR it (earStates).
+
+/// Has the player mastered hearing this unit?
+public func isEarMastered(_ state: CoachState, _ unitId: String) -> Bool {
+    state.earStates?[unitId]?.state == .mastered
+}
+
+/// The quality the ear side should drill right now: whatever the piano side is
+/// currently teaching. This is what makes To-Go feel like the same teacher —
+/// you hear the chord you're learning to play.
+public func earFocus(_ state: CoachState) -> (quality: String, unitId: String, voicing: VoicingType)? {
+    let ladder = buildSkillLadder()
+    let idx = computeFrontierIndex(ladder, state)
+    guard idx >= 0 && idx < ladder.count else { return nil }
+    let frontier = ladder[idx]
+    return (frontier.quality, frontier.id, frontier.voicing)
+}
+
+/// One unit's tally from a To-Go run: how many times it was heard right.
+public struct EarTally: Sendable, Equatable {
+    public var unitId: String
+    public var attempts: Int
+    public var correct: Int
+
+    public init(unitId: String, attempts: Int, correct: Int) {
+        self.unitId = unitId
+        self.attempts = attempts
+        self.correct = correct
+    }
+}
+
+/// Fold To-Go results into ear progress.
+///
+/// A unit becomes ear-mastered when the player hears it correctly at least
+/// `promotionRatio` of the time over enough attempts — the same bar the piano
+/// side uses, so the two facets mean the same thing. Missing it knocks a
+/// mastered ear unit back to practicing (you clearly can't hear it yet).
+public func applyEarTallies(
+    _ state: CoachState,
+    _ tallies: [EarTally],
+    _ params: CoachParams = DEFAULT_COACH_PARAMS,
+    now: Double = 0,
+    minAttempts: Int = 3
+) -> CoachState {
+    if tallies.isEmpty { return state }
+    var earStates = state.earStates ?? [:]
+
+    for t in tallies {
+        if t.attempts <= 0 { continue }
+        let prev = earStates[t.unitId] ?? UnitProgress(state: .locked, holds: 0)
+        var prog = prev
+        prog.lastTrainedAt = now
+        let ratio = Double(t.correct) / Double(t.attempts)
+
+        if t.attempts >= minAttempts && ratio >= params.promotionRatio {
+            prog.state = .mastered
+            prog.holds = 0
+        } else if prog.state == .mastered && ratio < params.promotionRatio {
+            // Heard it wrong after mastering — it slipped.
+            prog.state = .practicing
+        } else if prog.state == .locked {
+            prog.state = .learning
+        }
+        earStates[t.unitId] = prog
+    }
+
+    var next = state
+    next.earStates = earStates
+    return next
+}
+
+/// Roll a To-Go run's per-exercise outcomes into per-unit tallies.
+/// Only exercises that carry a `unitId` (i.e. the quality drill mirroring the
+/// Coach frontier) count toward the shared skill map.
+public func tallyEarResults(_ results: [(unitId: String?, correct: Bool)]) -> [EarTally] {
+    var byUnit: [String: EarTally] = [:]
+    var order: [String] = []
+    for r in results {
+        guard let unitId = r.unitId else { continue }
+        var t = byUnit[unitId] ?? { order.append(unitId); return EarTally(unitId: unitId, attempts: 0, correct: 0) }()
+        t.attempts += 1
+        if r.correct { t.correct += 1 }
+        byUnit[unitId] = t
+    }
+    return order.compactMap { byUnit[$0] }
+}
+
+public struct SkillMapProgress: Sendable, Equatable {
+    public var total: Int
+    public var handsMastered: Int
+    public var earMastered: Int
+    public var bothMastered: Int
+
+    public init(total: Int, handsMastered: Int, earMastered: Int, bothMastered: Int) {
+        self.total = total
+        self.handsMastered = handsMastered
+        self.earMastered = earMastered
+        self.bothMastered = bothMastered
+    }
+}
+
+/// How far along both facets are — for the progress display.
+public func skillMapProgress(_ state: CoachState) -> SkillMapProgress {
+    let ladder = buildSkillLadder()
+    var handsMastered = 0
+    var earMastered = 0
+    var bothMastered = 0
+    for u in ladder {
+        let h = isMastered(state, u.id)
+        let e = isEarMastered(state, u.id)
+        if h { handsMastered += 1 }
+        if e { earMastered += 1 }
+        if h && e { bothMastered += 1 }
+    }
+    return SkillMapProgress(total: ladder.count, handsMastered: handsMastered,
+                            earMastered: earMastered, bothMastered: bothMastered)
 }
 
 // ─── UI helpers ─────────────────────────────────────────────

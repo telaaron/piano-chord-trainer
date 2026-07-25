@@ -81,6 +81,16 @@ final class CoachStore {
         persist()
     }
 
+    /// Fold a To-Go run's ear tallies into the shared skill map. The piano side
+    /// (unitStates) is untouched — hearing a chord is a different facet from
+    /// being able to play it.
+    func applyEarProgress(_ tallies: [EarTally], now: Date = Date()) {
+        guard !tallies.isEmpty else { return }
+        let nowMs = now.timeIntervalSince1970 * 1000
+        state = applyEarTallies(state, tallies, DEFAULT_COACH_PARAMS, now: nowMs)
+        persist()
+    }
+
     /// System verdict on the just-finished session (carries struggleStreak forward).
     func assess(_ session: SessionResult) -> SessionVerdict {
         let result = assessSession(state, session, DEFAULT_COACH_PARAMS)

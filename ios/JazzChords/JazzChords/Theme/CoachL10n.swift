@@ -96,6 +96,72 @@ enum CoachL10n {
     /// Short "done" confirmation for a finished block (transition screen).
     static func blockDone(_ kind: BlockKind) -> String { t("coach.done.\(kind.rawValue)") }
 
+    // ─── To-Go keys (practice away from the piano) ──────────
+    // Engine-supplied keys (togo.prompt/tap/lick/card/say.*) arrive via
+    // exercise.promptKey / session.sayKey and are looked up directly by `t`.
+
+    enum ToGo {
+        static let entry = "togo.entry"
+        static let title = "togo.title"
+        static let subtitle = "togo.subtitle"
+        static let intro = "togo.intro"
+        static let start = "togo.start"
+        static let startSub = "togo.start_sub"
+        static let pickOne = "togo.pick_one"
+        static let needsAudio = "togo.needs_audio"
+        static let needsMic = "togo.needs_mic"
+        static let silentOk = "togo.silent_ok"
+        static let audioOff = "togo.audio_off"
+        static let micOff = "togo.mic_off"
+        static let enableAudio = "togo.enable_audio"
+        static let enableMic = "togo.enable_mic"
+        static let round = "togo.round"
+        static let replay = "togo.replay"
+        static let play = "togo.play"
+        static let listen = "togo.listen"
+        static let revealCorrect = "togo.reveal_correct"
+        static let revealWrong = "togo.reveal_wrong"
+        static let answerWas = "togo.answer_was"
+        static let next = "togo.next"
+        static let finish = "togo.finish"
+        static let quit = "togo.quit"
+        static let singStart = "togo.sing_start"
+        static let singHint = "togo.sing_hint"
+        static let singHeard = "togo.sing_heard"
+        static let singNothingYet = "togo.sing_nothing_yet"
+        static let singCheck = "togo.sing_check"
+        static let singLevel = "togo.sing_level"
+        static let singDenied = "togo.sing_denied"
+        static let tapReady = "togo.tap_ready"
+        static let tapButton = "togo.tap_button"
+        static let tapStart = "togo.tap_start"
+        static let tapScore = "togo.tap_score"
+        static let tapRushing = "togo.tap_rushing"
+        static let tapDragging = "togo.tap_dragging"
+        static let tapLocked = "togo.tap_locked"
+        static let notesHint = "togo.notes_hint"
+        static let notesCheck = "togo.notes_check"
+        static let notesClear = "togo.notes_clear"
+        static let resultsTitle = "togo.results_title"
+        static let resultsScore = "togo.results_score"
+        static let resultsAccuracy = "togo.results_accuracy"
+        static let resultsAvg = "togo.results_avg"
+        static let resultsBreakdown = "togo.results_breakdown"
+        static let resultsPerfect = "togo.results_perfect"
+        static let resultsGood = "togo.results_good"
+        static let resultsMixed = "togo.results_mixed"
+        static let resultsRough = "togo.results_rough"
+        static let again = "togo.again"
+        static let done = "togo.done"
+        static let backToTrain = "togo.back_to_train"
+        static let earProgress = "togo.ear_progress"
+
+        /// Display name for one discipline ("Intervals" / "Intervalle").
+        static func kind(_ k: ToGoKind) -> String { CoachL10n.t("togo.kind.\(k.rawValue)") }
+        /// One-line description of a discipline.
+        static func kindDesc(_ k: ToGoKind) -> String { CoachL10n.t("togo.kind_desc.\(k.rawValue)") }
+    }
+
     // ─── Voicing tables (mirror web settings.voicing_*) ─────
 
     private static let enVoicings: [VoicingType: String] = [
@@ -165,6 +231,105 @@ enum CoachL10n {
         "settings.privacy": "Anonymous Usage Data",
         "settings.privacy_desc": "Helps us improve the practice coach — fully anonymous, no personal data, and you can turn it off anytime.",
         "settings.privacy_toggle_label": "Share anonymous usage data",
+
+        // ── To-Go (content-identical to web i18n `togo:` block) ──
+        "togo.entry": "Practice without a piano",
+        "togo.title": "To-Go",
+        "togo.subtitle": "Ear, time and theory — everything you can train with nothing but headphones.",
+        "togo.intro": "Seven ways to keep getting better away from the keys. Eight quick rounds, about three minutes. Headphones help.",
+        "togo.start": "Let's go",
+        "togo.start_sub": "A mix of everything you can train right now",
+        "togo.pick_one": "Or train one thing",
+        "togo.kind.interval": "Intervals",
+        "togo.kind.quality": "Chord colours",
+        "togo.kind.progression": "Progressions",
+        "togo.kind.sing": "Singing",
+        "togo.kind.time": "Time",
+        "togo.kind.lick": "Licks",
+        "togo.kind.theory": "Theory",
+        "togo.kind_desc.interval": "Two notes — name the distance.",
+        "togo.kind_desc.quality": "Hear a chord, name its quality.",
+        "togo.kind_desc.progression": "Hear a cadence, name the shape.",
+        "togo.kind_desc.sing": "Find a scale degree with your voice.",
+        "togo.kind_desc.time": "Tap the groove against the click.",
+        "togo.kind_desc.lick": "Hear a phrase, tap it back.",
+        "togo.kind_desc.theory": "Silent flashcards — works anywhere.",
+        "togo.needs_audio": "Needs sound",
+        "togo.needs_mic": "Needs a microphone",
+        "togo.silent_ok": "Works in silence",
+        "togo.audio_off": "Sound is off — only theory cards are available.",
+        "togo.mic_off": "No microphone — singing is sitting this one out.",
+        "togo.enable_audio": "Turn sound on",
+        "togo.enable_mic": "Allow microphone",
+        // Engine-supplied prompts.
+        "togo.prompt.interval": "How far apart are these two notes?",
+        "togo.prompt.quality": "What colour is this chord?",
+        "togo.prompt.progression": "Which shape is this, in {key}?",
+        "togo.prompt.sing": "Sing the {degree} over {root}.",
+        "togo.prompt.lick": "Tap the {count} notes back.",
+        "togo.tap.quarters": "Tap every beat — {bpm} bpm.",
+        "togo.tap.backbeat": "Tap only 2 and 4 — {bpm} bpm.",
+        "togo.tap.downbeats": "Tap only 1 and 3 — {bpm} bpm.",
+        "togo.tap.two_only": "Tap only the 2 — {bpm} bpm.",
+        "togo.lick.scale_up": "Scale, climbing",
+        "togo.lick.triad_down": "Triad, coming down",
+        "togo.lick.arpeggio": "Seventh arpeggio",
+        "togo.lick.enclosure": "Enclosure",
+        "togo.lick.guide_down": "Guide tones falling",
+        "togo.lick.blues_climb": "Blues climb",
+        "togo.lick.descent": "Long descent",
+        "togo.lick.chromatic_fall": "Chromatic fall",
+        "togo.card.chord_notes": "Which notes are in {chord}?",
+        "togo.card.chord_degree": "What is the {degree} of {chord}?",
+        "togo.card.tritone_sub": "What is the tritone sub of {chord}?",
+        "togo.card.relative_minor": "What is the relative minor of {key}?",
+        "togo.say.mixed": "A bit of everything — {count} rounds, no piano needed.",
+        "togo.say.single": "{count} rounds of {kind}.",
+        // Run screen.
+        "togo.round": "Round {current} of {total}",
+        "togo.replay": "Play again",
+        "togo.play": "Play",
+        "togo.listen": "Listening…",
+        "togo.reveal_correct": "That's it.",
+        "togo.reveal_wrong": "Not quite.",
+        "togo.answer_was": "It was {answer}",
+        "togo.next": "Next",
+        "togo.finish": "Finish",
+        "togo.quit": "Stop",
+        // Singing.
+        "togo.sing_start": "Start listening",
+        "togo.sing_hint": "Hold the note steadily for a moment — give the mic time to hear you.",
+        "togo.sing_heard": "Heard so far",
+        "togo.sing_nothing_yet": "Nothing yet",
+        "togo.sing_check": "Check my note",
+        "togo.sing_level": "Input level",
+        "togo.sing_denied": "The microphone stayed shut. Check your permissions in Settings.",
+        // Tapping.
+        "togo.tap_ready": "Count yourself in, then tap along.",
+        "togo.tap_button": "Tap",
+        "togo.tap_start": "Start the click",
+        "togo.tap_score": "{hits} of {expected} on target",
+        "togo.tap_rushing": "You're a touch ahead — let the click lead.",
+        "togo.tap_dragging": "You're a touch behind — lean into the beat.",
+        "togo.tap_locked": "Right in the pocket.",
+        // Note tap-back.
+        "togo.notes_hint": "Tap the notes you heard, then check.",
+        "togo.notes_check": "Check",
+        "togo.notes_clear": "Clear",
+        // Results.
+        "togo.results_title": "Session done",
+        "togo.results_score": "{correct} of {total} right",
+        "togo.results_accuracy": "Accuracy",
+        "togo.results_avg": "Average time",
+        "togo.results_breakdown": "How each part went",
+        "togo.results_perfect": "Clean sweep. Your ear is sharp today.",
+        "togo.results_good": "Solid work — most of it landed.",
+        "togo.results_mixed": "Some of it stuck. The rest just needs another pass.",
+        "togo.results_rough": "A rough one. That's how the ear learns — come back to it.",
+        "togo.again": "Again",
+        "togo.done": "Done",
+        "togo.back_to_train": "Back to training",
+        "togo.ear_progress": "Ear progress: {ear} of {total} units",
     ]
 
     private static let de: [String: String] = [
@@ -214,5 +379,104 @@ enum CoachL10n {
         "settings.privacy": "Anonyme Nutzungsdaten",
         "settings.privacy_desc": "Hilft uns, den Übungs-Coach zu verbessern — komplett anonym, ohne Personendaten, jederzeit abschaltbar.",
         "settings.privacy_toggle_label": "Anonyme Nutzungsdaten teilen",
+
+        // ── To-Go (inhaltsgleich zum Web-i18n-Block `togo:`) ──
+        "togo.entry": "Ohne Klavier üben",
+        "togo.title": "To-Go",
+        "togo.subtitle": "Ohr, Time und Theorie — alles, was du mit bloßen Kopfhörern trainieren kannst.",
+        "togo.intro": "Sieben Wege, auch fern der Tasten besser zu werden. Acht kurze Runden, etwa drei Minuten. Kopfhörer helfen.",
+        "togo.start": "Los geht's",
+        "togo.start_sub": "Eine Mischung aus allem, was gerade möglich ist",
+        "togo.pick_one": "Oder eine Sache üben",
+        "togo.kind.interval": "Intervalle",
+        "togo.kind.quality": "Akkordfarben",
+        "togo.kind.progression": "Progressionen",
+        "togo.kind.sing": "Singen",
+        "togo.kind.time": "Time",
+        "togo.kind.lick": "Licks",
+        "togo.kind.theory": "Theorie",
+        "togo.kind_desc.interval": "Zwei Töne — nenne den Abstand.",
+        "togo.kind_desc.quality": "Akkord hören, Qualität benennen.",
+        "togo.kind_desc.progression": "Kadenz hören, Form erkennen.",
+        "togo.kind_desc.sing": "Eine Stufe mit der Stimme finden.",
+        "togo.kind_desc.time": "Den Groove zum Klick mittappen.",
+        "togo.kind_desc.lick": "Phrase hören, zurücktippen.",
+        "togo.kind_desc.theory": "Stille Karten — geht überall.",
+        "togo.needs_audio": "Braucht Ton",
+        "togo.needs_mic": "Braucht ein Mikrofon",
+        "togo.silent_ok": "Geht auch lautlos",
+        "togo.audio_off": "Der Ton ist aus — es gibt nur Theoriekarten.",
+        "togo.mic_off": "Kein Mikrofon — Singen setzt diesmal aus.",
+        "togo.enable_audio": "Ton einschalten",
+        "togo.enable_mic": "Mikrofon erlauben",
+        // Prompts aus der Engine.
+        "togo.prompt.interval": "Wie weit liegen diese zwei Töne auseinander?",
+        "togo.prompt.quality": "Welche Farbe hat dieser Akkord?",
+        "togo.prompt.progression": "Welche Form ist das, in {key}?",
+        "togo.prompt.sing": "Sing die {degree} über {root}.",
+        "togo.prompt.lick": "Tippe die {count} Töne zurück.",
+        "togo.tap.quarters": "Tappe jeden Schlag — {bpm} bpm.",
+        "togo.tap.backbeat": "Tappe nur 2 und 4 — {bpm} bpm.",
+        "togo.tap.downbeats": "Tappe nur 1 und 3 — {bpm} bpm.",
+        "togo.tap.two_only": "Tappe nur die 2 — {bpm} bpm.",
+        "togo.lick.scale_up": "Skala, aufwärts",
+        "togo.lick.triad_down": "Dreiklang, abwärts",
+        "togo.lick.arpeggio": "Septakkord-Arpeggio",
+        "togo.lick.enclosure": "Umspielung",
+        "togo.lick.guide_down": "Leittöne fallend",
+        "togo.lick.blues_climb": "Blues-Aufstieg",
+        "togo.lick.descent": "Langer Abstieg",
+        "togo.lick.chromatic_fall": "Chromatischer Fall",
+        "togo.card.chord_notes": "Welche Töne stecken in {chord}?",
+        "togo.card.chord_degree": "Was ist die {degree} von {chord}?",
+        "togo.card.tritone_sub": "Was ist die Tritonus-Substitution von {chord}?",
+        "togo.card.relative_minor": "Was ist die Moll-Parallele von {key}?",
+        "togo.say.mixed": "Von allem etwas — {count} Runden, ganz ohne Klavier.",
+        "togo.say.single": "{count} Runden {kind}.",
+        // Übungslauf.
+        "togo.round": "Runde {current} von {total}",
+        "togo.replay": "Nochmal hören",
+        "togo.play": "Abspielen",
+        "togo.listen": "Hör hin …",
+        "togo.reveal_correct": "Genau das.",
+        "togo.reveal_wrong": "Nicht ganz.",
+        "togo.answer_was": "Es war {answer}",
+        "togo.next": "Weiter",
+        "togo.finish": "Abschließen",
+        "togo.quit": "Beenden",
+        // Singen.
+        "togo.sing_start": "Zuhören starten",
+        "togo.sing_hint": "Halte den Ton einen Moment ruhig — gib dem Mikro Zeit, dich zu hören.",
+        "togo.sing_heard": "Bisher gehört",
+        "togo.sing_nothing_yet": "Noch nichts",
+        "togo.sing_check": "Ton prüfen",
+        "togo.sing_level": "Eingangspegel",
+        "togo.sing_denied": "Das Mikrofon blieb zu. Schau in die Einstellungen.",
+        // Tappen.
+        "togo.tap_ready": "Zähl dich ein, dann tappe mit.",
+        "togo.tap_button": "Tap",
+        "togo.tap_start": "Klick starten",
+        "togo.tap_score": "{hits} von {expected} getroffen",
+        "togo.tap_rushing": "Du bist eine Spur zu früh — lass den Klick führen.",
+        "togo.tap_dragging": "Du bist eine Spur zu spät — leg dich in den Beat.",
+        "togo.tap_locked": "Genau im Pocket.",
+        // Töne zurücktippen.
+        "togo.notes_hint": "Tippe die gehörten Töne, dann prüfen.",
+        "togo.notes_check": "Prüfen",
+        "togo.notes_clear": "Leeren",
+        // Ergebnis.
+        "togo.results_title": "Session fertig",
+        "togo.results_score": "{correct} von {total} richtig",
+        "togo.results_accuracy": "Trefferquote",
+        "togo.results_avg": "Ø Zeit",
+        "togo.results_breakdown": "Wie die Teile liefen",
+        "togo.results_perfect": "Alles sauber. Dein Ohr ist heute wach.",
+        "togo.results_good": "Gute Arbeit — das meiste saß.",
+        "togo.results_mixed": "Einiges ist hängen geblieben. Der Rest braucht noch einen Durchgang.",
+        "togo.results_rough": "Zäh diesmal. So lernt das Ohr — komm noch mal darauf zurück.",
+        "togo.again": "Nochmal",
+        "togo.done": "Fertig",
+        "togo.back_to_train": "Zurück zum Training",
+        "togo.ear_progress": "Ohr-Fortschritt: {ear} von {total} Einheiten",
     ]
 }

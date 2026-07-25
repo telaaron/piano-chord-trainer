@@ -11,6 +11,7 @@ struct TodayView: View {
     @State private var startSuggested = false
     @State private var startWeakDrill = false
     @State private var startCoach = false
+    @State private var startToGo = false
     @State private var refreshToken = 0
 
     private var isPad: Bool { hSize == .regular }
@@ -62,6 +63,42 @@ struct TodayView: View {
         .fullScreenCover(isPresented: $startCoach, onDismiss: { habits.reload(); refreshToken += 1 }) {
             NavigationStack { TrainerView(coachSession: true) }
         }
+        .fullScreenCover(isPresented: $startToGo, onDismiss: { habits.reload(); refreshToken += 1 }) {
+            NavigationStack { ToGoView() }
+        }
+    }
+
+    /// "Practice without a piano" — the To-Go entry point (ear / time / theory).
+    private var toGoCard: some View {
+        Button { startToGo = true } label: {
+            HStack(spacing: Theme.space3) {
+                ZStack {
+                    Circle().fill(palette.primary.opacity(0.16)).frame(width: 40, height: 40)
+                    Image(systemName: "headphones")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(palette.primary)
+                        .symbolRenderingMode(.hierarchical)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(CoachL10n.t(CoachL10n.ToGo.entry))
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(palette.text)
+                    Text(CoachL10n.t(CoachL10n.ToGo.startSub))
+                        .font(.caption)
+                        .foregroundStyle(palette.textDim)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(palette.textDim)
+            }
+            .padding(Theme.space3)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .glassCard()
+        }
+        .buttonStyle(.plain)
     }
 
     private var phoneStack: some View {
@@ -72,6 +109,7 @@ struct TodayView: View {
             pickYourselfSection {
                 suggestedCard
                 if weakDrillPlan != nil { weakDrillCard }
+                toGoCard
             }
             motivationCard
         }
@@ -91,6 +129,7 @@ struct TodayView: View {
                     pickYourselfSection {
                         suggestedCard
                         if weakDrillPlan != nil { weakDrillCard }
+                        toGoCard
                     }
                     motivationCard
                 }

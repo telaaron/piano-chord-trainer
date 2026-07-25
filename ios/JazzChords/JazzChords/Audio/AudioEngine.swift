@@ -83,6 +83,10 @@ final class AudioEngine: @unchecked Sendable {
     private var samplerLoaded = false
     /// MIDI notes currently sounding on the sampler (so we can release them).
     private var samplerActive: Set<UInt8> = []
+    /// The held reference tone for To-Go sing exercises (synth path), if any.
+    private var droneVoice: Voice?
+    /// The held reference tone on the sampler path, if any.
+    private var droneSamplerNote: UInt8?
 
     /// Grand piano uses the sampled SoundFont when available; otherwise (and for
     /// the other presets) the built-in synth voice. NOTE: AVAudioUnitSampler hard-
@@ -236,8 +240,81 @@ final class AudioEngine: @unchecked Sendable {
         lock.lock(); voices.append(makeVoice(midiNote)); lock.unlock()
     }
 
+    /// Play a run of bare note names one after another, `stepMs` apart.
+    /// Used by To-Go (interval / progression / lick playback). Returns a Task so
+    /// the caller can cancel it when the view goes away or the player answers.
+    @discardableResult
+    func playSequence(_ notes: [String], stepMs: Double) -> Task<Void, Never> {
+        start()
+        let midi = Self.notesToMidi(notes)
+        let stepNs = UInt64(max(0, stepMs) * 1_000_000)
+        return Task { [weak self] in
+            for m in midi {
+                if Task.isCancelled { return }
+                self?.playMidi(m)
+                try? await Task.sleep(nanoseconds: stepNs)
+            }
+        }
+    }
+
+    /// Play a run of note names in chord-sized groups (a progression: each group
+    /// sounds together, groups `stepMs` apart).
+    @discardableResult
+    func playChordSequence(_ groups: [[String]], stepMs: Double) -> Task<Void, Never> {
+        start()
+        let stepNs = UInt64(max(0, stepMs) * 1_000_000)
+        return Task { [weak self] in
+            for group in groups {
+                if Task.isCancelled { return }
+                self?.playChord(group)
+                try? await Task.sleep(nanoseconds: stepNs)
+            }
+        }
+    }
+
+    // MARK: Drone (To-Go sing exercises)
+
+    /// Hold a reference tone indefinitely (never released) until `stopDrone()`.
+    /// The singer needs a stable pitch to find their scale degree against.
+    func startDrone(_ note: String, octave: Int = 3) {
+        start()
+        let pc = noteToSemitone(note)
+        guard pc != -1 else { return }
+        stopDrone()
+        let midi = pc + (octave + 1) * 12
+        if useSampler {
+            let n = UInt8(clamping: midi)
+            sampler.startNote(n, withVelocity: 70, onChannel: 0)
+            lock.lock(); droneSamplerNote = n; lock.unlock()
+            return
+        }
+        // A voice with a long attack-free sustain and no release scheduled —
+        // it simply keeps sounding until stopDrone() releases it.
+        let voice = makeVoice(midi)
+        voice.sustain = max(voice.sustain, 0.35)
+        voice.decay = 0.25
+        lock.lock()
+        droneVoice = voice
+        voices.append(voice)
+        lock.unlock()
+    }
+
+    /// Release the held reference tone. Safe to call when no drone is sounding.
+    func stopDrone() {
+        lock.lock()
+        if let v = droneVoice {
+            if v.releasedAt == nil { v.releasedAt = v.age }
+            droneVoice = nil
+        }
+        let samplerNote = droneSamplerNote
+        droneSamplerNote = nil
+        lock.unlock()
+        if let n = samplerNote { sampler.stopNote(n, onChannel: 0) }
+    }
+
     /// Release everything (chord change / stop).
     func stopAll() {
+        stopDrone()
         if useSampler { releaseSampler() }
         lock.lock()
         for v in voices where v.releasedAt == nil { v.releasedAt = v.age }

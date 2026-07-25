@@ -12,6 +12,8 @@
 		1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */; };
 		CA0C4001C0AC4001C0AC4001 /* CoachStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C4002C0AC4002C0AC4002 /* CoachStore.swift */; };
 		CA0C4003C0AC4003C0AC4003 /* TelemetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C4004C0AC4004C0AC4004 /* TelemetryService.swift */; };
+		CA0C400AC0AC400AC0AC400A /* ToGoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C400BC0AC400BC0AC400B /* ToGoStore.swift */; };
+		CA0C4007C0AC4007C0AC4007 /* ToGoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C4008C0AC4008C0AC4008 /* ToGoView.swift */; };
 		CA0C4005C0AC4005C0AC4005 /* CoachL10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0C4006C0AC4006C0AC4006 /* CoachL10n.swift */; };
 		23E6837096744F2101283969 /* empty.webp in Resources */ = {isa = PBXBuildFile; fileRef = CEA73CE363D55D87924D64F4 /* empty.webp */; };
 		2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0867EC7118FCB35AE3C9028E /* TodayView.swift */; };
@@ -57,6 +59,8 @@
 		25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseProgressStore.swift; sourceTree = "<group>"; };
 		CA0C4002C0AC4002C0AC4002 /* CoachStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachStore.swift; sourceTree = "<group>"; };
 		CA0C4004C0AC4004C0AC4004 /* TelemetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryService.swift; sourceTree = "<group>"; };
+		CA0C400BC0AC400BC0AC400B /* ToGoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToGoStore.swift; sourceTree = "<group>"; };
+		CA0C4008C0AC4008C0AC4008 /* ToGoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToGoView.swift; sourceTree = "<group>"; };
 		CA0C4006C0AC4006C0AC4006 /* CoachL10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachL10n.swift; sourceTree = "<group>"; };
 		2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
 		3205430E7105BBD412ED8C3D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -139,6 +143,7 @@
 				558859E350F645BD0FB4B81E /* Persistence.swift */,
 				D7F32C4DA0908BF4BB3691E1 /* SubscriptionStore.swift */,
 				CA0C4004C0AC4004C0AC4004 /* TelemetryService.swift */,
+				CA0C400BC0AC400BC0AC400B /* ToGoStore.swift */,
 				7B56736703494CD04E7B1D17 /* TrainerStore.swift */,
 			);
 			path = Store;
@@ -211,6 +216,7 @@
 				CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */,
 				F2AE191D85096C087E5C4054 /* SettingsView.swift */,
 				0867EC7118FCB35AE3C9028E /* TodayView.swift */,
+				CA0C4008C0AC4008C0AC4008 /* ToGoView.swift */,
 				AFCB9663547D5A0E3BF66245 /* TrainerView.swift */,
 			);
 			path = Views;
@@ -333,6 +339,8 @@
 				1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */,
 				CA0C4001C0AC4001C0AC4001 /* CoachStore.swift in Sources */,
 				CA0C4003C0AC4003C0AC4003 /* TelemetryService.swift in Sources */,
+				CA0C400AC0AC400AC0AC400A /* ToGoStore.swift in Sources */,
+				CA0C4007C0AC4007C0AC4007 /* ToGoView.swift in Sources */,
 				CA0C4005C0AC4005C0AC4005 /* CoachL10n.swift in Sources */,
 				B0219DF12B3E321CF940F1D5 /* CustomProgressionView.swift in Sources */,
 				9BD73F877ED7093B33A938E2 /* EarTrainingView.swift in Sources */,

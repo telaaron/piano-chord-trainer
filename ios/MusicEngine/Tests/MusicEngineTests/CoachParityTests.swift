@@ -424,4 +424,66 @@ final class CoachParityTests: XCTestCase {
         let after = state.unitStates.values.filter { $0.state == .mastered }.count
         XCTAssertLessThanOrEqual(after - before, 1)
     }
+
+    // ─── Ear facet — one skill map, two senses ──────────────
+
+    func testEarFocusPointsAtTheQualityThePianoSideIsTeaching() {
+        let state = calibratedState()
+        let focus = earFocus(state)!
+        let ladder = buildSkillLadder()
+        XCTAssertEqual(focus.unitId, ladder[0].id)
+        XCTAssertEqual(focus.quality, ladder[0].quality)
+    }
+
+    func testHearingAUnitReliablyMastersItsEarFacetOnly() {
+        let state = calibratedState()
+        let id = buildSkillLadder()[0].id
+        let next = applyEarTallies(state, [EarTally(unitId: id, attempts: 5, correct: 5)],
+                                   DEFAULT_COACH_PARAMS, now: 1000)
+        XCTAssertTrue(isEarMastered(next, id))
+        // The piano side is untouched — you still have to play it.
+        XCTAssertNotEqual(next.unitStates[id]?.state, .mastered)
+    }
+
+    func testEarDoesNotMasterOnTooFewAttempts() {
+        let state = calibratedState()
+        let id = buildSkillLadder()[0].id
+        let next = applyEarTallies(state, [EarTally(unitId: id, attempts: 2, correct: 2)],
+                                   DEFAULT_COACH_PARAMS, now: 1000)
+        XCTAssertFalse(isEarMastered(next, id))
+    }
+
+    func testEarKnocksMasteredUnitBackWhenItSlips() {
+        let state = calibratedState()
+        let id = buildSkillLadder()[0].id
+        var next = applyEarTallies(state, [EarTally(unitId: id, attempts: 5, correct: 5)],
+                                   DEFAULT_COACH_PARAMS, now: 1000)
+        XCTAssertTrue(isEarMastered(next, id))
+        next = applyEarTallies(next, [EarTally(unitId: id, attempts: 4, correct: 1)],
+                               DEFAULT_COACH_PARAMS, now: 2000)
+        XCTAssertFalse(isEarMastered(next, id))
+    }
+
+    func testTalliesOnlyResultsThatCarryAUnitId() {
+        let tallies = tallyEarResults([
+            (unitId: "a", correct: true),
+            (unitId: "a", correct: false),
+            (unitId: nil, correct: true), // an interval drill — not tied to a unit
+        ])
+        XCTAssertEqual(tallies, [EarTally(unitId: "a", attempts: 2, correct: 1)])
+    }
+
+    func testReportsBothFacetsForTheProgressDisplay() {
+        var state = calibratedState()
+        let ladder = buildSkillLadder()
+        let id = ladder[0].id
+        state.unitStates[id] = UnitProgress(state: .mastered, holds: 0)
+        let withEar = applyEarTallies(state, [EarTally(unitId: id, attempts: 5, correct: 5)],
+                                      DEFAULT_COACH_PARAMS, now: 1)
+        let p = skillMapProgress(withEar)
+        XCTAssertEqual(p.total, ladder.count)
+        XCTAssertEqual(p.handsMastered, 1)
+        XCTAssertEqual(p.earMastered, 1)
+        XCTAssertEqual(p.bothMastered, 1)
+    }
 }
