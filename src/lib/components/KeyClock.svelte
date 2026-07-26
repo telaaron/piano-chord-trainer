@@ -69,26 +69,66 @@
 		return 'stuck';
 	}
 
+	/** Corner rounding on the segment ends, in user units. */
+	const ROUND = 2.2;
+
 	/**
 	 * Wedge for slot i, CENTRED on its slot so C sits at twelve o'clock —
 	 * the orientation every circle-of-fifths chart uses. Centring here (rather
 	 * than running the wedge from i to i+1) is what keeps the key names, the
 	 * times and the segments on one radius.
+	 *
+	 * The four corners are rounded. On a ring segment that cannot be done with
+	 * a border-radius: each corner is a small arc between the radial edge and
+	 * the circular edge, and the rounding has to be expressed as an ANGLE at
+	 * the inner radius and a smaller one at the outer, or the inner corners
+	 * bulge. Hence `da(r)` — the angular offset that walks ROUND units along
+	 * the arc at radius r.
 	 */
 	function wedge(i: number, r: number): string {
 		const step = 360 / 12;
 		const gap = 2.4;
-		const a0 = ((i * step - step / 2 - 90 + gap / 2) * Math.PI) / 180;
-		const a1 = ((i * step + step / 2 - 90 - gap / 2) * Math.PI) / 180;
-		const x0 = CENTRE + R_IN * Math.cos(a0);
-		const y0 = CENTRE + R_IN * Math.sin(a0);
-		const x1 = CENTRE + r * Math.cos(a0);
-		const y1 = CENTRE + r * Math.sin(a0);
-		const x2 = CENTRE + r * Math.cos(a1);
-		const y2 = CENTRE + r * Math.sin(a1);
-		const x3 = CENTRE + R_IN * Math.cos(a1);
-		const y3 = CENTRE + R_IN * Math.sin(a1);
-		return `M ${x0} ${y0} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${R_IN} ${R_IN} 0 0 0 ${x0} ${y0} Z`;
+		const rad = (deg: number) => (deg * Math.PI) / 180;
+
+		// Depth-aware rounding: a shallow band must not round itself away.
+		const depth = r - R_IN;
+		const k = Math.min(ROUND, depth / 2.6);
+		const da = (radius: number) => ((k / radius) * 180) / Math.PI;
+
+		const c0 = i * step - step / 2 - 90 + gap / 2;
+		const c1 = i * step + step / 2 - 90 - gap / 2;
+
+		const P = (deg: number, radius: number) => ({
+			x: CENTRE + radius * Math.cos(rad(deg)),
+			y: CENTRE + radius * Math.sin(rad(deg)),
+		});
+
+		const inA = da(R_IN);
+		const outA = da(r);
+
+		// Walk: inner edge → out along the radial → round → outer arc → round
+		// → in along the radial → round → inner arc back → round → close.
+		const a = P(c0, R_IN + k);
+		const b = P(c0, r - k);
+		const c = P(c0 + outA, r);
+		const d = P(c1 - outA, r);
+		const e = P(c1, r - k);
+		const f = P(c1, R_IN + k);
+		const g = P(c1 - inA, R_IN);
+		const h = P(c0 + inA, R_IN);
+
+		return [
+			`M ${a.x} ${a.y}`,
+			`L ${b.x} ${b.y}`,
+			`Q ${P(c0, r).x} ${P(c0, r).y} ${c.x} ${c.y}`,
+			`A ${r} ${r} 0 0 1 ${d.x} ${d.y}`,
+			`Q ${P(c1, r).x} ${P(c1, r).y} ${e.x} ${e.y}`,
+			`L ${f.x} ${f.y}`,
+			`Q ${P(c1, R_IN).x} ${P(c1, R_IN).y} ${g.x} ${g.y}`,
+			`A ${R_IN} ${R_IN} 0 0 0 ${h.x} ${h.y}`,
+			`Q ${P(c0, R_IN).x} ${P(c0, R_IN).y} ${a.x} ${a.y}`,
+			'Z',
+		].join(' ');
 	}
 
 	/** Point on slot i's centre radius, distance d from the middle. */
