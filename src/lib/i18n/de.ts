@@ -1390,9 +1390,9 @@ export const de = {
       },
       // ─── Modul 8: Altered & Advanced ────────────────────────────
       'adv-7s9': {
-        title: 'Dominant #9 (Hendrix)',
+        title: 'Dominant ♯9 (Hendrix)',
         subtitle: 'Der Purple-Haze-Sound',
-        theory: 'Der **7#9** — auch "Hendrix-Akkord" genannt:\n\n• R – 3 – 5 – ♭7 – #9\n\nDie #9 ist enharmonisch identisch mit der kleinen Terz (♭3). Große Terz + #9 gleichzeitig = maximale Reibung.\n\nBeispiel: **E7#9** = E + G# + B + D + G',
+        theory: 'Der **7#9** — auch "Hendrix-Akkord" genannt:\n\n• R – 3 – 5 – ♭7 – ♯9\n\nDie ♯9 ist enharmonisch identisch mit der kleinen Terz (♭3). Große Terz + ♯9 gleichzeitig = maximale Reibung.\n\nBeispiel: **E7#9** = E + G# + B + D + G',
       },
       'adv-7b9': {
         title: 'Dominant ♭9',
@@ -1402,7 +1402,7 @@ export const de = {
       'adv-lyd': {
         title: 'Lydisch (Maj7#11)',
         subtitle: 'Schwebend und modern',
-        theory: 'Der **Maj7#11** erzeugt den lydischen Klang:\n\n• R – 3 – 5 – 7 – #11\n\nDie #11 (= übermäßige Quarte) hebt den Akkord in eine schwebende Klangwelt. Typisch für modale Jazz-Stücke.\n\nBeispiel: **CMaj7#11** = C + E + G + B + F#',
+        theory: 'Der **Maj7#11** erzeugt den lydischen Klang:\n\n• R – 3 – 5 – 7 – ♯11\n\nDie ♯11 (= übermäßige Quarte) hebt den Akkord in eine schwebende Klangwelt. Typisch für modale Jazz-Stücke.\n\nBeispiel: **CMaj7#11** = C + E + G + B + F#',
       },
       'adv-m11': {
         title: 'Moll 11 (m11)',
@@ -1441,8 +1441,8 @@ export const de = {
       },
       dim5_aug5: {
         title: 'Verminderte & übermäßige Quinte',
-        subtitle: '♭5 und #5 — die Farbtöne',
-        theory: '**Verminderte Quinte** (♭5) = 6 Halbtöne\n→ Gleich wie der Tritonus! Im **m7♭5** (halbvermindert) enthalten.\n\n**Übermäßige Quinte** (#5) = 8 Halbtöne\n→ Klingt schwebend. Im augmentierten Dreiklang enthalten.\n\nBeispiel:\nC → Gb = verminderte Quinte\nC → G# = übermäßige Quinte\n\nDiese Intervalle erzeugen Farbe und Spannung.',
+        subtitle: '♭5 und ♯5 — die Farbtöne',
+        theory: '**Verminderte Quinte** (♭5) = 6 Halbtöne\n→ Gleich wie der Tritonus! Im **m7♭5** (halbvermindert) enthalten.\n\n**Übermäßige Quinte** (♯5) = 8 Halbtöne\n→ Klingt schwebend. Im augmentierten Dreiklang enthalten.\n\nBeispiel:\nC → Gb = verminderte Quinte\nC → G# = übermäßige Quinte\n\nDiese Intervalle erzeugen Farbe und Spannung.',
       },
       major_6th: {
         title: 'Die große Sexte',
@@ -1467,7 +1467,7 @@ export const de = {
       elevenths: {
         title: 'Undezime & Tredezime (11th & 13th)',
         subtitle: 'Die oberen Erweiterungen',
-        theory: '**Undezime (11th)** = Oktave + Quarte = 17 Halbtöne\n→ In m11: modaler, dorischer Charakter\n→ #11: lydischer Klang (Maj7#11)\n\n**Tredezime (13th)** = Oktave + Sexte = 21 Halbtöne\n→ In 13: voller Big-Band-Sound\n→ Farbe ohne Auflösungsdrang\n\nDiese Intervalle werden nur in erweiterten Akkorden verwendet. Sie bestimmen den "Geschmack" — nicht die Grundfunktion.',
+        theory: '**Undezime (11th)** = Oktave + Quarte = 17 Halbtöne\n→ In m11: modaler, dorischer Charakter\n→ ♯11: lydischer Klang (Maj7#11)\n\n**Tredezime (13th)** = Oktave + Sexte = 21 Halbtöne\n→ In 13: voller Big-Band-Sound\n→ Farbe ohne Auflösungsdrang\n\nDiese Intervalle werden nur in erweiterten Akkorden verwendet. Sie bestimmen den "Geschmack" — nicht die Grundfunktion.',
       },
     },
     // ─── Scale Degrees Course ────────────────────────────────
@@ -1546,20 +1546,20 @@ export const de = {
       b3: 'Kleine Terz (Moll)',
       '3': 'Große Terz (Dur)',
       '4': 'Reine Quarte',
-      s4: 'Übermäßige Quarte (#4)',
+      s4: 'Übermäßige Quarte (♯4)',
       dim5: 'Verminderte Quinte (°5)',
       b5: 'Verminderte Quinte (♭5)',
       '5': 'Reine Quinte',
-      s5: 'Übermäßige Quinte (#5)',
+      s5: 'Übermäßige Quinte (♯5)',
       dim7: 'Verminderte Septime (°7)',
       '6': 'Große Sexte',
       b7: 'Kleine Septime (♭7)',
       '7': 'Große Septime',
       b9: 'Kleine None (♭9)',
       '9': 'Große None',
-      s9: 'Übermäßige None (#9)',
+      s9: 'Übermäßige None (♯9)',
       '11': 'Reine Undezime',
-      s11: 'Übermäßige Undezime (#11)',
+      s11: 'Übermäßige Undezime (♯11)',
       '13': 'Große Tredezime',
       // General music terms
       'Shell Voicing': 'Nur 3 Töne: Grundton + Terz + Septime',
@@ -1613,11 +1613,11 @@ export const de = {
       },
       'Maj7#11': {
         title: 'Lydischer Akkord (Maj7#11)',
-        desc: '5 Töne: Maj7 + **überm. Undezime** (18 Halbtöne). Die #11 erzeugt den lydischen Klang — schwebend und modern.',
+        desc: '5 Töne: Maj7 + **überm. Undezime** (18 Halbtöne). Die ♯11 erzeugt den lydischen Klang — schwebend und modern.',
       },
       '7#9': {
-        title: 'Dominant #9 (Hendrix-Akkord)',
-        desc: '5 Töne: Dom7 + **überm. None** (15 Halbtöne). Große Terz + #9 (= kleine Terz höher) erzeugen Reibung — der "Purple Haze"-Sound.',
+        title: 'Dominant ♯9 (Hendrix-Akkord)',
+        desc: '5 Töne: Dom7 + **überm. None** (15 Halbtöne). Große Terz + ♯9 (= kleine Terz höher) erzeugen Reibung — der "Purple Haze"-Sound.',
       },
       '7b9': {
         title: 'Dominant b9',

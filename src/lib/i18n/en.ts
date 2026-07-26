@@ -1392,9 +1392,9 @@ export const en = {
         theory: 'In **3rd Inversion** the 7th is on the bottom:\n\n• 7 – R – 3 – 5\n\nSounds bright and open. The 7th resolves naturally downward.\n\nExample: **CMaj7/B** = B + C + E + G',
       },
       'adv-7s9': {
-        title: 'Dominant #9 (Hendrix)',
+        title: 'Dominant ♯9 (Hendrix)',
         subtitle: 'The Purple Haze sound',
-        theory: 'The **7#9** — also called the "Hendrix chord":\n\n• R – 3 – 5 – ♭7 – #9\n\nThe #9 is enharmonically the same as the minor 3rd. Major 3rd + #9 together = maximum friction.\n\nExample: **E7#9** = E + G# + B + D + G',
+        theory: 'The **7#9** — also called the "Hendrix chord":\n\n• R – 3 – 5 – ♭7 – ♯9\n\nThe ♯9 is enharmonically the same as the minor 3rd. Major 3rd + ♯9 together = maximum friction.\n\nExample: **E7#9** = E + G# + B + D + G',
       },
       'adv-7b9': {
         title: 'Dominant ♭9',
@@ -1404,7 +1404,7 @@ export const en = {
       'adv-lyd': {
         title: 'Lydian (Maj7#11)',
         subtitle: 'Floating and modern',
-        theory: 'The **Maj7#11** creates the Lydian sound:\n\n• R – 3 – 5 – 7 – #11\n\nThe #11 (= raised 4th) lifts the chord into a floating sound world. Typical for modal jazz pieces.\n\nExample: **CMaj7#11** = C + E + G + B + F#',
+        theory: 'The **Maj7#11** creates the Lydian sound:\n\n• R – 3 – 5 – 7 – ♯11\n\nThe ♯11 (= raised 4th) lifts the chord into a floating sound world. Typical for modal jazz pieces.\n\nExample: **CMaj7#11** = C + E + G + B + F#',
       },
       'adv-m11': {
         title: 'Minor 11 (m11)',
@@ -1443,8 +1443,8 @@ export const en = {
       },
       dim5_aug5: {
         title: 'Diminished & Augmented 5th',
-        subtitle: '♭5 and #5 — the color tones',
-        theory: '**Diminished 5th** (♭5) = 6 semitones\n→ Same as the tritone! Found in **m7♭5** (half-diminished).\n\n**Augmented 5th** (#5) = 8 semitones\n→ Floating sound. Found in augmented triads.\n\nExample:\nC → Gb = diminished 5th\nC → G# = augmented 5th\n\nThese intervals create color and tension.',
+        subtitle: '♭5 and ♯5 — the color tones',
+        theory: '**Diminished 5th** (♭5) = 6 semitones\n→ Same as the tritone! Found in **m7♭5** (half-diminished).\n\n**Augmented 5th** (♯5) = 8 semitones\n→ Floating sound. Found in augmented triads.\n\nExample:\nC → Gb = diminished 5th\nC → G# = augmented 5th\n\nThese intervals create color and tension.',
       },
       major_6th: {
         title: 'The Major 6th',
@@ -1469,7 +1469,7 @@ export const en = {
       elevenths: {
         title: '11th & 13th',
         subtitle: 'The upper extensions',
-        theory: '**11th** = octave + 4th = 17 semitones\n→ In m11: modal, Dorian character\n→ #11: Lydian sound (Maj7#11)\n\n**13th** = octave + 6th = 21 semitones\n→ In 13: full big band sound\n→ Color without need to resolve\n\nThese intervals are only used in extended chords. They add "flavor" — not the basic function.',
+        theory: '**11th** = octave + 4th = 17 semitones\n→ In m11: modal, Dorian character\n→ ♯11: Lydian sound (Maj7#11)\n\n**13th** = octave + 6th = 21 semitones\n→ In 13: full big band sound\n→ Color without need to resolve\n\nThese intervals are only used in extended chords. They add "flavor" — not the basic function.',
       },
     },
     // ─── Scale Degrees Course ────────────────────────────────
@@ -1548,20 +1548,20 @@ export const en = {
       b3: 'Minor 3rd (flat 3)',
       '3': 'Major 3rd',
       '4': 'Perfect 4th',
-      s4: 'Augmented 4th (#4)',
+      s4: 'Augmented 4th (♯4)',
       dim5: 'Diminished 5th (°5)',
       b5: 'Diminished 5th (♭5)',
       '5': 'Perfect 5th',
-      s5: 'Augmented 5th (#5)',
+      s5: 'Augmented 5th (♯5)',
       dim7: 'Diminished 7th (°7)',
       '6': 'Major 6th',
       b7: 'Minor 7th (♭7)',
       '7': 'Major 7th',
       b9: 'Minor 9th (♭9)',
       '9': 'Major 9th',
-      s9: 'Augmented 9th (#9)',
+      s9: 'Augmented 9th (♯9)',
       '11': 'Perfect 11th',
-      s11: 'Augmented 11th (#11)',
+      s11: 'Augmented 11th (♯11)',
       '13': 'Major 13th',
       // General music terms
       'Shell Voicing': 'Only 3 notes: root + 3rd + 7th',
@@ -1615,11 +1615,11 @@ export const en = {
       },
       'Maj7#11': {
         title: 'Lydian Chord (Maj7#11)',
-        desc: '5 notes: Maj7 + **#11** (18 semitones). The #11 creates the Lydian sound — floating and modern.',
+        desc: '5 notes: Maj7 + **♯11** (18 semitones). The ♯11 creates the Lydian sound — floating and modern.',
       },
       '7#9': {
-        title: 'Dominant #9 (Hendrix Chord)',
-        desc: '5 notes: Dom7 + **#9** (15 semitones). Major 3rd + #9 (= minor 3rd higher) create friction — the "Purple Haze" sound.',
+        title: 'Dominant ♯9 (Hendrix Chord)',
+        desc: '5 notes: Dom7 + **♯9** (15 semitones). Major 3rd + ♯9 (= minor 3rd higher) create friction — the "Purple Haze" sound.',
       },
       '7b9': {
         title: 'Dominant b9',
