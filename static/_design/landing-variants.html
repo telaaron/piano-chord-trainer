@@ -78,7 +78,10 @@
 
   --text: #eef1f4;
   --text-muted: #a3b0bf;
-  --text-dim: #71808f;
+  /* app.css ships --text-dim: #71808f, which measures 4.18:1 on --bg —
+     it is used here for real labels (plate, plan-min, ledger captions),
+     not decoration, so it is lifted to clear 4.5:1. Same hue, same role. */
+  --text-dim: #8593a3;
 
   --primary: #e2685c;
   --primary-hover: #ee7d71;
@@ -125,6 +128,13 @@
   --photo-brightness: 0.82;
   --photo-contrast: 1.06;
   --photo-saturate: 1.04;
+
+  /* Riso plate — separate knobs so the print can be tuned per theme
+     without disturbing the untreated photo in variants 1 and 2. */
+  --riso-filter: grayscale(1) contrast(1.18) brightness(0.88);
+  --riso-red-mode: soft-light;
+  --riso-red-opacity: 0.9;
+  --riso-dots-opacity: 0.5;
 
   --bar-h: 54px;
 }
@@ -174,6 +184,13 @@
   --photo-brightness: 0.9;
   --photo-contrast: 1.02;
   --photo-saturate: 1.0;
+
+  /* On paper the plate is printed lighter and the red run is a
+     multiply, the way a second pass behaves on white stock. */
+  --riso-filter: grayscale(1) contrast(0.92) brightness(1.62);
+  --riso-red-mode: multiply;
+  --riso-red-opacity: 0.4;
+  --riso-dots-opacity: 0.34;
 
   color-scheme: light;
 }
@@ -527,13 +544,17 @@ img { max-width: 100%; display: block; }
   background: var(--key-white);
 }
 .kbd .wk:last-child { border-right: 0; }
+/* A black key is ~58% the width of a white one. With 14 white keys
+   that is 0.58 × (100/14) ≈ 4.15% of the board. At 8.4% they were
+   wider than the gap between them and fused into slabs. */
 .kbd .bk {
   position: absolute;
   top: 0;
-  width: 8.4%;
+  width: 4.15%;
   height: 62%;
   border-radius: 0 0 2px 2px;
   background: var(--key-black);
+  box-shadow: 0 2px 3px rgba(0,0,0,.45);
   z-index: 2;
 }
 /* A pressed key: amber, because amber is live. */
@@ -552,7 +573,20 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.02em;
 }
 .kbd .wk.on::after { bottom: 0.35rem; color: #14090a; }
-.kbd .bk.on::after { bottom: 0.25rem; color: #14090a; }
+/* The black key is only ~21px wide — a label will not fit inside it.
+   Hang it just under the key, on the white below, where there is room. */
+/* The label chip carries the key's own ink on a light plate, so it
+   holds on both themes — on paper the amber compresses to a deep
+   ochre and dark-on-ochre was unreadable. */
+.kbd .bk.on::after {
+  bottom: -1.45rem;
+  color: var(--key-black);
+  background: var(--key-white);
+  border: 1px solid var(--accent-gold);
+  padding: 0.05rem 0.24rem;
+  border-radius: 2px;
+  white-space: nowrap;
+}
 
 /* Step 3 — the clock that is running on you */
 .p-result {
@@ -666,7 +700,7 @@ img { max-width: 100%; display: block; }
   object-fit: cover;
   /* Keep the keys and the string of bulbs in frame at every width. */
   object-position: 62% 52%;
-  filter: brightness(0.78) contrast(1.08) saturate(1.06);
+  filter: brightness(0.98) contrast(1.05) saturate(1.12);
 }
 /* Ramp: opaque where the words are, transparent over the piano. */
 .saal-media::after {
@@ -674,17 +708,23 @@ img { max-width: 100%; display: block; }
   position: absolute;
   inset: 0;
   background:
+    /* The type well: opaque under the words, releasing so the bulbs,
+       the bassist and the lit piano body all stay visible.
+       Measured, not guessed — the string of bokeh bulbs sits right
+       behind the italic second line, and at .55 here white came back
+       at 4.42:1. These stops put the worst pixel under the headline
+       at ≥ 7:1 while the right half of the frame stays open. */
     linear-gradient(90deg,
-      rgba(8,11,15,.97) 0%,
-      rgba(8,11,15,.93) 26%,
-      rgba(8,11,15,.72) 48%,
-      rgba(8,11,15,.34) 70%,
-      rgba(8,11,15,.20) 100%),
+      rgba(8,11,15,.95) 0%,
+      rgba(8,11,15,.92) 26%,
+      rgba(8,11,15,.84) 44%,
+      rgba(8,11,15,.30) 66%,
+      rgba(8,11,15,.03) 100%),
     linear-gradient(180deg,
-      rgba(8,11,15,.72) 0%,
-      rgba(8,11,15,.30) 34%,
-      rgba(8,11,15,.55) 78%,
-      rgba(8,11,15,.92) 100%);
+      rgba(8,11,15,.55) 0%,
+      rgba(8,11,15,.10) 30%,
+      rgba(8,11,15,.28) 74%,
+      rgba(8,11,15,.80) 100%);
 }
 @media (max-width: 979px) {
   /* Stacked: the type sits over the whole frame, so the wash goes
@@ -780,7 +820,10 @@ img { max-width: 100%; display: block; }
   .kante-grid {
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
     align-items: stretch;
-    min-height: 40rem;
+    /* Tight enough that the practice card below it still lands inside
+       the first screen at 1280×860 — the graphic has to be visible
+       without scrolling, or it cannot do its job. */
+    min-height: 31rem;
   }
 }
 .kante-type {
@@ -792,7 +835,8 @@ img { max-width: 100%; display: block; }
 }
 @media (min-width: 980px) {
   .kante-type {
-    padding: 5rem 3.5rem 5rem 2.5rem;
+    justify-content: flex-start;
+    padding: 3.75rem 3.5rem 3.5rem 2.5rem;
     /* The page half is a hair lighter than the plate: it reads as
        stock laid over the photograph. */
     background: linear-gradient(90deg, var(--bg) 0%, var(--bg-card) 100%);
@@ -807,16 +851,19 @@ img { max-width: 100%; display: block; }
 .kante-photo {
   position: relative;
   min-height: 15rem;
-  /* The hard edge. Stamp red, because the edge is a narrative device
-     and red is the narrative ink. */
-  border-left: 3px solid var(--primary);
+  /* The hard edge — the whole argument of this variant, so it is
+     stated at 6px in stamp red and given an amber hairline companion.
+     At 3px against the photo's near-black left margin it disappeared. */
+  border-left: 6px solid var(--primary);
+  box-shadow: inset 2px 0 0 var(--accent-amber);
   background: #0b0f14;
   overflow: hidden;
 }
 @media (max-width: 979px) {
   .kante-photo {
     border-left: 0;
-    border-top: 3px solid var(--primary);
+    border-top: 6px solid var(--primary);
+    box-shadow: inset 0 2px 0 var(--accent-amber);
     height: 17rem;
     min-height: 0;
   }
@@ -873,11 +920,20 @@ img { max-width: 100%; display: block; }
   line-height: 1.62;
   color: var(--text-muted);
 }
-/* Below the fold of the spread, the practice card runs full measure. */
-.kante-card-band {
-  padding: 2.5rem 0 0.5rem;
-}
+/* The practice card runs UNDER the type, inside the left page, so the
+   spread stays a clean two-column object and the graphic still lands
+   in the first screen. Tried overlapping it across the gutter first:
+   it left a dead black wedge beside the card and read as a mistake. */
+.kante-card-band { padding: 2.25rem 0 0.5rem; }
 .kante-card-band .pcard { max-width: 34rem; }
+@media (min-width: 980px) {
+  .kante-card-band { display: none; }
+  /* On the spread the card belongs to the type column. */
+  .kante-type .hero-fig { display: block; margin: 2rem 0 0; max-width: 31rem; }
+}
+@media (max-width: 979px) {
+  .kante-type .hero-fig { display: none; }
+}
 
 /* ══════════════════════════════════════════════════════════════════
    VARIANT 3 — "DER DRUCK"
@@ -903,7 +959,14 @@ img { max-width: 100%; display: block; }
   position: relative;
   width: 100%;
   aspect-ratio: 1280 / 714;
+  /* The dot screen is rotated 22.5°, so it overhangs — clip it here. */
+  overflow: hidden;
 }
+/* The base plate is the ink-dark of the stock: everything above it
+   ADDS ink with screen/multiply, which is how a two-colour press
+   actually builds an image. An earlier version used mix-blend-mode
+   `color` over the greyscale and came back silver-lilac — desaturated
+   rather than inked. */
 .riso-plate img {
   position: absolute;
   inset: 0;
@@ -911,24 +974,29 @@ img { max-width: 100%; display: block; }
   height: 100%;
   object-fit: cover;
   object-position: 64% 50%;
-  filter: grayscale(1) contrast(1.5) brightness(0.92);
+  /* Keep a real tonal range: the picture has to survive the inking.
+     Crushed to contrast(1.65) the piano stopped being readable once
+     the plates went on. */
+  filter: var(--riso-filter);
 }
-/* Blue plate — takes the shadows. */
+/* Blue plate — the key plate, multiplied so the photo's own darks
+   become copyist blue rather than flat black. */
 .riso-ink-blue {
   position: absolute;
   inset: 0;
   background: var(--ink-blue);
-  mix-blend-mode: color;
-  opacity: 0.92;
+  mix-blend-mode: multiply;
+  opacity: 1;
 }
-/* Red plate — takes the lights, and is printed 3px off register. */
+/* Red plate — the second run, printed 3px off register. Kept low so
+   it warms the lit side of the frame instead of flaring it out. */
 .riso-ink-red {
   position: absolute;
   inset: -4px -4px -4px 0;
   transform: translate(3px, -2px);
   background: var(--primary);
-  mix-blend-mode: overlay;
-  opacity: 0.62;
+  mix-blend-mode: var(--riso-red-mode);
+  opacity: var(--riso-red-opacity);
 }
 /* Amber plate, tiny: keeps the bulbs alive so the room still glows. */
 .riso-ink-amber {
@@ -941,14 +1009,18 @@ img { max-width: 100%; display: block; }
   mix-blend-mode: screen;
   opacity: 0.72;
 }
-/* Halftone dot screen — the thing that says "printed", not "filtered". */
+/* Halftone dot screen — the thing that says "printed", not "filtered".
+   Set on a 45° angle like a real screen, and coarse enough (6px) to be
+   legible as dots. At 4px it dissolved into texture. */
 .riso-dots {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at center, rgba(0,0,0,.55) 38%, transparent 40%);
-  background-size: 4px 4px;
+  background-image: radial-gradient(circle at center, rgba(6,10,16,.85) 34%, transparent 38%);
+  background-size: 6px 6px;
+  transform: rotate(22.5deg) scale(1.35);
+  transform-origin: center;
   mix-blend-mode: multiply;
-  opacity: 0.42;
+  opacity: 0.5;
 }
 /* Paper grain. */
 .riso-grain {
@@ -958,10 +1030,11 @@ img { max-width: 100%; display: block; }
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.55'/></svg>");
 }
-:root[data-theme="light"] .riso-plate img { filter: grayscale(1) contrast(1.35) brightness(1.06); }
-:root[data-theme="light"] .riso-ink-blue { opacity: 0.85; }
-:root[data-theme="light"] .riso-ink-red { mix-blend-mode: multiply; opacity: 0.42; }
-:root[data-theme="light"] .riso-dots { opacity: 0.30; }
+/* On paper the print must sit LIGHTER than the dark plate, or it reads
+   as a hole punched in the stock. The blue run is pulled right back
+   and the image is printed up. */
+:root[data-theme="light"] .riso-ink-blue { opacity: 0.42; }
+:root[data-theme="light"] .riso-dots { opacity: var(--riso-dots-opacity); }
 
 .druck-inner { padding: 2.75rem 0 3rem; }
 @media (min-width: 980px) {
@@ -1149,15 +1222,17 @@ img { max-width: 100%; display: block; }
 .cur-voicing .sep { margin: 0 0.35rem; opacity: 0.4; }
 
 /* Coach session mock */
+/* The running order is a printed plate: a hairline frame and a red
+   rule under its heading. A 3px colour bar down the left edge was
+   decoration standing in for hierarchy. */
 .mock {
   border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
   background: var(--bg-card);
 }
+.mock-say { border-bottom: 2px solid var(--primary); }
 .mock-say {
   margin: 0;
   padding: 1.05rem 1.1rem;
-  border-bottom: 1px solid var(--rule-soft);
   font-family: var(--font-display-mus);
   font-size: 1.02rem;
   font-style: italic;
@@ -1475,6 +1550,10 @@ img { max-width: 100%; display: block; }
 
         <p class="fineprint">MIDI-Keyboard da? Es prüft dich automatisch. Keins? Nimm dein Mikrofon oder check selbst. Deine Wahl.</p>
         <p class="plate" style="margin-top:1rem">Kostenlos. Keine Anmeldung. Mit oder ohne Keyboard.</p>
+
+        <!-- On the desktop spread the practice card lives in this
+             column; below 980px the .kante-card-band copy is used. -->
+        <figure class="hero-fig"></figure>
       </div>
 
       <div class="kante-photo">
@@ -1549,6 +1628,274 @@ img { max-width: 100%; display: block; }
 </div>
 
 <script>
+/* ══════════════════════════════════════════════════════════════════
+   THE PRACTICE CARD + THE SHARED BODY
+   Authored once and stamped into each variant, so all three carry
+   identical copy and only the art direction differs.
+   ══════════════════════════════════════════════════════════════════ */
+(function () {
+
+  /* ── The hero graphic — criticism #2 ──────────────────────────
+     Reads top to bottom as the loop the app actually runs:
+       GEFRAGT (the chord asked for)
+         → DEINE ANTWORT (the keys, lit, with note names)
+           → DEINE ZEIT (the clock, and last week's time to beat)
+     A stranger sees a chord, a keyboard and a stopwatch and
+     concludes "this drills chords and times you". No caption. */
+  var PRACTICE_CARD = [
+    '<div class="pcard">',
+      '<div class="pcard-head">',
+        '<span class="live-dot" aria-hidden="true"></span>',
+        '<span class="live-tag">Live</span>',
+        '<span class="plate">Session · Fokus · B♭7 Shell</span>',
+      '</div>',
+      '<div class="pcard-body">',
+
+        '<span class="p-step">1 · Gefragt</span>',
+        '<div class="p-ask">',
+          '<span class="p-chord">B♭7</span>',
+          '<span class="p-voicing">Shell<br>Terz + Septime</span>',
+        '</div>',
+
+        '<span class="p-arrow">2 · Deine Antwort</span>',
+        KEYBOARD(),
+
+        '<div class="p-result">',
+          '<span class="p-check" aria-hidden="true">✓</span>',
+          '<span class="p-verdict">Sitzt. Nächster Akkord.</span>',
+          '<span class="p-time"><b>0,8 s</b><span>Deine Zeit</span></span>',
+        '</div>',
+
+        '<div class="p-bars">',
+          '<span class="p-bar"><span>Letzte Woche</span><i style="width:100%"></i><b>2,1 s</b></span>',
+          '<span class="p-bar now"><span>Heute</span><i style="width:38%"></i><b>0,8 s</b></span>',
+        '</div>',
+
+      '</div>',
+    '</div>'
+  ].join('');
+
+  /* An octave and a half of keys, with the B♭7 shell struck:
+     B♭ (black), D (white), A♭ (black). White keys C D E F G A B ×2. */
+  function KEYBOARD() {
+    var whites = ['C','D','E','F','G','A','B','C','D','E','F','G','A','B'];
+    /* Struck white key: D (index 1). */
+    var onWhite = { 1: 'D' };
+    var html = '<div class="kbd" role="img" aria-label="Klaviatur: B♭, D und A♭ sind gedrückt — das Shell-Voicing von B♭7">';
+    whites.forEach(function (n, i) {
+      var on = onWhite[i];
+      html += '<span class="wk' + (on ? ' on' : '') + '"' + (on ? ' data-n="' + on + '"' : '') + '></span>';
+    });
+    /* Black keys, positioned as a fraction of the 14 white keys.
+       Pattern per octave: after white 0,1,3,4,5 (C#,D#,F#,G#,A#). */
+    var pattern = [0, 1, 3, 4, 5];
+    var unit = 100 / whites.length;
+    for (var oct = 0; oct < 2; oct++) {
+      pattern.forEach(function (p) {
+        var idx = oct * 7 + p;
+        if (idx >= whites.length - 1) return;
+        var left = (idx + 1) * unit - (4.15 / 2);
+        /* B♭ = A# of octave 0 (p=5), A♭ = G# of octave 0 (p=4). */
+        var name = (oct === 0 && p === 5) ? 'B♭' : (oct === 0 && p === 4) ? 'A♭' : null;
+        html += '<span class="bk' + (name ? ' on' : '') + '" style="left:' + left.toFixed(2) + '%"'
+              + (name ? ' data-n="' + name + '"' : '') + '></span>';
+      });
+    }
+    return html + '</div>';
+  }
+
+  /* Inline icons (lucide equivalents), so nothing is fetched.
+     Declared before BODY — it reads them while building the string. */
+  var S = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  var ICON_KEYBOARD = S + '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>';
+  var ICON_MIC = S + '<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>';
+  var ICON_PLAY = S + '<polygon points="5 3 19 12 5 21 5 3"/></svg>';
+
+  /* ── Sections B–F + Fine, copy verbatim from de.ts ───────────── */
+  var BODY = [
+  /* B · Coach */
+  '<section class="sec"><div class="shell">',
+    '<div class="sec-head"><span class="rehearsal">B</span><div class="sec-col">',
+      '<p class="eyebrow">Neu — dein eingebauter Coach</p>',
+      '<h2 class="sec-h2">App öffnen. Play drücken. Der Rest ist geplant.</h2>',
+      '<p class="sec-lede">Nie wieder überlegen, was du üben sollst. Ein kurzer Akkord-Check findet heraus, wo du stehst — danach wird jede Session für dich gebaut: aufwärmen mit dem, was du kannst, Fälliges wiederholen, an deiner Schwachstelle arbeiten, eine neue Sache lernen und sie in einer echten Progression anwenden.</p>',
+    '</div></div>',
+    '<div class="pair"><div>',
+      '<ol class="contents">',
+        ROW('01', 'Holt dich ab, wo du stehst', 'Ein Drei-Minuten-Check ordnet dich ein. Du spielst schon Shells? Dann überspringst du sie — kein Anfänger-Laufband.'),
+        ROW('02', 'Passt sich jeder Session an', 'Läuft es? Die nächste Stufe schaltet frei. Hakt es? Der Coach bleibt genau da und übt, was schwerfällt — bis es sitzt.'),
+        ROW('03', 'Erweitert deinen Radius', 'Neue Tonarten, neue Voicings, neue Farben — Schritt für Schritt, bis sich alle 12 Tonarten wie zuhause anfühlen.'),
+      '</ol>',
+      '<blockquote class="marginalia">„B♭7 Shell sitzt jetzt — als Nächstes: Rootless-Voicings."<span class="plate">Dein Coach, nach der Session</span></blockquote>',
+    '</div>',
+    '<div class="mock" aria-hidden="true">',
+      '<p class="mock-say">Heute: Shell-Voicings auffrischen, dann E♭maj7 in neuen Tonarten — 12 Minuten.</p>',
+      '<ul class="plan">',
+        PLAN('done', 'Warm-up · was du kannst', '2'),
+        PLAN('done', 'Review · heute fällige Akkorde', '3'),
+        PLAN('on',   'Fokus · B♭7 Shell', '3'),
+        PLAN('next', 'Neu · E♭maj7 in mehr Tonarten', '3'),
+        PLAN('next', 'Anwenden · ii-V-I in B♭', '2'),
+      '</ul>',
+      '<p class="mock-foot">Weiter üben</p>',
+    '</div></div>',
+  '</div></section>',
+
+  /* C · Curriculum */
+  '<section class="sec"><div class="shell">',
+    '<div class="sec-head"><span class="rehearsal">C</span><div class="sec-col">',
+      '<p class="eyebrow blue">Das echte Handwerk</p>',
+      '<h2 class="sec-h2">Derselbe Weg, den ein guter Lehrer mit dir geht</h2>',
+      '<p class="sec-lede">Das sind keine Akkord-Karteikarten. Es ist das Werkzeug arbeitender Jazz-Pianisten — Voicing für Voicing, jedes durch alle 12 Tonarten.</p>',
+    '</div></div>',
+    '<ol class="contents ruled">',
+      CUR('I',   'done',   'Shell-Voicings', 'Grundton, Terz und Septime — das Skelett der Jazz-Harmonik', 'Cmaj7', 'C · E · B'),
+      CUR('II',  'done',   '6er- &amp; 9er-Farben', 'Die ersten Farbtöne, die Akkorde nach Jazz klingen lassen', 'C6/9', 'C · E · A · D'),
+      CUR('III', 'active', 'Rootless-Voicings', 'Der Bill-Evans-Sound — das, was Profis wirklich spielen', 'Dm9', 'F · A · C · E'),
+      CUR('IV',  'locked', 'Umkehrungen &amp; Voice Leading', 'Zwischen Akkorden wechseln, fast ohne die Hand zu bewegen', 'G7/B', 'B · F · G'),
+      CUR('V',   'locked', 'Altered &amp; Upper Structures', 'Spannung und Auflösung — die erwachsenen Dominant-Sounds', 'G7♯5♭9', 'B · F · A♭ · E♭'),
+    '</ol>',
+    '<p class="sec-foot">Dein Coach schaltet die nächste Stufe frei, wenn die aktuelle sitzt — nicht vorher, und nicht eine Woche später.</p>',
+  '</div></section>',
+
+  /* D · The twelve keys */
+  '<section class="sec"><div class="shell">',
+    '<div class="sec-head"><span class="rehearsal">D</span><div class="sec-col">',
+      '<p class="eyebrow blue">Die zwölf Tonarten</p>',
+      '<h2 class="sec-h2">Jeder meidet fünf Tonarten. Deine stehen auf diesem Zifferblatt.</h2>',
+    '</div></div>',
+    '<div class="clock-pair">',
+      '<div class="clock-frame">', CLOCK(), '<p class="plate clock-cap">Dein Zifferblatt, sobald du eine Session gespielt hast.</p></div>',
+      '<div class="clock-copy">',
+        '<p class="sec-lede tight">Jeder Akkord, den du spielst, wird gestoppt und seiner Tonart zugeordnet. Der Ring wächst nach außen, wo deine Hände zögern — die Tonarten, die du still übergangen hast, bleiben nicht länger unsichtbar. Ungespielte Tonarten bleiben hohl: eine nie gespielte Tonart ist keine schnelle Tonart.</p>',
+        '<ul class="legend">',
+          '<li><i class="sw fast"></i>Flüssig</li>',
+          '<li><i class="sw slow"></i>Zögerlich</li>',
+          '<li><i class="sw none"></i>Nie gespielt</li>',
+        '</ul>',
+      '</div>',
+    '</div>',
+  '</div></section>',
+
+  /* E · It listens + habit */
+  '<section class="sec"><div class="shell">',
+    '<div class="sec-head"><span class="rehearsal">E</span><div class="sec-col">',
+      '<p class="eyebrow">Sofortiges Feedback</p>',
+      '<h2 class="sec-h2">Es zeigt dir nicht nur Akkorde. Es hört, wie du sie spielst.</h2>',
+      '<p class="sec-lede">Schließ ein MIDI-Keyboard an und jeder Akkord wird beim Spielen geprüft — oktav-tolerant, Extranoten verziehen, automatisch weiter, sobald er sitzt. Kein Keyboard da? Nimm dein Mikrofon oder die Bildschirm-Tasten.</p>',
+    '</div></div>',
+    '<ul class="modes">',
+      MODE(ICON_KEYBOARD, 'MIDI-Keyboard'),
+      MODE(ICON_MIC, 'Mikrofon'),
+      MODE(ICON_PLAY, 'Bildschirm-Tasten'),
+    '</ul>',
+    '<div class="habit">',
+      '<p class="eyebrow blue">Fünf Minuten am Tag</p>',
+      '<h3 class="habit-h3">Kleine Sessions. Zinseszins-Effekt.</h3>',
+      '<p class="sec-lede">Dein Tagesziel passt zwischen Kaffee und Arbeit. Streaks und Level halten dich dran — und nach jeder Session sagt dir der Coach in klaren Worten, was besser geworden ist und was als Nächstes kommt. Nichts planen, nichts tracken. Einfach hinsetzen und spielen.</p>',
+      '<div class="ledger" aria-hidden="true">',
+        '<div class="cell"><span class="v">12</span><span class="l">Tage Streak</span></div>',
+        '<div class="cell"><span class="v">5/5</span><span class="l">Minuten heute</span></div>',
+        '<div class="cell"><span class="v small">Comper</span><span class="l">Lv. 4</span></div>',
+      '</div>',
+      '<blockquote class="marginalia">„E♭maj7 ist 31 % schneller als letzte Woche. Morgen nehmen wir uns B♭7 nochmal vor — der hat heute gewackelt."<span class="plate">Feedback nach der Session</span></blockquote>',
+    '</div>',
+  '</div></section>',
+
+  /* F · FAQ */
+  '<section class="sec"><div class="shell">',
+    '<div class="sec-head"><span class="rehearsal">F</span><div class="sec-col">',
+      '<p class="eyebrow">Fragen, beantwortet</p>',
+      '<h2 class="sec-h2">Fragen, beantwortet</h2>',
+    '</div></div>',
+    '<div class="faq">',
+      FAQ('Was ist ein Jazz-Piano-Voicing?', 'Ein Voicing ist eine bestimmte Anordnung der Töne eines Akkords. Statt alles vom Grundton aufzustapeln, nutzen Jazz-Pianisten Shells (Grundton, Terz, Septime), Rootless-Voicings und Umkehrungen für einen volleren, professionellen Klang. Sie in allen 12 Tonarten zu beherrschen ist das Fundament des Jazz-Pianos — genau das baut der Coach Schritt für Schritt auf.'),
+      FAQ('Muss ich schon Jazz können?', 'Nein. Wenn du Töne auf dem Keyboard findest, startet der Coach mit einfachen Shell-Voicings in leichten Tonarten und erklärt jeden neuen Sound, sobald er auftaucht. Spielst du schon, überspringt dich der Einstiegs-Check automatisch nach vorn.'),
+      FAQ('Kann ich mit einem MIDI-Keyboard üben?', 'Ja — per USB oder Bluetooth verbinden (Chrome oder Edge am Desktop), und die App erkennt deine Voicings in Echtzeit, oktav-tolerant und mit Nachsicht bei Extranoten. Kein MIDI? Mikrofon oder Bildschirm-Tasten gehen auch.'),
+      FAQ('Wie viel Zeit brauche ich?', 'Fünf Minuten am Tag sind eine echte Session — Warm-up, Wiederholung, eine neue Sache. Du legst dein Tagesziel einmal fest, und der Coach schneidet jede Session darauf zu. Regelmäßigkeit schlägt Marathon-Üben, und genau darum ist das Streak-System gebaut.'),
+      FAQ('Ist es kostenlos?', 'Ja. Alle Trainings-Features sind kostenlos — der Coach, jeder Voicing-Typ, Progressionen, MIDI und Fortschritts-Tracking. Kein Account nötig. Ein optionales Pro-Abo ergänzt Cloud-Sync und tiefere Statistiken.'),
+    '</div>',
+  '</div></section>',
+
+  /* Fine */
+  '<section class="shell">',
+    '<div class="fine">',
+      '<p class="eyebrow mid">Fine</p>',
+      '<h2 class="fine-h2">Dein Coach ist bereit, wenn du es bist.</h2>',
+      '<p class="fine-p">Die erste Session dauert drei Minuten — ein kurzer Check, dann beginnt deine Reise.</p>',
+      '<div class="cta-row">',
+        '<a href="/train" class="btn-cta">Üben starten <span class="arw" aria-hidden="true">→</span></a>',
+        '<a href="/pricing" class="link-2">Kurs starten</a>',
+      '</div>',
+      '<p class="plate fine-note">Kostenlos. Keine Anmeldung. Mit oder ohne Keyboard.</p>',
+    '</div>',
+    '<div class="colophon">',
+      '<span class="plate">Chord Trainer · jazzchords.app</span>',
+      '<span class="plate">Gesetzt in Source Serif 4 &amp; Inter · Zweifarbendruck</span>',
+    '</div>',
+  '</section>'
+  ].join('');
+
+  function ROW(no, ttl, dsc) {
+    return '<li class="row"><span class="no">' + no + '</span><span class="row-txt">'
+      + '<span class="ttl">' + ttl + '</span><span class="dsc">' + dsc + '</span></span></li>';
+  }
+  function PLAN(state, label, min) {
+    var mark = state === 'done' ? '✓' : state === 'on' ? '●' : '○';
+    return '<li class="plan-row ' + state + '"><span class="plan-mark">' + mark + '</span>'
+      + '<span class="plan-d">' + label + '</span><span class="plan-min">' + min + ' min</span></li>';
+  }
+  function CUR(num, state, ttl, dsc, chord, notes) {
+    return '<li class="cur-row' + (state === 'locked' ? ' locked' : '') + '">'
+      + '<span class="no roman">' + num + '</span><span class="row-txt"><span class="ttl">' + ttl
+      + (state === 'active' ? '<em class="tag-live">gerade dran</em>' : '')
+      + '</span><span class="dsc">' + dsc + '</span></span>'
+      + '<span class="cur-voicing"><b>' + chord + '</b><span class="sep">·</span>' + notes + '</span></li>';
+  }
+  function FAQ(q, a) {
+    return '<details><summary>' + q + '</summary><p class="ans">' + a + '</p></details>';
+  }
+  function MODE(icon, label) {
+    return '<li class="mode">' + icon + '<span>' + label + '</span></li>';
+  }
+
+  /* The twelve-key clock — the same dial the app draws, in its honest
+     empty state plus a few played keys, so section D still has its
+     figure without importing the Svelte component. */
+  function CLOCK() {
+    var keys = ['C','G','D','A','E','B','G♭','D♭','A♭','E♭','B♭','F'];
+    /* value: 0 = never played (hollow), 1 = fluent, 2 = hesitant */
+    var st = [1,1,2,0,0,0,0,0,2,1,1,1];
+    var cx = 126, cy = 126, rOuter = 104, size = 252;
+    var out = '<svg width="' + size + '" height="' + size + '" viewBox="0 0 252 252" role="img" aria-label="Zifferblatt der zwölf Tonarten">';
+    out += '<circle cx="126" cy="126" r="104" fill="none" stroke="var(--border)" stroke-width="1"/>';
+    out += '<circle cx="126" cy="126" r="72" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="2 4"/>';
+    keys.forEach(function (k, i) {
+      var a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+      var s = st[i];
+      var len = s === 0 ? 0 : s === 1 ? 30 : 18;
+      var col = s === 1 ? 'var(--accent-green)' : 'var(--primary)';
+      var x1 = cx + Math.cos(a) * 72, y1 = cy + Math.sin(a) * 72;
+      var x2 = cx + Math.cos(a) * (72 + len), y2 = cy + Math.sin(a) * (72 + len);
+      if (s === 0) {
+        out += '<circle cx="' + x1.toFixed(1) + '" cy="' + y1.toFixed(1) + '" r="3.5" fill="none" stroke="var(--border-hover)" stroke-width="1" stroke-dasharray="2 2"/>';
+      } else {
+        out += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="' + col + '" stroke-width="7" stroke-linecap="round"/>';
+      }
+      var lx = cx + Math.cos(a) * (rOuter + 14), ly = cy + Math.sin(a) * (rOuter + 14);
+      out += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 4).toFixed(1) + '" text-anchor="middle"'
+        + ' font-family="var(--font-mono)" font-size="11" font-weight="600"'
+        + ' fill="' + (s === 0 ? 'var(--text-dim)' : 'var(--text)') + '">' + k + '</text>';
+    });
+    out += '<text x="126" y="122" text-anchor="middle" font-family="var(--font-mono)" font-size="10" letter-spacing="2" fill="var(--text-dim)">12</text>';
+    out += '<text x="126" y="138" text-anchor="middle" font-family="var(--font-mono)" font-size="10" letter-spacing="2" fill="var(--text-dim)">TONARTEN</text>';
+    return out + '</svg>';
+  }
+
+  document.querySelectorAll('.hero-fig').forEach(function (el) { el.innerHTML = PRACTICE_CARD; });
+  document.querySelectorAll('.body-slot').forEach(function (el) { el.innerHTML = BODY; });
+})();
+
 (function () {
   var root = document.documentElement;
   var notes = {
