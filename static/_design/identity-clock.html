@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="de" data-screen="start">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chord Trainer — Die Uhr</title>
+<style>
+/* ============================================================
+   IDENTITY — "DIE UHR"
+   Der Quintenzirkel, aber jedes Segment ist keine Fortschritts-
+   anzeige, sondern eine ZEIT: wie lange die Hände brauchen.
+   Basis: Variant C (Notenblatt / Zwei-Farben-Druck).
+   ============================================================ */
+
+:root {
+  --paper:#ecefe9; --paper-2:#e4e8e1; --paper-3:#dadfd7;
+  --card:#f4f6f1; --card-raised:#fbfcf9;
+
+  --ink:#131a26; --ink-2:#39445a; --ink-3:#56637c; --ink-4:#6a7487;
+
+  --stamp:#b0302a; --stamp-deep:#8d211c; --stamp-wash:rgba(176,48,42,.10);
+  --copyist:#2c5985; --copyist-2:#40729f; --copyist-wash:rgba(44,89,133,.10);
+
+  --live:#8f5a05; --live-bright:#f5a623; --live-wash:rgba(194,121,10,.15);
+  --good:#2f6b4f; --good-wash:rgba(47,107,79,.12);
+
+  --rule:rgba(19,26,38,.16); --rule-soft:rgba(19,26,38,.09); --rule-hair:rgba(19,26,38,.055);
+  --staff:rgba(44,89,133,.28);
+
+  --key-white:#fbfcf9; --key-white-edge:#b9c1b6; --key-black:#1b2230;
+
+  /* --- DIE UHR: Skala von schnell nach langsam --- */
+  /* Hell-Theme: alle vier Bänder sind SATT und dunkel, damit die weiße
+     Ziffer darin überall ≥4,5:1 erreicht. Unterschieden wird über den
+     Farbton (grün→oliv→orange→rot), nicht über die Helligkeit. */
+  --t-fast:#2f6b4f;   /* < 1,0 s  — sitzt */
+  --t-ok:#6d6a24;     /* 1,0–2,0 s — geht */
+  --t-slow:#9c5713;   /* 2,0–2,6 s — zäh */
+  --t-stuck:#a3241e;  /* > 2,6 s  — steht */
+  --dial:#d5dbd2;
+
+  --sh-1:0 1px 1px rgba(19,26,38,.05);
+  --sh-2:0 1px 1px rgba(19,26,38,.06), 0 4px 10px -3px rgba(19,26,38,.10);
+  --sh-3:0 1px 2px rgba(19,26,38,.07), 0 12px 26px -8px rgba(19,26,38,.16);
+
+  --f-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua","URW Palladio L",Georgia,serif;
+  --f-text:"Avenir Next",Avenir,"Segoe UI",Roboto,system-ui,-apple-system,"Helvetica Neue",sans-serif;
+  --f-hand:"Bradley Hand","Segoe Print","Marker Felt","Comic Sans MS",cursive;
+  --f-mono:ui-monospace,"SF Mono",Menlo,"Roboto Mono","Courier New",monospace;
+
+  --r-s:2px; --r:3px; --r-l:4px;
+  --tap:44px; --shell:1180px; --read:68ch;
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e141d; --paper-2:#131a25; --paper-3:#1a222f;
+    --card:#161e2a; --card-raised:#1c2532;
+    --ink:#e5eaec; --ink-2:#b3c0cc; --ink-3:#9aa7b8; --ink-4:#8d9aab;
+    --stamp:#e8776a; --stamp-deep:#f5978a; --stamp-wash:rgba(232,119,106,.15);
+    --copyist:#84b6e0; --copyist-2:#a4cdf0; --copyist-wash:rgba(132,182,224,.14);
+    --live:#f5a623; --live-bright:#ffc158; --live-wash:rgba(245,166,35,.14);
+    --good:#6ecb9c; --good-wash:rgba(110,203,156,.15);
+    --rule:rgba(229,234,236,.20); --rule-soft:rgba(229,234,236,.11); --rule-hair:rgba(229,234,236,.06);
+    --staff:rgba(132,182,224,.32);
+    --key-white:#cfd8dd; --key-white-edge:#8b98a3; --key-black:#0d131b;
+    /* Dunkel-Theme: alle vier Bänder sind HELL, die Ziffer darin ist dunkel. */
+    --t-fast:#7fd6a8; --t-ok:#cfc65f; --t-slow:#f0a35c; --t-stuck:#f79288;
+    --dial:#232d3c;
+    --sh-1:0 1px 1px rgba(0,0,0,.4);
+    --sh-2:0 1px 1px rgba(0,0,0,.45), 0 4px 12px -3px rgba(0,0,0,.55);
+    --sh-3:0 1px 2px rgba(0,0,0,.5), 0 14px 30px -8px rgba(0,0,0,.66);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0e141d; --paper-2:#131a25; --paper-3:#1a222f;
+  --card:#161e2a; --card-raised:#1c2532;
+  --ink:#e5eaec; --ink-2:#b3c0cc; --ink-3:#9aa7b8; --ink-4:#8d9aab;
+  --stamp:#e8776a; --stamp-deep:#f5978a; --stamp-wash:rgba(232,119,106,.15);
+  --copyist:#84b6e0; --copyist-2:#a4cdf0; --copyist-wash:rgba(132,182,224,.14);
+  --live:#f5a623; --live-bright:#ffc158; --live-wash:rgba(245,166,35,.14);
+  --good:#6ecb9c; --good-wash:rgba(110,203,156,.15);
+  --rule:rgba(229,234,236,.20); --rule-soft:rgba(229,234,236,.11); --rule-hair:rgba(229,234,236,.06);
+  --staff:rgba(132,182,224,.32);
+  --key-white:#cfd8dd; --key-white-edge:#8b98a3; --key-black:#0d131b;
+  --t-fast:#7fd6a8; --t-ok:#cfc65f; --t-slow:#f0a35c; --t-stuck:#f79288;
+  --dial:#232d3c;
+  --sh-1:0 1px 1px rgba(0,0,0,.4);
+  --sh-2:0 1px 1px rgba(0,0,0,.45), 0 4px 12px -3px rgba(0,0,0,.55);
+  --sh-3:0 1px 2px rgba(0,0,0,.5), 0 14px 30px -8px rgba(0,0,0,.66);
+}
+:root[data-theme="light"]{
+  --paper:#ecefe9; --paper-2:#e4e8e1; --paper-3:#dadfd7;
+  --card:#f4f6f1; --card-raised:#fbfcf9;
+  --ink:#131a26; --ink-2:#39445a; --ink-3:#56637c; --ink-4:#6a7487;
+  --stamp:#b0302a; --stamp-deep:#8d211c; --stamp-wash:rgba(176,48,42,.10);
+  --copyist:#2c5985; --copyist-2:#40729f; --copyist-wash:rgba(44,89,133,.10);
+  --live:#8f5a05; --live-bright:#f5a623; --live-wash:rgba(194,121,10,.15);
+  --good:#2f6b4f; --good-wash:rgba(47,107,79,.12);
+  --rule:rgba(19,26,38,.16); --rule-soft:rgba(19,26,38,.09); --rule-hair:rgba(19,26,38,.055);
+  --staff:rgba(44,89,133,.28);
+  --key-white:#fbfcf9; --key-white-edge:#b9c1b6; --key-black:#1b2230;
+  --t-fast:#2f6b4f; --t-ok:#6d6a24; --t-slow:#9c5713; --t-stuck:#a3241e;
+  --dial:#d5dbd2;
+  --sh-1:0 1px 1px rgba(19,26,38,.05);
+  --sh-2:0 1px 1px rgba(19,26,38,.06), 0 4px 10px -3px rgba(19,26,38,.10);
+  --sh-3:0 1px 2px rgba(19,26,38,.07), 0 12px 26px -8px rgba(19,26,38,.16);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--f-text); font-size:16px; line-height:1.55;
+  overflow-x:hidden; -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:repeating-linear-gradient(to bottom, var(--rule-hair) 0 1px, transparent 1px 9px);
+  opacity:.55;
+}
+img,svg{max-width:100%}
+h1,h2,h3,h4{font-family:var(--f-display); font-weight:600; line-height:1.14; margin:0; letter-spacing:-.012em}
+p{margin:0}
+button{font:inherit; color:inherit; background:none; border:none; cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2.5px solid var(--stamp); outline-offset:2px; border-radius:1px}
+:root[data-theme="dark"] :focus-visible{outline-color:var(--copyist-2)}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) :focus-visible{outline-color:var(--copyist-2)}
+  :root[data-theme="light"] :focus-visible{outline-color:var(--stamp)}
+}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.wrap{max-width:var(--shell); margin:0 auto; padding:0 20px; position:relative; z-index:1}
+@media(min-width:900px){.wrap{padding:0 40px}}
+
+/* ---------- Editorial primitives (Variant C) ---------- */
+.eyebrow{
+  font-family:var(--f-mono); font-size:10.5px; letter-spacing:.19em; text-transform:uppercase;
+  color:var(--stamp); font-weight:600; display:flex; align-items:center; gap:10px;
+}
+.eyebrow.blue{color:var(--copyist)}
+.eyebrow::after{content:""; height:1px; flex:1; background:currentColor; opacity:.32; min-width:16px}
+.eyebrow.no-rule::after{display:none}
+.rehearsal{
+  display:inline-grid; place-items:center; min-width:26px; height:26px; padding:0 6px;
+  border:1.5px solid var(--ink); font-family:var(--f-mono); font-size:12px; font-weight:700; flex:none;
+}
+.plate{font-family:var(--f-mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3)}
+.hand{font-family:var(--f-hand); color:var(--copyist); font-size:16px; line-height:1.35; transform:rotate(-.9deg); display:inline-block}
+.chordsym{font-family:var(--f-display); font-weight:600; font-variant-numeric:lining-nums}
+.marginalia{border-left:2px solid var(--copyist); padding-left:14px; color:var(--ink-2); font-size:14.5px; line-height:1.5}
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  min-height:var(--tap); padding:0 22px; border-radius:var(--r);
+  font-family:var(--f-text); font-size:15px; font-weight:600;
+  border:1.5px solid var(--ink); background:var(--ink); color:var(--paper);
+  transition:transform .12s ease-out, box-shadow .12s ease-out, background .12s;
+  box-shadow:var(--sh-1);
+}
+.btn:hover{transform:translateY(-1px); box-shadow:var(--sh-2)}
+.btn:active{transform:translateY(0)}
+.btn-stamp{background:var(--stamp); border-color:var(--stamp); color:#fff}
+:root[data-theme="dark"] .btn-stamp{color:#1b0605}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .btn-stamp{color:#1b0605}}
+.btn-stamp:hover{background:var(--stamp-deep); border-color:var(--stamp-deep)}
+.btn-ghost{background:transparent; color:var(--ink); border-color:var(--rule)}
+.btn-ghost:hover{border-color:var(--ink); background:var(--card-raised)}
+.btn-sm{min-height:36px; padding:0 14px; font-size:13.5px}
+.btn-block{width:100%}
+
+/* ---------- Masthead ---------- */
+.masthead{position:sticky; top:0; z-index:40; background:var(--paper); border-bottom:1px solid var(--rule)}
+.mast-top{display:flex; align-items:center; gap:14px; padding:10px 0 9px}
+.logo{display:flex; align-items:center; gap:10px; text-decoration:none; flex:none; min-width:0}
+.logo-mark{font-family:var(--f-display); font-size:20px; font-weight:600; letter-spacing:-.02em; color:var(--ink); white-space:nowrap}
+.logo-mark em{color:var(--stamp); font-style:normal}
+.logo-sub{display:none; font-family:var(--f-mono); font-size:9.5px; letter-spacing:.17em; text-transform:uppercase; color:var(--ink-3)}
+@media(min-width:860px){.logo-sub{display:block}}
+.mast-spacer{flex:1; min-width:0}
+.mast-tools{display:flex; align-items:center; gap:6px; flex:none}
+.icon-btn{
+  width:38px; height:38px; display:grid; place-items:center; border-radius:var(--r);
+  border:1px solid transparent; color:var(--ink-2); transition:background .12s, color .12s, border-color .12s;
+}
+.icon-btn:hover{background:var(--card-raised); border-color:var(--rule); color:var(--ink)}
+
+.index-bar{border-top:1px solid var(--rule-soft); overflow-x:auto; scrollbar-width:none}
+.index-bar::-webkit-scrollbar{display:none}
+.index-inner{display:flex; min-width:max-content; padding:0 20px; margin:0 auto; max-width:var(--shell)}
+@media(min-width:900px){.index-inner{padding:0 40px}}
+.tab{
+  position:relative; display:flex; align-items:center; gap:8px; padding:11px 15px 10px; white-space:nowrap;
+  font-size:13.5px; font-weight:500; color:var(--ink-3);
+  border-bottom:2px solid transparent; transition:color .12s, border-color .12s; min-height:42px;
+}
+.tab:first-child{padding-left:0}
+.tab .num{font-family:var(--f-mono); font-size:10px; letter-spacing:.08em; color:var(--ink-4); transition:color .12s}
+.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--ink); font-weight:600; border-bottom-color:var(--stamp)}
+.tab[aria-current="page"] .num{color:var(--stamp)}
+
+.screen{display:none}
+.screen.is-on{display:block; animation:page .3s ease-out}
+@keyframes page{from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:none}}
+
+/* ============================================================
+   DIE UHR — das Markenzeichen
+   ============================================================ */
+.clock{display:block; width:100%; height:auto; overflow:visible}
+.clock .seg{
+  transition:opacity .2s, transform .2s;
+  transform-origin:50% 50%;
+}
+.clock .seg-hit{cursor:pointer; fill:transparent}
+.clock .dial-ring{fill:none; stroke:var(--dial)}
+.clock .key-lbl{
+  font-family:var(--f-display); font-weight:600; fill:var(--ink);
+  text-anchor:middle; dominant-baseline:central; font-variant-numeric:lining-nums;
+}
+.clock .time-lbl{
+  font-family:var(--f-mono); font-weight:600; text-anchor:middle; dominant-baseline:central;
+  font-variant-numeric:tabular-nums;
+}
+.clock .thresh{stroke:var(--ink-3); stroke-width:1; stroke-dasharray:3 3; fill:none; opacity:.65}
+.clock .hub-t{font-family:var(--f-display); font-weight:600; fill:var(--ink); text-anchor:middle}
+.clock .hub-s{font-family:var(--f-mono); fill:var(--ink-3); text-anchor:middle; letter-spacing:.14em; text-transform:uppercase}
+.clock .spoke{stroke:var(--rule-soft); stroke-width:1}
+.clock g.k[data-state="stuck"] .seg{filter:none}
+.clock g.k.is-target .seg{stroke:var(--ink); stroke-width:2; paint-order:stroke}
+.clock g.k.is-target .key-lbl{fill:var(--ink)}
+@media(hover:hover){.clock g.k:hover .seg{opacity:.82}}
+
+/* Legende */
+.clock-key{
+  display:flex; flex-wrap:wrap; gap:7px 15px; align-items:center; justify-content:center;
+  margin-top:16px; font-family:var(--f-mono); font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.clock-key span{display:inline-flex; align-items:center; gap:6px}
+.clock-key i{width:11px; height:11px; border-radius:2px; flex:none; display:block}
+.i-fast{background:var(--t-fast)} .i-ok{background:var(--t-ok)}
+.i-slow{background:var(--t-slow)} .i-stuck{background:var(--t-stuck)}
+
+/* Das Blatt, auf dem die Uhr sitzt */
+.dial-plate{
+  background:var(--card-raised); border:1px solid var(--rule); box-shadow:var(--sh-3);
+  position:relative; padding:18px 16px 20px;
+}
+@media(min-width:620px){.dial-plate{padding:24px 26px 26px}}
+.dial-head{
+  display:flex; align-items:center; gap:11px; margin:-18px -16px 18px; padding:11px 16px;
+  border-bottom:1px solid var(--rule); background:var(--card); flex-wrap:wrap;
+}
+@media(min-width:620px){.dial-head{margin:-24px -26px 20px; padding:12px 26px}}
+.dial-head .t{font-family:var(--f-display); font-size:14.5px; font-weight:600}
+.dial-head .r{margin-left:auto; font-family:var(--f-mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3)}
+
+/* ================= START ================= */
+.hero{position:relative; padding:20px 0 36px; overflow:hidden}
+@media(min-width:980px){.hero{padding:56px 0 70px}}
+.hero-staff{
+  position:absolute; left:0; right:0; top:96px; height:120px; pointer-events:none; opacity:.4;
+  background:repeating-linear-gradient(to bottom, transparent 0 23px, var(--staff) 23px 24px);
+}
+/* Mobil: die Uhr steht DIREKT unter der Schlagzeile — sie ist das Argument,
+   nicht die Illustration. Erst darunter kommen Fließtext und Knöpfe. */
+.hero-inner{position:relative; display:flex; flex-direction:column}
+.hero-head{order:1}
+.hero-dial{order:2; margin-top:20px}
+.hero-rest{order:3; margin-top:22px}
+@media(min-width:980px){
+  /* Linke Spalte bleibt ein zusammenhängender Block; die Uhr steht rechts
+     daneben und wird über die volle Höhe zentriert. */
+  .hero-inner{
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,.92fr);
+    grid-template-rows:auto 1fr; gap:0 52px; align-items:start;
+  }
+  .hero-head{grid-column:1; grid-row:1}
+  .hero-rest{grid-column:1; grid-row:2; margin-top:24px; align-self:start}
+  .hero-dial{grid-column:2; grid-row:1 / span 2; margin-top:0; align-self:center}
+}
+.hero h1{
+  font-size:clamp(1.95rem, 5.4vw, 3.6rem); line-height:1.06; letter-spacing:-.028em; margin:12px 0 0;
+  max-width:15em;
+}
+.hero h1 .l2{display:block; color:var(--ink-2); font-style:italic; font-weight:400; text-wrap:balance}
+.hero h1 .l2 b{font-style:normal; font-weight:600; color:var(--stamp)}
+.hero-lede{margin-top:0; max-width:44ch; font-size:16px; line-height:1.58; color:var(--ink-2)}
+.hero-lede .k{color:var(--ink); font-weight:600}
+.hero-cta{display:flex; flex-wrap:wrap; gap:11px; margin-top:20px}
+.hero-foot{
+  margin-top:14px; font-family:var(--f-mono); font-size:10.5px; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+
+.sec{padding:42px 0; border-top:1px solid var(--rule-soft); position:relative}
+@media(min-width:900px){.sec{padding:60px 0}}
+.sec-head{display:flex; align-items:flex-start; gap:16px; margin-bottom:24px}
+.sec-head h2{font-size:clamp(1.5rem,4vw,2.25rem); max-width:22ch; margin-top:2px}
+.sec-head .col{flex:1; min-width:0}
+.sec-lede{margin-top:12px; max-width:var(--read); color:var(--ink-2); font-size:16px; line-height:1.62}
+
+.grid-2{display:grid; gap:18px; grid-template-columns:1fr}
+@media(min-width:820px){.grid-2{grid-template-columns:repeat(2,1fr)}}
+.grid-3{display:grid; gap:16px; grid-template-columns:1fr}
+@media(min-width:760px){.grid-3{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--card); border:1px solid var(--rule); padding:20px; box-shadow:var(--sh-1); border-radius:var(--r)}
+.card h3{font-size:17px; margin-bottom:7px}
+.card p{font-size:14.5px; color:var(--ink-2); line-height:1.55}
+
+/* Tonart-Tabelle: die Uhr, ausgeschrieben */
+.tiers{border-top:1px solid var(--rule); margin-top:6px}
+.tier-row{
+  display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px 14px; align-items:baseline;
+  padding:14px 2px; border-bottom:1px solid var(--rule-soft);
+}
+@media(min-width:640px){.tier-row{grid-template-columns:96px minmax(0,1fr) auto; align-items:center}}
+.tier-row .no{font-family:var(--f-mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--copyist)}
+.tier-keys{display:flex; flex-wrap:wrap; gap:5px}
+.kchip{
+  font-family:var(--f-display); font-size:14px; font-weight:600; min-width:30px; text-align:center;
+  padding:3px 7px; border:1px solid var(--rule); border-radius:2px; background:var(--card);
+  font-variant-numeric:lining-nums;
+}
+.kchip.hot{border-color:var(--t-stuck); color:var(--t-stuck); background:var(--stamp-wash)}
+.tier-row .n{font-family:var(--f-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); grid-column:2}
+@media(min-width:640px){.tier-row .n{grid-column:3; text-align:right}}
+
+/* ================= COACH ================= */
+.page-head{padding:22px 0 18px; border-bottom:1px solid var(--rule-soft)}
+.page-head h1{font-size:clamp(1.6rem,4.6vw,2.35rem); margin-top:9px}
+.page-head .sub{margin-top:8px; color:var(--ink-2); font-size:15.5px; max-width:54ch}
+
+/* min-width:0 — sonst weigern sich Grid-Kinder zu schrumpfen und die
+   Spalte wird breiter als der Viewport (Grid-Blowout). */
+.coach-grid{display:grid; gap:20px; grid-template-columns:minmax(0,1fr); margin-top:22px; align-items:start}
+.coach-grid > *{min-width:0}
+@media(min-width:1000px){.coach-grid{grid-template-columns:minmax(0,.86fr) minmax(0,1fr); gap:30px}}
+
+/* Session-Karte (aus Variant B, in C-Sprache übersetzt) */
+.session{border:1.5px solid var(--ink); background:var(--card-raised); box-shadow:var(--sh-3); position:relative}
+.session::before{content:""; position:absolute; left:-1.5px; top:-1.5px; bottom:-1.5px; width:5px; background:var(--stamp)}
+.sess-head{
+  display:flex; align-items:center; gap:11px; padding:11px 16px 11px 20px;
+  border-bottom:1px solid var(--rule); background:var(--card); flex-wrap:wrap;
+}
+.sess-head .l{font-family:var(--f-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3)}
+.sess-head .r{margin-left:auto; font-family:var(--f-mono); font-size:10.5px; letter-spacing:.1em; color:var(--stamp); font-weight:600}
+.sess-body{padding:17px 16px 18px 20px}
+.sess-say{font-family:var(--f-display); font-size:16.5px; line-height:1.42; font-style:italic}
+.sess-say b{font-style:normal; font-weight:600; color:var(--stamp)}
+
+.blocks{list-style:none; margin:16px 0 0; padding:0; border-top:1px solid var(--rule-soft)}
+.block{
+  display:flex; align-items:center; gap:11px; padding:10px 2px; border-bottom:1px solid var(--rule-soft);
+  font-size:14px; width:100%; text-align:left; transition:background .12s, padding .12s;
+}
+.block:hover{background:var(--card); padding-left:7px; padding-right:7px}
+.block .k{
+  font-family:var(--f-mono); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--copyist); width:76px; flex:none;
+}
+.block .d{color:var(--ink-2); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1}
+.block .s{margin-left:auto; flex:none; font-family:var(--f-mono); font-size:10px; color:var(--ink-4); letter-spacing:.06em}
+.block.done .k{color:var(--good)}
+.block.done .d{color:var(--ink-3)}
+.block.done .s{color:var(--good)}
+.block.on{background:var(--live-wash); padding-left:7px; padding-right:7px}
+.block.on .k{color:var(--live)}
+.block.on .d{color:var(--ink); font-weight:600}
+.block.on .s{color:var(--live)}
+.block.todo .d{color:var(--ink-3)}
+
+.meter{height:8px; background:var(--paper-3); border:1px solid var(--rule-soft); position:relative; overflow:hidden; margin-top:14px}
+.meter i{display:block; height:100%; background:var(--stamp); position:relative}
+.meter i::after{content:""; position:absolute; inset:0; background:repeating-linear-gradient(45deg, rgba(255,255,255,.22) 0 3px, transparent 3px 6px)}
+.meter-top{display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-top:16px; font-family:var(--f-mono); font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3)}
+.meter-top b{color:var(--ink); font-weight:600}
+
+/* Live-Akkord (aus Variant B) */
+.live-card{border:1px solid var(--rule); background:var(--card-raised); box-shadow:var(--sh-2)}
+.live-head{display:flex; align-items:center; gap:11px; padding:11px 16px; border-bottom:1px solid var(--rule); background:var(--card); flex-wrap:wrap}
+.live-head .r{margin-left:auto; display:inline-flex; align-items:center; gap:7px; font-family:var(--f-mono); font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--good)}
+.live-head .r i{width:7px; height:7px; border-radius:50%; background:var(--good); flex:none; animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.live-body{padding:20px 16px 18px; text-align:center}
+@media(min-width:620px){.live-body{padding:26px 24px 22px}}
+.big-chord{
+  font-family:var(--f-display); font-weight:600; letter-spacing:-.035em; line-height:.92;
+  font-size:clamp(3.2rem,13vw,5.4rem); font-variant-numeric:lining-nums;
+}
+.big-chord .acc{letter-spacing:0}
+.chord-sub{margin-top:9px; font-family:var(--f-mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--copyist)}
+.chord-timer{
+  margin-top:12px; display:inline-flex; align-items:baseline; gap:8px;
+  font-family:var(--f-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3);
+}
+.chord-timer b{font-size:19px; letter-spacing:0; color:var(--t-slow); font-variant-numeric:tabular-nums}
+
+.notes-row{display:flex; gap:7px; justify-content:center; flex-wrap:wrap; margin-top:18px}
+.note-chip{
+  font-family:var(--f-mono); font-size:12.5px; font-weight:700; padding:6px 11px; border-radius:2px;
+  background:var(--card); border:1px solid var(--rule); display:inline-flex; align-items:center; gap:7px; color:var(--ink);
+}
+.note-chip .deg{font-size:9.5px; color:var(--ink-3); font-weight:600; letter-spacing:.06em}
+.note-chip.root{border-color:var(--stamp); color:var(--stamp)}
+.note-chip.root .deg{color:var(--stamp)}
+.note-chip.muted-note{color:var(--ink-4); border-style:dashed; text-decoration:line-through; text-decoration-thickness:1px}
+.note-chip.muted-note .deg{text-decoration:none; color:var(--ink-4)}
+
+/* ---------- KLAVIATUR (aus Variant A: eine Variable, --kw) ---------- */
+.piano-scroll{
+  overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:thin;
+  display:flex; justify-content:safe center; min-width:0; max-width:100%; padding-bottom:6px; margin-top:20px;
+}
+.piano{
+  --kw:32px;
+  --bw:20px;
+  position:relative; display:flex; flex:0 0 auto; width:max-content;
+  background:var(--card); border:1px solid var(--rule); border-top:3px solid var(--ink-4);
+  border-radius:var(--r); box-shadow:var(--sh-2);
+}
+@media(min-width:560px){.piano{--kw:44px; --bw:27px}}
+@media(min-width:1000px){.piano{--kw:48px; --bw:29px}}
+.wk{
+  position:relative; flex:0 0 auto; width:var(--kw); height:132px;
+  background:var(--key-white); border-right:1px solid var(--key-white-edge);
+  display:flex; align-items:flex-end; justify-content:center; padding-bottom:8px;
+  font-family:var(--f-mono); font-size:10px; font-weight:500; color:#5c564d; letter-spacing:.04em;
+}
+@media(min-width:560px){.wk{height:158px}}
+:root[data-theme="dark"] .wk{color:#39424a}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .wk{color:#39424a}}
+.wk:first-child{border-radius:0 0 0 2px}
+.wk:last-child{border-right:none; border-radius:0 0 2px 0}
+.wk.on{background:var(--live-bright); color:#2a1c06; font-weight:700}
+.wk.root{box-shadow:inset 0 0 0 2px var(--stamp)}
+.bk{
+  /* --at = Index der weißen Taste, auf deren linker Fuge die Taste sitzt.
+     Exakt zentriert: at*kw - bw/2  — alles leitet sich aus --kw ab. */
+  position:absolute; top:0; z-index:2;
+  left:calc(var(--at) * var(--kw) - var(--bw) / 2);
+  width:var(--bw); height:82px; background:var(--key-black);
+  border-radius:0 0 2px 2px;
+  display:flex; align-items:flex-end; justify-content:center; padding-bottom:7px;
+  font-family:var(--f-mono); font-size:9px; font-weight:500; color:#a8a196; letter-spacing:.02em;
+  box-shadow:0 2px 4px rgba(0,0,0,.35);
+}
+@media(min-width:560px){.bk{height:98px}}
+.bk.on{background:var(--live-bright); color:#2a1c06; font-weight:700}
+.bk.root{box-shadow:0 2px 4px rgba(0,0,0,.35), inset 0 0 0 2px var(--stamp)}
+.piano-legend{
+  display:flex; flex-wrap:wrap; gap:6px 16px; justify-content:center; margin-top:12px;
+  font-family:var(--f-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
+}
+.piano-legend span{display:inline-flex; align-items:center; gap:6px}
+.swatch{width:11px; height:11px; border-radius:1px; background:var(--live-bright); flex:none}
+.swatch.ring{background:transparent; box-shadow:inset 0 0 0 2px var(--stamp)}
+
+.drill-foot{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center; padding-top:16px}
+.kbdhint{display:none; font-family:var(--f-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-4)}
+@media(min-width:760px){.kbdhint{display:flex; gap:12px; align-items:center}}
+.kbdhint b{border:1px solid var(--rule); padding:2px 6px; border-radius:2px; font-weight:600; color:var(--ink-3); font-size:9.5px}
+
+/* Nach der Session */
+.after{margin-top:20px; border:1px solid var(--rule); background:var(--card-raised); padding:17px 18px; box-shadow:var(--sh-1)}
+.after ul{list-style:none; margin:12px 0 0; padding:0; display:grid; gap:9px}
+.after li{display:flex; gap:10px; align-items:flex-start; font-size:14.5px; color:var(--ink-2); line-height:1.5}
+.after li .m{font-family:var(--f-mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; flex:none; width:64px; margin-top:3px}
+.after li.up .m{color:var(--good)} .after li.hold .m{color:var(--live)} .after li.next .m{color:var(--copyist)}
+
+.colophon{margin-top:48px; border-top:2px solid var(--ink); padding:20px 0 36px; display:flex; flex-wrap:wrap; gap:14px; align-items:baseline}
+.colophon .plate{max-width:44ch; line-height:1.7}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+  .screen.is-on{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-top">
+      <a class="logo" href="#" onclick="return false" aria-label="Chord Trainer — Startseite">
+        <!-- Das Logo IST die Uhr -->
+        <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true" style="flex:none">
+          <g id="logoRing"></g>
+        </svg>
+        <span class="logo-mark">Chord<em>·</em>Trainer</span>
+        <span class="logo-sub">Die Uhr für deine 12 Tonarten</span>
+      </a>
+      <div class="mast-spacer"></div>
+      <div class="mast-tools">
+        <button class="icon-btn" id="themeBtn" aria-label="Zu dunklem Design wechseln" title="Design">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <nav class="index-bar" aria-label="Screens">
+    <div class="index-inner">
+      <button class="tab" data-go="start" aria-current="page"><span class="num">I</span>Start</button>
+      <button class="tab" data-go="coach"><span class="num">II</span>Coach</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============================================================
+     I — START
+     ============================================================ -->
+<section class="screen is-on" id="s-start">
+  <div class="hero">
+    <div class="hero-staff" aria-hidden="true"></div>
+    <div class="wrap hero-inner">
+      <div class="hero-head">
+        <p class="eyebrow">Jazz-Voicings · Alle 12 Tonarten</p>
+        <h1>Zwölf Tonarten.<span class="l2">Fünf davon <b>warten auf deine Hände.</b></span></h1>
+      </div>
+
+      <div class="hero-rest">
+        <p class="hero-lede">Du kennst die Akkorde. Die Uhr zeigt, <span class="k">wo du langsam wirst</span> — Tonart für Tonart, gemessen statt geschätzt.</p>
+        <div class="hero-cta">
+          <button class="btn btn-stamp" type="button" data-go="coach">
+            Üben starten
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+          <button class="btn btn-ghost" type="button" data-go="coach">Kurs starten</button>
+        </div>
+        <p class="hero-foot">Kostenlos. Keine Anmeldung. Mit oder ohne Keyboard.</p>
+      </div>
+
+      <div class="hero-dial">
+        <div class="dial-plate">
+          <div class="dial-head">
+            <span class="rehearsal">♪</span>
+            <div style="min-width:0">
+              <div class="t">Deine Uhr · Shell-Voicings</div>
+              <div class="plate">Ø Sekunden bis der Akkord steht</div>
+            </div>
+            <span class="r">Platte 01</span>
+          </div>
+          <svg class="clock" id="heroClock" viewBox="0 0 460 460" role="img"
+               aria-label="Quintenzirkel als Uhr: C 0,4 s; G 0,7 s; D 1,4 s; A 2,1 s; E 2,4 s; H 3,1 s; F♯ 2,9 s; D♭ 2,8 s; A♭ 1,9 s; E♭ 1,1 s; B 0,6 s; F 0,5 s. Fünf Tonarten liegen über der Zwei-Sekunden-Schwelle."></svg>
+          <div class="clock-key">
+            <span><i class="i-fast"></i>unter 1 s</span>
+            <span><i class="i-ok"></i>1–2 s</span>
+            <span><i class="i-slow"></i>2–2,6 s</span>
+            <span><i class="i-stuck"></i>über 2,6 s</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="rehearsal">A</span>
+        <div class="col">
+          <p class="eyebrow">Was die Uhr misst</p>
+          <h2>Nicht ob du ihn kennst. Wie lange du suchst.</h2>
+          <p class="sec-lede">Jedes Segment ist die durchschnittliche Zeit vom Akkordsymbol bis zum fertigen Griff. Unter zwei Sekunden gilt ein Voicing als gemeistert — darüber denkst du noch nach, und im Stück ist der Takt längst vorbei.</p>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Der Zirkel, den du kennst</h3>
+          <p>Zwölf Tonarten im Quintenzirkel — dieselbe Ordnung wie in deinem Kopf. Nur dass hier steht, was sie dich wirklich kosten.</p>
+        </div>
+        <div class="card">
+          <h3>Die Tonarten, die du meidest</h3>
+          <p>Fast jeder hat eine helle und eine dunkle Seite. D♭, F♯ und H stehen nicht zufällig hinten — sie kommen im Übe-Alltag seltener vor.</p>
+        </div>
+        <div class="card">
+          <h3>Die Schwelle bei 2 Sekunden</h3>
+          <p>Der gestrichelte Ring. Der Coach zieht eine Tonart erst weiter, wenn sie in vier von fünf Versuchen darunter bleibt.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="rehearsal">B</span>
+        <div class="col">
+          <p class="eyebrow blue">Der Weg nach außen</p>
+          <h2>Erst vier Tonarten. Dann acht. Dann alle zwölf.</h2>
+          <p class="sec-lede">Jedes Voicing läuft dreimal durch die Uhr — in immer mehr Tonarten. Rot markiert, was heute noch über der Schwelle liegt.</p>
+        </div>
+      </div>
+      <div class="tiers">
+        <div class="tier-row">
+          <span class="no">Stufe 1</span>
+          <span class="tier-keys">
+            <b class="kchip">C</b><b class="kchip">F</b><b class="kchip">B</b><b class="kchip">E♭</b>
+          </span>
+          <span class="n">4 Tonarten · sitzt</span>
+        </div>
+        <div class="tier-row">
+          <span class="no">Stufe 2</span>
+          <span class="tier-keys">
+            <b class="kchip">C</b><b class="kchip">F</b><b class="kchip">B</b><b class="kchip">E♭</b>
+            <b class="kchip">G</b><b class="kchip">D</b><b class="kchip hot">A</b><b class="kchip">A♭</b>
+          </span>
+          <span class="n">8 Tonarten · gerade dran</span>
+        </div>
+        <div class="tier-row">
+          <span class="no">Stufe 3</span>
+          <span class="tier-keys">
+            <b class="kchip">C</b><b class="kchip">F</b><b class="kchip">B</b><b class="kchip">E♭</b>
+            <b class="kchip">G</b><b class="kchip">D</b><b class="kchip hot">A</b><b class="kchip">A♭</b>
+            <b class="kchip hot">E</b><b class="kchip hot">H</b><b class="kchip hot">F♯</b><b class="kchip hot">D♭</b>
+          </span>
+          <span class="n">Alle 12 Tonarten · offen</span>
+        </div>
+      </div>
+      <p class="marginalia" style="margin-top:22px">„B♭7 Shell sitzt jetzt — als Nächstes: Rootless-Voicings.“<br><span class="plate" style="display:block;margin-top:8px">Dein Coach, nach der Session</span></p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="wrap" style="text-align:center">
+      <p class="eyebrow no-rule" style="justify-content:center">Dein Coach ist bereit, wenn du es bist</p>
+      <h2 style="font-size:clamp(1.6rem,4.6vw,2.5rem); max-width:18ch; margin:14px auto 0">Die erste Session dauert drei Minuten.</h2>
+      <p style="margin:14px auto 0; max-width:44ch; color:var(--ink-2)">Ein kurzer Check, dann steht deine Uhr — und du siehst zum ersten Mal, wo die Zeit hingeht.</p>
+      <div style="display:flex; gap:11px; justify-content:center; flex-wrap:wrap; margin-top:22px">
+        <button class="btn btn-stamp" type="button" data-go="coach">Üben starten</button>
+      </div>
+      <p class="hero-foot" style="justify-content:center">Kostenlos. Keine Anmeldung. Mit oder ohne Keyboard.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     II — COACH
+     ============================================================ -->
+<section class="screen" id="s-coach">
+  <div class="wrap">
+    <div class="page-head">
+      <p class="eyebrow">Coach · Auto-Modus</p>
+      <h1>Teil 3 von 5 — Fokus</h1>
+      <p class="sub">Die Uhr zeigt jetzt nur die Tonarten dieser Session. Was du abschließt, wird heller.</p>
+    </div>
+
+    <div class="coach-grid">
+      <!-- linke Spalte: Uhr + Plan -->
+      <div>
+        <div class="dial-plate">
+          <div class="dial-head">
+            <span class="rehearsal" style="border-color:var(--stamp); color:var(--stamp)">♪</span>
+            <div style="min-width:0">
+              <div class="t">Heutige Session · Shell</div>
+              <div class="plate">4 Tonarten im Ziel</div>
+            </div>
+            <span class="r" id="clockRun">Läuft</span>
+          </div>
+          <svg class="clock" id="coachClock" viewBox="0 0 460 460" role="img"
+               aria-label="Die Uhr während der Session: die Tonarten A, E, H und D♭ sind Ziel dieser Session, C, G, D, F, B, E♭, A♭ und F♯ liegen außerhalb."></svg>
+          <div class="clock-key">
+            <span><i class="i-fast"></i>unter 1 s</span>
+            <span><i class="i-ok"></i>1–2 s</span>
+            <span><i class="i-slow"></i>2–2,6 s</span>
+            <span><i class="i-stuck"></i>über 2,6 s</span>
+          </div>
+        </div>
+
+        <div class="session" style="margin-top:20px">
+          <div class="sess-head">
+            <span class="l">Session-Plan</span>
+            <span class="r">12 Minuten</span>
+          </div>
+          <div class="sess-body">
+            <p class="sess-say">Heute: aufwärmen, <b>E festigen</b> und Maj7 in Shell neu — 12 Minuten.</p>
+            <ul class="blocks" id="blockList">
+              <li><button class="block done" type="button" data-block="0"><span class="k">Aufwärmen</span><span class="d">Shell · was du kannst</span><span class="s">✓</span></button></li>
+              <li><button class="block done" type="button" data-block="1"><span class="k">Auffrischen</span><span class="d">6 Akkorde, heute fällig</span><span class="s">✓</span></button></li>
+              <li><button class="block on" type="button" data-block="2"><span class="k">Fokus</span><span class="d">E in Shell</span><span class="s">4 / 7</span></button></li>
+              <li><button class="block todo" type="button" data-block="3"><span class="k">Neu</span><span class="d">Maj7 in Shell</span><span class="s">7</span></button></li>
+              <li><button class="block todo" type="button" data-block="4"><span class="k">Anwenden</span><span class="d">ii–V–I in Shell</span><span class="s">4</span></button></li>
+            </ul>
+            <div class="meter-top"><span>Noch 5 Min — weiter so</span><span><b>7</b> / 12 min</span></div>
+            <div class="meter"><i style="width:58%"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- rechte Spalte: der laufende Akkord -->
+      <div>
+        <div class="live-card">
+          <div class="live-head">
+            <span class="plate">Live · Fokus-Block</span>
+            <span class="r"><i></i>MIDI verbunden</span>
+          </div>
+          <div class="live-body">
+            <div class="big-chord chordsym">EMaj7</div>
+            <div class="chord-sub">Shell Voicing · Grundton + Terz + Septime</div>
+            <div class="chord-timer">Deine Zeit hier <b>2,4 s</b></div>
+
+            <div class="notes-row">
+              <span class="note-chip root">E <span class="deg">1</span></span>
+              <span class="note-chip">G♯ <span class="deg">3</span></span>
+              <span class="note-chip muted-note">H <span class="deg">5 · entfällt</span></span>
+              <span class="note-chip">D♯ <span class="deg">7</span></span>
+            </div>
+
+            <div class="piano-scroll">
+              <div class="piano" role="img" aria-label="Klaviatur mit den markierten Tönen E, Gis und Dis des EMaj7-Shell-Voicings">
+                <div class="wk">C</div><div class="wk">D</div><div class="wk on root">E</div>
+                <div class="wk">F</div><div class="wk">G</div><div class="wk">A</div><div class="wk">H</div>
+                <div class="wk">C</div><div class="wk">D</div><div class="wk">E</div>
+                <div class="bk" style="--at:1">C♯</div>
+                <div class="bk" style="--at:2">D♯</div>
+                <div class="bk" style="--at:4">F♯</div>
+                <div class="bk on" style="--at:5">G♯</div>
+                <div class="bk" style="--at:6">A♯</div>
+                <div class="bk" style="--at:8">C♯</div>
+                <div class="bk on" style="--at:9">D♯</div>
+              </div>
+            </div>
+            <div class="piano-legend">
+              <span><i class="swatch"></i>Akkordton</span>
+              <span><i class="swatch ring"></i>Grundton</span>
+            </div>
+
+            <div class="drill-foot">
+              <button class="btn btn-stamp" type="button" id="nextBtn">Nächster Akkord</button>
+              <button class="btn btn-ghost btn-sm" type="button">Zeig mir den Akkord</button>
+            </div>
+            <div class="drill-foot" style="padding-top:10px">
+              <span class="kbdhint"><span><b>Leertaste</b> weiter</span><span><b>1–5</b> Teil wählen</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="after">
+          <p class="eyebrow blue">Nach dieser Session</p>
+          <ul>
+            <li class="up"><span class="m">Sitzt</span><span>Maj7 in Shell (leichte Tonarten) sitzt jetzt — sauber gemeistert.</span></li>
+            <li class="hold"><span class="m">Nochmal</span><span>Maj7 in Shell (mehr Tonarten) üben wir nochmal, das kommt.</span></li>
+            <li class="next"><span class="m">Als Nächstes</span><span>Nächstes Ziel: Maj7 in Rootless A (leichte Tonarten).</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="colophon">
+      <span class="plate">Chord·Trainer — Entwurf „Die Uhr“ · Quintenzirkel als Zeitmesser · Zwei-Farben-Andruck auf Notenblatt</span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ==========================================================
+     DIE UHR — ein Renderer, überall verwendet.
+     Quintenzirkel im Uhrzeigersinn ab 12 Uhr.
+     Deutsche Notation: intl. B = "H", intl. B♭ = "B".
+     ========================================================== */
+  var KEYS = [
+    {de:"C",  t:0.4},
+    {de:"G",  t:0.7},
+    {de:"D",  t:1.4},
+    {de:"A",  t:2.1},
+    {de:"E",  t:2.4},
+    {de:"H",  t:3.1},   /* intl. B */
+    {de:"F♯", t:2.9},
+    {de:"D♭", t:2.8},
+    {de:"A♭", t:1.9},
+    {de:"E♭", t:1.1},
+    {de:"B",  t:0.6},   /* intl. B♭ */
+    {de:"F",  t:0.5}
+  ];
+  var MASTERY = 2.0;   /* 2000 ms aus coach-params.ts */
+  var TMAX    = 3.4;   /* Skalen-Ende des Zifferblatts */
+  var NS = "http://www.w3.org/2000/svg";
+
+  function band(t){
+    if (t < 1.0) return "fast";
+    if (t < 2.0) return "ok";
+    if (t < 2.6) return "slow";
+    return "stuck";
+  }
+
+  /* Die Ziffer im Segment muss lesbar bleiben — in BEIDEN Themes.
+     Statt eine Farbe zu raten, wird die tatsächliche Helligkeit des
+     Bandes gemessen und die Schrift danach gewählt (≥4,5:1). */
+  var _probe = null;
+  function inkFor(state){
+    if (!_probe){
+      _probe = document.createElement("span");
+      _probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none";
+      document.body.appendChild(_probe);
+    }
+    _probe.style.color = "var(--t-" + state + ")";
+    var m = getComputedStyle(_probe).color.match(/\d+(\.\d+)?/g);
+    if (!m) return "#fff";
+    function relLum(rgb){
+      var s = rgb.map(function(v){
+        v = v/255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
+      });
+      return 0.2126*s[0] + 0.7152*s[1] + 0.0722*s[2];
+    }
+    function contrast(a, b){
+      var hi = Math.max(a, b), lo = Math.min(a, b);
+      return (hi + 0.05) / (lo + 0.05);
+    }
+    var Lband = relLum(m.slice(0,3).map(Number));
+    var Lwhite = 1;                       /* #ffffff */
+    var Ldark  = relLum([26, 20, 8]);     /* #1a1408 */
+    return contrast(Lwhite, Lband) >= contrast(Ldark, Lband) ? "#fff" : "#1a1408";
+  }
+  function el(n, a){
+    var e = document.createElementNS(NS, n);
+    for (var k in a) if (a[k] !== null && a[k] !== undefined) e.setAttribute(k, a[k]);
+    return e;
+  }
+  /* Ring-Sektor als Pfad: von innerR bis outerR, Winkel a0..a1 (Grad). */
+  function sector(cx, cy, ri, ro, a0, a1){
+    var r0 = a0 * Math.PI / 180, r1 = a1 * Math.PI / 180;
+    var large = (a1 - a0) > 180 ? 1 : 0;
+    var x0o = cx + ro * Math.cos(r0), y0o = cy + ro * Math.sin(r0);
+    var x1o = cx + ro * Math.cos(r1), y1o = cy + ro * Math.sin(r1);
+    var x1i = cx + ri * Math.cos(r1), y1i = cy + ri * Math.sin(r1);
+    var x0i = cx + ri * Math.cos(r0), y0i = cy + ri * Math.sin(r0);
+    return "M" + x0o + " " + y0o +
+           "A" + ro + " " + ro + " 0 " + large + " 1 " + x1o + " " + y1o +
+           "L" + x1i + " " + y1i +
+           "A" + ri + " " + ri + " 0 " + large + " 0 " + x0i + " " + y0i + "Z";
+  }
+
+  /* opts: {targets:[..], hub:true/false, showTimes:bool} */
+  function drawClock(svg, opts){
+    opts = opts || {};
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    var C = 230, GAP = 1.6;
+    var RI = 96;          /* Innenkante des Rings */
+    var ROMAX = 196;      /* maximale Außenkante = TMAX */
+    var RLBL = 214;       /* Radius der Tonart-Beschriftung */
+    var targets = opts.targets || null;
+
+    /* leeres Zifferblatt bis zur Maximal-Skala */
+    svg.appendChild(el("circle", {cx:C, cy:C, r:(RI+ROMAX)/2, class:"dial-ring",
+      "stroke-width":(ROMAX-RI)}));
+
+    /* Speichen zwischen den Segmenten */
+    for (var s=0; s<12; s++){
+      var sa = (s*30 - 90 - 15) * Math.PI/180;
+      svg.appendChild(el("line", {class:"spoke",
+        x1:C + RI*Math.cos(sa), y1:C + RI*Math.sin(sa),
+        x2:C + ROMAX*Math.cos(sa), y2:C + ROMAX*Math.sin(sa)}));
+    }
+
+    /* die Zwei-Sekunden-Schwelle */
+    var rThresh = RI + (MASTERY / TMAX) * (ROMAX - RI);
+    svg.appendChild(el("circle", {cx:C, cy:C, r:rThresh, class:"thresh"}));
+
+    KEYS.forEach(function(k, i){
+      var mid = i*30 - 90;
+      var a0 = mid - 15 + GAP, a1 = mid + 15 - GAP;
+      var ro = RI + (Math.min(k.t, TMAX) / TMAX) * (ROMAX - RI);
+      var st = band(k.t);
+      var isTarget = targets ? targets.indexOf(k.de) !== -1 : false;
+      var dim = targets && !isTarget;
+
+      var g = el("g", {class:"k" + (isTarget ? " is-target" : ""), "data-state":st});
+      g.appendChild(el("path", {
+        class:"seg", d:sector(C, C, RI, ro, a0, a1),
+        fill:"var(--t-" + st + ")",
+        opacity: dim ? .34 : 1
+      }));
+
+      /* Tonart außen */
+      var ar = mid * Math.PI/180;
+      var lx = C + RLBL*Math.cos(ar), ly = C + RLBL*Math.sin(ar);
+      var kl = el("text", {class:"key-lbl", x:lx, y:ly, "font-size":26,
+        opacity: dim ? .5 : 1});
+      kl.textContent = k.de;
+      g.appendChild(kl);
+
+      /* Zeit im Segment */
+      if (opts.showTimes !== false){
+        var tr = (RI + ro) / 2;
+        var tx = C + tr*Math.cos(ar), ty = C + tr*Math.sin(ar);
+        var tl = el("text", {class:"time-lbl", x:tx, y:ty, "font-size":13.5,
+          fill: inkFor(st),
+          opacity: dim ? .45 : 1});
+        tl.textContent = k.t.toFixed(1).replace(".", ",");
+        g.appendChild(tl);
+      }
+      svg.appendChild(g);
+    });
+
+    /* Nabe */
+    if (opts.hub !== false){
+      svg.appendChild(el("circle", {cx:C, cy:C, r:RI-9, fill:"var(--card-raised)",
+        stroke:"var(--rule)", "stroke-width":1}));
+      var slow = KEYS.filter(function(k){ return k.t >= MASTERY; }).length;
+      var t1 = el("text", {class:"hub-t", x:C, y:C-8, "font-size":54});
+      t1.textContent = String(slow);
+      svg.appendChild(t1);
+      var t2 = el("text", {class:"hub-s", x:C, y:C+22, "font-size":11});
+      t2.textContent = "über 2 s";
+      svg.appendChild(t2);
+      var t3 = el("text", {class:"hub-s", x:C, y:C+42, "font-size":9.5});
+      t3.textContent = "von 12";
+      svg.appendChild(t3);
+    }
+  }
+
+  /* Das Logo: dieselbe Uhr, auf 40px eingedampft */
+  function drawLogo(g){
+    var C = 20, RI = 7.5, ROMAX = 18, GAP = 2.4;
+    while (g.firstChild) g.removeChild(g.firstChild);
+    g.appendChild(el("circle", {cx:C, cy:C, r:(RI+ROMAX)/2, fill:"none",
+      stroke:"var(--dial)", "stroke-width":(ROMAX-RI)}));
+    KEYS.forEach(function(k, i){
+      var mid = i*30 - 90;
+      var ro = RI + (Math.min(k.t, TMAX)/TMAX) * (ROMAX - RI);
+      g.appendChild(el("path", {
+        d: sector(C, C, RI, ro, mid-15+GAP, mid+15-GAP),
+        fill: "var(--t-" + band(k.t) + ")"
+      }));
+    });
+  }
+
+  var heroClock  = document.getElementById("heroClock");
+  var coachClock = document.getElementById("coachClock");
+  var logoRing   = document.getElementById("logoRing");
+
+  /* Fokus-Block dieser Session: der langsame Bogen, zusammenhängend */
+  var SESSION_TARGETS = ["E", "H", "F♯", "D♭"];
+
+  drawClock(heroClock, {});
+  drawClock(coachClock, {targets: SESSION_TARGETS});
+  drawLogo(logoRing);
+
+  /* ---------- Screen-Wechsel ---------- */
+  function go(name){
+    document.documentElement.setAttribute("data-screen", name);
+    var screens = document.querySelectorAll(".screen");
+    for (var i=0; i<screens.length; i++){
+      screens[i].classList.toggle("is-on", screens[i].id === "s-" + name);
+    }
+    var tabs = document.querySelectorAll(".tab");
+    for (var j=0; j<tabs.length; j++){
+      if (tabs[j].getAttribute("data-go") === name) tabs[j].setAttribute("aria-current", "page");
+      else tabs[j].removeAttribute("aria-current");
+    }
+    window.scrollTo(0, 0);
+  }
+  document.addEventListener("click", function(e){
+    var t = e.target.closest ? e.target.closest("[data-go]") : null;
+    if (t){ e.preventDefault(); go(t.getAttribute("data-go")); }
+  });
+
+  /* ---------- Theme ---------- */
+  var root = document.documentElement;
+  var themeBtn = document.getElementById("themeBtn");
+  function currentDark(){
+    var set = root.getAttribute("data-theme");
+    if (set === "dark") return true;
+    if (set === "light") return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  var lastTargets = SESSION_TARGETS;
+  themeBtn.addEventListener("click", function(){
+    var dark = currentDark();
+    root.setAttribute("data-theme", dark ? "light" : "dark");
+    themeBtn.setAttribute("aria-label", dark ? "Zu dunklem Design wechseln" : "Zu hellem Design wechseln");
+    /* Die Ziffern im Ring sind themeabhängig eingefärbt — neu zeichnen. */
+    drawClock(heroClock, {});
+    drawClock(coachClock, {targets: lastTargets});
+    drawLogo(logoRing);
+  });
+
+  /* ---------- Der Plan reagiert: Block wählen ---------- */
+  var BLOCK_TARGETS = [
+    ["C","F","B","E♭"],                 /* Aufwärmen: was sitzt */
+    ["G","D","E♭","B","C","F"],         /* Auffrischen: fällige */
+    ["E","H","F♯","D♭"],                /* Fokus: der langsame Bogen */
+    ["A","A♭","E","H","F♯","D♭"],       /* Neu: Stufe 3 öffnet sich */
+    ["C","F","B","E♭","G","D"]          /* Anwenden: ii–V–I, wo es trägt */
+  ];
+  var BLOCK_HEAD = ["Aufwärmen","Auffrischen","Fokus","Neu","Anwenden"];
+  var pageH1 = document.querySelector("#s-coach .page-head h1");
+  var list = document.getElementById("blockList");
+  list.addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest(".block") : null;
+    if (!b) return;
+    var idx = parseInt(b.getAttribute("data-block"), 10);
+    var rows = list.querySelectorAll(".block");
+    for (var i=0; i<rows.length; i++){
+      rows[i].classList.remove("on");
+      rows[i].classList.toggle("done", i < idx);
+      rows[i].classList.toggle("todo", i > idx);
+      if (i === idx) rows[i].classList.add("on");
+    }
+    lastTargets = BLOCK_TARGETS[idx];
+    drawClock(coachClock, {targets: lastTargets});
+    pageH1.textContent = "Teil " + (idx+1) + " von 5 — " + BLOCK_HEAD[idx];
+  });
+
+  /* Der Zeiger tickt: nur ein Hauch Leben, kein Karussell */
+  var timerEl = document.querySelector(".chord-timer b");
+  var t0 = 2.1;
+  document.getElementById("nextBtn").addEventListener("click", function(){
+    t0 = Math.round((1.4 + Math.random()*1.6) * 10) / 10;
+    timerEl.textContent = t0.toFixed(1).replace(".", ",") + " s";
+    timerEl.style.color = t0 >= 2.0 ? "var(--t-slow)" : "var(--t-fast)";
+  });
+})();
+</script>
+</body>
+</html>
