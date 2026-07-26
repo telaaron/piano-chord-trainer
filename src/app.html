@@ -31,9 +31,13 @@
 		<meta name="twitter:image" content="https://jazzchords.app/seo/OG-image.webp" />
 		<meta name="twitter:image:alt" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
 
-		<!-- Preconnect to external origins — established before any render-blocking resource -->
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+		<!-- Type is self-hosted (see app.css) — no font origin to preconnect to.
+		     Preload only the two cuts above the fold: the display serif that sets
+		     the headline and the variable sans that sets everything else. -->
+		<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous"
+			href="%sveltekit.assets%/fonts/source-serif-4-latin-700-normal.woff2" />
+		<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous"
+			href="%sveltekit.assets%/fonts/inter-latin-wght-normal.woff2" />
 
 		<!-- Preload LCP hero image — AVIF for supporting browsers, WebP fallback -->
 		<link rel="preload" as="image"
@@ -100,11 +104,6 @@
 			"image": "https://jazzchords.app/seo/OG-image.webp"
 			}
 		</script>
-
-		<!-- Fonts — non-blocking load: preload the CSS, swap rel to stylesheet once loaded -->
-		<!-- Inter for body (400/500/600/700) + Space Grotesk for display headings (500/600/700) -->
-		<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.rel='stylesheet'" />
-		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" /></noscript>
 
 		<!-- Icons -->
 		<link rel="icon" href="/favicon.ico" sizes="any" />

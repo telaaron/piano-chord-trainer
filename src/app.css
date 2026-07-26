@@ -1,32 +1,88 @@
 @import 'tailwindcss';
 
+/* ─── Self-hosted type (SIL OFL) ──────────────────────────────────
+   Served from /static/fonts, not Google Fonts: no third-party request,
+   no IP handed to Google, and the privacy page has one less thing to
+   disclose. Latin subsets only — 153 KB for the whole family.
+──────────────────────────────────────────────────────────────── */
+@font-face {
+	font-family: 'Source Serif 4';
+	src: url('/fonts/source-serif-4-latin-400-normal.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Source Serif 4';
+	src: url('/fonts/source-serif-4-latin-400-italic.woff2') format('woff2');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Source Serif 4';
+	src: url('/fonts/source-serif-4-latin-600-normal.woff2') format('woff2');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Source Serif 4';
+	src: url('/fonts/source-serif-4-latin-600-italic.woff2') format('woff2');
+	font-weight: 600;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Source Serif 4';
+	src: url('/fonts/source-serif-4-latin-700-normal.woff2') format('woff2');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Inter Variable';
+	src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
 :root {
-	/* Space Grotesk for headings (distinct, modern), Inter for body (readable) */
-	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-	--font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+	/* Editorial pairing: a serif that carries the voice, a sans that gets
+	   out of the way. The serif is display-only — never body copy. */
+	--font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+	--font-display: 'Source Serif 4', 'Iowan Old Style', Palatino, Georgia, serif;
 	--font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 
-	/* Midnight Indigo — jazz club at night. Deep indigo-black base (no brown),
-	   warm amber-gold accent. Modern audio-app language, kept warm & premium. */
-	--bg: #0c0a18;
-	--bg-card: #16132a;
-	--bg-card-hover: #1f1b3a;
-	--bg-muted: #211d40;
-	--border: #2d2952;
-	--border-hover: #423c6e;
+	/* Two-colour press job. The base is cold diazo stock rather than warm
+	   cream, so it reads as a printed plate and not as another warm AI page.
+	   Stamp red is the publisher's stamp and the teacher's red pencil;
+	   copyist blue is for annotation and structure. Amber survives from the
+	   old palette but is now reserved for one thing: live/active state. */
+	--bg: #0e141d;
+	--bg-card: #151d29;
+	--bg-card-hover: #1c2735;
+	--bg-muted: #1a2431;
+	--border: #26323f;
+	--border-hover: #38485a;
 
-	--text: #f1eff8;
-	--text-muted: #a9a3c6;
-	--text-dim: #6f6992;
+	--text: #eef1f4;
+	--text-muted: #a3b0bf;
+	--text-dim: #71808f;
 
-	--primary: #f5a623;
-	--primary-hover: #ffb840;
-	--primary-muted: rgba(245, 166, 35, 0.15);
-	--primary-text: #1a1206;
+	--primary: #e2685c;
+	--primary-hover: #ee7d71;
+	--primary-muted: rgba(226, 104, 92, 0.15);
+	--primary-text: #14090a;
+
+	/* Copyist blue — the second ink. Annotation, analysis, structure. */
+	--ink-blue: #7ba7d4;
+	--ink-blue-muted: rgba(123, 167, 212, 0.14);
 
 	--accent-gold: #e8b04b;
-	--accent-amber: #ffb84d;
-	--accent-red: #e0436b;
+	--accent-amber: #f5a623;
+	--accent-red: #e2685c;
 	--accent-green: #3fd09a;
 
 	/* Semantic status — single source of truth (was hard-coded #fb923c etc. in components) */
@@ -93,29 +149,33 @@
 }
 
 /* ─── Light Theme ─────────────────────────────────────────────────
-   Daytime indigo — cool lavender paper, deep indigo text, same amber accent.
+   Diazo stock — the cold blue-grey of blueprint paper, not warm cream.
+   Same two inks as dark, darkened to hold 4.5:1 on paper.
    Applied via data-theme="light" on <html>.
 ──────────────────────────────────────────────────────────────── */
 [data-theme="light"] {
-	--bg: #f4f3fa;
-	--bg-card: #ffffff;
-	--bg-card-hover: #eeecf8;
-	--bg-muted: #e6e3f4;
-	--border: #ddd9ee;
-	--border-hover: #c2bce0;
+	--bg: #ecefe9;
+	--bg-card: #fbfcf9;
+	--bg-card-hover: #f2f4ee;
+	--bg-muted: #e2e6de;
+	--border: #d2d8cd;
+	--border-hover: #b4bdad;
 
-	--text: #1a1730;
-	--text-muted: #5a5478;
-	--text-dim: #8a84a8;
+	--text: #131a26;
+	--text-muted: #4a5563;
+	--text-dim: #6b7684;
 
-	--primary: #c77f12;
-	--primary-hover: #ad6c08;
-	--primary-muted: rgba(199, 127, 18, 0.12);
+	--primary: #b0302a;
+	--primary-hover: #96231e;
+	--primary-muted: rgba(176, 48, 42, 0.12);
 	--primary-text: #ffffff;
 
-	--accent-gold: #a87d1a;
-	--accent-amber: #c77f12;
-	--accent-red: #c5345e;
+	--ink-blue: #2c5985;
+	--ink-blue-muted: rgba(44, 89, 133, 0.12);
+
+	--accent-gold: #8f5a05;
+	--accent-amber: #8f5a05;
+	--accent-red: #b0302a;
 	--accent-green: #18936a;
 
 	--success: #18936a;
@@ -127,27 +187,27 @@
 	--info: #3357c4;
 	--info-muted: rgba(51, 87, 196, 0.14);
 
-	--xp: #c77f12;
-	--xp-muted: rgba(199, 127, 18, 0.14);
+	--xp: #8f5a05;
+	--xp-muted: rgba(143, 90, 5, 0.14);
 
-	--wood-dark: #e6e3f4;
-	--wood-light: #c2bce0;
-	--velvet-red: #c5345e;
+	--wood-dark: #e2e6de;
+	--wood-light: #b4bdad;
+	--velvet-red: #b0302a;
 
-	--glow-warm: rgba(199, 127, 18, 0.18);
-	--shadow-deep: rgba(40, 35, 70, 0.18);
+	--glow-warm: rgba(143, 90, 5, 0.16);
+	--shadow-deep: rgba(19, 26, 38, 0.18);
 
-	--shadow-sm: 0 1px 2px rgba(40, 35, 70, 0.10);
-	--shadow-md: 0 1px 2px rgba(40, 35, 70, 0.08), 0 8px 24px rgba(40, 35, 70, 0.10);
-	--shadow-lg: 0 2px 6px rgba(40, 35, 70, 0.10), 0 22px 48px rgba(40, 35, 70, 0.16);
+	--shadow-sm: 0 1px 2px rgba(19, 26, 38, 0.10);
+	--shadow-md: 0 1px 2px rgba(19, 26, 38, 0.08), 0 8px 24px rgba(19, 26, 38, 0.10);
+	--shadow-lg: 0 2px 6px rgba(19, 26, 38, 0.10), 0 22px 48px rgba(19, 26, 38, 0.16);
 
 	/* Piano — keep playable contrast on light */
 	--key-white: #ffffff;
-	--key-white-active: #c77f12;
-	--key-white-border: #d6d2e8;
-	--key-black: #221d3a;
-	--key-black-active: #c77f12;
-	--key-root-dot: #a87d1a;
+	--key-white-active: #d9a441;
+	--key-white-border: #cdd3c8;
+	--key-black: #131a26;
+	--key-black-active: #8f5a05;
+	--key-root-dot: #b0302a;
 
 	color-scheme: light;
 }

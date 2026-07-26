@@ -73,11 +73,8 @@
 					<td>{t('privacy.td_vercel_purpose')}</td>
 					<td><a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">{t('privacy.td_link')}</a></td>
 				</tr>
-				<tr>
-					<td>Google Fonts</td>
-					<td>{t('privacy.td_fonts_purpose')}</td>
-					<td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">{t('privacy.td_link')}</a></td>
-				</tr>
+				<!-- Google Fonts was here. Type is self-hosted now, so Google is no
+				     longer a recipient of anyone's IP and does not belong in this table. -->
 				<tr>
 					<td>Cloudflare</td>
 					<td>{t('privacy.td_cloudflare_purpose')}</td>

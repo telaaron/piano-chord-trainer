@@ -965,7 +965,7 @@ export const en = {
     p_hosting: 'The App is hosted on <strong>Vercel</strong> (Vercel Inc., San Francisco, CA). Vercel may collect server logs including IP addresses for security and performance purposes. See <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Vercel\'s Privacy Policy</a>.',
     
     h_fonts: '1.5 Fonts',
-    p_fonts: 'We use Google Fonts (Inter) loaded from <code>fonts.googleapis.com</code>. Google may collect your IP address when fonts are loaded. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google\'s Privacy Policy</a>.',
+    p_fonts: 'All fonts (Source Serif 4, Inter) are self-hosted and served directly from <code>jazzchords.app</code>. No request goes to Google or any other third party, so your IP address is never shared with a font provider.',
     
     h_no_collect: '2. Data We Do NOT Collect',
     li_no_account: 'No account required — accounts are optional and only used for cross-device sync',

@@ -444,3 +444,63 @@ export function analyzeWeakSpots(history: SessionResult[], limit = 5): WeakSpot[
 	result.sort((a, b) => b.avgMs - a.avgMs);
 	return result.slice(0, limit);
 }
+
+// ─── The clock — twelve keys, ordered by fifths ─────────────
+
+/**
+ * Circle of fifths, starting at C. This is the order every jazz player
+ * already carries in their head, so the dial needs no legend to be read.
+ */
+export const CIRCLE_OF_FIFTHS = [
+	'C', 'G', 'D', 'A', 'E', 'B', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F',
+] as const;
+
+export interface KeyDial {
+	/** Root note as stored in the engine, e.g. "Db". */
+	root: string;
+	/** Mean time to find the chord, or null when never played. */
+	avgMs: number | null;
+	/** Attempts behind avgMs — 0 means untouched. */
+	count: number;
+	/** True once avgMs is at or under the mastery threshold. */
+	fluent: boolean;
+}
+
+/**
+ * Per-key timings for the clock, in circle-of-fifths order.
+ *
+ * Same source as `analyzeWeakSpots`, aggregated across voicings instead of
+ * split by them: the clock answers "which keys are slow", the weak-spot list
+ * answers "and which voicing is to blame". Keys never played return avgMs
+ * null so the UI can show a gap rather than a fake zero — an untouched key
+ * is not a fast key, and drawing it as one would flatter the player.
+ *
+ * @param thresholdMs mastery threshold; defaults to the coach's 2000 ms.
+ */
+export function buildKeyDial(history: SessionResult[], thresholdMs = 2000): KeyDial[] {
+	const acc = new Map<string, { totalMs: number; count: number }>();
+
+	for (const session of history) {
+		if (!session.chordTimings) continue;
+		for (const ct of session.chordTimings) {
+			const cur = acc.get(ct.root);
+			if (cur) {
+				cur.totalMs += ct.durationMs;
+				cur.count++;
+			} else {
+				acc.set(ct.root, { totalMs: ct.durationMs, count: 1 });
+			}
+		}
+	}
+
+	return CIRCLE_OF_FIFTHS.map((root) => {
+		const d = acc.get(root);
+		const avgMs = d && d.count > 0 ? d.totalMs / d.count : null;
+		return {
+			root,
+			avgMs,
+			count: d?.count ?? 0,
+			fluent: avgMs !== null && avgMs <= thresholdMs,
+		};
+	});
+}
