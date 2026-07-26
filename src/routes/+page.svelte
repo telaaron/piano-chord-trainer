@@ -28,15 +28,41 @@
 		{ qKey: 'landing.faq5_q', aKey: 'landing.faq5_a' }
 	] as const;
 
-	/* The hero specimen: a printed ii–V–I in B♭, with the V ringed as "now".
-	   Musical glyphs are real ♭ ♯ characters, never emoji and never b/#.
-	   Their spacing is handled by the AccidentalFit @font-face further down. */
-	const specimenChords = [
-		{ sym: 'Cm7', deg: 'ii', now: false },
-		{ sym: 'F7', deg: 'V', now: true },
-		{ sym: 'B♭maj7', deg: 'I', now: false },
-		{ sym: 'G7♭9', deg: 'VI', now: false }
-	] as const;
+	/* The hero practice card's keyboard: an octave and a half with the B♭7
+	   shell struck — B♭ (black), D (white), A♭ (black). That is a real shell
+	   voicing: the third and the seventh of B♭7, no root.
+
+	   Geometry is derived from ONE unit (100 / whites.length) rather than
+	   hardcoded percentages, so the board stays correct if the range changes.
+	   Musical glyphs are real ♭ ♯ characters, never emoji and never b/#;
+	   their spacing is handled by the AccidentalFit @font-face further down. */
+	const whiteKeys = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'A', 'B'] as const;
+
+	/* Struck white key, by index into whiteKeys: D in the first octave. */
+	const struckWhite: Record<number, string> = { 1: 'D' };
+
+	const KEY_UNIT = 100 / whiteKeys.length;
+	/* A black key is ~58% the width of a white one. At a full unit they fused
+	   into slabs, so the board is drawn at 0.58 × unit and centred on the gap. */
+	const BLACK_W = 0.58 * KEY_UNIT;
+
+	/* Black keys follow the white indices they sit after, per octave:
+	   C♯ D♯ — F♯ G♯ A♯. */
+	const BLACK_PATTERN = [0, 1, 3, 4, 5] as const;
+
+	const blackKeys = (() => {
+		const out: { left: number; name: string | null }[] = [];
+		for (let oct = 0; oct < 2; oct++) {
+			for (const p of BLACK_PATTERN) {
+				const idx = oct * 7 + p;
+				if (idx >= whiteKeys.length - 1) continue;
+				/* B♭ is the A♯ of the first octave (p=5), A♭ its G♯ (p=4). */
+				const name = oct === 0 && p === 5 ? 'B♭' : oct === 0 && p === 4 ? 'A♭' : null;
+				out.push({ left: (idx + 1) * KEY_UNIT - BLACK_W / 2, name });
+			}
+		}
+		return out;
+	})();
 
 	const inputModes = [
 		{ icon: Keyboard, key: 'landing.listen_chip1' },
@@ -121,9 +147,30 @@
 
 <div class="edi">
 
-	<!-- ═══ Hero — an editorial spread, not a photo poster ═══ -->
+	<!-- ═══ Hero — "Der Saal": the club photograph, type set over it ═══ -->
 	<section class="hero">
-		<div class="staff-wash" aria-hidden="true"></div>
+		<div class="hero-media" aria-hidden="true">
+			<picture>
+				<source
+					srcset="/bilder/hero-piano-480.avif 480w, /bilder/hero-piano-768.avif 768w, /bilder/hero-piano-1280.avif 1280w, /bilder/hero-piano-1920.avif 1920w"
+					sizes="100vw"
+					type="image/avif"
+				/>
+				<source
+					srcset="/bilder/hero-piano-480.webp 480w, /bilder/hero-piano-768.webp 768w, /bilder/hero-piano-1280.webp 1280w, /bilder/hero-piano-1920.webp 1920w"
+					sizes="100vw"
+					type="image/webp"
+				/>
+				<img
+					src="/bilder/hero-piano-1280.webp"
+					alt=""
+					width="1280"
+					height="714"
+					fetchpriority="high"
+					decoding="async"
+				/>
+			</picture>
+		</div>
 		<div class="shell hero-inner">
 			<div class="hero-head">
 				<p class="eyebrow">{t('landing.badge')}</p>
@@ -145,28 +192,62 @@
 				<p class="plate hero-plate">{t('landing.footnote')}</p>
 			</div>
 
-			<!-- The lead-sheet specimen: the product's own language, printed. -->
-			<figure class="specimen">
-				<figcaption class="spec-head">
+			<!-- The practice card: the loop the app actually runs, top to bottom.
+			     A chord is asked, a keyboard answers it, a stopwatch judges it.
+			     A stranger should conclude "this drills chords and times you"
+			     without reading a word of caption. -->
+			<figure class="pcard">
+				<figcaption class="pcard-head">
 					<span class="rehearsal">A</span>
-					<span class="spec-titles">
-						<span class="spec-title">{t('landing.spec_title')}</span>
-						<span class="plate">{t('landing.spec_plate')}</span>
-					</span>
+					<span class="live-dot" aria-hidden="true"></span>
+					<span class="live-tag">{t('landing.pcard_live')}</span>
+					<span class="plate">{t('landing.pcard_head')}</span>
 				</figcaption>
-				<div class="spec-body">
-					<div class="spec-staff">
-						<div class="spec-lines" aria-hidden="true"></div>
-						<div class="spec-chords">
-							{#each specimenChords as c}
-								<span class="spec-chord" class:now={c.now}>
-									<span class="sym">{c.sym}</span>
-									<span class="deg">{c.deg}</span>
-								</span>
-							{/each}
-						</div>
+
+				<div class="pcard-body">
+					<span class="p-step">{t('landing.pcard_step_ask')}</span>
+					<div class="p-ask">
+						<span class="p-chord">{t('landing.pcard_chord')}</span>
+						<span class="p-voicing">
+							{t('landing.pcard_voicing_name')}<br />{t('landing.pcard_voicing_notes')}
+						</span>
 					</div>
-					<p class="spec-note">{t('landing.spec_note')}</p>
+
+					<span class="p-arrow">{t('landing.pcard_step_answer')}</span>
+					<div class="kbd" role="img" aria-label={t('landing.pcard_kbd_alt')}>
+						{#each whiteKeys as _key, i}
+							<span class="wk" class:on={struckWhite[i]} data-n={struckWhite[i] ?? null}></span>
+						{/each}
+						{#each blackKeys as bk}
+							<span
+								class="bk"
+								class:on={bk.name}
+								data-n={bk.name}
+								style="left:{bk.left.toFixed(2)}%; width:{BLACK_W.toFixed(2)}%"
+							></span>
+						{/each}
+					</div>
+
+					<div class="p-result">
+						<span class="p-check" aria-hidden="true">✓</span>
+						<span class="p-verdict">{t('landing.pcard_verdict')}</span>
+						<span class="p-time">
+							<b>{t('landing.pcard_time_now')}</b><span>{t('landing.pcard_time_label')}</span>
+						</span>
+					</div>
+
+					<div class="p-bars">
+						<span class="p-bar">
+							<span>{t('landing.pcard_bar_last')}</span><i style="width:100%"></i><b
+							>{t('landing.pcard_time_prev')}</b
+						>
+						</span>
+						<span class="p-bar now">
+							<span>{t('landing.pcard_bar_today')}</span><i style="width:38%"></i><b
+							>{t('landing.pcard_time_now')}</b
+						>
+						</span>
+					</div>
 				</div>
 			</figure>
 		</div>
@@ -280,10 +361,19 @@
 			</div>
 
 			<div class="clock-pair">
-				<div class="clock-frame">
+				<!-- The dial is the real KeyClock reading the visitor's own history.
+				     The frame around it names what the object IS: a circle of
+				     fifths, annotated in copyist blue the way a printed chart
+				     labels its own construction. -->
+				<figure class="clock-frame">
+					<figcaption class="fifths-head">
+						<span class="fifths-label">{t('landing.clock_fifths_label')}</span>
+					</figcaption>
 					<KeyClock {dial} size={252} showTimes={false} />
+					<p class="fifths-chain">{t('landing.clock_fifths_chain')}</p>
+					<p class="fifths-note">{t('landing.clock_fifths_note')}</p>
 					<p class="plate clock-cap">{t('landing.clock_caption')}</p>
-				</div>
+				</figure>
 				<div class="clock-copy">
 					<p class="sec-lede tight">{t('landing.clock_desc')}</p>
 					<ul class="legend">
@@ -399,6 +489,34 @@
 		   every other character still comes from the normal stack below it. */
 		--font-display-mus: 'AccidentalFit', var(--font-display);
 		--font-sans-mus: 'AccidentalFit', var(--font-sans);
+
+		/* ── The hall's own ink ──────────────────────────────────
+		   The hero photograph is a dim room at night and stays that way in
+		   both themes, so the type over it cannot use the page tokens: in the
+		   light theme --accent-gold resolves to the paper-safe ochre #8f5a05,
+		   which measured 2.21:1 against the lit part of the frame. These are
+		   the hall's fixed values, named here rather than scattered as literals
+		   through the hero rules. They are page-local by design — nothing
+		   outside this hero sits on a photograph. */
+		--hall-ground: #0b0f14;
+		--hall-ink: #ffffff;
+		--hall-ink-warm: #f4f1ec;
+		--hall-ink-soft: #ddd6cb;
+		--hall-lede: #d8d2c8;
+		--hall-eyebrow: #e8b04b;
+		--hall-plate: #c3bcb1;
+		--hall-l2: #ddd5c8;
+		/* The lit plate that floats on the photograph, and its own inks. The
+		   page's copyist blue is tuned for paper and goes murky on a dark
+		   card, so the annotation lifts to the prototype's lit blue. */
+		--plate-ground: rgba(14, 20, 29, 0.92);
+		--plate-ground-solid: rgba(14, 20, 29, 0.98);
+		--plate-head: rgba(26, 36, 49, 0.9);
+		--plate-rule: rgba(255, 255, 255, 0.16);
+		--plate-rule-soft: rgba(255, 255, 255, 0.1);
+		--plate-blue: #9dc2e6;
+		--plate-staff: rgba(157, 194, 230, 0.34);
+		--plate-plate: #b6c0cc;
 		font-family: var(--font-sans-mus);
 		font-variant-numeric: oldstyle-nums;
 	}
@@ -549,31 +667,83 @@
 
 	/* ── Hero ─────────────────────────────────────────────────── */
 
+	/* "Der Saal" — the club photograph full-bleed, the type set on top.
+	   The hall is always night, in BOTH themes: it is a photograph of a dim
+	   room, and inverting it with the theme would be a lie. So every ink over
+	   the photo is a fixed light value, not a theme token — --text-muted is
+	   tuned for a card, not for a night photograph. The page below the hero
+	   still follows the theme. */
 	.hero {
 		position: relative;
+		isolation: isolate;
 		overflow: hidden;
-		padding: 2.5rem 0 3rem;
+		background: var(--hall-ground);
+		color: var(--hall-ink);
+		padding: 2.75rem 0 3.25rem;
 	}
 	@media (min-width: 900px) {
-		.hero { padding: 4.5rem 0 5rem; }
+		.hero { padding: clamp(4.5rem, 7vw, 6.5rem) 0 clamp(5rem, 7.5vw, 7rem); }
 	}
 
-	/* A band of staff lines washing behind the hero. On narrow screens the
-	   headline grows down into this band and the rules read as a strike-through,
-	   so the wash only appears once there is whitespace for it to sit in. */
-	.staff-wash { display: none; }
-	@media (min-width: 980px) {
-		.staff-wash {
-			display: block;
-			position: absolute;
-			left: 0;
-			right: 0;
-			top: 7rem;
-			height: 8rem;
-			pointer-events: none;
-			opacity: 0.42;
-			background: repeating-linear-gradient(to bottom, transparent 0 23px, var(--staff) 23px 24px);
+	.hero-media {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+	}
+	.hero-media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		/* Keeps the keys and the string of bulbs in frame at every width. */
+		object-position: 62% 52%;
+		filter: brightness(0.98) contrast(1.05) saturate(1.12);
+	}
+	/* The type well. Opaque under the words, releasing over the piano so the
+	   bulbs, the bassist and the lit body stay visible. These stops were
+	   MEASURED, not guessed: the string of bokeh bulbs sits directly behind
+	   the italic second line, and at .55 on the first ramp white came back at
+	   4.42:1. As set here the worst pixel under the headline is ≥ 7:1 while
+	   the right half of the frame stays open. Do not round these off. */
+	.hero-media::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(90deg,
+				rgba(8, 11, 15, 0.95) 0%,
+				rgba(8, 11, 15, 0.92) 26%,
+				rgba(8, 11, 15, 0.84) 44%,
+				rgba(8, 11, 15, 0.3) 66%,
+				rgba(8, 11, 15, 0.03) 100%),
+			linear-gradient(180deg,
+				rgba(8, 11, 15, 0.55) 0%,
+				rgba(8, 11, 15, 0.1) 30%,
+				rgba(8, 11, 15, 0.28) 74%,
+				rgba(8, 11, 15, 0.8) 100%);
+	}
+	@media (max-width: 979px) {
+		/* Stacked: the type sits over the whole frame, so the wash goes
+		   vertical and much heavier — there is no ramp to hide behind. */
+		.hero-media::after {
+			background: linear-gradient(180deg,
+				rgba(8, 11, 15, 0.9) 0%,
+				rgba(8, 11, 15, 0.82) 42%,
+				rgba(8, 11, 15, 0.9) 72%,
+				rgba(8, 11, 15, 0.97) 100%);
 		}
+		.hero-media img { object-position: 68% 55%; }
+	}
+
+	/* Ink over the photograph — fixed light values, theme-independent. */
+	.hero .eyebrow { color: var(--hall-eyebrow); }
+	.hero .plate { color: var(--hall-plate); }
+	.hero .btn-ghost {
+		color: var(--hall-ink-soft);
+		text-decoration-color: color-mix(in srgb, var(--hall-ink-soft) 50%, transparent);
+	}
+	.hero .btn-ghost:hover {
+		color: var(--hall-ink);
+		text-decoration-color: var(--hall-ink);
 	}
 
 	.hero-inner { position: relative; }
@@ -600,21 +770,25 @@
 		   this is what stops the hero collapsing to one word per line. */
 		max-width: 15em;
 		text-wrap: balance;
-		color: var(--text);
+		color: var(--hall-ink);
+		/* A whisper of shadow so the stems hold where the wash is thinnest.
+		   Not a glow — just enough to keep the serif crisp. */
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 18px rgba(0, 0, 0, 0.45);
 	}
 	.hero-h1 .l2 {
 		display: block;
 		font-style: italic;
 		font-weight: 400;
-		color: var(--text-muted);
+		color: var(--hall-l2);
 	}
 
 	.hero-lede {
 		margin-top: 1.35rem;
-		max-width: 46ch;
+		max-width: 44ch;
 		font-size: 1.05rem;
 		line-height: 1.62;
-		color: var(--text-muted);
+		color: var(--hall-lede);
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 	}
 
 	.hero-cta {
@@ -629,7 +803,8 @@
 		max-width: 48ch;
 		font-size: 0.9rem;
 		line-height: 1.55;
-		color: var(--text-muted);
+		color: var(--hall-plate);
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 	}
 	.hero-plate { margin-top: 1rem; }
 
@@ -637,123 +812,298 @@
 		.hide-sm { display: none; }
 	}
 
-	/* ── The lead-sheet specimen ──────────────────────────────── */
+	/* ── The practice card ────────────────────────────────────── */
 
-	.specimen {
+	/* The card floats on the photograph as a lit plate. Because the hall is
+	   night in BOTH themes, this plate keeps its dark treatment in both —
+	   hence explicit light values for every text role inside it rather than
+	   inheriting the light-theme tokens. */
+	.pcard {
 		margin: 2.25rem 0 0;
-		background: var(--bg-card);
-		border: 1px solid var(--border);
-		box-shadow: var(--shadow-md);
+		background: var(--plate-ground);
+		border: 1px solid color-mix(in srgb, var(--accent-amber) 30%, transparent);
+		box-shadow: var(--shadow-lg);
+		backdrop-filter: blur(14px) saturate(1.1);
+		-webkit-backdrop-filter: blur(14px) saturate(1.1);
 	}
 	@media (min-width: 980px) {
-		.specimen { margin-top: 0.5rem; }
+		.pcard { margin-top: 0.5rem; }
 	}
 
-	.spec-head {
+	.pcard-head {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
-		padding: 0.7rem 1rem;
-		border-bottom: 1px solid var(--border);
-		background: var(--bg-muted);
+		gap: 0.6rem;
+		padding: 0.6rem 0.9rem;
+		border-bottom: 1px solid var(--plate-rule-soft);
+		background: var(--plate-head);
 	}
-	.spec-titles { min-width: 0; }
-	.spec-title {
-		display: block;
-		font-family: var(--font-display-mus);
-		font-size: 0.92rem;
-		font-weight: 600;
-		color: var(--text);
-	}
-
-	.spec-body { padding: 1.1rem 1rem 1.25rem; }
-
-	.spec-staff {
-		position: relative;
-		padding: 1.4rem 0 0.4rem;
-	}
-	.spec-lines {
-		position: absolute;
-		inset: 0;
-		top: 0.9rem;
-		height: 2.6rem;
-		background: repeating-linear-gradient(to bottom, transparent 0 9px, var(--staff) 9px 10px);
-	}
-	.spec-chords {
-		position: relative;
-		display: flex;
-		gap: 0.25rem;
-		align-items: flex-end;
-		min-height: 3.9rem;
-	}
-	.spec-chord {
-		position: relative;
+	.pcard-head .plate {
 		flex: 1;
 		min-width: 0;
-		text-align: center;
+		color: var(--plate-plate);
 	}
-	.spec-chord .sym {
-		position: relative;
-		z-index: 2;
-		display: inline-block;
-		padding: 0 0.2rem;
-		background: var(--bg-card);
-		font-family: var(--font-display-mus);
-		font-size: clamp(0.95rem, 3.4vw, 1.28rem);
-		font-weight: 600;
-		font-variant-numeric: lining-nums;
-		color: var(--text);
+	/* The rehearsal mark keeps the A–F sequence unbroken; on the dark plate
+	   it takes the hall's ink rather than the page's. */
+	.pcard .rehearsal {
+		border-color: var(--hall-ink-soft);
+		color: var(--hall-ink);
+		min-width: 1.45rem;
+		height: 1.45rem;
+		font-size: 0.66rem;
 	}
-	.spec-chord .deg {
-		display: block;
-		margin-top: 2.15rem;
+	/* Amber pulse = live. The one reserved use, and it agrees with the CTA.
+	   On the dark plate amber holds in both themes, so unlike the prototype
+	   there is no light-theme substitution to make here. */
+	.live-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		flex: none;
+		border-radius: 50%;
+		background: var(--accent-amber);
+		animation: pulse 2s ease-out infinite;
+	}
+	@keyframes pulse {
+		0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-amber) 55%, transparent); }
+		70% { box-shadow: 0 0 0 7px transparent; }
+		100% { box-shadow: 0 0 0 0 transparent; }
+	}
+	.live-tag {
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
-		letter-spacing: 0.1em;
-		color: var(--ink-blue);
-	}
-	/* The V chord is ringed in red pencil — "you are here". */
-	.spec-chord.now .sym { color: var(--primary); }
-	.spec-chord.now::after {
-		content: '';
-		position: absolute;
-		left: 50%;
-		bottom: 0.9rem;
-		transform: translateX(-50%);
-		width: 1.6rem;
-		height: 1.6rem;
-		border: 1.5px solid var(--primary);
-		border-radius: 50%;
-		opacity: 0.55;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		color: var(--accent-amber);
 	}
 
-	.spec-note {
+	.pcard-body { padding: 1.15rem 1.1rem 1.2rem; }
+
+	/* Step 1 — the prompt */
+	.p-step,
+	.p-arrow {
 		display: block;
-		margin: 0;
-		padding-top: 0.9rem;
-		border-top: 1px dashed var(--border);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--plate-plate);
+	}
+	.p-arrow { margin: 0.85rem 0 0.55rem; }
+
+	.p-ask {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 0.45rem;
+	}
+	.p-chord {
+		font-family: var(--font-display-mus);
+		font-size: clamp(2.3rem, 8.5vw, 3.1rem);
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: -0.02em;
+		font-variant-numeric: lining-nums;
+		color: var(--hall-ink);
+	}
+	.p-voicing {
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		line-height: 1.5;
+		text-transform: uppercase;
+		text-align: right;
+		white-space: nowrap;
+		color: var(--plate-blue);
+	}
+
+	/* Step 2 — the keyboard that answers it. Widths come from KEY_UNIT in
+	   the script, so the board stays correct if the range ever changes. */
+	.kbd {
+		position: relative;
+		display: flex;
+		height: 5.6rem;
+		border: 1px solid var(--key-white-border);
+		border-radius: 3px;
+		overflow: hidden;
+		background: var(--key-white);
+	}
+	.kbd .wk {
+		position: relative;
+		flex: 1;
+		border-right: 1px solid var(--key-white-border);
+		background: var(--key-white);
+	}
+	.kbd .wk:last-child { border-right: 0; }
+	.kbd .bk {
+		position: absolute;
+		top: 0;
+		height: 62%;
+		border-radius: 0 0 2px 2px;
+		background: var(--key-black);
+		box-shadow: 0 2px 3px rgba(0, 0, 0, 0.45);
+		z-index: 2;
+	}
+	/* A pressed key: amber, because amber is live. */
+	.kbd .wk.on { background: var(--accent-gold); }
+	.kbd .bk.on { background: var(--accent-amber); }
+	/* The note name printed on the struck keys, so the graphic teaches. */
+	.kbd .wk.on::after,
+	.kbd .bk.on::after {
+		content: attr(data-n);
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+	}
+	/* Near-black on the bright amber of the dark theme measures 9.6:1, but the
+	   light theme compresses --accent-gold to the paper-safe ochre #8f5a05,
+	   where the same ink falls to 3.38:1. The struck key's fill changes
+	   character between themes, so its label has to as well: dark ink on the
+	   bright fill, white on the ochre. Measured 9.63:1 and 6.05:1. */
+	.kbd .wk.on::after {
+		bottom: 0.35rem;
+		color: #14090a;
+	}
+	:global([data-theme='light']) .kbd .wk.on::after {
+		color: #ffffff;
+	}
+	/* A black key is only ~21px wide — a label will not fit inside it. Hang
+	   it just under the key, on the white below, where there is room. The
+	   chip carries the key's own ink on a light plate so it holds anywhere. */
+	.kbd .bk.on::after {
+		bottom: -1.45rem;
+		padding: 0.05rem 0.24rem;
+		border: 1px solid var(--accent-gold);
+		border-radius: 2px;
+		background: var(--key-white);
+		color: var(--key-black);
+		white-space: nowrap;
+	}
+
+	/* Step 3 — the clock that is running on you */
+	.p-result {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		margin-top: 2.1rem;
+		padding-top: 0.85rem;
+		border-top: 1px dashed var(--plate-rule);
+	}
+	.p-check {
+		display: inline-grid;
+		place-items: center;
+		flex: none;
+		width: 1.4rem;
+		height: 1.4rem;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--accent-green) 22%, transparent);
+		color: var(--accent-green);
+		font-size: 0.78rem;
+		font-weight: 700;
+	}
+	.p-verdict {
+		min-width: 0;
 		font-family: var(--font-display-mus);
 		font-size: 0.95rem;
 		font-style: italic;
-		line-height: 1.45;
-		color: var(--ink-blue);
+		line-height: 1.35;
+		color: var(--hall-ink-soft);
 	}
+	.p-time {
+		margin-left: auto;
+		flex: none;
+		text-align: right;
+	}
+	.p-time b {
+		display: block;
+		font-family: var(--font-mono);
+		font-size: 1.28rem;
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: lining-nums tabular-nums;
+		color: var(--accent-green);
+	}
+	.p-time span {
+		display: block;
+		margin-top: 0.2rem;
+		font-family: var(--font-mono);
+		font-size: 0.54rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--plate-plate);
+	}
+
+	/* The speed bars: last attempt against this one. Reads at a glance. */
+	.p-bars {
+		display: grid;
+		gap: 0.35rem;
+		margin-top: 0.8rem;
+	}
+	/* The label column is sized against the LONGER locale: "Letzte Woche"
+	   wrapped to two lines at 3.9rem and threw the two bars out of alignment.
+	   Mono uppercase does not reflow gracefully, so the label gets its own
+	   width and is told not to wrap. */
+	.p-bar {
+		display: grid;
+		grid-template-columns: 5.4rem minmax(0, 1fr) 2.6rem;
+		align-items: center;
+		gap: 0.55rem;
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--plate-plate);
+	}
+	.p-bar > span:first-child {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.p-bar i {
+		display: block;
+		height: 0.42rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--hall-ink-soft) 40%, transparent);
+	}
+	.p-bar.now i { background: var(--accent-green); }
+	/* These two figures are the whole "you got faster" claim — they are read,
+	   so they take full ink, not a muted grey. */
+	.p-bar b {
+		font-weight: 700;
+		text-align: right;
+		font-variant-numeric: lining-nums tabular-nums;
+		color: var(--hall-ink);
+	}
+	.p-bar.now b { color: var(--accent-green); }
+
 
 	/* ── Sections ─────────────────────────────────────────────── */
 
+	/* Sections read as separate movements, so they get real air between them.
+	   A clamp rather than a fixed step: the vw term is what opens the page up
+	   on a desktop spread, and the 3.25rem floor is what stops a phone from
+	   becoming an endless scroll of whitespace. */
 	.sec {
-		padding: 3rem 0;
+		padding: clamp(3.25rem, 4.5vw, 4rem) 0;
 		border-top: 1px solid var(--rule-soft);
 	}
 	@media (min-width: 900px) {
-		.sec { padding: 4.25rem 0; }
+		.sec { padding: clamp(5.5rem, 8vw, 8rem) 0; }
 	}
 
 	.sec-head {
 		display: flex;
 		align-items: flex-start;
 		gap: 1rem;
-		margin-bottom: 1.75rem;
+		/* The heading needs to stand clear of its own section body, not just
+		   of the section above it. */
+		margin-bottom: clamp(2.25rem, 3.5vw, 3.25rem);
 	}
 	.sec-col {
 		flex: 1;
@@ -966,10 +1316,63 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 0.85rem;
-		padding: 1.5rem;
+		margin: 0;
+		padding: 1.75rem 1.5rem 1.5rem;
 		border: 1px solid var(--border);
+		/* The object inside is a circle; a hard-cornered box fights it. The
+		   frame rounds to echo the dial and its segment ends. */
+		border-radius: var(--radius-lg);
 		background: var(--bg-card);
 	}
+
+	/* The fifths annotation — copyist blue, the page's voice for "this is how
+	   the thing is built". It names the dial's construction so the ring reads
+	   as a circle of fifths and not merely as a pie chart. */
+	.fifths-head {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		align-self: stretch;
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: 0.19em;
+		text-transform: uppercase;
+		color: var(--ink-blue);
+	}
+	.fifths-head::before,
+	.fifths-head::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.32;
+	}
+	.fifths-label { flex: none; }
+
+	/* C → G → D … each step a fifth up. Set as a chain so the interval
+	   relationship is legible as a sequence, not just as a claim in prose. */
+	.fifths-chain {
+		margin: 0.35rem 0 0;
+		font-family: var(--font-display-mus);
+		font-size: 0.95rem;
+		font-weight: 600;
+		font-variant-numeric: lining-nums;
+		letter-spacing: 0.04em;
+		text-align: center;
+		text-wrap: balance;
+		color: var(--ink-blue);
+	}
+	.fifths-note {
+		margin: 0;
+		font-size: 0.82rem;
+		font-style: italic;
+		line-height: 1.5;
+		text-align: center;
+		text-wrap: balance;
+		color: var(--text-muted);
+	}
+
 	.clock-cap {
 		/* Mono uppercase eats width fast; a 22ch cap broke this to four ragged
 		   lines under the dial. Let it run the frame's width and sit on two. */
@@ -1051,7 +1454,7 @@
 
 	/* ── Habit ledger ─────────────────────────────────────────── */
 
-	.habit { margin-top: 2.75rem; }
+	.habit { margin-top: clamp(3.5rem, 5.5vw, 5.5rem); }
 	.habit-h3 {
 		margin: 0.7rem 0 0;
 		font-family: var(--font-display-mus);
@@ -1139,7 +1542,7 @@
 	/* ── Fine — closing CTA + colophon ────────────────────────── */
 
 	.fine {
-		padding: 3.25rem 0 0.5rem;
+		padding: clamp(4.5rem, 7vw, 7rem) 0 0.5rem;
 		border-top: 1px solid var(--rule-soft);
 		text-align: center;
 	}
@@ -1176,7 +1579,7 @@
 		gap: 0.75rem 1.5rem;
 		justify-content: space-between;
 		align-items: baseline;
-		margin-top: 3.25rem;
+		margin-top: clamp(3.5rem, 5vw, 5rem);
 		padding: 1.35rem 0 2.5rem;
 		border-top: 2px solid var(--text);
 	}
