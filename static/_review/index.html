@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>jazzchords.app — Redesign durchklicken</title>
+<style>
+  :root {
+    --bar: #131a26;
+    --line: #26323f;
+    --ink: #eef1f4;
+    --dim: #a3b0bf;
+    --red: #e2685c;
+    --blue: #7ba7d4;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: #0b1017; }
+  body {
+    font: 500 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem .9rem;
+    padding: .55rem .8rem;
+    background: var(--bar);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand {
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .brand b { color: var(--ink); font-weight: 700; }
+
+  .grp { display: flex; gap: 3px; flex-wrap: wrap; }
+  .grp button {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #0e141d;
+    color: var(--dim);
+    font: inherit;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .grp button:hover { color: var(--ink); border-color: #48586a; }
+  .grp button[aria-pressed="true"] {
+    background: var(--red);
+    border-color: var(--red);
+    color: #14090a;
+    font-weight: 700;
+  }
+  .grp.themes button[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); }
+  .grp button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  .sep { width: 1px; align-self: stretch; background: var(--line); }
+  .spacer { flex: 1 1 auto; }
+  .todo {
+    font-size: 11px;
+    color: #d9a441;
+    white-space: nowrap;
+    letter-spacing: .04em;
+  }
+
+  .stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    place-items: center;
+    overflow: auto;
+    padding: 0;
+    background: repeating-linear-gradient(45deg, #0c1219 0 14px, #0b1017 14px 28px);
+  }
+  iframe { border: 0; background: #0e141d; display: block; width: 100%; height: 100%; }
+  .stage[data-w="375"] { padding: 16px 0; align-items: start; }
+  .stage[data-w="375"] iframe { width: 375px; height: 812px; border-radius: 12px; box-shadow: 0 12px 44px rgba(0,0,0,.55); }
+  .stage[data-w="834"] { padding: 16px 0; align-items: start; }
+  .stage[data-w="834"] iframe { width: 834px; height: 1000px; border-radius: 12px; box-shadow: 0 12px 44px rgba(0,0,0,.55); }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <span class="brand"><b>jazzchords</b> · Redesign</span>
+
+    <div class="grp pages" role="group" aria-label="Seite">
+      <button data-p="/" aria-pressed="true">Start</button>
+      <button data-p="/learn">Lernen</button>
+      <button data-p="/learn/intervals">Kurs</button>
+      <button data-p="/chords/cmaj7">Akkord</button>
+      <button data-p="/pricing">Preise</button>
+      <button data-p="/for-educators">Lehrer</button>
+      <button data-p="/about">Über</button>
+      <button data-p="/auth/login">Login</button>
+      <button data-p="/account">Account</button>
+      <button data-p="/open-studio">Studio</button>
+      <button data-p="/privacy">Datenschutz</button>
+      <button data-p="/impressum">Impressum</button>
+      <button data-p="/terms">AGB</button>
+      <button data-p="/train">Train *</button>
+      <button data-p="/togo">To-Go *</button>
+    </div>
+
+    <span class="spacer"></span>
+
+    <div class="grp themes" role="group" aria-label="Thema">
+      <button data-t="dark" aria-pressed="true">Dunkel</button>
+      <button data-t="light">Hell</button>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="grp sizes" role="group" aria-label="Breite">
+      <button data-w="375">375</button>
+      <button data-w="834">834</button>
+      <button data-w="full" aria-pressed="true">Breit</button>
+    </div>
+
+    <span class="todo">* noch altes Design</span>
+  </div>
+
+  <div class="stage" id="stage" data-w="full">
+    <iframe id="view" src="/" title="Vorschau"></iframe>
+  </div>
+
+<script>
+  const view = document.getElementById('view');
+  const stage = document.getElementById('stage');
+  let path = '/';
+  let theme = 'dark';
+
+  function load() {
+    // Theme travels as a query flag the page's own script picks up; falling
+    // back to writing localStorage from here would need same-origin timing.
+    view.src = path + (theme === 'light' ? '?theme=light' : '');
+  }
+
+  function group(sel, key, apply) {
+    const btns = [...document.querySelectorAll(sel)];
+    for (const b of btns) {
+      b.addEventListener('click', () => {
+        for (const o of btns) o.setAttribute('aria-pressed', String(o === b));
+        apply(b.dataset[key]);
+      });
+    }
+  }
+
+  group('.pages button', 'p', (p) => { path = p; load(); });
+  group('.themes button', 't', (t) => { theme = t; applyTheme(); });
+  group('.sizes button', 'w', (w) => { stage.dataset.w = w; });
+
+  // Same-origin, so we can set the theme directly on the framed document —
+  // more reliable than a query param the app may not read.
+  function applyTheme() {
+    try {
+      const doc = view.contentDocument;
+      if (doc) {
+        doc.documentElement.setAttribute('data-theme', theme);
+        doc.defaultView.localStorage.setItem('theme', theme);
+      }
+    } catch (e) { /* cross-origin — should not happen here */ }
+  }
+
+  view.addEventListener('load', applyTheme);
+  load();
+</script>
+</body>
+</html>
