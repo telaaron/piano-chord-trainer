@@ -150,7 +150,9 @@
 
   --text: #131a26;
   --text-muted: #4a5563;
-  --text-dim: #6b7684;
+  /* app.css ships #6b7684 → 3.98:1 on the diazo stock. Darkened one
+     step so the mono labels are readable text, not grey furniture. */
+  --text-dim: #5d6875;
 
   --primary: #b0302a;
   --primary-hover: #96231e;
@@ -163,8 +165,10 @@
   --accent-gold: #8f5a05;
   --accent-amber: #8f5a05;
   --accent-red: #b0302a;
-  --accent-green: #18936a;
-  --success: #18936a;
+  /* #18936a measures 3.76:1 on --bg-card; the timing figure and the
+     check marks are text, so the green is taken one step darker. */
+  --accent-green: #0f7050;
+  --success: #0f7050;
   --danger: #d23b34;
 
   --key-white: #ffffff;
@@ -454,7 +458,9 @@ img { max-width: 100%; display: block; }
   border-bottom: 1px solid var(--border);
   background: var(--bg-muted);
 }
-.pcard-head .plate { flex: 1; min-width: 0; }
+/* The header sits on --bg-muted, one step darker than the card, so the
+   dim tone lands at 4.49:1 there. Use the muted text ink instead. */
+.pcard-head .plate { flex: 1; min-width: 0; color: var(--text-muted); }
 /* Amber pulse = live. The one reserved use, and it agrees with the CTA. */
 .live-dot {
   width: 0.5rem; height: 0.5rem;
@@ -477,6 +483,10 @@ img { max-width: 100%; display: block; }
   text-transform: uppercase;
   color: var(--accent-amber);
 }
+/* On paper the amber compresses to ochre and the word LIVE fell to
+   3.2:1 on the muted header. Give it the stamp-red ink instead — it is
+   still the live marker, and the amber dot beside it carries the hue. */
+:root[data-theme="light"] .live-tag { color: var(--primary); }
 
 .pcard-body { padding: 1.15rem 1.1rem 1.2rem; }
 
@@ -659,11 +669,13 @@ img { max-width: 100%; display: block; }
   display: block;
 }
 .p-bar.now i { background: var(--accent-green); }
+/* These two figures are the whole "you got faster" claim — they are
+   read, so they take full text ink, not a muted grey. */
 .p-bar b {
   font-weight: 700;
   text-align: right;
   font-variant-numeric: lining-nums tabular-nums;
-  color: var(--text-muted);
+  color: var(--text);
 }
 .p-bar.now b { color: var(--accent-green); }
 
@@ -739,10 +751,14 @@ img { max-width: 100%; display: block; }
   .saal-media img { object-position: 68% 55%; }
 }
 
+/* .saal-inner also carries .shell, whose horizontal padding is the page
+   gutter — so only the vertical padding is set here. A `padding: X 0`
+   shorthand zeroed the gutter and ran the headline into the screen edge. */
 .saal-inner {
   position: relative;
   z-index: 1;
-  padding: 3.25rem 0 3.5rem;
+  padding-top: 3.25rem;
+  padding-bottom: 3.5rem;
 }
 @media (min-width: 980px) {
   .saal-inner {
@@ -750,12 +766,17 @@ img { max-width: 100%; display: block; }
     grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
     gap: 3.5rem;
     align-items: center;
-    padding: 5.5rem 0 6rem;
+    padding-top: 5.5rem;
+    padding-bottom: 6rem;
   }
 }
 /* On the photograph the primitives need their own light values —
-   --text-muted is tuned for a card, not for a night photograph. */
-.saal .eyebrow { color: var(--accent-gold); }
+   --text-muted is tuned for a card, not for a night photograph.
+   These are literal, not tokens: in light theme --accent-gold resolves
+   to the paper-safe ochre #8f5a05, which measured 2.21:1 against the
+   lit part of the frame. The hall is night in both themes, so the ink
+   over it is fixed. */
+.saal .eyebrow { color: #e8b04b; }
 .saal .plate { color: #b9b2a6; }
 .saal-h1 {
   margin: 1.1rem 0 0;
@@ -791,20 +812,33 @@ img { max-width: 100%; display: block; }
   border-bottom-color: rgba(221,214,203,.5);
 }
 .saal .link-2:hover { color: #fff; border-bottom-color: #fff; }
-/* The practice card floats on the photo as a lit plate. */
+/* The practice card floats on the photo as a lit plate.
+   The hall is always night, so this card keeps its dark treatment in
+   BOTH themes — hence explicit light values for every text role
+   inside it, rather than inheriting the light-theme tokens. */
 .saal .pcard {
-  background: rgba(14,20,29,.90);
-  border-color: rgba(245,166,35,.28);
+  background: rgba(14,20,29,.92);
+  border-color: rgba(245,166,35,.30);
   backdrop-filter: blur(14px) saturate(1.1);
   -webkit-backdrop-filter: blur(14px) saturate(1.1);
 }
-.saal .pcard-head { background: rgba(26,36,49,.85); border-bottom-color: rgba(255,255,255,.10); }
+.saal .pcard-head { background: rgba(26,36,49,.90); border-bottom-color: rgba(255,255,255,.10); }
 .saal .pcard .p-chord { color: #fff; }
 .saal .pcard .p-verdict { color: #cfd6de; }
 .saal .pcard .p-result { border-top-color: rgba(255,255,255,.16); }
-.saal .pcard .plate { color: #a9b3bf; }
-.saal .pcard .p-step, .saal .pcard .p-arrow { color: #97a3b1; }
-.saal .pcard .p-bar { color: #97a3b1; }
+.saal .pcard .plate { color: #b6c0cc; }
+.saal .pcard .p-step,
+.saal .pcard .p-arrow,
+.saal .pcard .p-bar { color: #a7b3c1; }
+.saal .pcard .p-bar b { color: #eef1f4; }
+.saal .pcard .p-voicing { color: #9dc2e6; }
+.saal .pcard .live-tag { color: #f5a623; }
+.saal .pcard .p-time b,
+.saal .pcard .p-check,
+.saal .pcard .p-bar.now b { color: #3fd09a; }
+.saal .pcard .p-check { background: rgba(63,208,154,.22); }
+.saal .pcard .p-bar.now i { background: #3fd09a; }
+.saal .pcard .p-time span { color: #a7b3c1; }
 .saal-figcap { margin: 0.8rem 0 0; }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -924,7 +958,7 @@ img { max-width: 100%; display: block; }
    spread stays a clean two-column object and the graphic still lands
    in the first screen. Tried overlapping it across the gutter first:
    it left a dead black wedge beside the card and read as a mistake. */
-.kante-card-band { padding: 2.25rem 0 0.5rem; }
+.kante-card-band { padding-top: 2.25rem; padding-bottom: 0.5rem; }
 .kante-card-band .pcard { max-width: 34rem; }
 @media (min-width: 980px) {
   .kante-card-band { display: none; }
@@ -1036,14 +1070,94 @@ img { max-width: 100%; display: block; }
 :root[data-theme="light"] .riso-ink-blue { opacity: 0.42; }
 :root[data-theme="light"] .riso-dots { opacity: var(--riso-dots-opacity); }
 
-.druck-inner { padding: 2.75rem 0 3rem; }
+/* ── Fallback: no blend-mode support ─────────────────────────────
+   The whole riso effect rests on five layers that are only inks
+   BECAUSE they blend. Without mix-blend-mode they composite as plain
+   translucent fills at opacity .42/.40/.72/.34/.30 — that is not a
+   degraded photograph, it is a photograph covered by a red-and-blue
+   rectangle. The failure mode is worse than having no effect at all.
+
+   So: if either multiply or soft-light is unsupported, every ink layer
+   is removed and the duotone is produced with filters instead, which
+   have far broader support and cannot cover the image. The result is a
+   plain two-colour photo — closer to Der Saal, which is a fine place
+   to land. Two separate queries because a browser may support one mode
+   and not the other, and `--riso-red-mode` is soft-light on dark. */
+@supports not (mix-blend-mode: multiply) {
+  .riso-ink-blue,
+  .riso-ink-red,
+  .riso-ink-amber,
+  .riso-dots,
+  .riso-grain { display: none; }
+  /* sepia lays a warm monotone, hue-rotate swings it to the copyist
+     blue, saturate sets how much ink is on the plate. */
+  .riso-plate img {
+    filter: grayscale(1) sepia(1) hue-rotate(165deg) saturate(2.4) contrast(1.05) brightness(0.92);
+  }
+  /* brightness must come BEFORE sepia: sepia() compresses the tonal
+     range, so lifting afterwards has little effect and the paper
+     version came back as dark as the night one. */
+  :root[data-theme="light"] .riso-plate img {
+    filter: grayscale(1) brightness(1.5) contrast(0.9) sepia(1) hue-rotate(165deg) saturate(1.6);
+  }
+}
+@supports not (mix-blend-mode: soft-light) {
+  .riso-ink-blue,
+  .riso-ink-red,
+  .riso-ink-amber,
+  .riso-dots,
+  .riso-grain { display: none; }
+  .riso-plate img {
+    filter: grayscale(1) sepia(1) hue-rotate(165deg) saturate(2.4) contrast(1.05) brightness(0.92);
+  }
+  /* brightness must come BEFORE sepia: sepia() compresses the tonal
+     range, so lifting afterwards has little effect and the paper
+     version came back as dark as the night one. */
+  :root[data-theme="light"] .riso-plate img {
+    filter: grayscale(1) brightness(1.5) contrast(0.9) sepia(1) hue-rotate(165deg) saturate(1.6);
+  }
+}
+/* The stack also uses screen (amber, opacity .72 — the heaviest layer
+   here) and overlay (grain). An engine could support multiply and
+   soft-light but not these, in which case the two queries above would
+   not fire and the amber would paint as a solid wash. Guard them too. */
+@supports not (mix-blend-mode: screen) {
+  .riso-ink-blue,
+  .riso-ink-red,
+  .riso-ink-amber,
+  .riso-dots,
+  .riso-grain { display: none; }
+  .riso-plate img {
+    filter: grayscale(1) sepia(1) hue-rotate(165deg) saturate(2.4) contrast(1.05) brightness(0.92);
+  }
+  :root[data-theme="light"] .riso-plate img {
+    filter: grayscale(1) brightness(1.5) contrast(0.9) sepia(1) hue-rotate(165deg) saturate(1.6);
+  }
+}
+@supports not (mix-blend-mode: overlay) {
+  .riso-grain { display: none; }
+}
+/* Last-ditch: no CSS filter support either (very old engines). Then
+   even the duotone is impossible, so show the untreated photograph —
+   the atmosphere survives, only the print conceit is lost. */
+@supports not (filter: grayscale(1)) {
+  .riso-ink-blue,
+  .riso-ink-red,
+  .riso-ink-amber,
+  .riso-dots,
+  .riso-grain { display: none; }
+}
+
+/* Vertical only — .shell owns the horizontal gutter. */
+.druck-inner { padding-top: 2.75rem; padding-bottom: 3rem; }
 @media (min-width: 980px) {
   .druck-inner {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
     gap: 3.25rem;
     align-items: start;
-    padding: 4.5rem 0 5rem;
+    padding-top: 4.5rem;
+    padding-bottom: 5rem;
   }
 }
 /* Cut display lettering: the poster move. Tight, heavy, overlapping
@@ -1903,21 +2017,55 @@ img { max-width: 100%; display: block; }
     '2': 'Die Kante — Foto als Block an harter Kante',
     '3': 'Der Druck — Foto als Zweifarben-Riso'
   };
+
+  /* Hash route, so a variant can be linked and opened directly:
+       #saal  #kante  #druck        (or #1 #2 #3)
+       #druck,hell   #kante,dunkel  (variant + theme, comma-separated)
+     Needed to drive a browser that cannot be clicked, and it makes the
+     prototype shareable — one URL per variant instead of "click 3". */
+  var VAR_ALIAS = { saal: '1', kante: '2', druck: '3', '1': '1', '2': '2', '3': '3' };
+  var THEME_ALIAS = { hell: 'light', light: 'light', dunkel: 'dark', dark: 'dark' };
+
+  function paint() {
+    var v = root.getAttribute('data-variant');
+    var t = root.getAttribute('data-theme');
+    document.querySelectorAll('.seg button').forEach(function (o) {
+      var on = (o.dataset.v && o.dataset.v === v) || (o.dataset.t && o.dataset.t === t);
+      o.setAttribute('aria-pressed', String(!!on));
+    });
+    document.getElementById('pbNote').textContent = notes[v] || '';
+  }
+
+  function applyHash() {
+    var h = (location.hash || '').replace(/^#/, '').toLowerCase();
+    if (!h) return false;
+    var hit = false;
+    h.split(/[,+/&]/).forEach(function (part) {
+      part = part.trim();
+      if (VAR_ALIAS[part]) { root.setAttribute('data-variant', VAR_ALIAS[part]); hit = true; }
+      else if (THEME_ALIAS[part]) { root.setAttribute('data-theme', THEME_ALIAS[part]); hit = true; }
+    });
+    if (hit) paint();
+    return hit;
+  }
+
   document.querySelectorAll('.seg button').forEach(function (b) {
     b.addEventListener('click', function () {
       var v = b.dataset.v, t = b.dataset.t;
-      var group = b.parentElement;
-      group.querySelectorAll('button').forEach(function (o) {
-        o.setAttribute('aria-pressed', String(o === b));
-      });
-      if (v) {
-        root.setAttribute('data-variant', v);
-        document.getElementById('pbNote').textContent = notes[v];
-        window.scrollTo(0, 0);
-      }
+      if (v) { root.setAttribute('data-variant', v); window.scrollTo(0, 0); }
       if (t) root.setAttribute('data-theme', t);
+      /* Keep the URL in step so the current view is always linkable. */
+      var names = { '1': 'saal', '2': 'kante', '3': 'druck' };
+      var cur = names[root.getAttribute('data-variant')];
+      var th = root.getAttribute('data-theme') === 'light' ? ',hell' : '';
+      if (history.replaceState) history.replaceState(null, '', '#' + cur + th);
+      paint();
     });
   });
+
+  window.addEventListener('hashchange', applyHash);
+  applyHash();
+  paint();
 })();
 </script>
 </body>
