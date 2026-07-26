@@ -1,0 +1,1526 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>jazzchords.app — Variante A · Konzertsaal</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   VARIANTE A — "KONZERTSAAL"
+   Ruhig, edel, erwachsen. Ein Konzertprogrammheft, kein Spiel.
+   Hierarchie durch Weißraum, Haarlinien und Typografie — nicht durch Farbe.
+   Der Bernstein-Akzent erscheint selten und markiert immer nur EINE Sache.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Reset ─────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{min-height:100vh;overflow-x:hidden}
+img,svg{display:block;max-width:100%}
+button,input,select{font:inherit;color:inherit}
+button{background:none;border:none;cursor:pointer}
+
+/* ── Tokens ────────────────────────────────────────────────────── */
+:root{
+  /* Typografie: eine Grotesk für Display (System-Grotesk-Stack),
+     eine humanistische Sans für Text. Ziffern immer tabellarisch. */
+  --f-display:"Helvetica Neue","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --f-text:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",system-ui,sans-serif;
+  --f-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+
+  /* Neutralrampe — warmes Papier. 9 Stufen (Refactoring UI). */
+  --n0:#ffffff;  --n50:#faf8f5;  --n100:#f2efe9;  --n200:#e6e1d8;
+  --n300:#d2cbbe; --n400:#a8a094; --n500:#6f685e; --n600:#5c564e;
+  --n700:#403b35; --n800:#292521; --n900:#17140f;
+
+  --bg:var(--n50);
+  --bg-raised:var(--n0);
+  --bg-sunken:var(--n100);
+  --rule:var(--n200);          /* Haarlinie — das Hauptstrukturmittel */
+  --rule-strong:var(--n300);
+  --ink:#1d1a15;               /* nie reines Schwarz */
+  --ink-2:var(--n600);
+  --ink-3:var(--n500);         /* ≥4.5:1 auf --bg (WCAG 1.4.3) */
+
+  /* Bernstein — der einzige Akzent. Sparsam. */
+  --amber:#9e6115;             /* Light: dunkel genug für Text (4.5:1+) */
+  --amber-line:#c98b2e;
+  --amber-wash:rgba(200,139,46,.10);
+  --amber-key:#e0a341;         /* auf Tasten/Flächen, nicht für Text */
+
+  --focus:#1d5fb0;
+
+  /* Abstände 4/8 */
+  --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s5:1.5rem;
+  --s6:2rem; --s7:3rem; --s8:4rem; --s9:6rem; --s10:8rem;
+
+  --maxw:68rem;
+  --radius:2px;                /* fast eckig — Programmheft, keine Bubbles */
+  --shadow:0 1px 2px rgba(29,26,21,.05),0 12px 32px -12px rgba(29,26,21,.10);
+
+  --key-white:#fbfaf7;
+  --key-white-edge:var(--n300);
+  --key-black:#221e19;
+  color-scheme:light;
+}
+
+@media (prefers-color-scheme:dark){
+  :root{
+    --n0:#0f0d0b; --n50:#131110; --n100:#1a1714; --n200:#252119;
+    --n300:#332d25; --n400:#6b6459; --n500:#8f877b; --n600:#b3aca1;
+    --n700:#d2ccc2; --n800:#e8e3da; --n900:#f6f3ed;
+    --bg:#100e0c;              /* tiefe Tinte, warm — nicht Blau, nicht Schwarz */
+    --bg-raised:#171412;
+    --bg-sunken:#0b0a08;
+    --rule:#2a251e;
+    --rule-strong:#3b342a;
+    --ink:#f0ebe2;             /* nicht reines Weiß */
+    --ink-2:#a9a196;
+    --ink-3:#8a8378;
+    --amber:#e8b45f;           /* auf dunkel: heller, entsättigt */
+    --amber-line:#8f6a2c;
+    --amber-wash:rgba(232,180,95,.09);
+    --amber-key:#e8b45f;
+    --focus:#7fb0f0;
+    --shadow:0 1px 2px rgba(0,0,0,.5),0 16px 40px -16px rgba(0,0,0,.7);
+    --key-white:#e9e4da;
+    --key-white-edge:#b3aca1;
+    --key-black:#100e0c;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --n0:#0f0d0b; --n50:#131110; --n100:#1a1714; --n200:#252119;
+  --n300:#332d25; --n400:#6b6459; --n500:#8f877b; --n600:#b3aca1;
+  --n700:#d2ccc2; --n800:#e8e3da; --n900:#f6f3ed;
+  --bg:#100e0c; --bg-raised:#171412; --bg-sunken:#0b0a08;
+  --rule:#2a251e; --rule-strong:#3b342a;
+  --ink:#f0ebe2; --ink-2:#a9a196; --ink-3:#8a8378;
+  --amber:#e8b45f; --amber-line:#8f6a2c; --amber-wash:rgba(232,180,95,.09);
+  --amber-key:#e8b45f; --focus:#7fb0f0;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 16px 40px -16px rgba(0,0,0,.7);
+  --key-white:#e9e4da; --key-white-edge:#b3aca1; --key-black:#100e0c;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --n0:#ffffff; --n50:#faf8f5; --n100:#f2efe9; --n200:#e6e1d8;
+  --n300:#d2cbbe; --n400:#a8a094; --n500:#6f685e; --n600:#5c564e;
+  --n700:#403b35; --n800:#292521; --n900:#17140f;
+  --bg:var(--n50); --bg-raised:#ffffff; --bg-sunken:var(--n100);
+  --rule:var(--n200); --rule-strong:var(--n300);
+  --ink:#1d1a15; --ink-2:var(--n600); --ink-3:var(--n500);
+  --amber:#9e6115; --amber-line:#c98b2e; --amber-wash:rgba(200,139,46,.10);
+  --amber-key:#e0a341; --focus:#1d5fb0;
+  --shadow:0 1px 2px rgba(29,26,21,.05),0 12px 32px -12px rgba(29,26,21,.10);
+  --key-white:#fbfaf7; --key-white-edge:var(--n300); --key-black:#221e19;
+  color-scheme:light;
+}
+
+/* ── Basis ─────────────────────────────────────────────────────── */
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:var(--f-text);font-size:1rem;line-height:1.6;
+  font-feature-settings:"kern" 1;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:400;letter-spacing:-.022em;line-height:1.08}
+strong{font-weight:600}
+::selection{background:var(--amber-wash);color:var(--ink)}
+
+:where(a,button,[tabindex]):focus-visible{
+  outline:2px solid var(--focus);outline-offset:3px;border-radius:var(--radius);
+}
+
+/* Musiknotation: ♭ ♯ ° ø optisch etwas kleiner und hochgestellt */
+.acc{font-family:var(--f-text);font-size:.82em;vertical-align:.06em;letter-spacing:0}
+
+/* Eyebrow — das wiederkehrende "Satzbezeichnung"-Motiv des Programmhefts */
+.eyebrow{
+  font-family:var(--f-text);font-size:.6875rem;font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+  display:flex;align-items:center;gap:var(--s3);
+}
+.eyebrow::after{content:"";height:1px;flex:1;background:var(--rule)}
+.eyebrow-num{
+  font-family:var(--f-mono);font-size:.6875rem;color:var(--amber);
+  font-variant-numeric:tabular-nums;letter-spacing:.08em;
+}
+
+.wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--s5)}
+@media(min-width:48rem){.wrap{padding-inline:var(--s6)}}
+
+.lede{font-size:1.0625rem;line-height:1.65;color:var(--ink-2);max-width:34em}
+@media(min-width:48rem){.lede{font-size:1.1875rem}}
+
+/* ── Kopfzeile + Segmentleiste ─────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:saturate(1.4) blur(14px);
+  -webkit-backdrop-filter:saturate(1.4) blur(14px);
+  border-bottom:1px solid var(--rule);
+}
+@supports not (backdrop-filter:blur(1px)){.topbar{background:var(--bg)}}
+.topbar-in{
+  max-width:var(--maxw);margin-inline:auto;padding:var(--s3) var(--s5);
+  display:flex;align-items:center;gap:var(--s4);
+}
+@media(min-width:48rem){.topbar-in{padding-inline:var(--s6)}}
+
+.brand{
+  display:flex;align-items:center;gap:var(--s3);flex-shrink:0;
+  text-decoration:none;color:inherit;
+  min-height:44px;min-width:44px;  /* WCAG 2.5.8 — auch wenn nur das Logo sichtbar ist */
+}
+.brand-mark{width:22px;height:22px;color:var(--ink);flex-shrink:0}
+.brand-name{
+  font-family:var(--f-display);font-size:.9375rem;font-weight:500;
+  letter-spacing:-.01em;white-space:nowrap;
+}
+.brand-name .dim{color:var(--ink-3);font-weight:400}
+@media(max-width:34rem){.brand-name{display:none}}
+
+/* Segmentleiste: reine Unterstreichung, kein Pill, kein Kasten */
+.segs{
+  flex:1;display:flex;gap:0;overflow-x:auto;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;margin-bottom:-1px;
+}
+.segs::-webkit-scrollbar{display:none}
+.seg{
+  position:relative;flex-shrink:0;
+  padding:var(--s3) var(--s3) calc(var(--s3) + 1px);
+  font-size:.8125rem;font-weight:500;letter-spacing:.005em;
+  color:var(--ink-3);white-space:nowrap;
+  border-bottom:1px solid transparent;
+  transition:color .18s ease;min-height:44px;
+}
+@media(min-width:30rem){.seg{padding-inline:var(--s4)}}
+.seg:hover{color:var(--ink)}
+.seg[aria-current="page"]{color:var(--ink);border-bottom-color:var(--amber-line)}
+
+.theme-btn{
+  flex-shrink:0;width:36px;height:36px;display:grid;place-items:center;
+  color:var(--ink-3);border:1px solid var(--rule);border-radius:var(--radius);
+  transition:color .18s,border-color .18s;
+}
+.theme-btn:hover{color:var(--ink);border-color:var(--rule-strong)}
+.theme-btn svg{width:16px;height:16px}
+:root[data-theme="dark"] .i-sun,:root:not([data-theme="light"]) .i-sun{display:none}
+:root[data-theme="light"] .i-sun{display:block}
+:root[data-theme="light"] .i-moon{display:none}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .i-sun{display:block}
+  :root:not([data-theme="light"]) .i-moon{display:none}}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .i-sun{display:none}
+  :root:not([data-theme="dark"]) .i-moon{display:block}}
+:root[data-theme="dark"] .i-moon{display:none}
+:root[data-theme="dark"] .i-sun{display:block}
+
+/* ── Screens ───────────────────────────────────────────────────── */
+.screen{display:none}
+.screen.is-on{display:block;animation:fade .34s cubic-bezier(.2,.7,.3,1)}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  .screen.is-on{animation:none}
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+
+/* ── Buttons ───────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+  min-height:48px;padding:0 var(--s5);border-radius:var(--radius);
+  font-size:.9375rem;font-weight:500;letter-spacing:.005em;
+  text-decoration:none;transition:background .18s,border-color .18s,color .18s;
+}
+.btn svg{width:16px;height:16px;flex-shrink:0}
+.btn-primary{background:var(--ink);color:var(--bg)}
+.btn-primary:hover{background:var(--n700)}
+.btn-ghost{border:1px solid var(--rule-strong);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--ink-3);background:var(--bg-sunken)}
+.btn-quiet{color:var(--ink-2);padding-inline:var(--s3)}
+.btn-quiet:hover{color:var(--ink)}
+.btn-block{display:flex;width:100%}
+
+/* ═══ KLAVIATUR ═══════════════════════════════════════════════════
+   Kernstück. Weiße Tasten als Flexrow, schwarze absolut positioniert.
+   Markierte Töne: warme Fläche + Tonname im Tastenfuß.
+   Grundton zusätzlich mit Ring markiert (Farbe ist nie das einzige Signal).
+   ═══════════════════════════════════════════════════════════════ */
+/* Scroll-Container zentriert die Klaviatur, wenn sie passt,
+   und lässt sie scrollen, wenn nicht (Body scrollt nie horizontal). */
+.piano-scroll{
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
+  padding-bottom:var(--s2);
+  display:flex;justify-content:safe center;
+  min-width:0;max-width:100%;
+}
+.piano{
+  /* --kw = Breite einer weißen Taste. Alles andere leitet sich daraus ab,
+     damit die schwarzen Tasten in JEDER Größe exakt auf den Fugen sitzen. */
+  --kw:42px;
+  --bw:26px;
+  position:relative;display:flex;
+  flex:0 0 auto;width:max-content;
+  background:var(--bg-raised);
+  border:1px solid var(--rule-strong);border-radius:var(--radius);
+  padding:0;box-shadow:var(--shadow);
+  /* Filz-Streifen oben — das eine Detail, das nach Instrument aussieht */
+  border-top:3px solid var(--rule-strong);
+}
+.wk{
+  position:relative;flex:0 0 auto;
+  width:var(--kw);height:168px;
+  background:var(--key-white);
+  border-right:1px solid var(--key-white-edge);
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:var(--s2);
+  font-family:var(--f-mono);font-size:.625rem;font-weight:500;
+  color:#6b645a;letter-spacing:.04em;   /* ≥4.5:1 auf der weißen Taste */
+  transition:background .2s ease;
+}
+.wk:first-child{border-radius:0 0 0 2px}
+.wk:last-child{border-right:none;border-radius:0 0 2px 0}
+.wk.on{background:var(--amber-key);color:#2a1c06;font-weight:700}
+.wk.root{box-shadow:inset 0 0 0 2px var(--ink)}
+.bk{
+  /* --at = Index der weißen Taste, hinter deren Fuge die Taste sitzt.
+     Zentriert exakt auf der Fuge: at*kw - bw/2 */
+  position:absolute;top:0;z-index:2;
+  left:calc(var(--at) * var(--kw) - var(--bw) / 2);
+  width:var(--bw);height:104px;
+  background:var(--key-black);
+  border-radius:0 0 2px 2px;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:var(--s2);
+  font-family:var(--f-mono);font-size:.5625rem;font-weight:500;
+  color:#9d968a;letter-spacing:.02em;   /* ≥4.5:1 auf der schwarzen Taste */
+  box-shadow:0 2px 4px rgba(0,0,0,.35);
+  transition:background .2s ease;
+}
+.bk.on{background:var(--amber-key);color:#2a1c06;font-weight:700}
+.bk.root{box-shadow:0 2px 4px rgba(0,0,0,.35),inset 0 0 0 2px var(--ink)}
+@media(min-width:48rem){
+  .piano{--kw:52px;--bw:32px}
+  .wk{height:200px}
+  .bk{height:124px}
+}
+.piano-legend{
+  display:flex;flex-wrap:wrap;gap:var(--s4);justify-content:center;
+  margin-top:var(--s4);font-size:.75rem;color:var(--ink-3);
+}
+.piano-legend span{display:inline-flex;align-items:center;gap:var(--s2)}
+.swatch{width:11px;height:11px;border-radius:1px;background:var(--amber-key);flex-shrink:0}
+.swatch.ring{background:transparent;box-shadow:inset 0 0 0 2px var(--ink)}
+
+/* ═══ 1 · LANDING ════════════════════════════════════════════════ */
+.hero{padding:var(--s8) 0 var(--s7)}
+@media(min-width:48rem){.hero{padding:var(--s10) 0 var(--s9)}}
+
+.hero-title{
+  font-size:clamp(2.375rem,8.5vw,4.75rem);
+  line-height:1.02;letter-spacing:-.035em;font-weight:400;
+  max-width:16ch;margin-top:var(--s5);
+}
+.hero-title .em{font-style:italic;font-family:Georgia,"Times New Roman",serif;letter-spacing:-.02em}
+.hero-sub{margin-top:var(--s5)}
+.hero-actions{display:flex;flex-wrap:wrap;gap:var(--s3);margin-top:var(--s6)}
+.hero-note{
+  margin-top:var(--s5);font-size:.8125rem;color:var(--ink-3);
+  display:flex;align-items:center;gap:var(--s2);
+}
+.hero-note svg{width:14px;height:14px;flex-shrink:0;color:var(--amber)}
+
+/* Der Hero-Beleg: Akkord + Klaviatur, als "Notenbeispiel" gesetzt */
+.hero-figure{margin-top:var(--s8);padding-top:var(--s6);border-top:1px solid var(--rule)}
+.figure-head{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s3) var(--s4);
+  margin-bottom:var(--s5);
+}
+.figure-chord{
+  font-family:var(--f-display);font-size:2rem;font-weight:400;letter-spacing:-.02em;
+}
+.figure-meta{font-size:.8125rem;color:var(--ink-3)}
+.figure-meta b{font-weight:500;color:var(--ink-2)}
+
+/* Zahlenband — ruhige Belege statt bunter Badges */
+.figures{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  border-top:1px solid var(--rule);margin-top:var(--s8);
+}
+@media(min-width:48rem){.figures{grid-template-columns:repeat(4,1fr)}}
+.fig{padding:var(--s5) 0;border-bottom:1px solid var(--rule)}
+.fig+.fig{border-left:1px solid var(--rule);padding-left:var(--s5)}
+@media(max-width:47.99rem){.fig:nth-child(odd){border-left:none;padding-left:0}}
+.fig-n{
+  font-family:var(--f-display);font-size:2rem;font-weight:400;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1;
+}
+.fig-l{font-size:.75rem;color:var(--ink-3);margin-top:var(--s2);letter-spacing:.01em}
+
+section{padding:var(--s8) 0}
+@media(min-width:48rem){section{padding:var(--s9) 0}}
+.sec-head{max-width:38rem;margin-bottom:var(--s7)}
+.sec-title{font-size:clamp(1.75rem,4.2vw,2.625rem);letter-spacing:-.028em;margin-top:var(--s4)}
+.sec-desc{margin-top:var(--s4);color:var(--ink-2);font-size:1.0625rem;line-height:1.62}
+
+/* Coach-Programm: das Session-Programm als Programmheft-Satzliste */
+.programme{border-top:1px solid var(--rule)}
+.prog-row{
+  display:grid;grid-template-columns:auto 1fr auto;
+  align-items:center;gap:var(--s4);
+  padding:var(--s4) 0;border-bottom:1px solid var(--rule);
+}
+.prog-num{
+  font-family:var(--f-mono);font-size:.75rem;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;width:1.5rem;
+}
+.prog-label{font-size:.9375rem;color:var(--ink-2)}
+.prog-min{
+  font-family:var(--f-mono);font-size:.75rem;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;
+}
+.prog-row.now{background:var(--amber-wash);margin-inline:calc(var(--s3) * -1);padding-inline:var(--s3)}
+.prog-row.now .prog-num{color:var(--amber);font-weight:600}
+.prog-row.now .prog-label{color:var(--ink);font-weight:500}
+.prog-row.done .prog-label{color:var(--ink-3)}
+.prog-row.done .prog-num::before{content:"·"}
+
+.coach-say{
+  margin-top:var(--s6);padding:var(--s5) 0 0;border-top:1px solid var(--rule);
+}
+.coach-say q{
+  display:block;font-family:Georgia,"Times New Roman",serif;font-style:italic;
+  font-size:1.25rem;line-height:1.45;letter-spacing:-.01em;quotes:"„" "“";
+}
+@media(min-width:48rem){.coach-say q{font-size:1.4375rem}}
+.coach-say figcaption{margin-top:var(--s3);font-size:.75rem;color:var(--ink-3);letter-spacing:.04em}
+
+/* Zwei-Spalten-Layout für Sektionen mit Beleg.
+   min-width:0 verhindert, dass max-content-Kinder (Klaviatur) die Spalte
+   über die Viewportbreite hinaus aufblasen. */
+.split{display:grid;gap:var(--s7)}
+.split > *{min-width:0}
+@media(min-width:56rem){.split{grid-template-columns:1fr 1fr;gap:var(--s8);align-items:start}}
+
+/* Lehrplan-Treppe */
+.steps{border-top:1px solid var(--rule)}
+.step{
+  display:grid;grid-template-columns:auto 1fr;gap:var(--s4);
+  padding:var(--s5) 0;border-bottom:1px solid var(--rule);align-items:baseline;
+}
+@media(min-width:48rem){
+  .step{grid-template-columns:3rem 1fr auto;gap:var(--s5)}
+}
+.step-n{font-family:var(--f-mono);font-size:.75rem;color:var(--ink-3);font-variant-numeric:tabular-nums;padding-top:.2em}
+.step-t{font-family:var(--f-display);font-size:1.125rem;letter-spacing:-.015em}
+.step-d{font-size:.875rem;color:var(--ink-2);margin-top:var(--s2);max-width:44ch}
+.step-chord{
+  font-family:var(--f-mono);font-size:.8125rem;color:var(--ink-3);
+  grid-column:2;margin-top:var(--s2);
+}
+@media(min-width:48rem){.step-chord{grid-column:3;margin-top:0;text-align:right;white-space:nowrap}}
+.step.active .step-t{color:var(--ink)}
+.step.active .step-n{color:var(--amber);font-weight:600}
+.step.locked .step-t,.step.locked .step-d{color:var(--ink-3)}
+.step-tag{
+  font-size:.6875rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--amber);margin-left:var(--s3);font-weight:600;white-space:nowrap;
+}
+.step-lock{width:13px;height:13px;color:var(--ink-3);display:inline-block;vertical-align:-1px;margin-left:var(--s2)}
+
+/* Eingabe-Chips */
+.chips{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s5)}
+.chip{
+  display:inline-flex;align-items:center;gap:var(--s2);
+  padding:var(--s2) var(--s4);border:1px solid var(--rule);border-radius:100px;
+  font-size:.8125rem;color:var(--ink-2);
+}
+.chip svg{width:14px;height:14px;color:var(--ink-3)}
+
+/* FAQ */
+.faq{border-top:1px solid var(--rule);max-width:44rem}
+.faq details{border-bottom:1px solid var(--rule)}
+.faq summary{
+  padding:var(--s5) var(--s6) var(--s5) 0;cursor:pointer;list-style:none;
+  font-family:var(--f-display);font-size:1.0625rem;letter-spacing:-.012em;
+  position:relative;min-height:44px;display:flex;align-items:center;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"";position:absolute;right:var(--s2);top:50%;
+  width:9px;height:9px;border-right:1.5px solid var(--ink-3);border-bottom:1.5px solid var(--ink-3);
+  transform:translateY(-70%) rotate(45deg);transition:transform .2s ease;
+}
+.faq details[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+.faq details[open] summary{color:var(--ink)}
+.faq p{padding:0 var(--s6) var(--s5) 0;color:var(--ink-2);font-size:.9375rem;max-width:60ch}
+
+/* Schluss-CTA */
+.endcta{border-top:1px solid var(--rule);text-align:center;padding:var(--s9) 0}
+.endcta h2{font-size:clamp(1.75rem,5vw,2.75rem);letter-spacing:-.03em;max-width:18ch;margin-inline:auto}
+.endcta p{margin-top:var(--s4);color:var(--ink-2);max-width:40ch;margin-inline:auto}
+.endcta .btn{margin-top:var(--s6)}
+
+footer{border-top:1px solid var(--rule);padding:var(--s6) 0;font-size:.8125rem;color:var(--ink-3)}
+.foot-in{display:flex;flex-wrap:wrap;gap:var(--s4);justify-content:space-between;align-items:center}
+
+/* ═══ 2 · TRAIN / DASHBOARD ══════════════════════════════════════ */
+.page-head{padding:var(--s7) 0 var(--s6);border-bottom:1px solid var(--rule)}
+.greet{font-size:clamp(1.75rem,5vw,2.5rem);letter-spacing:-.03em;margin-top:var(--s3)}
+.greet-sub{margin-top:var(--s3);color:var(--ink-2)}
+
+/* Statuszeile — Streak/Level/Ziel als Messwerte, nicht als Abzeichen */
+.status{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-bottom:1px solid var(--rule);
+}
+.stat{padding:var(--s5) var(--s4) var(--s5) 0}
+.stat+.stat{border-left:1px solid var(--rule);padding-left:var(--s5)}
+.stat-l{font-size:.6875rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.stat-v{
+  font-family:var(--f-display);font-size:1.75rem;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;margin-top:var(--s2);line-height:1;
+  display:flex;align-items:baseline;gap:var(--s2);
+}
+.stat-v small{font-size:.8125rem;font-family:var(--f-text);color:var(--ink-3);letter-spacing:0}
+@media(min-width:48rem){.stat-v{font-size:2.125rem}}
+
+/* Tagesziel als Haarlinien-Meter (Goal-Gradient) */
+.goal{padding:var(--s5) 0;border-bottom:1px solid var(--rule)}
+.goal-top{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s4);font-size:.8125rem}
+.goal-top .lbl{color:var(--ink-3);letter-spacing:.02em}
+.goal-top .val{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.meter{
+  height:3px;background:var(--bg-sunken);margin-top:var(--s3);
+  border-radius:100px;overflow:hidden;
+  box-shadow:inset 0 0 0 1px var(--rule);
+}
+.meter i{display:block;height:100%;background:var(--amber-key);border-radius:100px}
+
+/* "Weiter üben" — der eine laute Moment auf dem Screen */
+.resume{
+  margin:var(--s6) 0;padding:var(--s6);
+  background:var(--bg-raised);border:1px solid var(--rule-strong);
+  border-left:3px solid var(--amber-line);
+  border-radius:var(--radius);box-shadow:var(--shadow);
+}
+@media(min-width:48rem){.resume{padding:var(--s7)}}
+.resume-eyebrow{
+  font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--amber);font-weight:600;
+}
+.resume h2{font-size:clamp(1.375rem,3.6vw,1.875rem);letter-spacing:-.025em;margin-top:var(--s3);max-width:22ch}
+.resume-say{
+  margin-top:var(--s4);font-family:Georgia,"Times New Roman",serif;font-style:italic;
+  font-size:1.0625rem;line-height:1.5;color:var(--ink-2);max-width:42ch;
+}
+.resume-foot{
+  display:flex;flex-wrap:wrap;gap:var(--s4);align-items:center;
+  margin-top:var(--s5);
+}
+.resume-meta{font-size:.8125rem;color:var(--ink-3);font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* Übungskarten — Liste mit Haarlinien, kein Kartenmeer */
+.drills{border-top:1px solid var(--rule)}
+.drill{
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:var(--s4);
+  padding:var(--s5) 0;border-bottom:1px solid var(--rule);
+  width:100%;text-align:left;cursor:pointer;
+  transition:padding-left .2s ease,background .2s ease;
+}
+.drill:hover{background:var(--bg-sunken);padding-left:var(--s3);
+  margin-inline:calc(var(--s3) * -1);padding-right:var(--s3)}
+.drill-t{font-family:var(--f-display);font-size:1.0625rem;letter-spacing:-.015em;display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap}
+.drill-d{font-size:.875rem;color:var(--ink-2);margin-top:var(--s2);max-width:46ch}
+.drill-go{width:16px;height:16px;color:var(--ink-3);flex-shrink:0}
+.drill:hover .drill-go{color:var(--amber)}
+.badge-pro{
+  font-size:.625rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+  color:var(--amber);border:1px solid var(--amber-line);
+  padding:1px var(--s2);border-radius:2px;
+}
+
+/* ═══ 3 · ÜBUNGS-SCREEN (Drill) ══════════════════════════════════ */
+.drill-stage{
+  min-height:calc(100vh - 57px);display:flex;flex-direction:column;
+  padding-bottom:var(--s6);
+}
+.drill-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s4);
+  padding:var(--s4) 0;border-bottom:1px solid var(--rule);
+}
+.drill-part{
+  font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+  display:flex;align-items:center;gap:var(--s3);
+}
+/* Satz-Fortschritt: drei Striche, wie Sätze im Programmheft */
+.movements{display:flex;gap:4px;align-items:center}
+.movements i{display:block;width:22px;height:2px;background:var(--rule-strong);border-radius:2px}
+.movements i.done{background:var(--ink-3)}
+.movements i.now{background:var(--amber-key);width:30px}
+.drill-quit{color:var(--ink-3);font-size:.8125rem;min-height:44px;display:flex;align-items:center;gap:var(--s2)}
+.drill-quit:hover{color:var(--ink)}
+.drill-quit svg{width:14px;height:14px}
+
+.drill-main{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:var(--s7) 0;text-align:center;
+}
+.drill-voicing{
+  font-size:.75rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+}
+/* Der große Akkordname — die einzige echte Display-Größe der App */
+.drill-chord{
+  font-family:var(--f-display);
+  font-size:clamp(4.5rem,20vw,9rem);
+  font-weight:400;letter-spacing:-.05em;line-height:.92;
+  margin:var(--s4) 0 var(--s3);
+}
+.drill-chord .acc{font-size:.6em;vertical-align:.16em;letter-spacing:-.02em}
+.drill-notes{
+  font-family:var(--f-mono);font-size:.9375rem;color:var(--ink-2);
+  letter-spacing:.1em;
+}
+.drill-piano{margin-top:var(--s7);width:100%}
+.drill-foot{
+  display:flex;flex-wrap:wrap;gap:var(--s3);justify-content:center;align-items:center;
+  margin-top:var(--s7);
+}
+.listening{
+  display:inline-flex;align-items:center;gap:var(--s3);
+  font-size:.8125rem;color:var(--ink-3);
+}
+.pulse{width:7px;height:7px;border-radius:100px;background:var(--amber-key);flex-shrink:0;
+  animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.pulse{animation:none;opacity:1}}
+
+/* ═══ 4 · TO-GO ══════════════════════════════════════════════════ */
+.togo-grid{display:grid;gap:0;border-top:1px solid var(--rule)}
+@media(min-width:40rem){.togo-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:64rem){.togo-grid{grid-template-columns:repeat(3,1fr)}}
+.disc{
+  display:flex;flex-direction:column;gap:var(--s2);
+  padding:var(--s5) var(--s5) var(--s5) 0;
+  border-bottom:1px solid var(--rule);text-align:left;width:100%;
+  transition:background .2s ease;
+}
+/* Senkrechte Fugen: Rechtslinie nur, wenn die Zelle NICHT in der letzten
+   Spalte steht. So hängt keine Linie in eine leere Zelle der letzten Reihe. */
+@media(min-width:40rem) and (max-width:63.99rem){
+  .disc{padding-right:var(--s5)}
+  .disc:not(:nth-child(2n)){border-right:1px solid var(--rule)}
+}
+@media(min-width:64rem){
+  .disc{padding-right:var(--s5)}
+  .disc:not(:nth-child(3n)){border-right:1px solid var(--rule)}
+}
+/* Alleinstehende Zelle in der letzten Reihe bekommt keine Fuge nach rechts. */
+.disc:last-child{border-right:none}
+.disc:hover{background:var(--bg-sunken)}
+.disc-top{display:flex;align-items:center;gap:var(--s3)}
+.disc-ico{width:17px;height:17px;color:var(--ink-3);flex-shrink:0}
+.disc:hover .disc-ico{color:var(--amber)}
+.disc-t{font-family:var(--f-display);font-size:1.0625rem;letter-spacing:-.015em}
+.disc-d{font-size:.875rem;color:var(--ink-2)}
+.disc-need{
+  font-size:.6875rem;letter-spacing:.06em;color:var(--ink-3);
+  margin-top:var(--s1);display:flex;align-items:center;gap:var(--s2);
+}
+.disc-need svg{width:11px;height:11px}
+
+/* Laufende To-Go-Übung */
+.togo-run{
+  margin-top:var(--s7);padding:var(--s6);
+  border:1px solid var(--rule-strong);border-radius:var(--radius);
+  background:var(--bg-raised);box-shadow:var(--shadow);
+}
+@media(min-width:48rem){.togo-run{padding:var(--s7)}}
+.run-head{
+  display:flex;justify-content:space-between;align-items:center;gap:var(--s4);
+  padding-bottom:var(--s5);border-bottom:1px solid var(--rule);
+}
+.run-round{font-family:var(--f-mono);font-size:.75rem;color:var(--ink-3);
+  letter-spacing:.08em;font-variant-numeric:tabular-nums}
+.run-q{
+  font-family:var(--f-display);font-size:clamp(1.5rem,4.5vw,2.125rem);
+  letter-spacing:-.028em;text-align:center;margin:var(--s7) auto var(--s5);max-width:20ch;
+}
+/* Wellenform als Hörsignal — ruhig, monochrom */
+.wave{display:flex;align-items:center;justify-content:center;gap:3px;height:44px;margin-bottom:var(--s6)}
+.wave i{display:block;width:2px;background:var(--rule-strong);border-radius:2px}
+.wave i.hi{background:var(--amber-key)}
+.answers{display:grid;gap:var(--s3);grid-template-columns:1fr}
+@media(min-width:34rem){.answers{grid-template-columns:1fr 1fr}}
+.ans{
+  min-height:52px;padding:var(--s3) var(--s4);
+  border:1px solid var(--rule-strong);border-radius:var(--radius);
+  font-size:.9375rem;text-align:left;color:var(--ink);
+  display:flex;align-items:center;gap:var(--s3);
+  transition:border-color .18s,background .18s;
+}
+.ans:hover{border-color:var(--ink-3);background:var(--bg-sunken)}
+.ans-k{
+  font-family:var(--f-mono);font-size:.6875rem;color:var(--ink-3);
+  border:1px solid var(--rule);border-radius:2px;padding:1px 5px;flex-shrink:0;
+}
+.ans.correct{border-color:var(--amber-line);background:var(--amber-wash)}
+.ans.correct .ans-k{border-color:var(--amber-line);color:var(--amber)}
+.ans-mark{margin-left:auto;width:16px;height:16px;color:var(--amber)}
+.run-foot{
+  margin-top:var(--s6);padding-top:var(--s5);border-top:1px solid var(--rule);
+  display:flex;flex-wrap:wrap;gap:var(--s4);align-items:center;justify-content:space-between;
+}
+.run-verdict{font-size:.9375rem;color:var(--ink-2)}
+.run-verdict b{color:var(--ink);font-weight:600}
+
+/* ═══ 5 · LEARN ══════════════════════════════════════════════════ */
+.courses{display:grid;gap:0;border-top:1px solid var(--rule)}
+@media(min-width:52rem){.courses{grid-template-columns:1fr 1fr}}
+.course{
+  padding:var(--s6) var(--s5) var(--s6) 0;
+  border-bottom:1px solid var(--rule);
+  display:flex;flex-direction:column;gap:var(--s3);
+  text-align:left;width:100%;transition:background .2s ease;
+}
+@media(min-width:52rem){
+  .course:nth-child(odd){border-right:1px solid var(--rule);padding-right:var(--s6)}
+  .course:nth-child(even){padding-left:var(--s6)}
+}
+.course:hover{background:var(--bg-sunken)}
+.course-top{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s4)}
+.course-lvl{font-size:.6875rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.course-t{font-family:var(--f-display);font-size:1.375rem;letter-spacing:-.022em}
+.course-s{font-size:.875rem;color:var(--ink-3);margin-top:calc(var(--s1) * -1)}
+.course-d{font-size:.9375rem;color:var(--ink-2);max-width:46ch}
+.course-prog{margin-top:var(--s3)}
+.course-prog .goal-top{font-size:.75rem}
+
+/* ═══ 6 · PRICING ════════════════════════════════════════════════ */
+.plans{display:grid;gap:0;border-top:1px solid var(--rule);margin-top:var(--s7)}
+@media(min-width:48rem){.plans{grid-template-columns:1fr 1fr}}
+.plan{padding:var(--s6) 0}
+@media(min-width:48rem){
+  .plan:first-child{padding-right:var(--s7);border-right:1px solid var(--rule)}
+  .plan:last-child{padding-left:var(--s7)}
+}
+.plan+.plan{border-top:1px solid var(--rule)}
+@media(min-width:48rem){.plan+.plan{border-top:none}}
+.plan-name{font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.plan.pro .plan-name{color:var(--amber);font-weight:600}
+.plan-price{
+  font-family:var(--f-display);font-size:3rem;letter-spacing:-.04em;line-height:1;
+  margin-top:var(--s4);display:flex;align-items:baseline;gap:var(--s2);
+  font-variant-numeric:tabular-nums;
+}
+.plan-price small{font-size:.875rem;font-family:var(--f-text);color:var(--ink-3);letter-spacing:0}
+.plan-note{font-size:.8125rem;color:var(--ink-3);margin-top:var(--s3)}
+.plan .btn{margin-top:var(--s5)}
+.feats{list-style:none;margin-top:var(--s6);border-top:1px solid var(--rule)}
+.feats li{
+  display:flex;align-items:flex-start;gap:var(--s3);
+  padding:var(--s3) 0;border-bottom:1px solid var(--rule);
+  font-size:.875rem;color:var(--ink-2);
+}
+.feats svg{width:15px;height:15px;flex-shrink:0;margin-top:.18em;color:var(--ink-3)}
+.plan.pro .feats svg{color:var(--amber)}
+
+.guarantees{
+  display:grid;gap:0;border-top:1px solid var(--rule);margin-top:var(--s8);
+}
+@media(min-width:40rem){.guarantees{grid-template-columns:1fr 1fr}}
+@media(min-width:64rem){.guarantees{grid-template-columns:repeat(4,1fr)}}
+.guar{padding:var(--s5) var(--s5) var(--s5) 0;border-bottom:1px solid var(--rule)}
+@media(min-width:64rem){
+  .guar{border-right:1px solid var(--rule);padding-right:var(--s5)}
+  .guar:last-child{border-right:none}
+}
+.guar-t{font-family:var(--f-display);font-size:1rem;letter-spacing:-.012em;display:flex;align-items:center;gap:var(--s3)}
+.guar-t svg{width:15px;height:15px;color:var(--amber);flex-shrink:0}
+.guar-d{font-size:.8125rem;color:var(--ink-2);margin-top:var(--s2)}
+
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+
+<!-- ══ Kopfzeile ══════════════════════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#" onclick="return false">
+      <!-- Marke: drei Tasten + Halteton — abstrahiert, kein Piano-Klischee -->
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <rect x="2.5" y="3" width="19" height="18" rx="1.5"/>
+        <path d="M8.8 3v11M15.2 3v11M2.5 14h19"/>
+        <circle cx="12" cy="17.6" r="1.6" fill="currentColor" stroke="none"/>
+      </svg>
+      <span class="brand-name">jazzchords<span class="dim">.app</span></span>
+    </a>
+
+    <nav class="segs" id="segs" aria-label="Seiten">
+      <button class="seg" data-go="landing" aria-current="page">Start</button>
+      <button class="seg" data-go="train">Train</button>
+      <button class="seg" data-go="drill">Übung</button>
+      <button class="seg" data-go="togo">To-Go</button>
+      <button class="seg" data-go="learn">Learn</button>
+      <button class="seg" data-go="pricing">Preise</button>
+    </nav>
+
+    <button class="theme-btn" id="theme" aria-label="Farbschema wechseln">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+      </svg>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+<!-- ══ 1 · LANDING ════════════════════════════════════════════════ -->
+<div class="screen is-on" id="s-landing">
+  <div class="wrap">
+
+    <div class="hero">
+      <p class="eyebrow"><span class="eyebrow-num">I</span>&nbsp;&nbsp;Jazz-Voicings · alle 12 Tonarten</p>
+      <h1 class="hero-title">Spiel jeden Jazz-Akkord, in jeder Tonart — <span class="em">ohne nachzudenken.</span></h1>
+      <p class="lede hero-sub">Voicings drillen, bis sie Muskelgedächtnis sind. Shells, Rootless, ii-V-I — flüssig in allen 12 Tonarten, eine kurze Session nach der anderen.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#" onclick="go('train');return false">
+          Üben beginnen
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#" onclick="go('learn');return false">Kurs starten</a>
+      </div>
+      <p class="hero-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+        Kostenlos · ohne Anmeldung · Keyboard optional
+      </p>
+
+      <!-- Notenbeispiel: Klaviatur als Beleg direkt im Hero -->
+      <figure class="hero-figure">
+        <div class="figure-head">
+          <span class="figure-chord">C<span class="acc">maj7</span></span>
+          <span class="figure-meta"><b>Shell Voicing</b> · C · E · B · Grundstellung</span>
+        </div>
+        <div class="piano-scroll">
+          <div class="piano" role="img" aria-label="Klaviatur mit den markierten Tönen C, E und H des Cmaj7-Shell-Voicings">
+            <div class="wk on root">C</div><div class="wk">D</div><div class="wk on">E</div>
+            <div class="wk">F</div><div class="wk">G</div><div class="wk">A</div><div class="wk on">H</div>
+            <div class="wk">C</div><div class="wk">D</div><div class="wk">E</div>
+            <div class="bk" style="--at:1">C♯</div>
+            <div class="bk" style="--at:2">D♯</div>
+            <div class="bk" style="--at:4">F♯</div>
+            <div class="bk" style="--at:5">G♯</div>
+            <div class="bk" style="--at:6">A♯</div>
+            <div class="bk" style="--at:8">C♯</div>
+            <div class="bk" style="--at:9">D♯</div>
+          </div>
+        </div>
+        <figcaption class="piano-legend">
+          <span><i class="swatch"></i> Akkordton</span>
+          <span><i class="swatch ring"></i> Grundton</span>
+        </figcaption>
+      </figure>
+
+      <div class="figures">
+        <div class="fig"><div class="fig-n">12</div><div class="fig-l">Tonarten, jede einzelne</div></div>
+        <div class="fig"><div class="fig-n">14</div><div class="fig-l">Akkordtypen</div></div>
+        <div class="fig"><div class="fig-n">9</div><div class="fig-l">Voicing-Arten</div></div>
+        <div class="fig"><div class="fig-n">5<small style="font-size:.5em"> min</small></div><div class="fig-l">reichen für heute</div></div>
+      </div>
+    </div>
+
+    <!-- Coach -->
+    <section>
+      <div class="split">
+        <div>
+          <p class="eyebrow"><span class="eyebrow-num">II</span>&nbsp;&nbsp;Dein eingebauter Coach</p>
+          <h2 class="sec-title">App auf. Play drücken. Den Rest hat jemand geplant.</h2>
+          <p class="sec-desc">Kein Grübeln mehr, was heute dran ist. Ein kurzer Akkord-Check findet, wo du stehst — danach wird jede Session für dich gebaut: aufwärmen mit dem, was sitzt, wiederholen was fällig ist, die Schwachstelle bearbeiten, eine neue Sache lernen und sie in einer echten Progression anwenden.</p>
+        </div>
+        <div>
+          <p class="eyebrow" style="margin-bottom:var(--s4)">Heutige Session</p>
+          <div class="programme">
+            <div class="prog-row done"><span class="prog-num">1</span><span class="prog-label">Aufwärmen · was du kannst</span><span class="prog-min">2 min</span></div>
+            <div class="prog-row done"><span class="prog-num">2</span><span class="prog-label">Wiederholung · heute fällig</span><span class="prog-min">3 min</span></div>
+            <div class="prog-row now"><span class="prog-num">3</span><span class="prog-label">Schwachstelle · B<span class="acc">♭</span>7 Shell</span><span class="prog-min">3 min</span></div>
+            <div class="prog-row"><span class="prog-num">4</span><span class="prog-label">Neu · E<span class="acc">♭</span>maj7 in mehr Tonarten</span><span class="prog-min">3 min</span></div>
+            <div class="prog-row"><span class="prog-num">5</span><span class="prog-label">Anwenden · ii-V-I in B<span class="acc">♭</span></span><span class="prog-min">2 min</span></div>
+          </div>
+          <figure class="coach-say">
+            <q>Heute: Grundstellung auffrischen und Maj7 vertiefen — 5 Minuten.</q>
+            <figcaption>Dein Coach, vor der Session</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lehrplan -->
+    <section>
+      <div class="sec-head">
+        <p class="eyebrow"><span class="eyebrow-num">III</span>&nbsp;&nbsp;Der echte Weg</p>
+        <h2 class="sec-title">Derselbe Weg, den ein guter Lehrer mit dir geht</h2>
+        <p class="sec-desc">Das sind keine Akkord-Karteikarten. Das ist das Werkzeug des arbeitenden Jazzpianisten — Voicing für Voicing, jedes durch alle 12 Tonarten.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="step-n">01</span>
+          <div><h3 class="step-t">Shell Voicings</h3><p class="step-d">Grundton, Terz und Septime — das Skelett der Jazzharmonik</p></div>
+          <span class="step-chord">Cmaj7 · C · E · H</span>
+        </div>
+        <div class="step">
+          <span class="step-n">02</span>
+          <div><h3 class="step-t">Sext- &amp; None-Farben</h3><p class="step-d">Die ersten Farbtöne, die Akkorde nach Jazz klingen lassen</p></div>
+          <span class="step-chord">C6/9 · C · E · A · D</span>
+        </div>
+        <div class="step active">
+          <span class="step-n">03</span>
+          <div><h3 class="step-t">Rootless Voicings <span class="step-tag">in Arbeit</span></h3><p class="step-d">Der Bill-Evans-Sound — was Profis tatsächlich spielen</p></div>
+          <span class="step-chord">Dm9 · F · A · C · E</span>
+        </div>
+        <div class="step locked">
+          <span class="step-n">04</span>
+          <div><h3 class="step-t">Umkehrungen &amp; Voice Leading
+            <svg class="step-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+          </h3><p class="step-d">Zwischen Akkorden wechseln, ohne die Hand zu bewegen</p></div>
+          <span class="step-chord">G7/H · H · F · G</span>
+        </div>
+        <div class="step locked">
+          <span class="step-n">05</span>
+          <div><h3 class="step-t">Alterierte &amp; Upper Structures
+            <svg class="step-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="1.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+          </h3><p class="step-d">Spannung und Auflösung — die erwachsenen Dominant-Klänge</p></div>
+          <span class="step-chord">G7<span class="acc">♯</span>5<span class="acc">♭</span>9 · H · F · A<span class="acc">♭</span> · E<span class="acc">♭</span></span>
+        </div>
+      </div>
+      <p style="margin-top:var(--s5);font-size:.875rem;color:var(--ink-3);max-width:46ch">Dein Coach schaltet den nächsten Schritt frei, wenn der aktuelle sitzt — nicht vorher und nicht eine Woche später.</p>
+    </section>
+
+    <!-- Eingabe -->
+    <section>
+      <div class="split">
+        <div>
+          <p class="eyebrow"><span class="eyebrow-num">IV</span>&nbsp;&nbsp;Sofortige Rückmeldung</p>
+          <h2 class="sec-title">Es zeigt dir Akkorde nicht nur. Es hört dich spielen.</h2>
+          <p class="sec-desc">MIDI-Keyboard anschließen und jeder Akkord wird beim Spielen geprüft — oktavtolerant, zusätzliche Töne verziehen, automatisch weiter wenn er sitzt. Kein Keyboard da? Mikrofon nehmen oder die Tasten am Bildschirm tippen.</p>
+          <div class="chips">
+            <span class="chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M7 6v6M12 6v6M17 6v6"/></svg>
+              MIDI-Keyboard</span>
+            <span class="chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
+              Mikrofon</span>
+            <span class="chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M8 5v9M16 5v9M2 14h20"/></svg>
+              Tasten am Bildschirm</span>
+          </div>
+        </div>
+        <div>
+          <p class="eyebrow" style="margin-bottom:var(--s4)">Erkannt · nächster Akkord</p>
+          <div class="piano-scroll">
+            <div class="piano" role="img" aria-label="Klaviatur mit den markierten Tönen des Dm9 Rootless-Voicings: F, A, C, E">
+              <div class="wk">C</div><div class="wk">D</div><div class="wk">E</div>
+              <div class="wk on root">F</div><div class="wk">G</div><div class="wk on">A</div><div class="wk">H</div>
+              <div class="wk on">C</div><div class="wk">D</div><div class="wk on">E</div>
+              <div class="bk" style="--at:1">C♯</div>
+              <div class="bk" style="--at:2">D♯</div>
+              <div class="bk" style="--at:4">F♯</div>
+              <div class="bk" style="--at:5">G♯</div>
+              <div class="bk" style="--at:6">A♯</div>
+              <div class="bk" style="--at:8">C♯</div>
+              <div class="bk" style="--at:9">D♯</div>
+            </div>
+          </div>
+          <div class="figure-head" style="margin-top:var(--s5);margin-bottom:0">
+            <span class="figure-chord">Dm9</span>
+            <span class="figure-meta"><b>Rootless A</b> · F · A · C · E</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section>
+      <div class="sec-head">
+        <p class="eyebrow"><span class="eyebrow-num">V</span>&nbsp;&nbsp;Fragen</p>
+        <h2 class="sec-title">Beantwortet</h2>
+      </div>
+      <div class="faq">
+        <details open>
+          <summary>Was ist ein Jazz-Piano-Voicing?</summary>
+          <p>Ein Voicing ist eine bestimmte Anordnung der Töne eines Akkords. Statt alles vom Grundton aus zu stapeln, verwenden Jazzpianisten Shells (Grundton, Terz, Septime), Rootless Voicings und Umkehrungen für einen volleren, professionellen Klang. Sie in allen 12 Tonarten zu beherrschen ist das Fundament des Jazzklaviers — und genau das baut der Coach Schritt für Schritt auf.</p>
+        </details>
+        <details>
+          <summary>Muss ich schon Jazz können?</summary>
+          <p>Nein. Wenn du Töne auf einer Klaviatur findest, startet dich der Coach mit einfachen Shell Voicings in leichten Tonarten und erklärt jeden neuen Klang, sobald er auftaucht. Wenn du schon spielst, überspringt dich der Eingangs-Check automatisch nach vorn.</p>
+        </details>
+        <details>
+          <summary>Kann ich mit einem MIDI-Keyboard üben?</summary>
+          <p>Ja — per USB oder Bluetooth (Chrome oder Edge am Desktop), und die App erkennt deine Voicings in Echtzeit, mit Oktavtoleranz und nachsichtiger Zuordnung. Kein MIDI? Mikrofon oder Bildschirmtasten funktionieren auch.</p>
+        </details>
+        <details>
+          <summary>Wie viel Zeit brauche ich?</summary>
+          <p>Fünf Minuten am Tag sind eine echte Session — Aufwärmen, Wiederholung, eine neue Sache. Du legst dein Tagesziel einmal fest, und der Coach schneidet jede Session darauf zu. Beständigkeit schlägt Marathon-Üben.</p>
+        </details>
+        <details>
+          <summary>Ist es kostenlos?</summary>
+          <p>Ja. Alle Trainingsfunktionen sind kostenlos — der Coach, jede Voicing-Art, Progressionen, MIDI und Fortschritts-Tracking. Kein Konto nötig. Ein optionaler Pro-Plan ergänzt Cloud-Sync und tiefere Statistiken.</p>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <div class="endcta">
+    <div class="wrap">
+      <h2>Dein Coach ist bereit, wenn du es bist.</h2>
+      <p>Die erste Session dauert drei Minuten — ein kurzer Check, dann beginnt dein Weg.</p>
+      <a class="btn btn-primary" href="#" onclick="go('train');return false">Üben beginnen
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    <div class="wrap foot-in">
+      <span>jazzchords.app — Aaron Technologies OÜ, Tallinn</span>
+      <span>Kostenlos · ohne Anmeldung</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ══ 2 · TRAIN / DASHBOARD ══════════════════════════════════════ -->
+<div class="screen" id="s-train">
+  <div class="wrap">
+    <div class="page-head">
+      <p class="eyebrow">Freitagabend</p>
+      <h1 class="greet">Willkommen zurück, Aaron.</h1>
+      <p class="greet-sub lede">Du bist an Tag 12. Noch 4 Minuten bis zum Tagesziel.</p>
+    </div>
+
+    <div class="status">
+      <div class="stat">
+        <div class="stat-l">Streak</div>
+        <div class="stat-v">12 <small>Tage</small></div>
+      </div>
+      <div class="stat">
+        <div class="stat-l">Level</div>
+        <div class="stat-v">Comper</div>
+      </div>
+      <div class="stat">
+        <div class="stat-l">Heute</div>
+        <div class="stat-v">6 <small>min</small></div>
+      </div>
+    </div>
+
+    <div class="goal">
+      <div class="goal-top">
+        <span class="lbl">Tagesziel</span>
+        <span class="val">6 / 10 min</span>
+      </div>
+      <div class="meter"><i style="width:60%"></i></div>
+    </div>
+
+    <!-- Der eine laute Moment -->
+    <div class="resume">
+      <p class="resume-eyebrow">Coach · Teil 3 von 5</p>
+      <h2>Weiter üben</h2>
+      <p class="resume-say">„Heute: Grundstellung auffrischen und Maj7 vertiefen — 5 Minuten.“</p>
+      <div class="resume-foot">
+        <a class="btn btn-primary" href="#" onclick="go('drill');return false">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
+          Fortsetzen
+        </a>
+        <span class="resume-meta">Schwachstelle · B<span class="acc">♭</span>7 Shell · 3 min</span>
+      </div>
+    </div>
+
+    <section style="padding-top:var(--s5)">
+      <p class="eyebrow" style="margin-bottom:var(--s5)">Oder such dir selbst etwas aus</p>
+      <div class="drills">
+        <button class="drill" onclick="go('drill')">
+          <div>
+            <div class="drill-t">Aufwärmen</div>
+            <div class="drill-d">Shell Voicings, ii-V-I — sanft reinkommen.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drill" onclick="go('drill')">
+          <div>
+            <div class="drill-t">Schwachstellen</div>
+            <div class="drill-d">Adaptiver Drill auf deinen langsamsten Akkorden.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drill" onclick="go('drill')">
+          <div>
+            <div class="drill-t">ii-V-I</div>
+            <div class="drill-d">Die zentrale Jazz-Kadenz in allen Tonarten.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drill" onclick="go('drill')">
+          <div>
+            <div class="drill-t">Quintenzirkel</div>
+            <div class="drill-d">Grundtöne durch alle 12 Tonarten, in Quarten.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drill" onclick="go('drill')">
+          <div>
+            <div class="drill-t">Speed Run</div>
+            <div class="drill-d">Gegen die Uhr — zufällige Akkorde, keine Hinweise.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drill" onclick="go('drill')">
+          <div>
+            <div class="drill-t">Voicing-Drill</div>
+            <div class="drill-d">Grundstellung, Shell, Half Shell, Rootless A/B.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drill" onclick="go('drill')">
+          <div>
+            <div class="drill-t">Umkehrungen</div>
+            <div class="drill-d">Erste, zweite, dritte — in jeder Lage sicher.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drill" onclick="go('togo')">
+          <div>
+            <div class="drill-t">Gehörcheck</div>
+            <div class="drill-d">Akkordfarben hören und benennen — ohne Klavier.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drill" onclick="go('drill')">
+          <div>
+            <div class="drill-t">In-Time-Comping <span class="badge-pro">Pro</span></div>
+            <div class="drill-d">Zum Klick begleiten — Timing statt nur Griffe.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="drill" onclick="go('drill')">
+          <div>
+            <div class="drill-t">Voice Leading <span class="badge-pro">Pro</span></div>
+            <div class="drill-d">Kürzeste Wege zwischen den Akkorden finden.</div>
+          </div>
+          <svg class="drill-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ══ 3 · ÜBUNGS-SCREEN ══════════════════════════════════════════ -->
+<div class="screen" id="s-drill">
+  <div class="wrap">
+    <div class="drill-stage">
+
+      <div class="drill-bar">
+        <div class="drill-part">
+          <span class="movements" role="img" aria-label="Teil 2 von 3">
+            <i class="done"></i><i class="now"></i><i></i>
+          </span>
+          Teil 2 von 3 · Wiederholung
+        </div>
+        <button class="drill-quit" onclick="go('train')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          Beenden
+        </button>
+      </div>
+
+      <div class="drill-main">
+        <p class="drill-voicing">Rootless A · 3 von 12 Tonarten</p>
+        <h1 class="drill-chord">B<span class="acc">♭</span>13</h1>
+        <p class="drill-notes">D · A<span class="acc">♭</span> · C · G</p>
+
+        <div class="drill-piano">
+          <div class="piano-scroll">
+            <div class="piano" role="img" aria-label="Klaviatur — gesuchte Töne D, As, C und G des B-Dur-Dreizehn-Akkords">
+              <div class="wk">C</div><div class="wk on root">D</div><div class="wk">E</div>
+              <div class="wk">F</div><div class="wk on">G</div><div class="wk">A</div><div class="wk">H</div>
+              <div class="wk on">C</div><div class="wk">D</div><div class="wk">E</div>
+              <div class="bk" style="--at:1">C♯</div>
+              <div class="bk" style="--at:2">D♯</div>
+              <div class="bk" style="--at:4">F♯</div>
+              <div class="bk on" style="--at:5">A♭</div>
+              <div class="bk" style="--at:6">A♯</div>
+              <div class="bk" style="--at:8">C♯</div>
+              <div class="bk" style="--at:9">D♯</div>
+            </div>
+          </div>
+          <div class="piano-legend">
+            <span><i class="swatch"></i> Gesuchter Ton</span>
+            <span><i class="swatch ring"></i> Tiefster Ton</span>
+          </div>
+        </div>
+
+        <div class="drill-foot">
+          <span class="listening"><i class="pulse"></i> MIDI verbunden · hört zu</span>
+          <button class="btn btn-quiet">Lösung zeigen</button>
+          <button class="btn btn-ghost">Überspringen</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ 4 · TO-GO ══════════════════════════════════════════════════ -->
+<div class="screen" id="s-togo">
+  <div class="wrap">
+    <div class="page-head">
+      <p class="eyebrow">Üben ohne Klavier</p>
+      <h1 class="greet">To-Go</h1>
+      <p class="greet-sub lede">Gehör, Time und Theorie — alles, was du mit nichts als Kopfhörern trainieren kannst.</p>
+      <div class="hero-actions" style="margin-top:var(--s5)">
+        <a class="btn btn-primary" href="#" onclick="return false">Los geht's</a>
+        <span class="resume-meta" style="align-self:center">8 Runden · ca. 3 Minuten</span>
+      </div>
+    </div>
+
+    <section style="padding-top:var(--s6)">
+      <p class="eyebrow" style="margin-bottom:var(--s5)">Oder trainiere eine Sache</p>
+      <div class="togo-grid">
+        <button class="disc">
+          <div class="disc-top">
+            <svg class="disc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 18V9M10 18V5M16 18v-7M20 18v-3"/></svg>
+            <span class="disc-t">Intervalle</span>
+          </div>
+          <span class="disc-d">Zwei Töne — benenne den Abstand.</span>
+          <span class="disc-need">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7"/></svg>
+            Braucht Ton</span>
+        </button>
+        <button class="disc">
+          <div class="disc-top">
+            <svg class="disc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3.5 8.5h17M3.5 15.5h17"/></svg>
+            <span class="disc-t">Akkordfarben</span>
+          </div>
+          <span class="disc-d">Hör einen Akkord, benenne seine Farbe.</span>
+          <span class="disc-need">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7"/></svg>
+            Braucht Ton</span>
+        </button>
+        <button class="disc">
+          <div class="disc-top">
+            <svg class="disc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 17c3-9 6 9 9 0s6 4 9-5"/></svg>
+            <span class="disc-t">Progressionen</span>
+          </div>
+          <span class="disc-d">Hör eine Kadenz, benenne die Form.</span>
+          <span class="disc-need">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7"/></svg>
+            Braucht Ton</span>
+        </button>
+        <button class="disc">
+          <div class="disc-top">
+            <svg class="disc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
+            <span class="disc-t">Singen</span>
+          </div>
+          <span class="disc-d">Finde eine Skalenstufe mit deiner Stimme.</span>
+          <span class="disc-need">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/></svg>
+            Braucht Mikrofon</span>
+        </button>
+        <button class="disc">
+          <div class="disc-top">
+            <svg class="disc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+            <span class="disc-t">Time</span>
+          </div>
+          <span class="disc-d">Klopfe den Groove gegen den Klick.</span>
+          <span class="disc-need">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7"/></svg>
+            Braucht Ton</span>
+        </button>
+        <button class="disc">
+          <div class="disc-top">
+            <svg class="disc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 18V5l12-2v13"/><circle cx="5" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
+            <span class="disc-t">Licks</span>
+          </div>
+          <span class="disc-d">Hör eine Phrase, klopfe sie zurück.</span>
+          <span class="disc-need">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7"/></svg>
+            Braucht Ton</span>
+        </button>
+        <button class="disc">
+          <div class="disc-top">
+            <svg class="disc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/><path d="M4 17.5h16"/></svg>
+            <span class="disc-t">Theorie</span>
+          </div>
+          <span class="disc-d">Stille Karteikarten — funktioniert überall.</span>
+          <span class="disc-need">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6"/></svg>
+            Auch in Stille</span>
+        </button>
+      </div>
+
+      <!-- Laufende Übung -->
+      <div class="togo-run">
+        <div class="run-head">
+          <span class="run-round">Runde 4 von 8 · Akkordfarben</span>
+          <button class="drill-quit" onclick="go('togo')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            Stopp
+          </button>
+        </div>
+
+        <h2 class="run-q">Welche Farbe hat dieser Akkord?</h2>
+
+        <div class="wave" aria-hidden="true">
+          <i style="height:8px"></i><i style="height:16px"></i><i class="hi" style="height:30px"></i>
+          <i class="hi" style="height:42px"></i><i class="hi" style="height:26px"></i><i style="height:34px"></i>
+          <i style="height:18px"></i><i style="height:28px"></i><i style="height:12px"></i>
+          <i style="height:22px"></i><i style="height:9px"></i><i style="height:15px"></i>
+          <i style="height:7px"></i><i style="height:11px"></i>
+        </div>
+
+        <div style="display:flex;justify-content:center;margin-bottom:var(--s6)">
+          <button class="btn btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+            Nochmal abspielen
+          </button>
+        </div>
+
+        <div class="answers">
+          <button class="ans"><span class="ans-k">1</span> Maj7</button>
+          <button class="ans correct">
+            <span class="ans-k">2</span> m7<span class="acc">♭</span>5
+            <svg class="ans-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+          <button class="ans"><span class="ans-k">3</span> dim7</button>
+          <button class="ans"><span class="ans-k">4</span> 7<span class="acc">♯</span>9</button>
+        </div>
+
+        <div class="run-foot">
+          <span class="run-verdict"><b>Genau das.</b> Halbverminderter Septakkord — ø.</span>
+          <button class="btn btn-primary">Weiter
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ══ 5 · LEARN ══════════════════════════════════════════════════ -->
+<div class="screen" id="s-learn">
+  <div class="wrap">
+    <div class="page-head">
+      <p class="eyebrow">Kurse</p>
+      <h1 class="greet">Learn</h1>
+      <p class="greet-sub lede">Verstehe die Logik hinter den Voicings — Schritt für Schritt.</p>
+    </div>
+
+    <div class="resume" style="margin-top:var(--s6)">
+      <p class="resume-eyebrow">Da warst du zuletzt</p>
+      <h2>Rootless Voicings · Modul 2</h2>
+      <p class="resume-say">„Der Bill-Evans-Sound — was Profis tatsächlich spielen.“</p>
+      <div class="resume-foot">
+        <a class="btn btn-primary" href="#" onclick="go('drill');return false">Weiterlernen</a>
+        <span class="resume-meta">Lektion 4 von 9 · Üben</span>
+      </div>
+    </div>
+
+    <section style="padding-top:var(--s5)">
+      <p class="eyebrow" style="margin-bottom:var(--s5)">Alle Kurse</p>
+      <div class="courses">
+        <button class="course">
+          <div class="course-top">
+            <div>
+              <div class="course-t">Shell Voicings verstehen</div>
+              <div class="course-s">Die 3-Ton-Methode</div>
+            </div>
+            <span class="course-lvl">Einsteiger</span>
+          </div>
+          <p class="course-d">Spiele jeden Septakkord mit nur 3 Tönen: Grundton, Terz und Septime.</p>
+          <div class="course-prog">
+            <div class="goal-top"><span class="lbl">Abgeschlossen</span><span class="val">9 / 9</span></div>
+            <div class="meter"><i style="width:100%"></i></div>
+          </div>
+        </button>
+
+        <button class="course">
+          <div class="course-top">
+            <div>
+              <div class="course-t">Intervalle verstehen</div>
+              <div class="course-s">Das Fundament der Musiktheorie</div>
+            </div>
+            <span class="course-lvl">Einsteiger</span>
+          </div>
+          <p class="course-d">Lerne alle Intervalle — von Sekunden bis Tredezimen. Verstehe, wie Akkorde von Grund auf gebaut sind.</p>
+          <div class="course-prog">
+            <div class="goal-top"><span class="lbl">Fortschritt</span><span class="val">7 / 12</span></div>
+            <div class="meter"><i style="width:58%"></i></div>
+          </div>
+        </button>
+
+        <button class="course">
+          <div class="course-top">
+            <div>
+              <div class="course-t">Stufentheorie</div>
+              <div class="course-s">Akkorde über ihre Funktion verstehen</div>
+            </div>
+            <span class="course-lvl">Mittelstufe</span>
+          </div>
+          <p class="course-d">Die 7 Stufen der Durtonleiter und wie Akkorde zusammenhängen: Tonika, Subdominante, Dominante — und die wichtigsten Progressionen.</p>
+          <div class="course-prog">
+            <div class="goal-top"><span class="lbl">Fortschritt</span><span class="val">2 / 10</span></div>
+            <div class="meter"><i style="width:20%"></i></div>
+          </div>
+        </button>
+
+        <button class="course">
+          <div class="course-top">
+            <div>
+              <div class="course-t">Ultimate Plan</div>
+              <div class="course-s">Von Null zur Meisterschaft</div>
+            </div>
+            <span class="course-lvl">Alle Level</span>
+          </div>
+          <p class="course-d">Die vollständige Reise: alle Akkordtypen, alle Voicings, alle Tonarten. 8 Module — vom ersten Septakkord bis zu alterierten Dominanten.</p>
+          <div class="course-prog">
+            <div class="goal-top"><span class="lbl">Fortschritt</span><span class="val">3 / 48</span></div>
+            <div class="meter"><i style="width:6%"></i></div>
+          </div>
+        </button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ══ 6 · PRICING ════════════════════════════════════════════════ -->
+<div class="screen" id="s-pricing">
+  <div class="wrap">
+    <div class="page-head">
+      <p class="eyebrow">Preise</p>
+      <h1 class="greet">Flüssig werden in jeder Tonart.</h1>
+      <p class="greet-sub lede">Starte kostenlos. Geh zu Pro, wenn du jedes Voicing, Voice Leading und automatisch gedrillte Schwachstellen willst.</p>
+    </div>
+
+    <div class="plans">
+      <div class="plan">
+        <p class="plan-name">Free</p>
+        <div class="plan-price">0 <small>€ / Monat</small></div>
+        <p class="plan-note">Ohne Anmeldung. Dauerhaft kostenlos.</p>
+        <a class="btn btn-ghost btn-block" href="#" onclick="go('train');return false">Training starten</a>
+        <ul class="feats">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Alle 4 strukturierten Kurse</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Speed Run (Zufallsmodus)</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Shell Voicings &amp; Grundstellung</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> ii-V-I &amp; alle Progressionen, 12 Tonarten</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> MIDI- &amp; Mikrofon-Eingabe</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> To-Go — Üben ohne Klavier</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Streaks, XP und Level</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Deutsch &amp; Englisch</li>
+        </ul>
+      </div>
+
+      <div class="plan pro">
+        <p class="plan-name">Pro</p>
+        <div class="plan-price">4,99 <small>€ / Monat</small></div>
+        <p class="plan-note">14 Tage kostenlos · danach 4,99 €/Monat · jederzeit kündbar</p>
+        <a class="btn btn-primary btn-block" href="#" onclick="return false">14 Tage kostenlos starten</a>
+        <ul class="feats">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Alles aus Free</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Adaptiver Coach mit Schwachstellen-Drill</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Alle 9 Voicing-Arten — Rootless A/B, Half Shell, Umkehrungen</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Voice-Leading-Analyse</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Eigene Progressionen</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> In-Time-Comping</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Erweiterte Statistiken</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Cloud-Sync über alle Geräte</li>
+        </ul>
+      </div>
+    </div>
+
+    <section>
+      <div class="sec-head" style="margin-bottom:var(--s5)">
+        <p class="eyebrow">Ohne Risiko</p>
+        <h2 class="sec-title">Null Risiko. Nur Vorteile.</h2>
+        <p class="sec-desc">Wir sind sicher, dass dich das schneller macht. Also tragen wir das Risiko, nicht du.</p>
+      </div>
+      <div class="guarantees">
+        <div class="guar">
+          <h3 class="guar-t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+            14 Tage kostenlos</h3>
+          <p class="guar-d">Voller Pro-Zugang. Keine Abbuchung, bis die Testphase endet.</p>
+        </div>
+        <div class="guar">
+          <h3 class="guar-t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+            30 Tage Geld zurück</h3>
+          <p class="guar-d">Nicht zufrieden? Schreib uns innerhalb von 30 Tagen — volle Rückerstattung, keine Rückfragen.</p>
+        </div>
+        <div class="guar">
+          <h3 class="guar-t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M13 2 4.5 13H11l-1 9 8.5-11H12z"/></svg>
+            Tempo-Garantie</h3>
+          <p class="guar-d">Übe 5 Minuten am Tag — bist du nach 30 Tagen nicht spürbar schneller in allen 12 Tonarten, erstatten wir.</p>
+        </div>
+        <div class="guar">
+          <h3 class="guar-t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            Jederzeit kündbar</h3>
+          <p class="guar-d">Ein Klick im Konto. Keine E-Mails, keine Hürden, keine Bindung.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="wrap foot-in">
+      <span>jazzchords.app — Aaron Technologies OÜ, Tallinn</span>
+      <span>Preise inkl. USt.</span>
+    </div>
+  </footer>
+</div>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ── Screen-Umschaltung ─────────────────────────────────────── */
+  var segs = document.getElementById('segs');
+  var buttons = segs.querySelectorAll('.seg');
+
+  window.go = function(name){
+    var target = document.getElementById('s-' + name);
+    if(!target) return;
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('is-on'); });
+    target.classList.add('is-on');
+    buttons.forEach(function(b){
+      if(b.dataset.go === name){ b.setAttribute('aria-current','page'); }
+      else { b.removeAttribute('aria-current'); }
+    });
+    window.scrollTo({top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+    try{ history.replaceState(null,'','#'+name); }catch(e){}
+  };
+
+  buttons.forEach(function(b){
+    b.addEventListener('click', function(){ window.go(b.dataset.go); });
+  });
+
+  /* ── Theme ──────────────────────────────────────────────────── */
+  var root = document.documentElement;
+  document.getElementById('theme').addEventListener('click', function(){
+    var isDark = root.getAttribute('data-theme') === 'dark' ||
+      (!root.hasAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  });
+
+  /* ── Deeplink ───────────────────────────────────────────────── */
+  var hash = (location.hash || '').replace('#','');
+  if(hash && document.getElementById('s-' + hash)) window.go(hash);
+})();
+</script>
+</body>
+</html>
