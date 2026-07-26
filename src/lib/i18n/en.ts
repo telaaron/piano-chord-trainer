@@ -92,6 +92,15 @@ export const en = {
       thanks: 'Noted for next time.',
     },
   },
+
+  // ─── Practice screen ──────────────────────────────────────
+  // Captions for the clock in the session frame. The dial itself comes from
+  // KeyClock; these only say what it is currently showing.
+  train: {
+    clock_focus: "Today's keys",
+    clock_all: 'All twelve',
+  },
+
   settings: {
     difficulty: 'Difficulty',
     difficulty_desc: 'Chord types: Beginner = 5 basic, Advanced = 14+ extended',
@@ -749,6 +758,49 @@ export const en = {
   
   ui: {
     disconnected_reconnect: '{device} disconnected — reconnect to continue',
+
+    // Custom progressions + the play-along results screen. These existed only
+    // in German, so an English player saw raw keys like "ui.stop" on screen.
+    custom_progression: 'Custom Progression',
+    custom_progression_desc: 'Practise your own chord sequence with a metronome',
+    load_templates: 'Load jazz-standard templates',
+    hide_templates: 'Hide templates',
+    progression_name_label: 'Name',
+    progression_name_placeholder: 'e.g. Autumn Leaves A',
+    progression_input_placeholder: 'Enter chords (e.g. Dm7 G7 Cmaj7)...',
+    progression_loops: 'Loops',
+    progression_save_play: 'Save & Play',
+    progression_play: 'Play',
+    progression_save: 'Save',
+    progression_delete: 'Delete',
+    saved_progressions: 'Saved progressions',
+    no_saved_progressions: 'No saved progressions yet',
+    start_typing_suggestion: 'Type a progression above',
+    no_valid_chords: 'No valid chords recognised. Try e.g. "Dm7 | G7 | CMaj7"',
+    loop_counter: 'Loop {current}/{total}',
+    notes_missing: '{count} note(s) missing',
+    stop: 'Stop',
+    count_in: 'Counting in…',
+    play_along_tip: 'Play the chords on your piano',
+    finished: 'Done!',
+    back_editor: 'Back to editor',
+    play_again: 'Again',
+    grade_perfect: 'Perfect',
+    grade_excellent: 'Excellent',
+    grade_good: 'Good',
+    grade_room_to_grow: 'Room to grow',
+    grade_keep_practicing: 'Keep practising',
+    chord_accuracy: 'Chord accuracy',
+    timing_offset: '⌀ Timing offset',
+    total_time: 'Total time',
+    results_loops: 'Loops',
+    results_weakest_chords: 'Difficult chords',
+    results_weak_desc: 'These chords were missed often — focus on them.',
+    results_detail_last: 'Details (last loop)',
+    vl_find_inversion: '{voicing} — find the closest inversion',
+    vl_free: 'Any voicing — least movement',
+    lesson_click_hint: 'Click keys to play · connect a MIDI keyboard for input',
+
     next_chord: 'Next Chord',
     shortcut_next: 'next',
     shortcut_pause: 'pause',
@@ -2007,6 +2059,16 @@ export const en = {
     mic_off: 'No microphone — singing is sitting this one out.',
     enable_audio: 'Turn sound on',
     enable_mic: 'Allow microphone',
+    // Sits at the right of the discipline list, where the reason a row is
+    // unavailable would otherwise go.
+    go: 'Practise',
+
+    // What the round wants from you — one line under the question, so you
+    // know whether to click, sing, tap along or tap notes back.
+    mode_choice: 'Pick an answer',
+    mode_sing: 'With your voice',
+    mode_tap: 'Tap along',
+    mode_notes: 'Tap the notes',
 
     // Engine-supplied prompts.
     prompt: {

@@ -202,3 +202,25 @@ export function getPitchedNote(
 					: NOTES_FLATS;
 	return `${names[index]}${oct}`;
 }
+
+/**
+ * Typeset a chord or note name for DISPLAY: b → ♭, # → ♯.
+ *
+ * The engine stores names in ASCII ("Eb7", "F#m7") because chord tables, slugs
+ * and lookups key on that spelling — converting at the source would break
+ * them. But ASCII is not how a chord symbol is written, and the drill screen
+ * shows the name at 6rem, where "Eb7" reads as a typo. So the conversion
+ * happens at the edge, on the way to the eye, and nothing downstream changes.
+ *
+ * Only accidentals directly after a letter are touched, so "sus" and "add"
+ * keep their b's and the "7b9" tension is still typeset correctly.
+ */
+export function typesetChordName(name: string): string {
+	return name
+		.replace(/([A-G])b/g, '$1♭')
+		.replace(/([A-G])#/g, '$1♯')
+		.replace(/([0-9])b([0-9])/g, '$1♭$2')
+		.replace(/([0-9])#([0-9])/g, '$1♯$2')
+		.replace(/(^|[^a-zA-Z])b([0-9])/g, '$1♭$2')
+		.replace(/(^|[^a-zA-Z])#([0-9])/g, '$1♯$2');
+}

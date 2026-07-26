@@ -92,6 +92,15 @@ export const de = {
       thanks: 'Merke ich mir für nächstes Mal.',
     },
   },
+
+  // ─── Übungsbildschirm ─────────────────────────────────────
+  // Beschriftungen für die Uhr im Session-Rahmen. Die Uhr selbst kommt aus
+  // KeyClock; hier steht nur, was sie gerade zeigt.
+  train: {
+    clock_focus: 'Heutige Tonarten',
+    clock_all: 'Alle zwölf',
+  },
+
   settings: {
     difficulty: 'Schwierigkeit',
     difficulty_desc: 'Akkordtypen: Anfänger = Basis, Profi = Erweitert',
@@ -751,6 +760,12 @@ export const de = {
   
   ui: {
     disconnected_reconnect: '{device} getrennt — bitte wieder verbinden',
+    next_chord: 'Nächster Akkord',
+    shortcut_next: 'weiter',
+    shortcut_pause: 'Pause',
+    shortcut_lookahead: 'Vorschau',
+    shortcut_explain: 'erklären',
+    shortcut_back: 'zurück',
     back: 'Zurück',
     back_setup: 'Zurück zum Setup',
     exercise_info: 'Übungs-Info',
@@ -2002,6 +2017,16 @@ export const de = {
     mic_off: 'Kein Mikrofon — Singen setzt diesmal aus.',
     enable_audio: 'Ton einschalten',
     enable_mic: 'Mikrofon erlauben',
+    // Steht rechts in der Disziplinen-Liste, wo sonst der Grund steht,
+    // warum eine Zeile gerade nicht geht.
+    go: 'Üben',
+
+    // Was die Runde von dir will — eine Zeile unter der Frage, damit man
+    // weiß, ob geklickt, gesungen, getappt oder getippt wird.
+    mode_choice: 'Antwort wählen',
+    mode_sing: 'Mit der Stimme',
+    mode_tap: 'Mittappen',
+    mode_notes: 'Töne tippen',
 
     // Prompts aus der Engine.
     prompt: {

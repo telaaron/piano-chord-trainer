@@ -2,6 +2,7 @@
 	import PianoKeyboard from './PianoKeyboard.svelte';
 	import {
 		convertChordNotation,
+		typesetChordName,
 		formatVoicing,
 		VOICING_LABELS,
 		PROGRESSION_LABELS,
@@ -258,7 +259,7 @@
 						<div class="flex items-center gap-3 mb-3">
 							<span class="text-xs bg-[var(--bg-muted)] px-2 py-0.5 rounded">{i + 1}</span>
 							<span class="text-lg font-bold text-[var(--primary)]">
-								{convertChordNotation(cd.chord, notationSystem)}
+								{typesetChordName(convertChordNotation(cd.chord, notationSystem))}
 							</span>
 						</div>
 

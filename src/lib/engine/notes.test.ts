@@ -10,6 +10,8 @@ import {
 	convertNoteName,
 	convertChordNotation,
 	spellChordNotes,
+	getPitchedNote,
+	typesetChordName,
 } from './notes';
 import { CHORD_INTERVALS } from './chords';
 
@@ -194,5 +196,56 @@ describe('convertChordNotation', () => {
 	it('leaves chords unchanged in international notation', () => {
 		expect(convertChordNotation('BbMaj7', 'international')).toBe('BbMaj7');
 		expect(convertChordNotation('BMaj7', 'international')).toBe('BMaj7');
+	});
+});
+
+describe('typesetChordName', () => {
+	it('turns ASCII accidentals into real ♭ and ♯ glyphs', () => {
+		expect(typesetChordName('Eb7')).toBe('E♭7');
+		expect(typesetChordName('F#m7')).toBe('F♯m7');
+		expect(typesetChordName('Bbmaj7')).toBe('B♭maj7');
+		expect(typesetChordName('Abdim7')).toBe('A♭dim7');
+	});
+
+	it('typesets altered tensions', () => {
+		expect(typesetChordName('G7b9')).toBe('G7♭9');
+		expect(typesetChordName('Cm7b5')).toBe('Cm7♭5');
+		expect(typesetChordName('Maj7#11')).toBe('Maj7♯11');
+		expect(typesetChordName('7#9')).toBe('7♯9');
+	});
+
+	it('leaves letters that only look like accidentals alone', () => {
+		// The b in "sus"/"add" is not an accidental, and a plain triad has none.
+		expect(typesetChordName('Csus4')).toBe('Csus4');
+		expect(typesetChordName('Cadd9')).toBe('Cadd9');
+		expect(typesetChordName('C')).toBe('C');
+		expect(typesetChordName('C6/9')).toBe('C6/9');
+	});
+
+	it('is display-only — the engine keeps ASCII for lookups', () => {
+		// Round-tripping is NOT supported by design: chord tables key on "Eb7",
+		// so the typeset form must never be fed back into the engine.
+		expect(typesetChordName('Bb')).toBe('B♭');
+		expect(typesetChordName('B')).toBe('B');
+	});
+});
+
+describe('getPitchedNote', () => {
+	it('carries the octave so a pitch is unambiguous', () => {
+		expect(getPitchedNote(0, 0, 'flats', 4)).toBe('C4');
+		expect(getPitchedNote(0, 7, 'flats', 4)).toBe('G4');
+	});
+
+	it('crosses the octave boundary in both directions', () => {
+		// The bug this exists for: C4 down a minor second is B3, not B4, and an
+		// octave up is C5, not C4 again.
+		expect(getPitchedNote(0, -1, 'flats', 4)).toBe('B3');
+		expect(getPitchedNote(0, 12, 'flats', 4)).toBe('C5');
+		expect(getPitchedNote(0, -12, 'flats', 4)).toBe('C3');
+	});
+
+	it('spells by preference', () => {
+		expect(getPitchedNote(1, 0, 'flats', 4)).toBe('Db4');
+		expect(getPitchedNote(1, 0, 'sharps', 4)).toBe('C#4');
 	});
 });

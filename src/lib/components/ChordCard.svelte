@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
-	import { convertChordNotation, type NotationSystem } from '$lib/engine';
+	import { convertChordNotation, typesetChordName, type NotationSystem } from '$lib/engine';
 	import type { VoiceLeadingInfo, VoiceLeadingMode } from '$lib/engine';
 	import { formatVoiceLeading } from '$lib/engine';
 	import { Headphones } from 'lucide-svelte';
@@ -26,7 +26,10 @@
 
 	let { chord, system = 'international', onclick, children, voiceLeading = null, showVoiceLeading = false, hideChordName = false, vlMode = 'guided', voicingTypeHint = '' }: Props = $props();
 
-	const display = $derived(convertChordNotation(chord, system));
+	// Typeset last: the engine keeps ASCII ("Eb7") because chord tables key on
+	// it, but at this size "Eb7" reads as a typo. Convert notation first, then
+	// set the accidentals — nothing downstream sees the ♭.
+	const display = $derived(typesetChordName(convertChordNotation(chord, system)));
 	const vlText = $derived(showVoiceLeading && voiceLeading && vlMode === 'guided' ? formatVoiceLeading(voiceLeading) : '');
 </script>
 

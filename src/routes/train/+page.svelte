@@ -12,6 +12,7 @@
 	import { toggleLightDark, isLightActive } from '$lib/services/theme';
 	import { Sun, Moon, Eye, Settings, TabletSmartphone, Piano, RefreshCw, Ear, Volume2, VolumeX, Music, Target, Check, X, CornerDownLeft, ArrowDown, Play, Pause, RotateCcw, ArrowLeft } from 'lucide-svelte';
 	import ChordCard from '$lib/components/ChordCard.svelte';
+	import KeyClock from '$lib/components/KeyClock.svelte';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import Results from '$lib/components/Results.svelte';
 	import MidiStatus from '$lib/components/MidiStatus.svelte';
@@ -33,7 +34,7 @@
 	import { MidiSoundEngine } from '$lib/services/midi-sound';
 	import { AudioInputService } from '$lib/services/audio-input';
 	import type { AudioInputState } from '$lib/services/audio-input';
-	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadRecentPlanIds, loadHistory, computeStats, analyzeWeakSpots, type ProgressStats, type StreakData, type ChordTiming, type SessionResult } from '$lib/services/progress';
+	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadRecentPlanIds, loadHistory, computeStats, analyzeWeakSpots, buildKeyDial, type ProgressStats, type StreakData, type ChordTiming, type SessionResult } from '$lib/services/progress';
 	import { playChord, playChordAtTime, playNote, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll, setSoundPreset, getSoundPreset, SOUND_PRESETS, type SoundPreset } from '$lib/services/audio';
 	import {
 		CHORDS_BY_DIFFICULTY,
@@ -436,6 +437,34 @@
 	const midiAccuracy = $derived(
 		midiTotalAttempts > 0 ? Math.round((midiCorrectCount / midiTotalAttempts) * 100) : 0,
 	);
+
+	// ─── The clock, inside the session ───────────────────────────
+	// Display only. Nothing below reads back into the drill: the dial is built
+	// from saved history, and the highlight is read off state the coach has
+	// already decided. It never influences what is practised.
+
+	/** Per-key timings for the dial. Rebuilt when a session is written. */
+	let sessionDial = $state(buildKeyDial([]));
+
+	/** localStorage is a browser thing — build the real dial after mount. */
+	function refreshDial(): void {
+		sessionDial = buildKeyDial(loadHistory());
+	}
+
+	/**
+	 * The roots this session is actually targeting, so the dial dims to them.
+	 * A Coach block names its own focus roots; a plain run is the whole circle,
+	 * and dimming nothing is the honest answer there — `undefined` leaves every
+	 * segment at full strength rather than pretending to a focus that does not
+	 * exist. Roots the dial does not carry are dropped, so a stray value can
+	 * never blank the ring.
+	 */
+	const dialHighlight = $derived.by(() => {
+		if (focusRoots.length === 0) return undefined;
+		const known = new Set(sessionDial.map((d) => d.root));
+		const hit = focusRoots.filter((r) => known.has(r));
+		return hit.length > 0 ? hit : undefined;
+	});
 
 	// ─── Status bar helpers ──────────────────────────────────────
 	function greetingText(): string {
@@ -1269,6 +1298,8 @@
 
 		// Refresh dashboard stats
 		dashStats = computeStats(loadHistory());
+		// …and the dial, so the next block opens on times that include this one.
+		refreshDial();
 
 		// Adaptive teaser: the free user just felt the coaching — convert now.
 		if (sessionWasAdaptive) {
@@ -1993,6 +2024,7 @@
 
 		// Load dashboard stats
 		dashStats = computeStats(loadHistory());
+		refreshDial();
 
 		// ─── Habit Engine init ───────────────────────────────────
 		habitProfile = loadHabitProfile();
@@ -2667,26 +2699,25 @@
 						{#if coachMode && coachPlan}
 							<!-- In a Coach session the useful context is where you are in the
 							     session and what this block actually drills — not the static
-							     settings triple, which never changes between blocks. -->
-							<div class="flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
-								<span class="rounded-full border border-[var(--primary)]/40 bg-[var(--primary-muted)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--primary)]">
+							     settings triple, which never changes between blocks. Set as a
+							     printed session line: the block number as a rehearsal mark, the
+							     block kind in the display face, the quality as a plate. Same
+							     information as before, in the page's own voice. -->
+							<div class="sess-line">
+								<span class="sess-mark">
 									{t('coach.block_of', { n: String(coachBlockIdx + 1), total: String(coachPlan.blocks.length) })}
 								</span>
-								<span class="font-semibold text-[var(--text)]">{t('coach.kind.' + coachPlan.blocks[coachBlockIdx].kind)}</span>
+								<span class="sess-kind">{t('coach.kind.' + coachPlan.blocks[coachBlockIdx].kind)}</span>
 								{#if qualityFilter.length === 1}
-									<span class="text-[var(--text-dim)]">·</span>
-									<span class="font-mono">{qualityFilter[0]}</span>
+									<span class="sess-q">{qualityFilter[0]}</span>
 								{/if}
-								<span class="text-[var(--text-dim)] hidden sm:inline">·</span>
-								<span class="hidden sm:inline">{t(VOICING_KEYS[voicing])}</span>
+								<span class="sess-v">{t(VOICING_KEYS[voicing])}</span>
 							</div>
 						{:else}
-							<div class="hidden sm:flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
-								<span class="font-semibold text-[var(--text)]">{t(VOICING_KEYS[voicing])}</span>
-								<span class="text-[var(--text-dim)]">·</span>
-								<span class="capitalize">{t('settings.difficulty_' + difficulty)}</span>
-								<span class="text-[var(--text-dim)]">·</span>
-								<span>{t(PROGRESSION_KEYS[progressionMode])}</span>
+							<div class="sess-line plain">
+								<span class="sess-kind">{t(VOICING_KEYS[voicing])}</span>
+								<span class="sess-q">{t('settings.difficulty_' + difficulty)}</span>
+								<span class="sess-v">{t(PROGRESSION_KEYS[progressionMode])}</span>
 							</div>
 						{/if}
 						<button
@@ -2842,10 +2873,16 @@
 					</div>
 				{/if}
 
+				<!-- The session frame: where you are in this run, and — on the right —
+				     the clock, dimmed to the keys this session is targeting. The dial
+				     is a diagnosis the player glances at between chords, so it lives
+				     HERE and never over the drill area. -->
+				<div class="sess-frame">
+					<div class="sess-prog">
 				<!-- Progress bar + timer -->
 				<div>
-					<div class="flex justify-between text-sm mb-2 text-[var(--text-muted)]">
-						<span>{t('ui.chord_progress', { current: currentIdx + 1, total: actualTotalChords })}</span>
+					<div class="flex justify-between text-sm mb-2 text-[var(--text-muted)] gap-3">
+						<span class="whitespace-nowrap">{t('ui.chord_progress', { current: currentIdx + 1, total: actualTotalChords })}</span>
 						<div class="flex items-center gap-3">
 							{#if !inTimeMode}
 							<span class="font-mono">{timerStarted ? formatTime(elapsedMs > 0 ? elapsedMs : 0) : '0:00.00'}</span>
@@ -2877,6 +2914,24 @@
 							style="width: {progress}%"
 						></div>
 					</div>
+				</div>
+					</div>
+
+					<!-- The dial. Small, times off — at this size the digits inside a
+					     segment are noise, and the colour already carries the verdict.
+					     `highlight` dims every key the session is NOT drilling. -->
+					<figure class="sess-clock">
+						<figcaption class="plate sess-clock-cap">
+							{dialHighlight ? t('train.clock_focus') : t('train.clock_all')}
+						</figcaption>
+						<KeyClock
+							dial={sessionDial}
+							size={152}
+							showTimes={false}
+							highlight={dialHighlight}
+							{notationSystem}
+						/>
+					</figure>
 				</div>
 
 				<!-- Start overlay (before timer started) -->
@@ -3515,6 +3570,137 @@
 <UpgradeSheet bind:open={upgradeOpen} feature={upgradeFeature} teaserMode={upgradeTeaser} />
 
 <style>
+	/* ── The session, as a printed page ───────────────────────────
+	   The editorial pass over the playing screen. Two rules govern it:
+	   the chord stays the largest thing on screen, and nothing decorative
+	   is allowed between the player and the next action. Everything here
+	   is framing — the drill itself is untouched. */
+
+	.train-page {
+		--rule-soft: color-mix(in srgb, var(--border) 62%, transparent);
+		--font-display-mus: 'AccidentalFit', var(--font-display);
+	}
+
+	/* The session line: block number, what it drills, in what voicing.
+	   Same information the pills carried, set as one printed line. */
+	.sess-line {
+		display: flex;
+		align-items: baseline;
+		gap: 0.55rem;
+		min-width: 0;
+		font-size: 0.85rem;
+		color: var(--text-muted);
+	}
+	.sess-mark {
+		flex: none;
+		padding: 0.12rem 0.4rem;
+		border: 1px solid var(--primary);
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+	.sess-kind {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-family: var(--font-display-mus);
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--text);
+	}
+	/* The quality is a chord symbol — mono, and it keeps its ♭ ♯ ° ø. */
+	.sess-q {
+		flex: none;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		color: var(--ink-blue);
+	}
+	.sess-v {
+		flex: none;
+		font-family: var(--font-mono);
+		font-size: 0.66rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+	/* The voicing/mode tail is context, not instruction — it is the first
+	   thing to go when the bar runs out of room. */
+	@media (max-width: 640px) {
+		.sess-v { display: none; }
+		.sess-line.plain { display: none; }
+	}
+
+	/* The session frame — progress on the left, the clock on the right. */
+	.sess-frame {
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+		padding: 1rem 1.1rem;
+		border: 1px solid var(--border);
+		border-left: 3px solid var(--primary);
+		background: var(--bg-card);
+	}
+	.sess-prog {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.sess-clock {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		flex: none;
+		margin: 0;
+		padding-left: 1.5rem;
+		border-left: 1px solid var(--rule-soft);
+	}
+	.sess-clock-cap {
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		text-align: center;
+		color: var(--text-dim);
+	}
+	/* Below ~900px the dial and the progress rail fight for the same row and
+	   both lose. The rail is the one a player needs mid-drill, so the dial
+	   stands down — it is a between-chords glance, not a live readout. */
+	@media (max-width: 900px) {
+		.sess-clock { display: none; }
+		.sess-frame { padding: 0.85rem 1rem; }
+	}
+
+	/* ── The chord ────────────────────────────────────────────────
+	   ChordCard is shared with ear-training and the progression player, so it
+	   is not edited here; the drill screen restates its type instead. The
+	   chord being drilled is the single most important element on this page:
+	   the display serif, as large as the frame allows, solid ink rather than
+	   a gradient — a gradient on a 5rem glyph costs contrast at exactly the
+	   moment a player is reading it from a metre away at the piano. */
+	.train-page :global(.card .text-gradient) {
+		font-family: var(--font-display-mus);
+		font-size: clamp(3.4rem, 13vw, 6rem);
+		font-weight: 700;
+		line-height: 1.02;
+		letter-spacing: -0.03em;
+		font-variant-numeric: lining-nums;
+		/* Beat the .text-gradient background-clip rule from app.css: on this
+		   screen the chord is read, not admired. */
+		background: none;
+		-webkit-text-fill-color: var(--text);
+		color: var(--text);
+	}
+	/* The pulse belongs on a marketing mock, not on the glyph a player is
+	   trying to read. Holding still is the whole point here. */
+	.train-page :global(.card .animate-pulse-slow) {
+		animation: none;
+	}
+
 	/* Ambient page wash — token-based so it flips with the theme. */
 	.train-page {
 		background:
