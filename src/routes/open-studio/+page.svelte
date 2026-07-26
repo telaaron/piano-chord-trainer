@@ -61,7 +61,7 @@
 	})}</script>`}
 </svelte:head>
 
-<main class="flex-1" style="background: linear-gradient(180deg, var(--bg) 0%, #110e0a 30%, #0d0b08 60%, var(--bg) 100%);">
+<main class="flex-1 os">
 	<!-- Hero -->
 	<section class="relative overflow-hidden">
 		<!-- Background image -->
@@ -79,11 +79,9 @@
 
 		<!-- Content -->
 		<div class="max-w-4xl mx-auto px-4 py-20 sm:py-28 text-center relative z-2">
-			<div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-[var(--border)] bg-[var(--bg-card)] text-xs text-[var(--text-muted)] tracking-wide uppercase">
-				{t('open_studio.badge')}
-			</div>
+			<p class="plate plate-center">{t('open_studio.badge')}</p>
 
-			<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] mb-6">
+			<h1 class="os-h1">
 				{@html t('open_studio.hero_h1')}
 			</h1>
 
@@ -94,14 +92,14 @@
 			<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
 				<a
 					href="/embed?theme=openstudio&mode=2-5-1&voicing=shell"
-					class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold transition-colors"
+					class="btn-stamp"
 				>
 					{t('open_studio.cta_demo')}
 					<Play size={18} />
 				</a>
 				<a
 					href="mailto:info@jazzchords.app?subject=Open%20Studio%20Integration"
-					class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
+					class="btn-rule"
 				>
 					<Mail size={18} />
 					{t('open_studio.cta_schedule')}
@@ -111,10 +109,10 @@
 	</section>
 
 	<!-- The Pitch -->
-	<section class="px-4 py-16 sm:py-20">
+	<section class="px-4 py-14 sm:py-16">
 		<div class="max-w-4xl mx-auto">
-			<div class="card p-8 sm:p-10 border-[var(--accent-amber)]/20">
-				<h2 class="text-xl font-bold mb-4 text-[var(--accent-amber)]">{t('open_studio.opportunity_title')}</h2>
+			<div class="panel panel-note p-8 sm:p-10">
+				<h2 class="panel-h">{t('open_studio.opportunity_title')}</h2>
 				<p class="text-[var(--text-muted)] leading-relaxed text-lg">
 					{t('open_studio.opportunity_p1')}
 				</p>
@@ -126,37 +124,37 @@
 	</section>
 
 	<!-- How It Works Inside OS -->
-	<section class="px-4 py-16 sm:py-20">
+	<section class="px-4 py-14 sm:py-16">
 		<div class="max-w-4xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">{t('open_studio.how_title')}</h2>
+			<h2 class="sec-h">{t('open_studio.how_title')}</h2>
 			<p class="text-center text-[var(--text-muted)] mb-12 max-w-2xl mx-auto">
 				{t('open_studio.how_sub')}
 			</p>
 
-			<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
-				<div class="card p-6 text-center">
-					<div class="w-12 h-12 rounded-xl bg-[var(--primary-muted)] flex items-center justify-center mx-auto mb-4">
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+				<div class="panel p-6 text-center">
+					<div class="icon-plate">
 						<Monitor size={24} class="text-[var(--primary)]" />
 					</div>
-					<h3 class="font-bold mb-2">{t('open_studio.how_step1')}</h3>
+					<h3 class="panel-h3">{t('open_studio.how_step1')}</h3>
 					<p class="text-sm text-[var(--text-muted)]">
 						{t('open_studio.how_step1_desc')}
 					</p>
 				</div>
 
-				<div class="card p-6 text-center">
-					<div class="w-12 h-12 rounded-xl bg-[var(--primary-muted)] flex items-center justify-center mx-auto mb-4">
+				<div class="panel p-6 text-center">
+					<div class="icon-plate">
 						<Keyboard size={24} class="text-[var(--primary)]" />
 					</div>
-					<h3 class="font-bold mb-2">{t('open_studio.how_step2')}</h3>
+					<h3 class="panel-h3">{t('open_studio.how_step2')}</h3>
 					<p class="text-sm text-[var(--text-muted)]">
 						{t('open_studio.how_step2_desc')}
 					</p>
 				</div>
 
-				<div class="card p-6 text-center">
+				<div class="panel p-6 text-center">
 					<img src="/elements/open-studio/step-track-progress.webp" alt="Track Progress" width="72" height="72" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />
-					<h3 class="font-bold mb-2">{t('open_studio.how_step3')}</h3>
+					<h3 class="panel-h3">{t('open_studio.how_step3')}</h3>
 					<p class="text-sm text-[var(--text-muted)]">
 						{t('open_studio.how_step3_desc')}
 					</p>
@@ -166,15 +164,15 @@
 	</section>
 
 	<!-- Platform Mock — Accurate Open Studio UI -->
-	<section class="px-4 py-16 sm:py-20">
+	<section class="px-4 py-14 sm:py-16">
 		<div class="max-w-5xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">{t('open_studio.platform_title')}</h2>
+			<h2 class="sec-h">{t('open_studio.platform_title')}</h2>
 			<p class="text-center text-[var(--text-muted)] mb-10 max-w-2xl mx-auto">
 				{@html t('open_studio.platform_sub')}
 				<span class="block mt-1 text-sm text-[var(--text-dim)]">{t('open_studio.platform_preview')}</span>
 			</p>
 
-			<div class="rounded-xl overflow-hidden shadow-[0_25px_80px_rgba(0,0,0,0.6)] border border-[rgba(45, 41, 82,0.3)]">
+			<div class="mock-frame">
 				<!-- Browser Chrome -->
 				<div class="bg-[#2b2b2b] px-3 py-[0.6rem] flex items-center gap-3">
 					<div class="flex gap-[0.35rem]"><span class="w-2.75 h-2.75 rounded-full bg-[#ff5f57]"></span><span class="w-2.75 h-2.75 rounded-full bg-[#ffbd2e]"></span><span class="w-2.75 h-2.75 rounded-full bg-[#28c840]"></span></div>
@@ -272,7 +270,7 @@
 						<div class="flex items-center gap-3 text-[0.8rem] text-(--text-muted)">
 							<span>Chord 8 / 20</span>
 							<div class="flex-1 h-1.25 bg-[rgba(45, 41, 82,0.2)] rounded-[3px] overflow-hidden">
-								<div class="h-full rounded-[3px]" style="width: 40%; background: linear-gradient(90deg, var(--primary), var(--accent-amber))"></div>
+								<div class="h-full" style="width: 40%; background: var(--primary)"></div>
 							</div>
 							<span class="text-(--accent-green) font-semibold">Accuracy: 94%</span>
 						</div>
@@ -284,17 +282,17 @@
 
 		<!-- Benefits as annotation OUTSIDE the mock -->
 		<div class="max-w-5xl mx-auto">
-			<div class="grid grid-cols-3 gap-6 bg-[rgba(245, 166, 35,0.05)] px-6 py-10 mt-6 rounded-lg max-md:grid-cols-1">
-				<div class="flex items-center gap-3 text-[0.9rem] text-(--text) font-medium">
-					<CheckCircle size={20} class="text-[#00a86b]" />
+			<div class="benefits">
+				<div class="benefit">
+					<CheckCircle size={18} class="text-[var(--success)]" />
 					<span>{t('open_studio.benefits_1')}</span>
 				</div>
-				<div class="flex items-center gap-3 text-[0.9rem] text-(--text) font-medium">
-					<CheckCircle size={20} class="text-[#00a86b]" />
+				<div class="benefit">
+					<CheckCircle size={18} class="text-[var(--success)]" />
 					<span>{t('open_studio.benefits_2')}</span>
 				</div>
-				<div class="flex items-center gap-3 text-[0.9rem] text-(--text) font-medium">
-					<CheckCircle size={20} class="text-[#00a86b]" />
+				<div class="benefit">
+					<CheckCircle size={18} class="text-[var(--success)]" />
 					<span>{t('open_studio.benefits_3')}</span>
 				</div>
 			</div>
@@ -302,9 +300,9 @@
 	</section>
 
 	<!-- What The Trainer Covers -->
-	<section class="px-4 py-16 sm:py-20">
+	<section class="px-4 py-14 sm:py-16">
 		<div class="max-w-4xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">{t('open_studio.practice_title')}</h2>
+			<h2 class="sec-h">{t('open_studio.practice_title')}</h2>
 			<p class="text-center text-[var(--text-muted)] mb-10">{t('open_studio.practice_sub')}</p>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -318,7 +316,7 @@
 					{ title: t('open_studio.practice_inversions'), desc: t('open_studio.practice_inversions_desc') },
 					{ title: t('open_studio.practice_qualities'), desc: t('open_studio.practice_qualities_desc') },
 				] as item}
-					<div class="card p-5 flex items-start gap-3">
+					<div class="panel p-5 flex items-start gap-3">
 						<CheckCircle size={18} class="text-[var(--primary)] flex-shrink-0 mt-0.5" />
 						<div>
 							<h3 class="font-semibold text-sm">{item.title}</h3>
@@ -331,42 +329,42 @@
 	</section>
 
 	<!-- Integration Options -->
-	<section class="px-4 py-16 sm:py-20">
+	<section class="px-4 py-14 sm:py-16">
 		<div class="max-w-4xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-10 text-center">{t('open_studio.integration_title')}</h2>
+			<h2 class="sec-h sec-h-wide">{t('open_studio.integration_title')}</h2>
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-				<div class="card p-6 border-[var(--primary)]/30 relative overflow-hidden">
-					<div class="absolute top-3 right-3 text-[0.65rem] uppercase tracking-wider text-[var(--primary)] bg-[var(--primary-muted)] px-2 py-0.5 rounded-full font-semibold">{t('open_studio.integration_recommended')}</div>
+				<div class="panel panel-mark p-6 relative overflow-hidden">
+					<div class="tag-mark">{t('open_studio.integration_recommended')}</div>
 					<Layers size={24} class="text-[var(--primary)] mb-3" />
-					<h3 class="font-bold mb-2">{t('open_studio.integration_lesson')}</h3>
+					<h3 class="panel-h3">{t('open_studio.integration_lesson')}</h3>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
 						{t('open_studio.integration_lesson_desc')}
 					</p>
 					<p class="text-xs text-[var(--text-dim)] mt-3 font-mono">iframe with URL params</p>
 				</div>
 
-				<div class="card p-6">
+				<div class="panel p-6">
 					<Monitor size={24} class="text-[var(--primary)] mb-3" />
-					<h3 class="font-bold mb-2">{t('open_studio.integration_standalone')}</h3>
+					<h3 class="panel-h3">{t('open_studio.integration_standalone')}</h3>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
 						{t('open_studio.integration_standalone_desc')}
 					</p>
 					<p class="text-xs text-[var(--text-dim)] mt-3 font-mono">Subdomain or embedded route</p>
 				</div>
 
-				<div class="card p-6">
+				<div class="panel p-6">
 					<Zap size={24} class="text-[var(--primary)] mb-3" />
-					<h3 class="font-bold mb-2">{t('open_studio.integration_challenge')}</h3>
+					<h3 class="panel-h3">{t('open_studio.integration_challenge')}</h3>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
 						{t('open_studio.integration_challenge_desc')}
 					</p>
 					<p class="text-xs text-[var(--text-dim)] mt-3 font-mono">Overlay / modal trigger</p>
 				</div>
 
-				<div class="card p-6">
+				<div class="panel p-6">
 					<Play size={24} class="text-[var(--primary)] mb-3" />
-					<h3 class="font-bold mb-2">{t('open_studio.integration_materials')}</h3>
+					<h3 class="panel-h3">{t('open_studio.integration_materials')}</h3>
 					<p class="text-sm text-[var(--text-muted)] leading-relaxed">
 						{t('open_studio.integration_materials_desc')}
 					</p>
@@ -377,16 +375,14 @@
 	</section>
 
 	<!-- Harmony Games vs Chord Trainer -->
-	<section class="px-4 py-16 sm:py-20">
+	<section class="px-4 py-14 sm:py-16">
 		<div class="max-w-4xl mx-auto">
-			<div class="card surface-glass p-8 sm:p-10">
-				<h2 class="text-xl font-bold mb-6">{@html t('open_studio.comparison_title')}</h2>
+			<div class="panel p-8 sm:p-10">
+				<h2 class="panel-h mb-6">{@html t('open_studio.comparison_title')}</h2>
 
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-					<div class="rounded-xl border border-[var(--border)]/45 bg-[var(--bg)]/45 backdrop-blur-sm p-4 sm:p-5">
-						<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[0.65rem] font-semibold tracking-wider uppercase bg-[var(--bg-muted)] text-[var(--text-dim)] mb-3">
-							Ear Focus
-						</div>
+					<div class="compare p-4 sm:p-5">
+						<div class="tag">{t('open_studio.comparison_tag_ear')}</div>
 						<h3 class="font-semibold text-[var(--text-muted)] mb-3 uppercase tracking-wider text-xs">{t('open_studio.comparison_hg')}</h3>
 						<ul class="space-y-2 text-[var(--text-muted)]">
 							<li>{t('open_studio.comparison_hg_1')}</li>
@@ -394,10 +390,8 @@
 							<li>{t('open_studio.comparison_hg_3')}</li>
 						</ul>
 					</div>
-					<div class="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary-muted)]/15 backdrop-blur-sm p-4 sm:p-5">
-						<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[0.65rem] font-semibold tracking-wider uppercase bg-[var(--primary-muted)] text-[var(--primary)] mb-3">
-							Hands Focus
-						</div>
+					<div class="compare compare-mark p-4 sm:p-5">
+						<div class="tag tag-stamp">{t('open_studio.comparison_tag_hands')}</div>
 						<h3 class="font-semibold text-[var(--primary)] mb-3 uppercase tracking-wider text-xs">{t('open_studio.comparison_ct')}</h3>
 						<ul class="space-y-2 text-[var(--text)]">
 							<li>{t('open_studio.comparison_ct_1')}</li>
@@ -417,22 +411,22 @@
 	</section>
 
 	<!-- Terms -->
-	<section class="px-4 py-16 sm:py-20">
+	<section class="px-4 py-14 sm:py-16">
 		<div class="max-w-4xl mx-auto">
-			<h2 class="text-2xl sm:text-3xl font-bold mb-10 text-center">{t('open_studio.terms_title')}</h2>
+			<h2 class="sec-h sec-h-wide">{t('open_studio.terms_title')}</h2>
 
 			<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-				<div class="card p-6 text-center">				<img src="/elements/open-studio/pricing-trial.webp" alt="30 Days Free Trial" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">{t('open_studio.terms_trial')}</div>
+				<div class="panel p-6 text-center">				<img src="/elements/open-studio/pricing-trial.webp" alt="30 Days Free Trial" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="terms-figure">{t('open_studio.terms_trial')}</div>
 					<div class="text-sm font-medium mb-2">{t('open_studio.terms_trial_sub')}</div>
 					<p class="text-xs text-[var(--text-muted)]">{t('open_studio.terms_trial_desc')}</p>
 				</div>
 
-				<div class="card p-6 text-center border-[var(--primary)]/30">				<img src="/elements/open-studio/pricing-flat.webp" alt="Flat Fee Monthly License" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">{t('open_studio.terms_flat')}</div>
+				<div class="panel panel-mark p-6 text-center">				<img src="/elements/open-studio/pricing-flat.webp" alt="Flat Fee Monthly License" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="terms-figure">{t('open_studio.terms_flat')}</div>
 					<div class="text-sm font-medium mb-2">{t('open_studio.terms_flat_sub')}</div>
 					<p class="text-xs text-[var(--text-muted)]">{t('open_studio.terms_flat_desc')}</p>
 				</div>
 
-				<div class="card p-6 text-center">				<img src="/elements/open-studio/pricing-whitelabel.webp" alt="White-Label Your Branding" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="text-3xl font-bold text-[var(--primary)] mb-2">{t('open_studio.terms_white')}</div>
+				<div class="panel p-6 text-center">				<img src="/elements/open-studio/pricing-whitelabel.webp" alt="White-Label Your Branding" width="64" height="64" loading="lazy" style="object-fit: contain; display: block; margin: 0 auto 16px;" />					<div class="terms-figure">{t('open_studio.terms_white')}</div>
 					<div class="text-sm font-medium mb-2">{t('open_studio.terms_white_sub')}</div>
 					<p class="text-xs text-[var(--text-muted)]">{t('open_studio.terms_white_desc')}</p>
 				</div>
@@ -441,10 +435,10 @@
 	</section>
 
 	<!-- CTA -->
-	<section class="px-4 py-20 sm:py-28">
+	<section class="px-4 py-16 sm:py-20">
 		<div class="max-w-3xl mx-auto text-center">
-			<div class="card p-10 sm:p-14 border-[var(--primary)]/20">
-				<h2 class="text-2xl sm:text-3xl font-bold mb-4">{t('open_studio.final_title')}</h2>
+			<div class="panel panel-mark p-10 sm:p-14">
+				<h2 class="sec-h">{t('open_studio.final_title')}</h2>
 				<p class="text-[var(--text-muted)] mb-8 max-w-lg mx-auto leading-relaxed">
 					{t('open_studio.final_desc')}
 				</p>
@@ -452,14 +446,14 @@
 				<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
 					<a
 						href="mailto:info@jazzchords.app?subject=Open%20Studio%20x%20Chord%20Trainer%20Demo"
-						class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold transition-colors"
+						class="btn-stamp"
 					>
 						<Mail size={18} />
 						{t('open_studio.cta_schedule')}
 					</a>
 					<a
 						href="/embed?theme=openstudio&mode=2-5-1&voicing=shell"
-						class="inline-flex items-center gap-2 px-8 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
+						class="btn-rule"
 					>
 						{t('open_studio.cta_demo')}
 						<ArrowRight size={18} />
@@ -475,6 +469,216 @@
 </main>
 
 <style>
+	/* ── Press-shop chrome around the Open Studio mock ──────────────
+	   The mock itself keeps its literal brand colours: it is a depiction
+	   of their product, so it must stay accurate. Everything that is
+	   *ours* is set in the editorial system. */
+	.os {
+		background: var(--bg);
+	}
+
+	.plate {
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+	.plate-center {
+		margin-bottom: 1.75rem;
+	}
+
+	.os-h1 {
+		font-family: var(--font-display);
+		font-size: clamp(2.1rem, 6vw, 3.6rem);
+		font-weight: 600;
+		line-height: 1.08;
+		letter-spacing: -0.028em;
+		margin-bottom: 1.5rem;
+		text-wrap: balance;
+	}
+	/* The headline copy ships with the global .text-gradient class, which
+	   paints red→amber. Amber is reserved for live/active state in this
+	   direction, so the headline is pulled back to one flat stamp ink.
+	   Scoped to this page — the global class is untouched for other pages. */
+	.os-h1 :global(.text-gradient) {
+		background: none;
+		-webkit-background-clip: border-box;
+		background-clip: border-box;
+		-webkit-text-fill-color: var(--primary);
+		color: var(--primary);
+	}
+
+	.sec-h {
+		font-family: var(--font-display);
+		font-size: clamp(1.5rem, 4vw, 2.15rem);
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: -0.022em;
+		text-align: center;
+		margin-bottom: 1rem;
+	}
+	.sec-h-wide {
+		margin-bottom: 2.5rem;
+	}
+
+	/* ── Panels ── */
+	.panel {
+		border: 1px solid var(--border);
+		background: var(--bg-card);
+		border-radius: 2px;
+	}
+	.panel-mark {
+		border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+	}
+	/* The opportunity note is annotation, so it takes the copyist's blue */
+	.panel-note {
+		border-left: 3px solid var(--ink-blue);
+	}
+	.panel-h {
+		font-family: var(--font-display);
+		font-size: 1.35rem;
+		font-weight: 600;
+		letter-spacing: -0.018em;
+		color: var(--ink-blue);
+		margin-bottom: 1rem;
+	}
+	.panel :global(.panel-h3),
+	.panel-h3 {
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		font-weight: 600;
+		letter-spacing: -0.015em;
+		margin-bottom: 0.5rem;
+	}
+
+	/* A ruled square holding the icon — not a rounded app tile */
+	.icon-plate {
+		width: 2.75rem;
+		height: 2.75rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto 1rem;
+		border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+		background: var(--primary-muted);
+	}
+
+	/* ── Buttons ── */
+	.btn-stamp,
+	.btn-rule {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-height: var(--tap-min);
+		padding: 0 1.75rem;
+		border-radius: 2px;
+		font-size: 0.95rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+	}
+	.btn-stamp {
+		background: var(--primary);
+		border: 1px solid var(--primary);
+		color: var(--primary-text);
+	}
+	.btn-stamp:hover {
+		background: var(--primary-hover);
+		border-color: var(--primary-hover);
+	}
+	.btn-rule {
+		background: transparent;
+		border: 1px solid var(--border);
+		color: var(--text-muted);
+	}
+	.btn-rule:hover {
+		border-color: var(--text-muted);
+		color: var(--text);
+	}
+
+	/* ── Tags: plate lines, not pills ── */
+	.tag,
+	.tag-mark {
+		display: inline-block;
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		font-weight: 600;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		padding: 0.25rem 0.5rem;
+		border: 1px solid var(--border);
+		color: var(--text-dim);
+	}
+	.tag {
+		margin-bottom: 0.85rem;
+	}
+	.tag-stamp {
+		border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+		color: var(--primary);
+	}
+	.tag-mark {
+		position: absolute;
+		top: 0.75rem;
+		right: 0.75rem;
+		border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+		background: var(--primary-muted);
+		color: var(--primary);
+	}
+
+	.compare {
+		border: 1px solid var(--border);
+		background: var(--bg);
+		border-radius: 2px;
+	}
+	.compare-mark {
+		border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+		background: var(--primary-muted);
+	}
+
+	/* ── Benefits: a hairline register, no wash ── */
+	.benefits {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1px;
+		background: var(--border);
+		border: 1px solid var(--border);
+		margin-top: 1.5rem;
+	}
+	@media (max-width: 768px) {
+		.benefits {
+			grid-template-columns: 1fr;
+		}
+	}
+	.benefit {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		background: var(--bg-card);
+		padding: 1.5rem 1.25rem;
+		font-size: 0.88rem;
+		font-weight: 500;
+		color: var(--text);
+	}
+
+	.mock-frame {
+		overflow: hidden;
+		border: 1px solid var(--border);
+		box-shadow: var(--shadow-lg);
+		border-radius: 2px;
+	}
+
+	.terms-figure {
+		font-family: var(--font-display);
+		font-size: 2rem;
+		font-weight: 600;
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+		color: var(--primary);
+		margin-bottom: 0.5rem;
+	}
+
 	/* Active piano key highlights — kept in CSS for compound selector support */
 	.os-key-active.os-key-white {
 		background: var(--accent-gold) !important;

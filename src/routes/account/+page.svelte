@@ -110,148 +110,444 @@
 	<title>{t('account.title')} – jazzchords.app</title>
 </svelte:head>
 
-<main class="flex-1 px-4 py-16">
-	<div class="max-w-2xl mx-auto space-y-8">
-		<h1 class="text-3xl font-bold text-gradient">{t('account.heading')}</h1>
+<main class="acct">
+	<div class="acct-col">
+		<header class="acct-head">
+			<p class="plate">{t('nav_auth.account')}</p>
+			<h1>{t('account.heading')}</h1>
+		</header>
 
 		{#if !auth.user}
-			<div class="card surface-glass p-8 text-center space-y-4">
-				<p class="text-[var(--text-muted)]">{t('account.not_logged_in')}</p>
-				<a href="/auth/login" class="inline-block px-6 py-2.5 pill-btn pill-btn-primary text-white font-medium transition-colors">
-					{t('auth.login_button')}
-				</a>
-			</div>
+			<section class="panel panel-empty">
+				<p>{t('account.not_logged_in')}</p>
+				<a href="/auth/login" class="btn-stamp">{t('auth.login_button')}</a>
+			</section>
 		{:else}
 			<!-- Profile info -->
-			<div class="card surface-glass p-6 space-y-4">
-				<h2 class="text-lg font-semibold">{t('account.profile')}</h2>
-				<div class="grid grid-cols-2 gap-4 text-sm">
-					<div>
-						<span class="text-[var(--text-dim)]">{t('auth.email')}</span>
-						<p class="text-[var(--text)]">{auth.user.email}</p>
+			<section class="panel">
+				<h2 class="panel-title">{t('account.profile')}</h2>
+				<dl class="ledger">
+					<div class="ledger-cell">
+						<dt>{t('auth.email')}</dt>
+						<dd>{auth.user.email}</dd>
 					</div>
-					<div>
-						<span class="text-[var(--text-dim)]">{t('account.member_since')}</span>
-						<p class="text-[var(--text)]">{new Date(auth.user.created_at).toLocaleDateString()}</p>
+					<div class="ledger-cell">
+						<dt>{t('account.member_since')}</dt>
+						<dd>{new Date(auth.user.created_at).toLocaleDateString()}</dd>
 					</div>
-				</div>
+				</dl>
 				<div class="flex items-end gap-2 max-w-sm">
 					<div class="flex-1">
-						<label for="display-name" class="text-xs text-[var(--text-dim)] block mb-1">{t('account.display_name')}</label>
+						<label for="display-name" class="field-label">{t('account.display_name')}</label>
 						<input
 							id="display-name"
 							type="text"
 							bind:value={displayName}
 							placeholder={t('account.display_name_placeholder')}
 							maxlength={50}
-							class="pill-input text-sm"
+							class="field"
 						/>
 					</div>
-					<button onclick={handleSaveDisplayName} disabled={savingName} class="px-3 py-2 pill-btn pill-btn-primary text-white text-sm disabled:opacity-50">
+					<button onclick={handleSaveDisplayName} disabled={savingName} class="btn-stamp btn-sm">
 						{savingName ? '…' : t('account.save')}
 					</button>
 				</div>
-				<button onclick={() => showPasswordChange = !showPasswordChange} class="text-sm text-[var(--primary)] hover:underline">
+				<button onclick={() => showPasswordChange = !showPasswordChange} class="link">
 					{t('account.change_password')}
 				</button>
 				{#if showPasswordChange}
 					<form onsubmit={handlePasswordChange} class="space-y-3 max-w-sm">
 						<input type="password" bind:value={newPassword} minlength={8} placeholder={t('account.new_password')}
-							class="pill-input" />
+							class="field" />
 						<input type="password" bind:value={confirmNewPassword} minlength={8} placeholder={t('auth.confirm_password')}
-							class="pill-input" />
-						{#if passwordError}<p class="text-sm text-red-400">{passwordError}</p>{/if}
-						<button type="submit" class="px-4 py-2 pill-btn pill-btn-primary text-white text-sm">{t('account.save')}</button>
+							class="field" />
+						{#if passwordError}<p class="err-text">{passwordError}</p>{/if}
+						<button type="submit" class="btn-stamp btn-sm">{t('account.save')}</button>
 					</form>
 				{/if}
-			</div>
+			</section>
 
 			<!-- Subscription -->
-			<div class="card surface-glass p-6 space-y-4">
-				<h2 class="text-lg font-semibold">{t('account.subscription')}</h2>
+			<section class="panel">
+				<h2 class="panel-title">{t('account.subscription')}</h2>
 				{#if isBeta()}
-					<div class="status-glass flex items-center gap-3">
-						<PartyPopper size={20} class="text-[var(--gold)] shrink-0" aria-hidden="true" />
+					<div class="live-note">
+						<PartyPopper size={18} class="shrink-0" aria-hidden="true" />
 						<div>
-							<p class="font-medium text-[var(--gold)]">{t('account.beta_active')}</p>
-							<p class="text-sm text-[var(--text-muted)]">{t('account.beta_description')}</p>
+							<p class="live-title">{t('account.beta_active')}</p>
+							<p class="note-body">{t('account.beta_description')}</p>
 						</div>
 					</div>
 				{:else if sub}
-					<div class="text-sm space-y-2">
-						<p>{t('account.current_plan')}: <span class="font-semibold text-[var(--primary)] capitalize">{sub.tier}</span></p>
+					<div class="panel-body">
+						<p>{t('account.current_plan')}: <span class="plan-tier">{sub.tier}</span></p>
 						{#if sub.currentPeriodEnd}
-							<p class="text-[var(--text-dim)]">{t('account.renews')}: {new Date(sub.currentPeriodEnd).toLocaleDateString()}</p>
+							<p class="dim">{t('account.renews')}: {new Date(sub.currentPeriodEnd).toLocaleDateString()}</p>
 						{/if}
-						<button onclick={handleManageSubscription} class="px-4 py-2 pill-btn pill-btn-secondary text-sm transition-colors">
+						<button onclick={handleManageSubscription} class="btn-rule btn-sm">
 							{t('account.manage_subscription')}
 						</button>
 					</div>
 				{:else}
-					<div class="text-sm space-y-2">
-						<p class="text-[var(--text-muted)]">{t('account.free_plan')}</p>
-						<a href="/pricing" class="inline-block px-4 py-2 pill-btn pill-btn-primary text-white text-sm transition-colors">
-							{t('account.upgrade')}
-						</a>
+					<div class="panel-body">
+						<p>{t('account.free_plan')}</p>
+						<a href="/pricing" class="btn-stamp btn-sm">{t('account.upgrade')}</a>
 					</div>
 				{/if}
-			</div>
+			</section>
 
 			<!-- Cloud Sync -->
-			<div class="card surface-glass p-6 space-y-4">
-				<h2 class="text-lg font-semibold">{t('account.cloud_sync')}</h2>
-				<p class="text-sm text-[var(--text-muted)]">{t('account.cloud_sync_desc')}</p>
-				<div class="flex flex-wrap gap-3">
-					<button onclick={handleSyncToCloud} disabled={syncing}
-						class="px-4 py-2 pill-btn pill-btn-primary text-white text-sm disabled:opacity-50 transition-colors">
-						{syncing ? '...' : t('account.upload_to_cloud')}
+			<section class="panel">
+				<h2 class="panel-title">{t('account.cloud_sync')}</h2>
+				<p class="note-body">{t('account.cloud_sync_desc')}</p>
+				<div class="btn-row">
+					<button onclick={handleSyncToCloud} disabled={syncing} class="btn-stamp btn-sm">
+						{syncing ? '…' : t('account.upload_to_cloud')}
 					</button>
-					<button onclick={handleSyncFromCloud} disabled={syncing}
-						class="px-4 py-2 pill-btn pill-btn-secondary text-sm disabled:opacity-50 transition-colors">
-						{syncing ? '...' : t('account.download_from_cloud')}
+					<button onclick={handleSyncFromCloud} disabled={syncing} class="btn-rule btn-sm">
+						{syncing ? '…' : t('account.download_from_cloud')}
 					</button>
 				</div>
-			</div>
+			</section>
 
 			<!-- Danger Zone -->
-			<div class="card surface-glass p-6 space-y-4 border-red-500/30">
-				<h2 class="text-lg font-semibold text-red-400">{t('account.danger_zone')}</h2>
-				<div class="flex flex-wrap gap-3">
-					<button onclick={handleSignOut}
-						class="px-4 py-2 pill-btn pill-btn-secondary text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
+			<section class="panel panel-danger">
+				<h2 class="panel-title is-danger">{t('account.danger_zone')}</h2>
+				<div class="btn-row">
+					<button onclick={handleSignOut} class="btn-rule btn-sm">
 						{t('account.sign_out')}
 					</button>
-					<button onclick={() => showDeleteConfirm = true}
-						class="px-4 py-2 pill-btn border border-red-500/30 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
+					<button onclick={() => showDeleteConfirm = true} class="btn-danger btn-sm">
 						{t('account.delete_account')}
 					</button>
 				</div>
 				{#if showDeleteConfirm}
-					<div class="status-danger p-4 space-y-3">
-						<p class="text-sm text-red-400">{t('account.delete_confirm')}</p>
-						<div class="flex gap-3">
-							<button onclick={handleDeleteAccount} class="px-4 py-2 pill-btn bg-red-600 text-white text-sm">{t('account.delete_yes')}</button>
-							<button onclick={() => showDeleteConfirm = false} class="px-4 py-2 pill-btn pill-btn-secondary text-sm">{t('account.delete_cancel')}</button>
+					<div class="confirm" role="alert">
+						<p class="err-text">{t('account.delete_confirm')}</p>
+						<div class="btn-row">
+							<button onclick={handleDeleteAccount} class="btn-danger-solid btn-sm">{t('account.delete_yes')}</button>
+							<button onclick={() => showDeleteConfirm = false} class="btn-rule btn-sm">{t('account.delete_cancel')}</button>
 						</div>
 					</div>
 				{/if}
-			</div>
+			</section>
 		{/if}
 
 		<!-- Privacy / Telemetry -->
-		<div class="card surface-glass p-6 space-y-4">
-			<h2 class="text-lg font-semibold">{t('account.privacy')}</h2>
-			<p class="text-sm text-[var(--text-muted)]">{t('account.privacy_desc')}</p>
-			<label class="flex items-center gap-3 text-sm cursor-pointer w-fit">
+		<section class="panel">
+			<h2 class="panel-title">{t('account.privacy')}</h2>
+			<p class="note-body">{t('account.privacy_desc')}</p>
+			<label class="check">
 				<input
 					type="checkbox"
 					checked={telemetryEnabled}
 					onchange={handleTelemetryToggle}
-					class="accent-[var(--primary)]"
 					aria-label={t('account.privacy_toggle_label')}
 				/>
-				{t('account.privacy_toggle_label')}
+				<span>{t('account.privacy_toggle_label')}</span>
 			</label>
-		</div>
+		</section>
 	</div>
 </main>
+
+<style>
+	.acct {
+		flex: 1;
+		padding: clamp(2.5rem, 7vw, 4rem) clamp(1rem, 5vw, 2rem) 5rem;
+	}
+	.acct-col {
+		max-width: 44rem;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+
+	.acct-head {
+		padding-bottom: 1.25rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.plate {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--primary);
+		margin-bottom: 0.7rem;
+	}
+	.acct-head h1 {
+		font-family: var(--font-display);
+		font-size: clamp(1.9rem, 5.5vw, 2.5rem);
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: -0.025em;
+		color: var(--text);
+		margin: 0;
+	}
+
+	/* ── Panels: ruled sections, not floating cards ── */
+	.panel {
+		border: 1px solid var(--border);
+		background: var(--bg-card);
+		padding: clamp(1.15rem, 3.5vw, 1.6rem);
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+	.panel-empty {
+		align-items: flex-start;
+		gap: 1.15rem;
+		color: var(--text-muted);
+		font-size: 0.92rem;
+	}
+	.panel-danger {
+		border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+	}
+	.panel-title {
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+		font-weight: 600;
+		letter-spacing: -0.015em;
+		color: var(--text);
+		padding-bottom: 0.7rem;
+		border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+	}
+	.panel-title.is-danger {
+		color: var(--danger);
+		border-bottom-color: color-mix(in srgb, var(--danger) 30%, transparent);
+	}
+	.panel-body {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.65rem;
+		font-size: 0.9rem;
+		color: var(--text-muted);
+	}
+	.note-body {
+		font-size: 0.88rem;
+		line-height: 1.55;
+		color: var(--text-muted);
+	}
+	.dim {
+		color: var(--text-dim);
+	}
+	.plan-tier {
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		font-weight: 600;
+		color: var(--primary);
+		text-transform: capitalize;
+	}
+
+	/* ── Ledger: the profile facts, ruled like a register ── */
+	.ledger {
+		display: grid;
+		grid-template-columns: 1fr;
+		border: 1px solid var(--border);
+		margin: 0;
+	}
+	@media (min-width: 480px) {
+		.ledger {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	.ledger-cell {
+		padding: 0.75rem 0.9rem;
+		min-width: 0;
+		border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+	}
+	.ledger-cell:last-child {
+		border-bottom: none;
+	}
+	@media (min-width: 480px) {
+		.ledger-cell {
+			border-bottom: none;
+			border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+		}
+		.ledger-cell:last-child {
+			border-right: none;
+		}
+	}
+	.ledger-cell dt {
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+	.ledger-cell dd {
+		margin: 0.3rem 0 0;
+		font-size: 0.9rem;
+		color: var(--text);
+		overflow-wrap: anywhere;
+	}
+
+	/* ── Fields ── */
+	.field-label {
+		display: block;
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+		margin-bottom: 0.4rem;
+	}
+	.field {
+		width: 100%;
+		min-height: var(--tap-min);
+		padding: 0.55rem 0.7rem;
+		border-radius: 2px;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		color: var(--text);
+		font-size: 0.9rem;
+		transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	}
+	.field::placeholder {
+		color: var(--text-dim);
+	}
+	.field:focus {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: inset 0 -2px 0 var(--primary);
+	}
+
+	/* ── Buttons: three flat weights, square corners, no gradients ── */
+	.btn-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+	}
+	.btn-stamp,
+	.btn-rule,
+	.btn-danger,
+	.btn-danger-solid {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: var(--tap-min);
+		padding: 0 1.1rem;
+		border-radius: 2px;
+		font-size: 0.9rem;
+		font-weight: 600;
+		text-decoration: none;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+	}
+	.btn-sm {
+		min-height: 2.25rem;
+		padding: 0 0.85rem;
+		font-size: 0.82rem;
+	}
+	.btn-stamp {
+		background: var(--primary);
+		border: 1px solid var(--primary);
+		color: var(--primary-text);
+	}
+	.btn-stamp:hover:not(:disabled) {
+		background: var(--primary-hover);
+		border-color: var(--primary-hover);
+	}
+	.btn-rule {
+		background: transparent;
+		border: 1px solid var(--border);
+		color: var(--text-muted);
+	}
+	.btn-rule:hover:not(:disabled) {
+		border-color: var(--text-muted);
+		color: var(--text);
+		background: var(--bg-card-hover);
+	}
+	.btn-danger {
+		background: transparent;
+		border: 1px solid color-mix(in srgb, var(--danger) 50%, transparent);
+		color: var(--danger);
+	}
+	.btn-danger:hover {
+		background: var(--danger-muted);
+		border-color: var(--danger);
+	}
+	.btn-danger-solid {
+		background: var(--danger);
+		border: 1px solid var(--danger);
+		color: var(--bg);
+	}
+	.btn-danger-solid:hover {
+		filter: brightness(1.08);
+	}
+	.btn-stamp:disabled,
+	.btn-rule:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.link {
+		background: none;
+		border: none;
+		padding: 0;
+		align-self: flex-start;
+		cursor: pointer;
+		font-size: 0.85rem;
+		color: var(--text);
+		text-decoration: underline;
+		text-decoration-color: var(--primary);
+		text-underline-offset: 3px;
+		transition: color 0.15s ease;
+	}
+	.link:hover {
+		color: var(--primary);
+	}
+
+	/* Amber is reserved for live/active state — the beta run is exactly that */
+	.live-note {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.7rem;
+		border-left: 2px solid var(--accent-amber);
+		padding-left: 0.85rem;
+	}
+	.live-note :global(svg) {
+		color: var(--accent-amber);
+		margin-top: 0.2rem;
+	}
+	.live-title {
+		font-weight: 600;
+		color: var(--accent-amber);
+		font-size: 0.92rem;
+	}
+
+	.err-text {
+		font-size: 0.85rem;
+		color: var(--danger);
+	}
+	.confirm {
+		display: flex;
+		flex-direction: column;
+		gap: 0.85rem;
+		border-left: 2px solid var(--danger);
+		background: var(--danger-muted);
+		padding: 0.85rem 1rem;
+	}
+
+	.check {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		width: fit-content;
+		font-size: 0.88rem;
+		color: var(--text-muted);
+		cursor: pointer;
+	}
+	.check input {
+		accent-color: var(--primary);
+		flex: none;
+	}
+
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+		max-width: 22rem;
+	}
+</style>

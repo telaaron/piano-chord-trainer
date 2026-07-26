@@ -71,18 +71,18 @@
 			role="dialog"
 			aria-modal="true"
 			aria-label={title}
-			class="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto rounded-t-2xl sm:rounded-2xl
-				border border-[var(--border)]/60 bg-[var(--bg)]/95 backdrop-blur-xl shadow-[var(--shadow-lg)]"
+			class="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto rounded-t-[2px] sm:rounded-[2px]
+				border border-[var(--border-hover)] bg-[var(--bg)] shadow-[var(--shadow-lg)]"
 			transition:fly={{ y: 24, duration: 220 }}
 		>
 			{#if title}
-				<div class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[var(--border)]/40 bg-[var(--bg)]/90 px-5 py-3.5 backdrop-blur-xl">
-					<h2 class="text-[var(--text-lg)] font-bold text-[var(--text)]">{title}</h2>
+				<div class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[var(--border)] bg-[var(--bg)] px-5 py-3.5">
+					<h2 class="text-[var(--text-lg)] font-semibold text-[var(--text)] font-[family-name:var(--font-display)] tracking-[-0.02em]">{title}</h2>
 					<button
 						type="button"
 						aria-label="Close"
 						onclick={close}
-						class="grid h-9 w-9 place-items-center rounded-full text-[var(--text-muted)] hover:bg-[var(--bg-card)] hover:text-[var(--text)]
+						class="grid h-9 w-9 place-items-center rounded-[2px] text-[var(--text-muted)] hover:bg-[var(--bg-card)] hover:text-[var(--text)]
 							focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
 					>
 						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -93,7 +93,7 @@
 			{/if}
 			<div class="px-5 py-4">{@render children()}</div>
 			{#if footer}
-				<div class="sticky bottom-0 border-t border-[var(--border)]/40 bg-[var(--bg)]/90 px-5 py-3 backdrop-blur-xl">
+				<div class="sticky bottom-0 border-t border-[var(--border)] bg-[var(--bg)] px-5 py-3">
 					{@render footer()}
 				</div>
 			{/if}

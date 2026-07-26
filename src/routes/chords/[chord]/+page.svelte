@@ -91,8 +91,12 @@
 		</a>
 	</header>
 
-	<section class="panel notes-panel" aria-labelledby="notes-h">
-		<h2 id="notes-h">The notes in {meta.name}</h2>
+	<section class="notes-panel" aria-labelledby="notes-h">
+		<div class="sec-head">
+			<span class="rehearsal" aria-hidden="true">I</span>
+			<h2 id="notes-h">The notes in {meta.name}</h2>
+		</div>
+		<!-- Note / interval analysis — blue does the labelling -->
 		<ul class="note-list">
 			{#each notes as note, i (note + i)}
 				<li>
@@ -104,7 +108,10 @@
 	</section>
 
 	<section aria-labelledby="voicings-h">
-		<h2 id="voicings-h">{meta.name} voicings on piano</h2>
+		<div class="sec-head">
+			<span class="rehearsal" aria-hidden="true">II</span>
+			<h2 id="voicings-h">{meta.name} voicings on piano</h2>
+		</div>
 		<p class="section-intro">
 			Each voicing is the exact shape the trainer drills. Press play to hear it —
 			as a block chord or rolled note by note.
@@ -146,8 +153,11 @@
 		</div>
 	</section>
 
-	<section class="panel" aria-labelledby="ctx-h">
-		<h2 id="ctx-h">Where {meta.name} fits in a ii-V-I</h2>
+	<section aria-labelledby="ctx-h">
+		<div class="sec-head">
+			<span class="rehearsal" aria-hidden="true">III</span>
+			<h2 id="ctx-h">Where {meta.name} fits in a ii-V-I</h2>
+		</div>
 		<p>{meta.context}</p>
 		<p>
 			The fastest way to internalise {meta.name} is to drill it in context across
@@ -160,7 +170,10 @@
 	</section>
 
 	<section aria-labelledby="faq-h" class="faq">
-		<h2 id="faq-h">{meta.name} — frequently asked questions</h2>
+		<div class="sec-head">
+			<span class="rehearsal" aria-hidden="true">IV</span>
+			<h2 id="faq-h">{meta.name} — frequently asked questions</h2>
+		</div>
 		{#each meta.faq as item (item.q)}
 			<details>
 				<summary>{item.q}</summary>
@@ -170,7 +183,7 @@
 	</section>
 
 	<aside class="related" aria-labelledby="rel-h">
-		<h2 id="rel-h">Keep going</h2>
+		<h2 id="rel-h" class="plate-mark blue">Keep going</h2>
 		<div class="related-grid">
 			<a href="/learn/rootless-voicings">
 				<span class="rl-title">Master rootless voicings</span>
@@ -192,57 +205,87 @@
 </article>
 
 <style>
+	/* ═══ Editorial plate — a chord's printed entry ═══════════════ */
 	.chord-page {
-		max-width: 780px;
+		max-width: 46rem;
+		width: 100%;
 		margin: 0 auto;
 		padding: 2.5rem 1.25rem 5rem;
 	}
+	@media (min-width: 40rem) {
+		.chord-page { padding: 3rem 2rem 6rem; }
+	}
 
+	/* ── Breadcrumb ── */
 	.crumbs {
 		display: flex;
 		align-items: center;
-		gap: 0.35rem;
-		font-size: 0.85rem;
+		gap: 0.3rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.13em;
+		text-transform: uppercase;
 		color: var(--text-dim);
 		margin-bottom: 1.75rem;
 	}
 	.crumbs a {
 		color: var(--text-muted);
 		text-decoration: none;
+		transition: color 0.15s;
 	}
 	.crumbs a:hover {
 		color: var(--primary);
 	}
 
-	/* ── Hero ── */
+	/* ── Masthead ──
+	   No bottom rule here: the first <section> already draws its own top
+	   hairline, and two rules with dead space between them read as a gap,
+	   not as structure. */
 	.hero {
-		margin-bottom: 3rem;
+		padding-bottom: 0;
 	}
 	.eyebrow {
-		font-size: 0.8rem;
-		letter-spacing: 0.08em;
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		margin: 0 0 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.19em;
 		text-transform: uppercase;
-		color: var(--accent-amber);
-		margin: 0 0 0.5rem;
 		font-weight: 600;
+		color: var(--primary);
 	}
+	.eyebrow::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.3;
+	}
+	/* The chord symbol is the headline — set it as one */
 	.hero h1 {
-		font-size: clamp(2rem, 5vw, 3rem);
-		line-height: 1.05;
-		letter-spacing: -0.02em;
-		margin: 0 0 0.9rem;
-		font-weight: 800;
+		font-family: var(--font-display);
+		font-size: clamp(2.25rem, 6.4vw, 3.25rem);
+		line-height: 1.04;
+		letter-spacing: -0.03em;
+		margin: 0;
+		font-weight: 600;
+		color: var(--text);
+		font-variant-numeric: lining-nums;
+		text-wrap: balance;
 	}
 	.hero h1 span {
 		color: var(--text-muted);
-		font-weight: 600;
+		font-weight: 400;
+		font-style: italic;
 	}
 	.lead {
-		font-size: 1.08rem;
-		line-height: 1.6;
+		font-size: 1.0625rem;
+		line-height: 1.7;
 		color: var(--text-muted);
 		max-width: 60ch;
-		margin: 0 0 1.5rem;
+		margin: 1rem 0 1.75rem;
 	}
 
 	/* ── CTA ── */
@@ -250,109 +293,131 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
+		min-height: var(--tap-min);
+		padding: 0 1.4rem;
+		border: 1.5px solid var(--primary);
+		border-radius: var(--radius-sm);
 		background: var(--primary);
 		color: var(--primary-text);
 		font-weight: 600;
-		padding: 0.8rem 1.4rem;
-		border-radius: 0.7rem;
 		text-decoration: none;
-		transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s;
-		box-shadow: 0 6px 24px -8px var(--primary);
+		transition: background 0.15s, border-color 0.15s;
 	}
 	.cta:hover {
 		background: var(--primary-hover);
-		transform: translateY(-2px);
+		border-color: var(--primary-hover);
 	}
 
-	/* ── Panels & sections ── */
+	/* ── Sections, numbered ── */
 	section {
-		margin-top: 3rem;
+		padding-top: 2.75rem;
+		margin-top: 2.75rem;
+		border-top: 1px solid var(--border);
 	}
-	.panel {
-		background: var(--bg-card);
-		border: 1px solid var(--border);
-		border-radius: 1rem;
-		padding: 1.5rem 1.6rem;
-	}
-	h2 {
-		font-size: 1.45rem;
-		letter-spacing: -0.01em;
-		margin: 0 0 0.9rem;
-		font-weight: 700;
-	}
-	.section-intro {
-		color: var(--text-muted);
-		max-width: 60ch;
-		margin: 0 0 1.5rem;
-		line-height: 1.6;
-	}
-	.panel p {
-		color: var(--text-muted);
-		line-height: 1.65;
-		margin: 0 0 0.75rem;
-	}
-
-	/* ── Notes ── */
-	.notes-panel h2 {
+	.sec-head {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
 		margin-bottom: 1.1rem;
 	}
+	.rehearsal {
+		display: grid;
+		place-items: center;
+		flex: none;
+		min-width: 1.65rem;
+		height: 1.65rem;
+		padding: 0 0.35rem;
+		border: 1.5px solid var(--text);
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 700;
+		color: var(--text);
+	}
+	h2 {
+		font-family: var(--font-display);
+		font-size: clamp(1.35rem, 3.6vw, 1.7rem);
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+		margin: 0;
+		font-weight: 600;
+		color: var(--text);
+	}
+	section p {
+		max-width: 66ch;
+		color: var(--text-muted);
+		font-size: 1.0625rem;
+		line-height: 1.75;
+		margin: 0 0 1rem;
+	}
+	.section-intro {
+		max-width: 62ch;
+		margin: 0 0 1.75rem !important;
+	}
+
+	/* ── Notes: the chord spelled out, blue for the analysis ── */
 	.note-list {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.6rem;
+		gap: 0;
 		list-style: none;
 		padding: 0;
 		margin: 0;
+		border-top: 1px solid var(--border);
+		border-bottom: 1px solid var(--border);
 	}
 	.note-list li {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		min-width: 3.3rem;
-		padding: 0.6rem 0.4rem;
-		background: var(--bg);
-		border: 1px solid var(--border);
-		border-radius: 0.6rem;
+		gap: 0.2rem;
+		min-width: 4rem;
+		padding: 0.9rem 0.85rem;
+		border-right: 1px solid var(--border);
 	}
+	.note-list li:last-child { border-right: 0; }
 	.note-list .note {
-		font-weight: 700;
-		font-size: 1.25rem;
+		font-family: var(--font-display);
+		font-weight: 600;
+		font-size: 1.5rem;
+		line-height: 1;
+		letter-spacing: -0.02em;
 		color: var(--text);
+		font-variant-numeric: lining-nums;
 	}
 	.note-list .interval {
-		font-size: 0.72rem;
-		color: var(--accent-amber);
-		margin-top: 0.15rem;
-		font-weight: 600;
+		font-family: var(--font-mono);
+		font-size: 0.5875rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--ink-blue);
 	}
 
-	/* ── Voicing cards ── */
+	/* ── Voicing plates ── */
 	.voicing-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-		gap: 1rem;
+		grid-template-columns: 1fr;
+		gap: 0;
+		border-top: 1px solid var(--border);
 	}
 	.voicing-card {
-		background: var(--bg-card);
-		border: 1px solid var(--border);
-		border-radius: 1rem;
-		padding: 1.1rem 1.2rem 1.3rem;
-		transition: border-color 0.18s;
-	}
-	.voicing-card:hover {
-		border-color: var(--border-hover);
+		padding: 1.25rem 0 1.5rem;
+		border-bottom: 1px solid var(--border);
 	}
 	.voicing-head {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.75rem;
-		margin-bottom: 0.9rem;
+		margin-bottom: 1rem;
 	}
 	.voicing-head h3 {
-		font-size: 1.05rem;
+		font-family: var(--font-display);
+		font-size: 1.125rem;
 		margin: 0;
-		font-weight: 700;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		color: var(--text);
 	}
 	.play-controls {
 		display: flex;
@@ -361,47 +426,55 @@
 	.play-btn {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.3rem;
-		font-size: 0.8rem;
+		justify-content: center;
+		gap: 0.35rem;
+		/* WCAG 2.2 target size — these are the page's only real controls */
+		min-height: var(--tap-min);
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.11em;
+		text-transform: uppercase;
 		font-weight: 600;
-		font-family: inherit;
 		color: var(--text-muted);
-		background: var(--bg);
+		background: transparent;
 		border: 1px solid var(--border);
-		border-radius: 0.5rem;
-		padding: 0.35rem 0.6rem;
+		border-radius: var(--radius-sm);
+		padding: 0 0.85rem;
 		cursor: pointer;
-		transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.1s;
+		transition: color 0.15s, border-color 0.15s, background 0.15s;
 	}
 	.play-btn:hover {
 		color: var(--text);
-		border-color: var(--primary);
+		border-color: var(--border-hover);
 	}
-	.play-btn:active {
-		transform: scale(0.95);
-	}
+	/* Sounding right now — the one amber on this page */
 	.play-btn.active {
-		color: var(--primary-text);
-		background: var(--primary);
-		border-color: var(--primary);
+		color: var(--accent-amber);
+		border-color: var(--accent-amber);
+		background: var(--warning-muted);
 	}
 	.keyboard {
-		margin-bottom: 0.8rem;
+		margin-bottom: 0.9rem;
 	}
 	.voicing-notes {
 		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.3rem 1rem;
 		margin: 0;
 	}
 	.vn-notes {
-		font-weight: 700;
+		font-family: var(--font-display);
+		font-weight: 600;
+		font-size: 1.0625rem;
 		color: var(--text);
-		letter-spacing: 0.01em;
+		font-variant-numeric: lining-nums;
 	}
 	.vn-intervals {
-		font-size: 0.82rem;
-		color: var(--text-dim);
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.1em;
+		color: var(--ink-blue);
 	}
 
 	/* ── Inline text link ── */
@@ -419,30 +492,35 @@
 		text-underline-offset: 3px;
 	}
 
-	/* ── FAQ ── */
+	/* ── FAQ: a printed Q&A list, not a stack of cards ── */
 	.faq details {
-		border: 1px solid var(--border);
-		border-radius: 0.7rem;
-		padding: 0.85rem 1.1rem;
-		margin-bottom: 0.6rem;
-		background: var(--bg-card);
-		transition: border-color 0.15s;
+		border-bottom: 1px solid var(--border);
+		padding: 0.9rem 0;
 	}
-	.faq details[open] {
-		border-color: var(--border-hover);
+	.faq details:first-of-type {
+		border-top: 1px solid var(--border);
 	}
 	.faq summary {
-		font-weight: 600;
-		cursor: pointer;
-		list-style: none;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		gap: 1rem;
+		font-family: var(--font-display);
+		font-size: 1.0625rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		color: var(--text);
+		cursor: pointer;
+		list-style: none;
 	}
+	.faq summary::-webkit-details-marker { display: none; }
+	.faq summary:hover { color: var(--primary); }
 	.faq summary::after {
 		content: '+';
-		color: var(--accent-amber);
-		font-size: 1.3rem;
+		flex: none;
+		font-family: var(--font-mono);
+		color: var(--primary);
+		font-size: 1.1rem;
 		line-height: 1;
 		transition: transform 0.2s;
 	}
@@ -450,33 +528,60 @@
 		transform: rotate(45deg);
 	}
 	.faq p {
-		margin: 0.7rem 0 0;
+		max-width: 66ch;
+		margin: 0.75rem 0 0.25rem;
 		color: var(--text-muted);
-		line-height: 1.6;
+		font-size: 1rem;
+		line-height: 1.7;
 	}
 
-	/* ── Related (now obviously cards/links) ── */
+	/* ── Related ── */
+	.related {
+		padding-top: 2.5rem;
+		margin-top: 2.75rem;
+		border-top: 1px solid var(--border);
+	}
+	.plate-mark {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		margin: 0 0 1rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.19em;
+		text-transform: uppercase;
+		font-weight: 600;
+	}
+	.plate-mark::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.3;
+	}
+	.plate-mark.blue { color: var(--ink-blue); }
+
 	.related-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-		gap: 0.8rem;
+		grid-template-columns: 1fr;
+		gap: 0;
+		border-top: 1px solid var(--border);
 	}
 	.related-grid a {
 		display: grid;
-		grid-template-columns: 1fr auto;
+		grid-template-columns: minmax(0, 1fr) auto;
 		grid-template-rows: auto auto;
 		align-items: center;
-		gap: 0.1rem 0.6rem;
-		padding: 1rem 1.1rem;
-		background: var(--bg-card);
-		border: 1px solid var(--border);
-		border-radius: 0.85rem;
+		gap: 0.1rem 0.75rem;
+		padding: 0.9rem 0.25rem;
+		border-bottom: 1px solid var(--border);
 		text-decoration: none;
-		transition: border-color 0.18s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s;
+		transition: background 0.13s, padding 0.13s;
 	}
 	.related-grid a:hover {
-		border-color: var(--primary);
-		transform: translateY(-2px);
+		background: var(--bg-card);
+		padding-left: 0.6rem;
+		padding-right: 0.6rem;
 	}
 	.related-grid a :global(svg) {
 		grid-row: 1 / 3;
@@ -484,24 +589,25 @@
 		color: var(--primary);
 	}
 	.rl-title {
-		font-weight: 700;
+		font-family: var(--font-display);
+		font-size: 1rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
 		color: var(--text);
 		grid-column: 1;
 	}
 	.rl-sub {
-		font-size: 0.82rem;
+		font-size: 0.8125rem;
 		color: var(--text-dim);
 		grid-column: 1;
 	}
+	/* The trainer link — stamped, since it is the page's real action */
 	.related-grid a.rl-accent {
-		background: var(--primary-muted);
-		border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+		box-shadow: inset 2px 0 0 var(--primary);
+		padding-left: 0.75rem;
 	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.cta:hover,
-		.related-grid a:hover {
-			transform: none;
-		}
+	.related-grid a.rl-accent:hover {
+		background: var(--primary-muted);
+		padding-left: 0.9rem;
 	}
 </style>

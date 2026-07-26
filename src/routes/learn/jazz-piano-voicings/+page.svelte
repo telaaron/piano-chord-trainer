@@ -55,7 +55,8 @@
 </svelte:head>
 
 <article class="hub">
-	<header>
+	<header class="masthead">
+		<p class="plate-mark">The complete guide</p>
 		<h1>Jazz Piano Voicings: The Complete Guide</h1>
 		<p class="lead">
 			Every great jazz pianist plays the same chords differently from a beginner.
@@ -70,7 +71,10 @@
 	</header>
 
 	<section aria-labelledby="types-h">
-		<h2 id="types-h">The voicing types</h2>
+		<div class="sec-head">
+			<span class="rehearsal" aria-hidden="true">I</span>
+			<h2 id="types-h">The voicing types</h2>
+		</div>
 		<dl>
 			<dt>Shell voicing</dt>
 			<dd>Root, third and seventh only. The guide tones (third and seventh) define the chord quality; dropping the fifth keeps it clean. The first voicing to master.</dd>
@@ -83,22 +87,32 @@
 	</section>
 
 	<section aria-labelledby="chords-h">
-		<h2 id="chords-h">Voicings by chord, in every key</h2>
+		<div class="sec-head">
+			<span class="rehearsal" aria-hidden="true">II</span>
+			<h2 id="chords-h">Voicings by chord, in every key</h2>
+		</div>
 		<p>Pick a chord to see its notes, shell and rootless voicings on an interactive keyboard:</p>
-		{#each chordsByRoot as group (group.root)}
-			<div class="key-group">
-				<h3>{group.root}</h3>
-				<ul class="chord-grid">
-					{#each group.chords as c (c.slug)}
-						<li><a href={`/chords/${c.slug}`}>{c.name}</a></li>
-					{/each}
-				</ul>
-			</div>
-		{/each}
+
+		<!-- The register: every chord page, filed by root -->
+		<div class="register">
+			{#each chordsByRoot as group (group.root)}
+				<div class="key-group">
+					<h3>{group.root}</h3>
+					<ul class="chord-grid">
+						{#each group.chords as c (c.slug)}
+							<li><a href={`/chords/${c.slug}`}>{c.name}</a></li>
+						{/each}
+					</ul>
+				</div>
+			{/each}
+		</div>
 	</section>
 
 	<section aria-labelledby="practice-h">
-		<h2 id="practice-h">How to practice voicings</h2>
+		<div class="sec-head">
+			<span class="rehearsal" aria-hidden="true">III</span>
+			<h2 id="practice-h">How to practice voicings</h2>
+		</div>
 		<p>
 			Reading about voicings is not the same as owning them. The goal is muscle
 			memory in every key. Drill one voicing type at a time through all 12 roots,
@@ -113,72 +127,208 @@
 </article>
 
 <style>
+	/* ═══ Editorial plate — long-form reading page ════════════════ */
 	.hub {
-		max-width: 760px;
+		max-width: 52rem;
+		width: 100%;
 		margin: 0 auto;
-		padding: 2rem 1.25rem 4rem;
+		padding: 2.5rem 1.25rem 5rem;
 	}
+	@media (min-width: 40rem) {
+		.hub { padding: 3.5rem 2.5rem 6rem; }
+	}
+
+	/* ── Masthead ── */
+	.masthead {
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.plate-mark {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		margin: 0 0 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.19em;
+		text-transform: uppercase;
+		font-weight: 600;
+		color: var(--primary);
+	}
+	.plate-mark::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.3;
+	}
+
 	h1 {
-		font-size: clamp(1.9rem, 4.5vw, 2.7rem);
-		line-height: 1.1;
-		margin: 0 0 0.85rem;
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 5.4vw, 2.9rem);
+		font-weight: 600;
+		line-height: 1.08;
+		letter-spacing: -0.025em;
+		margin: 0;
+		max-width: 18ch;
+		color: var(--text);
+		text-wrap: balance;
 	}
 	.lead {
-		font-size: 1.1rem;
-		opacity: 0.85;
-		margin: 0 0 1.25rem;
+		font-size: 1.125rem;
+		line-height: 1.65;
+		color: var(--text-muted);
+		max-width: 54ch;
+		margin: 1rem 0 1.75rem;
 	}
+
+	/* ── CTA ── */
 	.cta {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
+		min-height: var(--tap-min);
+		padding: 0 1.4rem;
+		border: 1.5px solid var(--primary);
+		border-radius: var(--radius-sm);
 		background: var(--primary);
-		color: #fff;
+		color: var(--primary-text);
 		font-weight: 600;
-		padding: 0.7rem 1.25rem;
-		border-radius: 0.6rem;
 		text-decoration: none;
+		transition: background 0.15s, border-color 0.15s;
 	}
+	.cta:hover {
+		background: var(--primary-hover);
+		border-color: var(--primary-hover);
+	}
+
+	/* ── Sections, numbered ── */
 	section {
-		margin-top: 2.5rem;
+		padding-top: 2.75rem;
+		margin-top: 2.75rem;
+		border-top: 1px solid var(--border);
+	}
+	/* The masthead already rules off below itself — a second hairline here
+	   would read as an empty gap rather than as structure. */
+	section:first-of-type {
+		border-top: 0;
+		margin-top: 0;
+	}
+	.sec-head {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		margin-bottom: 1.1rem;
+	}
+	.rehearsal {
+		display: grid;
+		place-items: center;
+		flex: none;
+		min-width: 1.65rem;
+		height: 1.65rem;
+		padding: 0 0.35rem;
+		border: 1.5px solid var(--text);
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 700;
+		color: var(--text);
 	}
 	h2 {
-		font-size: 1.45rem;
-		margin: 0 0 0.75rem;
+		font-family: var(--font-display);
+		font-size: clamp(1.4rem, 3.6vw, 1.75rem);
+		font-weight: 600;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+		margin: 0;
+		color: var(--text);
+	}
+
+	/* ── Body copy: 66ch measure ── */
+	section p {
+		max-width: 66ch;
+		font-size: 1.0625rem;
+		line-height: 1.75;
+		color: var(--text-muted);
+		margin: 0 0 1rem;
+	}
+	section p a {
+		color: var(--primary);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+		text-decoration-thickness: 1px;
+	}
+	section p a:hover { color: var(--primary-hover); }
+
+	/* ── Voicing types: an editorial definition table ── */
+	dl {
+		margin: 0 0 1.25rem;
+		border-top: 1px solid var(--border);
 	}
 	dl dt {
-		font-weight: 700;
-		margin-top: 1rem;
+		font-family: var(--font-display);
+		font-size: 1.0625rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		color: var(--text);
+		padding-top: 1rem;
+		font-variant-numeric: lining-nums;
 	}
 	dl dd {
-		margin: 0.25rem 0 0;
-		opacity: 0.85;
+		max-width: 62ch;
+		margin: 0.3rem 0 0;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--border);
+		font-size: 1rem;
+		line-height: 1.7;
+		color: var(--text-muted);
+	}
+
+	/* ── The register: chord pages filed by root ── */
+	.register {
+		margin-top: 1.5rem;
+		border-top: 1px solid var(--border);
 	}
 	.key-group {
-		margin-top: 1.25rem;
+		display: grid;
+		grid-template-columns: 2.5rem minmax(0, 1fr);
+		align-items: baseline;
+		gap: 0.75rem;
+		padding: 0.85rem 0;
+		border-bottom: 1px solid var(--border);
 	}
+	/* Root letter set as a plate key signature */
 	.key-group h3 {
-		font-size: 0.95rem;
-		opacity: 0.6;
-		margin: 0 0 0.4rem;
-		letter-spacing: 0.02em;
+		font-family: var(--font-display);
+		font-size: 1.125rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		color: var(--ink-blue);
+		margin: 0;
 	}
 	.chord-grid {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 0.35rem 0.5rem;
 		list-style: none;
 		padding: 0;
 		margin: 0;
 	}
 	.chord-grid a {
 		display: inline-block;
-		padding: 0.45rem 0.8rem;
-		border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
-		border-radius: 0.5rem;
+		padding: 0.3rem 0.55rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
 		text-decoration: none;
-		color: inherit;
+		color: var(--text-muted);
+		font-family: var(--font-display);
 		font-weight: 600;
-		font-size: 0.92rem;
+		font-size: 0.875rem;
+		font-variant-numeric: lining-nums;
+		transition: color 0.13s, border-color 0.13s, background 0.13s;
+	}
+	.chord-grid a:hover {
+		color: var(--primary);
+		border-color: var(--primary);
+		background: var(--primary-muted);
 	}
 </style>

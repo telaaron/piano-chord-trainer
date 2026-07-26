@@ -408,6 +408,7 @@ export const de = {
     contact: 'Kontakt',
     subtitle: 'Jazz-Piano Speed-Training',
     built_for: 'Gebaut für die Jazz-Ausbildung',
+    footer_nav: 'Fußzeile',
   },
 
   midi_test: {
@@ -541,6 +542,23 @@ export const de = {
     faq5_a: 'Ja. Alle Trainings-Features sind kostenlos — der Coach, jeder Voicing-Typ, Progressionen, MIDI und Fortschritts-Tracking. Kein Account nötig. Ein optionales Pro-Abo ergänzt Cloud-Sync und tiefere Statistiken.',
     cta2_title: 'Dein Coach ist bereit, wenn du es bist.',
     cta2_desc: 'Die erste Session dauert drei Minuten — ein kurzer Check, dann beginnt deine Reise.',
+    // ── Der Tonarten-Kreis ──
+    clock_eyebrow: 'Die zwölf Tonarten',
+    clock_title: 'Jeder meidet fünf Tonarten. Deine stehen auf diesem Zifferblatt.',
+    clock_desc: 'Jeder Akkord, den du spielst, wird gestoppt und seiner Tonart zugeordnet. Der Ring wächst nach außen, wo deine Hände zögern — die Tonarten, die du still übergangen hast, bleiben nicht länger unsichtbar. Ungespielte Tonarten bleiben hohl: eine nie gespielte Tonart ist keine schnelle Tonart.',
+    clock_caption: 'Dein Zifferblatt, sobald du eine Session gespielt hast.',
+    clock_legend_fast: 'Flüssig',
+    clock_legend_slow: 'Zögerlich',
+    clock_legend_none: 'Nie gespielt',
+    // ── Notenbeispiel im Hero ──
+    spec_title: 'ii–V–I · B♭-Dur',
+    spec_plate: 'Voicing: Shell · Platte 04',
+    spec_note: 'Nur Terz und Septime — den Grundton übernimmt der Bass.',
+    // ── Abschnittsmarken & Impressumszeile ──
+    sec_faq_eyebrow: 'Fragen, beantwortet',
+    sec_fine: 'Fine',
+    colophon_left: 'Chord Trainer · jazzchords.app',
+    colophon_right: 'Gesetzt in Source Serif 4 & Inter · Zweifarbendruck',
     meta_title: 'Chord Trainer – Flüssig werden in Jazz-Piano-Voicings, alle 12 Tonarten',
     meta_desc: 'Übe Jazz-Piano-Voicings, bis sie automatisch sind — flüssig in allen 12 Tonarten. Sofortiges Feedback, Schwachstellen-Training, geführte Pläne. Kostenlos, keine Anmeldung, Keyboard optional.',
     og_alt: 'Chord Trainer — Jazz-Piano-Voicings in allen 12 Tonarten üben',
@@ -686,6 +704,8 @@ export const de = {
     integration_materials_desc: 'Neben PDFs im Material-Tab: "Übe dieses Voicing interaktiv." Geringster Integrations-Aufwand.',
 
     comparison_title: 'Harmony Games trainiert das <em>Ohr</em>.<br /><span class="text-gradient">Chord Trainer trainiert die <em>Hände</em>.</span>',
+    comparison_tag_ear: 'Gehör-Fokus',
+    comparison_tag_hands: 'Hände-Fokus',
     comparison_hg: 'Harmony Games Unlimited',
     comparison_hg_1: 'Quiz-basiert – Akkorde nach Gehör erkennen',
     comparison_hg_2: 'Baut harmonisches Hörverständnis auf',
@@ -1176,6 +1196,18 @@ export const de = {
     quick_test: 'Kann ich schon',
     quick_test_desc: 'Zeig, dass du es kannst — spiele nur die Übung.',
     quick_test_success: 'Beweis erbracht! Lektion abgehakt.',
+    // ── Editorial chrome (Plattenrahmen, Abschnittsmarken) ──
+    plate_curriculum: 'Lehrplan',
+    plate_course: 'Kurs',
+    plate_lesson: 'Lektion',
+    plate_progress: 'Fortschritt',
+    plate_contents: 'Inhalt',
+    module_mark: 'Mod. {n}',
+    lesson_of: 'Lektion {n} von {total}',
+    step_mark: 'Schritt {n}',
+    not_found_course: 'Dieser Kurs steht nicht im Verzeichnis.',
+    not_found_lesson: 'Diese Lektion steht nicht im Verzeichnis.',
+    midi_live: 'MIDI live',
   },
 
   course: {
@@ -1737,6 +1769,7 @@ export const de = {
     heading: 'Werde flüssig in jeder Tonart.',
     subheading: 'Starte kostenlos. Hol dir Pro, wenn du jedes Voicing, Voice-Leading und automatisch gedrillte Schwachstellen willst.',
     per_month: 'Monat',
+    plans_eyebrow: 'Die vier Pläne',
     cta_pro_trial: '14 Tage gratis testen',
     pro_trial_note: 'danach 4,99 €/Mt · jederzeit kündbar',
     // ── Grand-Slam Risiko-Umkehr ──

@@ -1,5 +1,11 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
+
+	/* The i18n headline carries a hard <br>. Rendering it raw and hiding the
+	   break with CSS butts the words together ("2 AM,because"), so split on the
+	   break instead and let each part be its own line — which collapses to a
+	   normal wrap with proper spacing once the lines are set inline. */
+	const headlineParts = t('about.h1').split(/<br\s*\/?>/i);
 </script>
 
 <svelte:head>
@@ -23,67 +29,185 @@
 	<meta name="twitter:image:alt" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
 </svelte:head>
 
-<div class="flex-1">
-
-	<!-- ── 1. Hero ── -->
-	<section class="relative min-h-[60vh] overflow-hidden flex items-end">
-		<img
-			src="/elements/about/hero-keys-closeup.webp"
-			alt=""
-			aria-hidden="true"
-			loading="eager"
-			fetchpriority="high"
-			class="absolute inset-0 w-full h-full object-cover object-[center_60%] z-0 opacity-[0.55]"
-		/>
-		<div
-			class="absolute inset-0 z-[1]"
-			style="background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 60%, var(--bg) 100%)"
-		></div>
-		<div class="relative z-[2] w-full text-center px-6 pb-[60px]">
-			<p class="text-orange-400 text-[0.85rem] tracking-[0.12em] uppercase mb-4">{t('about.eyebrow')}</p>
-			<h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-white max-w-[700px] mx-auto leading-[1.15]">
-				{@html t('about.h1')}
+<div class="edi flex-1">
+	<!-- ═══ Masthead statement ═══ -->
+	<header class="head">
+		<div class="shell">
+			<p class="eyebrow">{t('about.eyebrow')}</p>
+			<h1 class="head-h1">
+				{#each headlineParts as part, i}<span class="hl">{part.trim()}</span>{#if i < headlineParts.length - 1}{' '}{/if}{/each}
 			</h1>
 		</div>
-	</section>
+	</header>
 
-	<!-- ── 2. Story ── -->
-	<section class="about-story max-w-[680px] mx-auto py-20 px-6 flex flex-col gap-6 text-[1.05rem] leading-[1.8] text-[var(--text-muted,rgba(255,255,255,0.7))]">
-		<p>
-			{@html t('about.p1')}
-		</p>
-		<p>
-			{@html t('about.p2')}
-		</p>
-		<p>
-			{@html t('about.p3')}
-		</p>
-	</section>
-
-	<!-- ── 3. Company block ── -->
-	<section class="max-w-[680px] mx-auto pt-12 px-6 pb-20 border-t border-[rgba(255,255,255,0.08)] grid grid-cols-2 gap-10 max-[560px]:grid-cols-1 max-[560px]:gap-8">
-		<div>
-			<p class="text-orange-400 text-xs uppercase tracking-[0.1em] mb-2.5">{t('about.company_title')}</p>
-			<p class="text-[0.9rem] leading-[1.8] text-[var(--text-muted,rgba(255,255,255,0.6))]">
-				{@html t('about.company_address')}
-			</p>
+	<!-- ═══ The story — one column, generous measure ═══ -->
+	<section class="shell">
+		<div class="story">
+			<p class="lede">{@html t('about.p1')}</p>
+			<p>{@html t('about.p2')}</p>
+			<p>{@html t('about.p3')}</p>
 		</div>
-		<div>
-			<p class="text-orange-400 text-xs uppercase tracking-[0.1em] mb-2.5">{t('about.contact_title')}</p>
-			<p class="text-[0.9rem] leading-[1.8] text-[var(--text-muted,rgba(255,255,255,0.6))]">
-				<a href="mailto:info@jazzchords.app" class="text-[var(--text-muted,rgba(255,255,255,0.6))] underline underline-offset-[3px] transition-colors duration-150 hover:text-white">info@jazzchords.app</a><br>
-				<a href="/impressum" class="text-[var(--text-muted,rgba(255,255,255,0.6))] underline underline-offset-[3px] transition-colors duration-150 hover:text-white">{t('nav.impressum')}</a><br>
-				<a href="/privacy" class="text-[var(--text-muted,rgba(255,255,255,0.6))] underline underline-offset-[3px] transition-colors duration-150 hover:text-white">{t('nav.privacy')}</a>
-			</p>
+
+		<!-- ═══ Colophon: who prints this ═══ -->
+		<div class="colophon">
+			<div class="col">
+				<p class="plate">{t('about.company_title')}</p>
+				<p class="col-body">{@html t('about.company_address')}</p>
+			</div>
+			<div class="col">
+				<p class="plate">{t('about.contact_title')}</p>
+				<p class="col-body">
+					<a href="mailto:info@jazzchords.app">info@jazzchords.app</a><br />
+					<a href="/impressum">{t('nav.impressum')}</a><br />
+					<a href="/privacy">{t('nav.privacy')}</a>
+				</p>
+			</div>
 		</div>
 	</section>
-
 </div>
 
 <style>
-	/* Needed for {@html} injected content */
-	.about-story :global(.accent) {
-		color: #fb923c;
+	/* The about page is the colophon of the press: a masthead statement, one
+	   column of set text, and the imprint. No photo, no cards — the typography
+	   carries it. Structure from hairlines and whitespace only. */
+
+	.edi {
+		--rule-soft: color-mix(in srgb, var(--border) 62%, transparent);
+		font-variant-numeric: oldstyle-nums;
+	}
+
+	.shell {
+		max-width: 720px;
+		margin: 0 auto;
+		padding: 0 1.25rem;
+	}
+	@media (min-width: 900px) {
+		.shell { padding: 0 2rem; }
+	}
+
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.66rem;
 		font-weight: 600;
+		letter-spacing: 0.19em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+	.eyebrow::after {
+		content: '';
+		flex: 1;
+		min-width: 1rem;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.32;
+	}
+
+	.plate {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	/* ── Masthead ─────────────────────────────────────────────── */
+
+	.head {
+		padding: 3.5rem 0 2.5rem;
+		border-bottom: 1px solid var(--rule-soft);
+	}
+	@media (min-width: 900px) {
+		.head { padding: 5.5rem 0 3.25rem; }
+	}
+
+	.head-h1 {
+		margin: 1.1rem 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(1.95rem, 4.6vw, 3.1rem);
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: -0.025em;
+		max-width: 16em;
+		text-wrap: balance;
+		color: var(--text);
+	}
+	/* The h1 copy carries a hard line break from i18n — honour it on wide
+	   screens, but let the line wrap naturally once the measure is narrow.
+	   `display:none` would butt the two words together ("2 AM,because"), so
+	   collapse the break to a space instead. */
+	/* Each headline part is a block on wide screens (honouring the author's
+	   intended break) and inline once the measure is narrow, where the space
+	   emitted between parts lets it wrap like ordinary prose. */
+	@media (min-width: 561px) {
+		.head-h1 .hl { display: block; }
+	}
+
+	/* ── The story ────────────────────────────────────────────── */
+
+	.story {
+		padding: 2.75rem 0 3rem;
+	}
+	@media (min-width: 900px) {
+		.story { padding: 3.5rem 0 4rem; }
+	}
+
+	.story :global(p) {
+		margin: 0 0 1.35rem;
+		max-width: 62ch;
+		font-size: 1.02rem;
+		line-height: 1.75;
+		color: var(--text-muted);
+	}
+	.story :global(p:last-child) { margin-bottom: 0; }
+
+	/* The opening paragraph is set larger — a printed drop-in. */
+	.story .lede {
+		font-family: var(--font-display);
+		font-size: clamp(1.12rem, 2.3vw, 1.35rem);
+		line-height: 1.6;
+		color: var(--text);
+	}
+
+	/* The teacher's line, marked in red pencil. */
+	.story :global(.accent) {
+		font-style: italic;
+		font-weight: 600;
+		color: var(--primary);
+	}
+	.story :global(strong) { color: var(--text); }
+
+	/* ── Colophon / imprint ───────────────────────────────────── */
+
+	.colophon {
+		display: grid;
+		gap: 2rem;
+		padding: 1.75rem 0 4rem;
+		border-top: 2px solid var(--text);
+	}
+	@media (min-width: 560px) {
+		.colophon { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem; }
+	}
+
+	.col-body {
+		margin: 0.7rem 0 0;
+		font-size: 0.9rem;
+		line-height: 1.8;
+		color: var(--text-muted);
+	}
+	.col-body :global(a) {
+		color: var(--text-muted);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		text-decoration-color: var(--border-hover);
+		transition: color 0.15s, text-decoration-color 0.15s;
+	}
+	.col-body :global(a:hover) {
+		color: var(--primary);
+		text-decoration-color: var(--primary);
 	}
 </style>

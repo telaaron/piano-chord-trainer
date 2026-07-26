@@ -406,6 +406,7 @@ export const en = {
     contact: 'Contact',
     subtitle: 'Jazz Piano Speed Training',
     built_for: 'Built for jazz education',
+    footer_nav: 'Footer',
   },
 
   midi_test: {
@@ -539,6 +540,23 @@ export const en = {
     faq5_a: 'Yes. All training features are free — the coach, every voicing type, progressions, MIDI and progress tracking. No account needed. An optional Pro plan adds cloud sync and deeper statistics.',
     cta2_title: 'Your coach is ready when you are.',
     cta2_desc: 'The first session takes three minutes — a quick check, then your journey begins.',
+    // ── The key clock section ──
+    clock_eyebrow: 'The twelve keys',
+    clock_title: 'Everyone avoids five keys. Yours are on this dial.',
+    clock_desc: 'Every chord you play is timed and filed under its key. The ring grows outward where your hands hesitate, so the keys you have been quietly skipping stop being invisible. Untouched keys stay hollow — an unplayed key is not a fast key.',
+    clock_caption: 'Your dial, once you have played a session.',
+    clock_legend_fast: 'Fluent',
+    clock_legend_slow: 'Hesitant',
+    clock_legend_none: 'Never played',
+    // ── Hero lead-sheet specimen ──
+    spec_title: 'ii–V–I · B♭ major',
+    spec_plate: 'Voicing: Shell · Plate 04',
+    spec_note: '3rd and 7th only — let the bass have the root.',
+    // ── Section marks & colophon ──
+    sec_faq_eyebrow: 'Questions, answered',
+    sec_fine: 'Fine',
+    colophon_left: 'Chord Trainer · jazzchords.app',
+    colophon_right: 'Set in Source Serif 4 & Inter · Two-colour press',
     meta_title: 'Chord Trainer – Become Fluent in Jazz Piano Voicings, All 12 Keys',
     meta_desc: 'Drill jazz piano voicings until they are automatic — fluent in all 12 keys. Instant feedback, weak-spot targeting, guided plans. Free, no signup, keyboard optional.',
     og_alt: 'Chord Trainer — practice jazz piano voicings in all 12 keys',
@@ -684,6 +702,8 @@ export const en = {
     integration_materials_desc: 'Alongside PDFs in the Materials tab: "Practice this voicing interactively." Lowest integration effort.',
     
     comparison_title: 'Harmony Games trains the <em>ear</em>.<br /><span class="text-gradient">Chord Trainer trains the <em>hands</em>.</span>',
+    comparison_tag_ear: 'Ear Focus',
+    comparison_tag_hands: 'Hands Focus',
     comparison_hg: 'Harmony Games Unlimited',
     comparison_hg_1: 'Quiz-based — identify chords by ear',
     comparison_hg_2: 'Builds harmonic listening skills',
@@ -1186,6 +1206,18 @@ export const en = {
     quick_test: 'I know this',
     quick_test_desc: 'Prove it — just do the practice exercise.',
     quick_test_success: 'Proven! Lesson complete.',
+    // ── Editorial chrome (plate framing, section marks) ──
+    plate_curriculum: 'Curriculum',
+    plate_course: 'Course',
+    plate_lesson: 'Lesson',
+    plate_progress: 'Progress',
+    plate_contents: 'Contents',
+    module_mark: 'Mod. {n}',
+    lesson_of: 'Lesson {n} of {total}',
+    step_mark: 'Step {n}',
+    not_found_course: 'This course is not in the catalogue.',
+    not_found_lesson: 'This lesson is not in the catalogue.',
+    midi_live: 'MIDI live',
   },
 
   course: {
@@ -1739,6 +1771,7 @@ export const en = {
     heading: 'Become fluent in every key.',
     subheading: 'Start free. Go Pro when you want every voicing, voice-leading, and your weak spots drilled automatically.',
     per_month: 'month',
+    plans_eyebrow: 'The four plans',
     cta_pro_trial: 'Start 14 days free',
     pro_trial_note: 'then €4.99/mo · cancel anytime',
     // ── Grand-slam risk reversal ──

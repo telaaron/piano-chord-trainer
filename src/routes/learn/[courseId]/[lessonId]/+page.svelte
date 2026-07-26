@@ -13,7 +13,10 @@
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import { MidiService } from '$lib/services/midi';
 	import type { ChordMatchResult } from '$lib/services/midi';
-	import { Check, Zap, Volume2, Star } from 'lucide-svelte';
+	import { Check, Zap, Volume2, Star, ArrowLeft, ArrowRight } from 'lucide-svelte';
+
+	/** Roman numerals for the step marks — the plate's rehearsal letters. */
+	const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 	// ─── Route params ─────────────────────────────────────────────
 	const courseId = $derived(page.params.courseId ?? '');
@@ -259,12 +262,12 @@
 		return '○';
 	}
 
-	function stepClass(index: number): string {
+	/** State modifier for a step tab: done / current / pending */
+	function stepState(index: number): string {
 		const progress = course ? getLessonProgress(course, lessonId) : null;
-		const stepProg = progress?.steps[index];
-		if (stepProg?.completed) return 'text-[var(--accent-green)]';
-		if (index === currentStepIndex) return 'text-[var(--primary)]';
-		return 'text-[var(--text-dim)]';
+		if (progress?.steps[index]?.completed) return 'is-done';
+		if (index === currentStepIndex) return 'is-current';
+		return 'is-pending';
 	}
 
 	// ─── Theory actions ───────────────────────────────────────────
@@ -516,146 +519,138 @@
 </svelte:head>
 
 {#if !found || !lesson || !course}
-	<main class="max-w-3xl mx-auto px-4 py-12 text-center">
-		<p class="text-[var(--text-muted)]">Lesson not found.</p>
-		<a href="/learn" class="text-[var(--primary)] hover:underline mt-4 inline-block">{t('learn.back_to_courses')}</a>
+	<main class="plate plate-empty">
+		<p class="empty-note">{t('learn.not_found_lesson')}</p>
+		<a class="crumb" href="/learn">
+			<ArrowLeft size={14} aria-hidden="true" />
+			{t('learn.back_to_courses')}
+		</a>
 	</main>
 {:else}
-	<main class="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-		<!-- Breadcrumb -->
-		<div class="mb-6">
-			<a href="/learn/{courseId}" class="text-sm text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors">
-				{t('learn.back_to_course')}
-			</a>
-		</div>
+	<main class="plate">
+		<a class="crumb" href="/learn/{courseId}">
+			<ArrowLeft size={14} aria-hidden="true" />
+			{t('learn.back_to_course')}
+		</a>
 
-		<!-- Lesson header -->
-		<div class="mb-6">
-			<h1 class="text-xl sm:text-2xl font-bold text-[var(--text)]">{t(lesson.titleKey)}</h1>
-			<p class="text-sm text-[var(--text-muted)] mt-1">{t(lesson.subtitleKey)}</p>
-		</div>
+		<!-- ── Masthead ── -->
+		<header class="masthead">
+			<p class="plate-mark">
+				{t('learn.plate_lesson')}
+				<span class="mark-course">{t(course.titleKey)}</span>
+			</p>
+			<h1>{t(lesson.titleKey)}</h1>
+			<p class="lede">{t(lesson.subtitleKey)}</p>
+		</header>
 
-		<!-- Quick-test success overlay -->
+		<!-- Quick-test success -->
 		{#if quickTestDone}
-			<div class="card p-8 text-center space-y-4 mb-6">
-				<Check size={40} class="text-[var(--accent-green)] mx-auto" aria-hidden="true" />
-				<p class="text-lg font-bold text-[var(--accent-green)]">{t('learn.quick_test_success')}</p>
-				<a
-					href="/learn/{courseId}"
-					class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-medium text-sm hover:bg-[var(--primary-hover)] transition-colors"
-				>
+			<div class="verdict">
+				<Check size={30} class="verdict-icon" aria-hidden="true" />
+				<p class="verdict-line">{t('learn.quick_test_success')}</p>
+				<a class="btn-stamp" href="/learn/{courseId}">
 					{t('learn.back_to_course')}
+					<ArrowRight size={15} aria-hidden="true" />
 				</a>
 			</div>
 		{/if}
 
-		<!-- "Kann ich schon" quick-test button (only if lesson not started and not in quick-test) -->
+		<!-- "I know this" quick test — only before the lesson is started -->
 		{#if !quickTestMode && !quickTestDone}
 			{@const progress = getLessonProgress(course, lessonId)}
 			{@const mastery = progress?.mastery ?? 'none'}
 			{#if mastery === 'none'}
-				<div class="mb-6 flex items-center gap-3">
-					<button
-						onclick={enterQuickTest}
-						class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--accent-amber)] transition-colors"
-					>
-						<Zap size={16} class="text-[var(--accent-amber)]" aria-hidden="true" /> {t('learn.quick_test')}
+				<div class="shortcut">
+					<button class="btn-ghost" onclick={enterQuickTest}>
+						<Zap size={15} aria-hidden="true" />
+						{t('learn.quick_test')}
 					</button>
-					<span class="text-xs text-[var(--text-dim)]">{t('learn.quick_test_desc')}</span>
+					<span class="shortcut-note">{t('learn.quick_test_desc')}</span>
 				</div>
 			{/if}
 		{/if}
 
-		<!-- Step tabs -->
 		{#if !quickTestDone}
-		<div class="flex gap-1 mb-8">
-			{#each lesson.steps as step, i (i)}
-				<button
-					onclick={() => goToStep(i)}
-					class="flex-1 flex flex-col items-center gap-1 py-2.5 px-2 rounded-lg transition-colors text-xs sm:text-sm border
-						{i === currentStepIndex 
-							? 'bg-[var(--primary-muted)] border-[var(--primary)]/40' 
-							: 'border-transparent hover:bg-[var(--bg-card-hover)]'}"
-				>
-					<span class="{stepClass(i)} text-lg flex items-center justify-center h-[1.5rem]">
-						{#if stepCompleted(i)}<Check size={18} aria-hidden="true" />{:else}{stepIcon(step.type, i)}{/if}
-					</span>
-					<span class="{stepClass(i)} font-medium">{stepLabel(step.type)}</span>
-				</button>
-			{/each}
-		</div>
+			<!-- ── Step index: numbered marks along a hairline ── -->
+			<nav class="steps" aria-label={t('learn.plate_contents')}>
+				{#each lesson.steps as step, i (i)}
+					<button
+						class="step {stepState(i)}"
+						onclick={() => goToStep(i)}
+						aria-current={i === currentStepIndex ? 'step' : undefined}
+					>
+						<span class="step-no" aria-hidden="true">{ROMAN[i] ?? i + 1}</span>
+						<span class="step-mark" aria-hidden="true">
+							{#if stepCompleted(i)}<Check size={14} />{:else}{stepIcon(step.type, i)}{/if}
+						</span>
+						<span class="step-label">{stepLabel(step.type)}</span>
+					</button>
+				{/each}
+			</nav>
 
-		<!-- Step content -->
-		<div class="card p-5 sm:p-8 min-h-[28rem]">
-			<!-- ═══ THEORY STEP ═══ -->
-			{#if currentStep?.type === 'theory'}
-				{@const step = currentStep as TheoryStep}
-				{@const isInterval = theoryIsInterval}
-				{@const voicingLabels = theoryChord && !isInterval && step.exampleChord ? getVoicingIntervalLabels(theoryChord.voicing, step.exampleChord.root, step.exampleChord.quality) : []}
-				<div class="space-y-6">
-					<!-- Header card -->
+			<!-- ── The worked page ── -->
+			<div class="sheet">
+				<!-- ═══ THEORY ═══ -->
+				{#if currentStep?.type === 'theory'}
+					{@const step = currentStep as TheoryStep}
+					{@const isInterval = theoryIsInterval}
+					{@const voicingLabels = theoryChord && !isInterval && step.exampleChord ? getVoicingIntervalLabels(theoryChord.voicing, step.exampleChord.root, step.exampleChord.quality) : []}
+
+					<!-- Specimen: the chord under examination -->
 					{#if theoryChord}
-						<div class="rounded-xl bg-[var(--surface-alt,var(--surface))]/60 border border-[var(--border)]/40 p-4 sm:p-5">
-							<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-								<div>
+						<div class="specimen">
+							<div class="specimen-head">
+								<div class="specimen-name">
 									{#if isInterval && step.exampleInterval}
-										<!-- Interval display: root → target with semitones -->
-										<span class="text-2xl sm:text-3xl font-bold text-[var(--text)]">{step.exampleInterval.root} → {step.exampleInterval.target}</span>
-										<span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-[var(--accent-amber)]/15 text-[var(--accent-amber)] font-medium">
-											{step.exampleInterval.semitones} {t('learn.semitones')}
-										</span>
+										<span class="chordsym">{step.exampleInterval.root} → {step.exampleInterval.target}</span>
+										<span class="tag tag-blue">{step.exampleInterval.semitones} {t('learn.semitones')}</span>
 									{:else}
-										<!-- Chord display -->
-										<span class="text-2xl sm:text-3xl font-bold text-[var(--text)]">{theoryChord.chord}</span>
+										<span class="chordsym">{theoryChord.chord}</span>
 										{#if step.exampleChord}
-											<span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-[var(--primary)]/15 text-[var(--primary)] font-medium">
-												{VOICING_LABELS[step.exampleChord.voicing] ?? step.exampleChord.voicing}
-											</span>
+											<span class="tag tag-stamp">{VOICING_LABELS[step.exampleChord.voicing] ?? step.exampleChord.voicing}</span>
 										{/if}
 									{/if}
 								</div>
-								<button 
-									onclick={playTheoryChord}
-									class="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--border-hover)] transition-colors self-start sm:self-auto"
-								>
-									<Volume2 size={16} class="text-[var(--text-muted)]" aria-hidden="true" /> {t('learn.listen')}
+								<button class="btn-ghost btn-sm" onclick={playTheoryChord}>
+									<Volume2 size={15} aria-hidden="true" />
+									{t('learn.listen')}
 								</button>
 							</div>
-							<!-- Note pills -->
+
+							<!-- Analysis row — copyist blue, the annotation ink -->
 							{#if isInterval && step.exampleInterval}
-								<div class="flex flex-wrap gap-1.5 mt-3">
-									<span class="text-xs px-2 py-1 rounded-md bg-[var(--border)]/30 text-[var(--text-muted)] font-mono">
-										{step.exampleInterval.root}
-										<span class="text-[var(--text-dim)] ml-0.5">({t('learn.interval_root')})</span>
-									</span>
-									<span class="text-[var(--text-dim)] self-center">→</span>
-									<span class="text-xs px-2 py-1 rounded-md bg-[var(--border)]/30 text-[var(--text-muted)] font-mono">
-										{step.exampleInterval.target}
-										<span class="text-[var(--text-dim)] ml-0.5">({step.exampleInterval.label})</span>
-									</span>
-								</div>
+								<dl class="analysis">
+									<div class="an-cell">
+										<dt>{step.exampleInterval.root}</dt>
+										<dd>{t('learn.interval_root')}</dd>
+									</div>
+									<div class="an-arrow" aria-hidden="true">→</div>
+									<div class="an-cell">
+										<dt>{step.exampleInterval.target}</dt>
+										<dd>{step.exampleInterval.label}</dd>
+									</div>
+								</dl>
 							{:else if voicingLabels.length > 0}
-								<div class="flex flex-wrap gap-1.5 mt-3">
-									{#each theoryChord.voicing as note, i}
-										<span class="text-xs px-2 py-1 rounded-md bg-[var(--border)]/30 text-[var(--text-muted)] font-mono">
-											{note}
-											<span class="text-[var(--text-dim)] ml-0.5">({voicingLabels[i] ?? ''})</span>
-										</span>
+								<dl class="analysis">
+									{#each theoryChord.voicing as note, i (note + i)}
+										<div class="an-cell">
+											<dt>{note}</dt>
+											<dd>{voicingLabels[i] ?? ''}</dd>
+										</div>
 									{/each}
-								</div>
+								</dl>
 							{/if}
 						</div>
 					{/if}
 
-					<!-- Theory text -->
-					<div class="prose prose-invert max-w-none text-sm sm:text-base leading-relaxed text-[var(--text-muted)]">
+					<!-- Theory prose — the reading measure lives here -->
+					<div class="prose">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html formatTheory(t(step.contentKey))}
 					</div>
 
-					<!-- Interactive keyboard -->
 					{#if theoryChord}
-						<div class="mt-2">
+						<div class="keyboard">
 							<PianoKeyboard
 								chordData={theoryChord}
 								showVoicing={true}
@@ -667,296 +662,67 @@
 						</div>
 					{/if}
 
-					<!-- Navigation -->
-					<div class="flex justify-between items-center pt-4 border-t border-[var(--border)]/30">
-						<button
-							onclick={skipStep}
-							class="text-sm text-[var(--text-dim)] hover:text-[var(--text-muted)] transition-colors"
-						>
-							{t('learn.skip_step')} →
-						</button>
-						<button
-							onclick={nextStep}
-							class="px-5 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-medium text-sm hover:bg-[var(--primary-hover)] transition-colors"
-						>
-							{t('learn.next_step')} →
+					<div class="sheet-foot">
+						<button class="btn-quiet" onclick={skipStep}>{t('learn.skip_step')}</button>
+						<button class="btn-stamp" onclick={nextStep}>
+							{t('learn.next_step')}
+							<ArrowRight size={15} aria-hidden="true" />
 						</button>
 					</div>
-				</div>
 
-			<!-- ═══ PRACTICE STEP ═══ -->
-			{:else if currentStep?.type === 'practice'}
-				<div class="space-y-5">
-					<!-- Phase indicator -->
-					<div class="text-sm text-[var(--text-muted)]">
+				<!-- ═══ PRACTICE ═══ -->
+				{:else if currentStep?.type === 'practice'}
+					<!-- Instruction: a margin note in copyist blue -->
+					<div class="marginalia" class:is-done={practicePoolComplete}>
 						{#if practicePoolComplete}
-							<span class="text-[var(--accent-green)] font-medium inline-flex items-center gap-1"><Check size={16} class="text-[var(--accent-green)]" aria-hidden="true" /> {t('learn.complete')}</span>
+							<span class="done-note"><Check size={15} aria-hidden="true" /> {t('learn.complete')}</span>
 						{:else if practicePhase === 'guided'}
-							<p>{practiceIsInterval ? t('learn.practice_guided_interval') : t('learn.practice_guided')}</p>
+							{practiceIsInterval ? t('learn.practice_guided_interval') : t('learn.practice_guided')}
 						{:else if practicePhase === 'find'}
-							<p>{t('learn.practice_find')}</p>
+							{t('learn.practice_find')}
 						{:else}
-							<p>{t('learn.practice_free')}</p>
+							{t('learn.practice_free')}
 						{/if}
 					</div>
 
-					<!-- Current chord / interval display -->
 					{#if practiceChordData && !practicePoolComplete}
-						<div class="text-center">
+						<div class="prompt">
 							{#if practiceIsInterval && practiceCurrentInterval}
 								{#if practicePhase === 'find'}
-									<!-- FIND MODE: show root + interval name, hide target -->
-									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
-										{practiceCurrentInterval.root}
-									</span>
-									<div class="flex items-center justify-center gap-2 mt-2">
-										<span class="px-3 py-1 rounded-full bg-[var(--accent-amber)]/15 text-[var(--accent-amber)] font-medium text-sm">
-											+ {practiceCurrentInterval.label}
-										</span>
-										<span class="text-xs text-[var(--text-dim)]">
-											({practiceCurrentInterval.semitones} {t('learn.semitones')})
-										</span>
-									</div>
+									<!-- FIND: root shown, target withheld -->
+									<span class="prompt-sym">{practiceCurrentInterval.root}</span>
+									<p class="prompt-meta">
+										<span class="tag tag-blue">+ {practiceCurrentInterval.label}</span>
+										<span class="prompt-dim">{practiceCurrentInterval.semitones} {t('learn.semitones')}</span>
+									</p>
 									{#if practiceCorrect}
-										<p class="text-sm text-[var(--accent-green)] mt-3 font-medium inline-flex items-center gap-1">
-											<Check size={16} class="text-[var(--accent-green)]" aria-hidden="true" /> {practiceCurrentInterval.root} → {practiceCurrentInterval.target}
+										<p class="correct">
+											<Check size={15} aria-hidden="true" />
+											{practiceCurrentInterval.root} → {practiceCurrentInterval.target}
 										</p>
 									{/if}
 								{:else}
-									<!-- GUIDED MODE: show both notes -->
-									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
-										{practiceCurrentInterval.root} → {practiceCurrentInterval.target}
-									</span>
-									<p class="text-xs text-[var(--text-dim)] mt-1">{practiceCurrentInterval.label} · {practiceCurrentInterval.semitones} {t('learn.semitones')}</p>
+									<!-- GUIDED: both notes shown -->
+									<span class="prompt-sym">{practiceCurrentInterval.root} → {practiceCurrentInterval.target}</span>
+									<p class="prompt-meta">
+										<span class="prompt-dim">{practiceCurrentInterval.label} · {practiceCurrentInterval.semitones} {t('learn.semitones')}</span>
+									</p>
 									{#if practiceCorrect}
-										<p class="text-sm text-[var(--accent-green)] mt-2 font-medium">
-											{t('learn.practice_correct')}
-										</p>
+										<p class="correct">{t('learn.practice_correct')}</p>
 									{/if}
 								{/if}
 							{:else}
-								<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
-									{practiceChordData.chord}
-								</span>
+								<span class="prompt-sym">{practiceChordData.chord}</span>
 								{#if practiceCorrect}
-									<p class="text-sm text-[var(--accent-green)] mt-2 font-medium">
-										{t('learn.practice_correct')}
-									</p>
+									<p class="correct">{t('learn.practice_correct')}</p>
 								{/if}
 							{/if}
 						</div>
 
-						<!-- Keyboard -->
-						<PianoKeyboard
-							chordData={showKeyHighlights ? practiceKeyboardData : null}
-							showVoicing={showKeyHighlights}
-							accidentalPref="flats"
-							midiActiveNotes={midiActiveNotes}
-							midiExpectedPitchClasses={expectedPCs}
-							midiEnabled={midiEnabled || true}
-							interactive={!midiEnabled}
-							onKeyClick={handleKeyClick}
-						/>
-
-						<!-- Streak / Hint / Progress -->
-						<div class="flex items-center justify-between text-sm">
-							<span class="text-[var(--text-dim)]">
-								{#if practicePhase === 'find'}
-									{practiceFreeCorrectSet.size} / {practicePoolSize}
-								{:else if practiceStreak > 0}
-									{t('learn.practice_streak', { count: String(practiceStreak) })}
-								{/if}
-							</span>
-							{#if (practicePhase === 'find' || practicePhase === 'free') && !practiceShowHint}
-								<button
-									onclick={() => practiceShowHint = true}
-									class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors"
-								>
-									{t('learn.practice_hint')}
-								</button>
-							{/if}
-						</div>
-					{/if}
-
-					<!-- Navigation when complete -->
-					{#if practicePoolComplete}
-						<div class="flex justify-end pt-4 border-t border-[var(--border)]/30">
-							<button
-								onclick={nextStep}
-								class="px-5 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-medium text-sm hover:bg-[var(--primary-hover)] transition-colors"
-							>
-								{t('learn.next_step')} →
-							</button>
-						</div>
-					{/if}
-
-					<!-- Skip option -->
-					{#if !practicePoolComplete}
-						<div class="pt-4 border-t border-[var(--border)]/30">
-							<button
-								onclick={skipStep}
-								class="text-sm text-[var(--text-dim)] hover:text-[var(--text-muted)] transition-colors"
-							>
-								{t('learn.skip_step')} →
-							</button>
-						</div>
-					{/if}
-				</div>
-
-			<!-- ═══ CHALLENGE STEP ═══ -->
-			{:else if currentStep?.type === 'challenge'}
-				{@const step = currentStep as ChallengeStep}
-				<div class="space-y-5">
-					{#if !challengeStarted}
-						<!-- Pre-challenge intro -->
-						<div class="text-center space-y-4 py-6">
-							{#if challengeIsInterval}
-								<p class="text-lg font-medium text-[var(--text)]">
-									{step.intervalLabel}
-									<span class="text-sm font-normal text-[var(--text-muted)] ml-1">
-										({step.intervalSemitones} {t('learn.semitones')})
-									</span>
-								</p>
-								<p class="text-sm text-[var(--text-muted)]">
-									{t('learn.challenge_interval_intro', { label: step.intervalLabel!, count: String(step.keys.length), threshold: String(step.masteryThresholdMs) })}
-								</p>
-							{:else}
-								<p class="text-lg font-medium text-[var(--text)]">
-									{CHORD_NOTATIONS.standard[step.quality] ?? step.quality}
-									<span class="text-sm font-normal text-[var(--text-muted)] ml-1">
-										{VOICING_LABELS[step.voicing] ?? step.voicing}
-									</span>
-								</p>
-								<p class="text-sm text-[var(--text-muted)]">
-									{t('learn.challenge_intro', { quality: CHORD_NOTATIONS.standard[step.quality] ?? step.quality, voicing: VOICING_LABELS[step.voicing] ?? step.voicing, count: String(step.keys.length), threshold: String(step.masteryThresholdMs) })}
-								</p>
-							{/if}
-							<button
-								onclick={startChallenge}
-								class="px-8 py-3 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-bold text-lg hover:bg-[var(--primary-hover)] transition-colors"
-							>
-								{t('learn.challenge_go')}
-							</button>
-						</div>
-
-						<!-- Skip option -->
-						<div class="pt-4 border-t border-[var(--border)]/30">
-							<button
-								onclick={skipStep}
-								class="text-sm text-[var(--text-dim)] hover:text-[var(--text-muted)] transition-colors"
-							>
-								{t('learn.skip_step')} →
-							</button>
-						</div>
-
-					{:else if challengeFinished}
-						<!-- Results -->
-						<div class="text-center space-y-4 py-6">
-							<!-- Average time display -->
-							<div class="inline-flex items-baseline gap-2">
-								<span class="text-4xl font-bold text-[var(--text)] tabular-nums">{challengeAvgMs}</span>
-								<span class="text-sm text-[var(--text-muted)]">ms / {challengeIsInterval ? t('learn.challenge_per_interval') : t('learn.challenge_per_chord')}</span>
-							</div>
-
-							{#if challengePassed && challengeAvgMs < MASTERY_THRESHOLD_MS}
-								<!-- MASTERED! -->
-								<div class="space-y-2">
-									<p class="text-[var(--accent-green)] font-bold text-lg inline-flex items-center gap-1.5">
-										<Star size={20} class="text-[var(--accent-gold)]" aria-hidden="true" /> {t('learn.challenge_mastered')}
-									</p>
-									<p class="text-sm text-[var(--text-muted)]">
-										{t('learn.challenge_mastered_sub', { threshold: String(MASTERY_THRESHOLD_MS) })}
-									</p>
-								</div>
-								<button
-									onclick={nextStep}
-									class="px-6 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-medium hover:bg-[var(--primary-hover)] transition-colors"
-								>
-									{t('learn.next_step')} →
-								</button>
-
-							{:else if challengePassed}
-								{@const masteryProgress = Math.min(100, Math.max(5, Math.round(((step.masteryThresholdMs - challengeAvgMs) / (step.masteryThresholdMs - MASTERY_THRESHOLD_MS)) * 100)))}
-								<!-- Passed but not mastered -->
-								<div class="space-y-2">
-									<p class="text-[var(--accent-green)] font-medium inline-flex items-center gap-1.5">
-										<Check size={18} class="text-[var(--accent-green)]" aria-hidden="true" /> {t('learn.challenge_pass')}
-									</p>
-									<!-- Mastery encouragement -->
-									<div class="rounded-lg bg-[var(--border)]/15 border border-[var(--border)]/30 p-3 mt-3">
-										<p class="text-sm text-[var(--text-muted)]">
-											{t('learn.challenge_mastery_hint', { threshold: String(MASTERY_THRESHOLD_MS), current: String(challengeAvgMs) })}
-										</p>
-										<!-- Progress bar toward mastery -->
-										<div class="mt-2 h-1.5 rounded-full bg-[var(--border)]/30 overflow-hidden">
-											<div 
-												class="h-full rounded-full bg-[var(--accent-amber)] transition-all"
-												style="width: {masteryProgress}%"
-											></div>
-										</div>
-										<p class="text-xs text-[var(--text-dim)] mt-1 tabular-nums">
-											{challengeAvgMs}ms → {MASTERY_THRESHOLD_MS}ms
-										</p>
-									</div>
-								</div>
-								<div class="flex flex-col sm:flex-row gap-3 justify-center">
-									<button
-										onclick={nextStep}
-										class="px-6 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-medium hover:bg-[var(--primary-hover)] transition-colors"
-									>
-										{t('learn.next_step')} →
-									</button>
-									<button
-										onclick={startChallenge}
-										class="inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-lg border border-[var(--accent-amber)]/50 text-[var(--accent-amber)] font-medium hover:bg-[var(--accent-amber)]/10 transition-colors"
-									>
-										<Star size={18} class="text-[var(--accent-amber)]" aria-hidden="true" /> {t('learn.challenge_try_mastery')}
-									</button>
-								</div>
-
-							{:else}
-								<!-- Failed -->
-								<p class="text-[var(--accent-amber)]">
-									{t('learn.challenge_retry', { threshold: String(step.masteryThresholdMs) })}
-								</p>
-								<button
-									onclick={startChallenge}
-									class="px-6 py-2.5 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] font-medium transition-colors"
-								>
-									{t('learn.challenge_retry_btn')}
-								</button>
-							{/if}
-						</div>
-
-					{:else}
-						<!-- Active challenge -->
-						<div class="text-center mb-4">
-							<span class="text-xs text-[var(--text-dim)]">
-								{challengeIndex + 1} / {challengeKeys.length}
-							</span>
-						</div>
-
-						{#if challengeChordData}
-							<div class="text-center">
-								{#if challengeIsInterval && challengeCurrentInterval}
-									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
-										{challengeCurrentInterval.root}
-									</span>
-									<div class="flex items-center justify-center gap-2 mt-1">
-										<span class="px-3 py-1 rounded-full bg-[var(--accent-amber)]/15 text-[var(--accent-amber)] font-medium text-sm">
-											+ {challengeCurrentInterval.label}
-										</span>
-									</div>
-								{:else}
-									<span class="text-3xl sm:text-4xl font-bold text-[var(--text)]">
-										{challengeChordData.chord}
-									</span>
-								{/if}
-							</div>
-
+						<div class="keyboard">
 							<PianoKeyboard
-								chordData={challengeKeyboardData}
-								showVoicing={challengeIsInterval}
+								chordData={showKeyHighlights ? practiceKeyboardData : null}
+								showVoicing={showKeyHighlights}
 								accidentalPref="flats"
 								midiActiveNotes={midiActiveNotes}
 								midiExpectedPitchClasses={expectedPCs}
@@ -964,24 +730,734 @@
 								interactive={!midiEnabled}
 								onKeyClick={handleKeyClick}
 							/>
+						</div>
+
+						<div class="tally">
+							<span class="tally-count">
+								{#if practicePhase === 'find'}
+									{practiceFreeCorrectSet.size} / {practicePoolSize}
+								{:else if practiceStreak > 0}
+									{t('learn.practice_streak', { count: String(practiceStreak) })}
+								{/if}
+							</span>
+							{#if (practicePhase === 'find' || practicePhase === 'free') && !practiceShowHint}
+								<button class="btn-quiet" onclick={() => practiceShowHint = true}>
+									{t('learn.practice_hint')}
+								</button>
+							{/if}
+						</div>
+					{/if}
+
+					{#if practicePoolComplete}
+						<div class="sheet-foot sheet-foot-end">
+							<button class="btn-stamp" onclick={nextStep}>
+								{t('learn.next_step')}
+								<ArrowRight size={15} aria-hidden="true" />
+							</button>
+						</div>
+					{:else}
+						<div class="sheet-foot">
+							<button class="btn-quiet" onclick={skipStep}>{t('learn.skip_step')}</button>
+						</div>
+					{/if}
+
+				<!-- ═══ CHALLENGE ═══ -->
+				{:else if currentStep?.type === 'challenge'}
+					{@const step = currentStep as ChallengeStep}
+
+					{#if !challengeStarted}
+						<div class="brief">
+							{#if challengeIsInterval}
+								<p class="brief-sym">
+									{step.intervalLabel}
+									<span class="brief-sub">{step.intervalSemitones} {t('learn.semitones')}</span>
+								</p>
+								<p class="brief-text">
+									{t('learn.challenge_interval_intro', { label: step.intervalLabel!, count: String(step.keys.length), threshold: String(step.masteryThresholdMs) })}
+								</p>
+							{:else}
+								<p class="brief-sym">
+									{CHORD_NOTATIONS.standard[step.quality] ?? step.quality}
+									<span class="brief-sub">{VOICING_LABELS[step.voicing] ?? step.voicing}</span>
+								</p>
+								<p class="brief-text">
+									{t('learn.challenge_intro', { quality: CHORD_NOTATIONS.standard[step.quality] ?? step.quality, voicing: VOICING_LABELS[step.voicing] ?? step.voicing, count: String(step.keys.length), threshold: String(step.masteryThresholdMs) })}
+								</p>
+							{/if}
+							<button class="btn-stamp btn-lg" onclick={startChallenge}>{t('learn.challenge_go')}</button>
+						</div>
+
+						<div class="sheet-foot">
+							<button class="btn-quiet" onclick={skipStep}>{t('learn.skip_step')}</button>
+						</div>
+
+					{:else if challengeFinished}
+						<div class="verdict">
+							<p class="score">
+								<span class="score-n">{challengeAvgMs}</span>
+								<span class="score-u">ms / {challengeIsInterval ? t('learn.challenge_per_interval') : t('learn.challenge_per_chord')}</span>
+							</p>
+
+							{#if challengePassed && challengeAvgMs < MASTERY_THRESHOLD_MS}
+								<!-- MASTERED -->
+								<p class="verdict-line gold">
+									<Star size={18} aria-hidden="true" /> {t('learn.challenge_mastered')}
+								</p>
+								<p class="verdict-sub">
+									{t('learn.challenge_mastered_sub', { threshold: String(MASTERY_THRESHOLD_MS) })}
+								</p>
+								<button class="btn-stamp" onclick={nextStep}>
+									{t('learn.next_step')}
+									<ArrowRight size={15} aria-hidden="true" />
+								</button>
+
+							{:else if challengePassed}
+								{@const masteryProgress = Math.min(100, Math.max(5, Math.round(((step.masteryThresholdMs - challengeAvgMs) / (step.masteryThresholdMs - MASTERY_THRESHOLD_MS)) * 100)))}
+								<p class="verdict-line green">
+									<Check size={17} aria-hidden="true" /> {t('learn.challenge_pass')}
+								</p>
+
+								<div class="toward">
+									<p class="toward-text">
+										{t('learn.challenge_mastery_hint', { threshold: String(MASTERY_THRESHOLD_MS), current: String(challengeAvgMs) })}
+									</p>
+									<div
+										class="meter meter-live"
+										role="progressbar"
+										aria-valuenow={masteryProgress}
+										aria-valuemin="0"
+										aria-valuemax="100"
+									>
+										<span style="width: {masteryProgress}%"></span>
+									</div>
+									<p class="toward-scale">{challengeAvgMs}ms → {MASTERY_THRESHOLD_MS}ms</p>
+								</div>
+
+								<div class="verdict-actions">
+									<button class="btn-stamp" onclick={nextStep}>
+										{t('learn.next_step')}
+										<ArrowRight size={15} aria-hidden="true" />
+									</button>
+									<button class="btn-live" onclick={startChallenge}>
+										<Star size={16} aria-hidden="true" />
+										{t('learn.challenge_try_mastery')}
+									</button>
+								</div>
+
+							{:else}
+								<p class="verdict-line">
+									{t('learn.challenge_retry', { threshold: String(step.masteryThresholdMs) })}
+								</p>
+								<button class="btn-ghost" onclick={startChallenge}>{t('learn.challenge_retry_btn')}</button>
+							{/if}
+						</div>
+
+					{:else}
+						<!-- Active run -->
+						<p class="run-count">{challengeIndex + 1} / {challengeKeys.length}</p>
+
+						{#if challengeChordData}
+							<div class="prompt">
+								{#if challengeIsInterval && challengeCurrentInterval}
+									<span class="prompt-sym">{challengeCurrentInterval.root}</span>
+									<p class="prompt-meta">
+										<span class="tag tag-blue">+ {challengeCurrentInterval.label}</span>
+									</p>
+								{:else}
+									<span class="prompt-sym">{challengeChordData.chord}</span>
+								{/if}
+							</div>
+
+							<div class="keyboard">
+								<PianoKeyboard
+									chordData={challengeKeyboardData}
+									showVoicing={challengeIsInterval}
+									accidentalPref="flats"
+									midiActiveNotes={midiActiveNotes}
+									midiExpectedPitchClasses={expectedPCs}
+									midiEnabled={midiEnabled || true}
+									interactive={!midiEnabled}
+									onKeyClick={handleKeyClick}
+								/>
+							</div>
 						{/if}
 					{/if}
-				</div>
-			{/if}
-		</div>
-
-		<!-- MIDI status indicator -->
-		{#if midiEnabled}
-			<div class="mt-4 text-center text-xs text-[var(--accent-green)]">
-				MIDI ●
-			</div>
-		{:else}
-			<div class="mt-4 text-center text-xs text-[var(--text-dim)]">
-				{#if currentStep?.type !== 'theory'}
-					{t('ui.lesson_click_hint')}
 				{/if}
 			</div>
+
+			<!-- MIDI status — amber only when genuinely live -->
+			<p class="wire" class:is-live={midiEnabled}>
+				{#if midiEnabled}
+					{t('learn.midi_live')}
+				{:else if currentStep?.type !== 'theory'}
+					{t('ui.lesson_click_hint')}
+				{/if}
+			</p>
 		{/if}
-		{/if}<!-- end !quickTestDone -->
 	</main>
 {/if}
+
+<style>
+	/* ═══ The plate ═══════════════════════════════════════════════ */
+	/* Width is set by the reading measure, not by taste: the prose below
+	   caps at 66ch, so the plate has to be wide enough for that cap to be
+	   what actually binds. At 44rem the container was the limit and the
+	   measure came out at 52 characters — too narrow for long-form. */
+	.plate {
+		max-width: 52rem;
+		width: 100%;
+		margin: 0 auto;
+		padding: 2rem 1.25rem 4.5rem;
+	}
+	@media (min-width: 40rem) {
+		.plate { padding: 2.5rem 2.5rem 5.5rem; }
+	}
+	.plate-empty { text-align: center; padding-top: 5rem; }
+	.empty-note {
+		font-family: var(--font-display);
+		font-size: 1.125rem;
+		color: var(--text-muted);
+		margin: 0 0 1.25rem;
+	}
+
+	/* ── Breadcrumb ── */
+	.crumb {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+	.crumb:hover { color: var(--primary); }
+
+	/* ── Masthead ── */
+	.masthead {
+		margin-top: 1.5rem;
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid var(--border);
+		margin-bottom: 2rem;
+	}
+	.plate-mark {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		margin: 0 0 0.7rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.19em;
+		text-transform: uppercase;
+		font-weight: 600;
+		color: var(--primary);
+	}
+	.mark-course {
+		color: var(--text-dim);
+		font-weight: 400;
+		letter-spacing: 0.12em;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.plate-mark::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		min-width: 1rem;
+		background: var(--border);
+	}
+	.masthead h1 {
+		font-family: var(--font-display);
+		font-size: clamp(1.75rem, 5.2vw, 2.4rem);
+		font-weight: 600;
+		line-height: 1.12;
+		letter-spacing: -0.025em;
+		margin: 0;
+		max-width: 22ch;
+		color: var(--text);
+		text-wrap: balance;
+	}
+	.lede {
+		margin: 0.7rem 0 0;
+		max-width: 52ch;
+		font-size: 1rem;
+		line-height: 1.6;
+		color: var(--text-muted);
+	}
+
+	/* ── Quick-test shortcut ── */
+	.shortcut {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 2rem;
+	}
+	.shortcut-note {
+		font-size: 0.8125rem;
+		color: var(--text-dim);
+	}
+
+	/* ── Step index ── */
+	.steps {
+		display: flex;
+		gap: 0;
+		margin-bottom: 2rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.step {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.65rem 0.4rem 0.6rem;
+		min-height: var(--tap-min);
+		background: none;
+		border: 0;
+		border-bottom: 2px solid transparent;
+		margin-bottom: -1px;
+		cursor: pointer;
+		font-family: inherit;
+		transition: color 0.15s, border-color 0.15s, background 0.15s;
+	}
+	.step:hover { background: var(--bg-card); }
+	.step-no {
+		font-family: var(--font-mono);
+		font-size: 0.5625rem;
+		letter-spacing: 0.12em;
+		color: var(--text-dim);
+	}
+	.step-mark {
+		display: grid;
+		place-items: center;
+		height: 1.125rem;
+		font-size: 0.8125rem;
+		line-height: 1;
+	}
+	.step-label {
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0.01em;
+	}
+	.step.is-pending { color: var(--text-dim); }
+	.step.is-current {
+		color: var(--primary);
+		border-bottom-color: var(--primary);
+	}
+	.step.is-current .step-no { color: var(--primary); }
+	.step.is-current .step-label { font-weight: 600; }
+	.step.is-done { color: var(--accent-green); }
+	@media (min-width: 30rem) {
+		.step-label { font-size: 0.8125rem; }
+	}
+
+	/* ── The sheet ── */
+	.sheet {
+		min-height: 26rem;
+		padding: 1.5rem 0 0;
+	}
+
+	/* ── Specimen: the chord under examination ── */
+	.specimen {
+		border: 1px solid var(--border);
+		border-top: 2px solid var(--primary);
+		background: var(--bg-card);
+		padding: 1.1rem 1.15rem 1rem;
+		margin-bottom: 1.75rem;
+	}
+	.specimen-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.85rem;
+	}
+	.specimen-name {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.6rem;
+		min-width: 0;
+	}
+	.chordsym {
+		font-family: var(--font-display);
+		font-size: clamp(1.6rem, 5.5vw, 2.05rem);
+		font-weight: 600;
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+		color: var(--text);
+		font-variant-numeric: lining-nums;
+	}
+	.tag {
+		font-family: var(--font-mono);
+		font-size: 0.5875rem;
+		letter-spacing: 0.13em;
+		text-transform: uppercase;
+		padding: 0.22rem 0.45rem;
+		border: 1px solid currentColor;
+		white-space: nowrap;
+	}
+	.tag-stamp { color: var(--primary); }
+	.tag-blue { color: var(--ink-blue); }
+
+	/* Analysis row — copyist blue does the labelling */
+	.analysis {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 0.15rem 1.25rem;
+		margin: 1rem 0 0;
+		padding-top: 0.85rem;
+		border-top: 1px dashed var(--border);
+	}
+	.an-cell { display: flex; flex-direction: column; gap: 0.1rem; }
+	.an-cell dt {
+		font-family: var(--font-display);
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--text);
+		font-variant-numeric: lining-nums;
+	}
+	.an-cell dd {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.5875rem;
+		letter-spacing: 0.11em;
+		text-transform: uppercase;
+		color: var(--ink-blue);
+	}
+	.an-arrow {
+		font-size: 0.9rem;
+		color: var(--text-dim);
+		padding-bottom: 0.15rem;
+	}
+
+	/* ── Prose: the reading measure ── */
+	.prose {
+		max-width: 66ch;
+		font-size: 1.0625rem;
+		line-height: 1.75;
+		color: var(--text-muted);
+	}
+	.prose :global(strong) {
+		color: var(--text);
+		font-weight: 600;
+	}
+	.prose :global(br) { line-height: 2.4; }
+
+	/* ── Keyboard ── */
+	.keyboard { margin-top: 1.75rem; }
+
+	/* ── Practice ── */
+	.marginalia {
+		border-left: 2px solid var(--ink-blue);
+		padding: 0.1rem 0 0.1rem 0.85rem;
+		max-width: 60ch;
+		font-size: 0.9375rem;
+		line-height: 1.55;
+		color: var(--text-muted);
+	}
+	.marginalia.is-done { border-left-color: var(--accent-green); }
+	.done-note {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-weight: 600;
+		color: var(--accent-green);
+	}
+
+	.prompt {
+		text-align: center;
+		margin-top: 1.75rem;
+	}
+	.prompt-sym {
+		display: block;
+		font-family: var(--font-display);
+		font-size: clamp(2.1rem, 8vw, 3rem);
+		font-weight: 600;
+		line-height: 1.02;
+		letter-spacing: -0.03em;
+		color: var(--text);
+		font-variant-numeric: lining-nums;
+	}
+	.prompt-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.55rem;
+		margin: 0.7rem 0 0;
+	}
+	.prompt-dim {
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.11em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+	.correct {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin: 0.7rem 0 0;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		color: var(--accent-green);
+	}
+
+	.tally {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 1.1rem;
+		padding-top: 0.85rem;
+		border-top: 1px solid var(--border);
+	}
+	.tally-count {
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.1em;
+		color: var(--text-dim);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* ── Challenge brief ── */
+	.brief {
+		text-align: center;
+		padding: 1.5rem 0 0.5rem;
+	}
+	.brief-sym {
+		font-family: var(--font-display);
+		font-size: clamp(1.5rem, 5vw, 1.95rem);
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		margin: 0;
+		color: var(--text);
+	}
+	.brief-sub {
+		display: block;
+		margin-top: 0.35rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		font-weight: 400;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--ink-blue);
+	}
+	.brief-text {
+		max-width: 48ch;
+		margin: 1.1rem auto 1.75rem;
+		font-size: 0.9375rem;
+		line-height: 1.65;
+		color: var(--text-muted);
+	}
+
+	.run-count {
+		text-align: center;
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.14em;
+		color: var(--text-dim);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* ── Verdict ── */
+	.verdict {
+		text-align: center;
+		padding: 1.75rem 0 0.5rem;
+	}
+	.verdict :global(.verdict-icon) {
+		color: var(--accent-green);
+		display: block;
+		margin: 0 auto 0.85rem;
+	}
+	.score {
+		display: flex;
+		align-items: baseline;
+		justify-content: center;
+		gap: 0.45rem;
+		margin: 0 0 1.1rem;
+	}
+	.score-n {
+		font-family: var(--font-display);
+		font-size: clamp(2.4rem, 9vw, 3.25rem);
+		font-weight: 600;
+		line-height: 1;
+		letter-spacing: -0.03em;
+		color: var(--text);
+		font-variant-numeric: tabular-nums lining-nums;
+	}
+	.score-u {
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+	.verdict-line {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 1.1875rem;
+		font-weight: 600;
+		letter-spacing: -0.015em;
+		color: var(--text-muted);
+	}
+	.verdict-line.green { color: var(--accent-green); }
+	.verdict-line.gold { color: var(--accent-gold); }
+	.verdict-sub {
+		max-width: 44ch;
+		margin: 0.5rem auto 0;
+		font-size: 0.9375rem;
+		line-height: 1.6;
+		color: var(--text-muted);
+	}
+	.verdict .btn-stamp,
+	.verdict .btn-ghost { margin-top: 1.5rem; }
+	.verdict-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+	}
+	.verdict-actions .btn-stamp { margin-top: 0; }
+
+	/* Toward mastery — amber is live/target state */
+	.toward {
+		max-width: 30rem;
+		margin: 1.25rem auto 0;
+		padding: 0.9rem 1rem;
+		text-align: left;
+		border: 1px solid var(--border);
+		border-left: 2px solid var(--accent-amber);
+		background: var(--bg-card);
+	}
+	.toward-text {
+		margin: 0;
+		font-size: 0.875rem;
+		line-height: 1.55;
+		color: var(--text-muted);
+	}
+	.toward-scale {
+		margin: 0.45rem 0 0;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.1em;
+		color: var(--text-dim);
+		font-variant-numeric: tabular-nums;
+	}
+	.meter {
+		height: 2px;
+		margin-top: 0.6rem;
+		background: var(--border);
+		overflow: hidden;
+	}
+	.meter span { display: block; height: 100%; transition: width 0.4s ease; }
+	.meter-live span { background: var(--accent-amber); }
+
+	/* ── Foot ── */
+	.sheet-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 2rem;
+		padding-top: 1.15rem;
+		border-top: 1px solid var(--border);
+	}
+	.sheet-foot-end { justify-content: flex-end; }
+
+	/* ── Wire / MIDI status ── */
+	.wire {
+		margin: 1.25rem 0 0;
+		text-align: center;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+		min-height: 1rem;
+	}
+	.wire.is-live { color: var(--accent-amber); }
+	.wire.is-live::before { content: '● '; }
+
+	/* ── Buttons ── */
+	.btn-stamp,
+	.btn-ghost,
+	.btn-live {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-height: var(--tap-min);
+		padding: 0 1.25rem;
+		border-radius: var(--radius-sm);
+		font-family: inherit;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		text-decoration: none;
+		cursor: pointer;
+		transition: background 0.15s, border-color 0.15s, color 0.15s;
+	}
+	.btn-stamp {
+		border: 1.5px solid var(--primary);
+		background: var(--primary);
+		color: var(--primary-text);
+	}
+	.btn-stamp:hover {
+		background: var(--primary-hover);
+		border-color: var(--primary-hover);
+	}
+	.btn-lg {
+		min-height: 3.25rem;
+		padding: 0 2.25rem;
+		font-size: 1.0625rem;
+	}
+	.btn-ghost {
+		border: 1px solid var(--border);
+		background: transparent;
+		color: var(--text-muted);
+	}
+	.btn-ghost:hover {
+		border-color: var(--border-hover);
+		color: var(--text);
+	}
+	.btn-sm {
+		min-height: 2.25rem;
+		padding: 0 0.85rem;
+		font-size: 0.8125rem;
+		font-weight: 500;
+	}
+	.btn-live {
+		border: 1px solid var(--accent-amber);
+		background: transparent;
+		color: var(--accent-amber);
+	}
+	.btn-live:hover { background: var(--warning-muted); }
+
+	.btn-quiet {
+		background: none;
+		border: 0;
+		padding: 0.5rem 0;
+		min-height: var(--tap-min);
+		font-family: inherit;
+		font-size: 0.8125rem;
+		color: var(--text-dim);
+		cursor: pointer;
+		transition: color 0.15s;
+	}
+	.btn-quiet:hover {
+		color: var(--text-muted);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+</style>

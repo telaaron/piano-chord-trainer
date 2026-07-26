@@ -48,12 +48,32 @@
 	font-display: swap;
 }
 
+/* Accidentals ♭ ♯ ° ø — the app's most-printed characters, and neither
+   Source Serif 4 nor Inter contains them. Measured at 40px: the flat came
+   back 40px wide (a blank em box) against 26px for a capital B, so every
+   chord symbol printed as "B ♭ maj7" with a hole in it. Scoped by
+   unicode-range to exactly those four codepoints, this borrows a real
+   glyph from a system symbol face — 40px → 14.8px — while every other
+   character still comes from the normal stack. The glyphs stay text, so
+   screen readers, search and copy-paste are untouched.
+
+   Georgia, Palatino and Times all report a 1em advance here: they have no
+   flat at all. Only the symbol faces named below carry a proportioned one. */
+@font-face {
+	font-family: 'AccidentalFit';
+	src: local('Apple Symbols'), local('Segoe UI Symbol'), local('Noto Music'),
+		local('Noto Sans Symbols 2'), local('DejaVu Sans');
+	unicode-range: U+266D, U+266F, U+00B0, U+00F8;
+}
+
 :root {
 	/* Editorial pairing: a serif that carries the voice, a sans that gets
-	   out of the way. The serif is display-only — never body copy. */
-	--font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
-	--font-display: 'Source Serif 4', 'Iowan Old Style', Palatino, Georgia, serif;
-	--font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+	   out of the way. The serif is display-only — never body copy.
+	   AccidentalFit leads every stack so ♭ ♯ ° ø resolve to a real glyph
+	   wherever a chord symbol is printed; it claims nothing else. */
+	--font-sans: 'AccidentalFit', 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+	--font-display: 'AccidentalFit', 'Source Serif 4', 'Iowan Old Style', Palatino, Georgia, serif;
+	--font-mono: 'AccidentalFit', 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 
 	/* Two-colour press job. The base is cold diazo stock rather than warm
 	   cream, so it reads as a printed plate and not as another warm AI page.

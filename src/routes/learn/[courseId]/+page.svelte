@@ -2,10 +2,10 @@
 	import { page } from '$app/state';
 	import { t } from '$lib/i18n';
 	import { getCourse } from '$lib/courses';
-	import { getCourseProgress, getLessonProgress } from '$lib/services/course-progress';
+	import { getCourseProgress } from '$lib/services/course-progress';
 	import { courseCompletionPercent, moduleCompletionPercent, getNextLesson } from '$lib/engine/courses';
 	import type { CourseProgress, MasteryLevel } from '$lib/engine/courses';
-	import { Ruler, Piano, Rocket, BookOpen, Check } from 'lucide-svelte';
+	import { Ruler, Piano, Rocket, BookOpen, Check, ArrowLeft, ArrowRight } from 'lucide-svelte';
 
 	/** Pick a lucide icon component for a course by its id */
 	function courseIcon(id: string) {
@@ -17,6 +17,9 @@
 			default: return BookOpen;
 		}
 	}
+
+	/** Roman numerals for the module section marks. */
+	const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
 	const courseId = $derived(page.params.courseId ?? '');
 	const course = $derived(getCourse(courseId));
@@ -42,12 +45,7 @@
 	}
 
 	function masteryClass(mastery: MasteryLevel): string {
-		switch (mastery) {
-			case 'none': return 'text-[var(--text-dim)]';
-			case 'started': return 'text-[var(--accent-amber)]';
-			case 'completed': return 'text-[var(--accent-green)]';
-			case 'mastered': return 'text-[var(--accent-gold)]';
-		}
+		return `mk mk-${mastery}`;
 	}
 
 	function levelLabel(level: string): string {
@@ -61,111 +59,385 @@
 </svelte:head>
 
 {#if !course}
-	<main class="max-w-3xl mx-auto px-4 py-12 text-center">
-		<p class="text-[var(--text-muted)]">Course not found.</p>
-		<a href="/learn" class="text-[var(--primary)] hover:underline mt-4 inline-block">{t('learn.back_to_courses')}</a>
+	<main class="plate plate-empty">
+		<p class="empty-note">{t('learn.not_found_course')}</p>
+		<a class="crumb" href="/learn">
+			<ArrowLeft size={14} aria-hidden="true" />
+			{t('learn.back_to_courses')}
+		</a>
 	</main>
 {:else}
 	{@const CourseIcon = courseIcon(course.id)}
-	<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-		<!-- Breadcrumb -->
-		<div class="mb-6">
-			<a href="/learn" class="text-sm text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors">
-				{t('learn.back_to_courses')}
-			</a>
-		</div>
+	<main class="plate">
+		<a class="crumb" href="/learn">
+			<ArrowLeft size={14} aria-hidden="true" />
+			{t('learn.back_to_courses')}
+		</a>
 
-		<!-- Course header -->
-		<div class="flex items-start gap-4 mb-8">
-			<CourseIcon size={36} class="text-[var(--primary)] shrink-0" aria-hidden="true" />
-			<div class="flex-1 min-w-0">
-				<h1 class="text-xl sm:text-2xl font-bold text-[var(--text)]">
-					{t(course.titleKey)}
-				</h1>
-				<p class="text-sm text-[var(--text-muted)] mt-1">{t(course.subtitleKey)}</p>
-				<p class="text-xs text-[var(--text-dim)] mt-1">{t(course.descriptionKey)}</p>
-				<div class="flex items-center gap-3 mt-3">
-					<span class="text-xs px-2.5 py-0.5 rounded-full bg-[var(--bg-muted)] text-[var(--text-muted)]">
-						{levelLabel(course.level)}
-					</span>
-					<span class="text-xs text-[var(--text-dim)]">{percent}%</span>
-				</div>
-			</div>
-		</div>
+		<!-- ── Masthead ── -->
+		<header class="masthead">
+			<p class="plate-mark">{t('learn.plate_course')}</p>
+			<h1>
+				<CourseIcon size={26} class="course-icon" aria-hidden="true" />
+				{t(course.titleKey)}
+			</h1>
+			<p class="lede">{t(course.subtitleKey)}</p>
+			<p class="desc">{t(course.descriptionKey)}</p>
 
-		<!-- Overall progress bar -->
-		<div class="h-2 rounded-full bg-[var(--bg-muted)] overflow-hidden mb-8">
+			<p class="course-meta">
+				<span class="level">{levelLabel(course.level)}</span>
+				<span class="rule" aria-hidden="true"></span>
+				<span class="pct" class:done={percent === 100}>{percent}%</span>
+			</p>
 			<div
-				class="h-full rounded-full transition-all duration-500"
-				style="width: {percent}%; background: {percent === 100 ? 'var(--accent-green)' : 'var(--primary)'};"
-			></div>
-		</div>
+				class="meter meter-lg"
+				class:done={percent === 100}
+				role="progressbar"
+				aria-valuenow={percent}
+				aria-valuemin="0"
+				aria-valuemax="100"
+				aria-label={t('learn.plate_progress')}
+			>
+				<span style="width: {percent}%"></span>
+			</div>
+		</header>
 
-		<!-- Modules -->
-		<div class="space-y-6">
-			{#each course.modules as mod (mod.id)}
-				{@const modProg = progress?.modules.find((m) => m.moduleId === mod.id)}
-				{@const modPercent = modProg ? moduleCompletionPercent(modProg) : 0}
+		<!-- ── Modules as numbered plate sections ── -->
+		{#each course.modules as mod, mi (mod.id)}
+			{@const modProg = progress?.modules.find((m) => m.moduleId === mod.id)}
+			{@const modPercent = modProg ? moduleCompletionPercent(modProg) : 0}
 
-				<div class="card surface-glass p-5 sm:p-6">
-					<div class="flex items-center justify-between mb-3">
-						<h2 class="text-base font-semibold text-[var(--text)]">
-							{t(mod.titleKey)}
-						</h2>
-						<span class="text-xs text-[var(--text-dim)]">{modPercent}%</span>
+			<section class="module" aria-labelledby="mod-{mod.id}">
+				<div class="module-head">
+					<span class="rehearsal" aria-hidden="true">{ROMAN[mi] ?? mi + 1}</span>
+					<div class="module-titles">
+						<h2 id="mod-{mod.id}">{t(mod.titleKey)}</h2>
+						<p class="module-meta">
+							<span class="module-no">{t('learn.module_mark', { n: String(mi + 1) })}</span>
+							<span class="rule" aria-hidden="true"></span>
+							<span class="pct" class:done={modPercent === 100}>{modPercent}%</span>
+						</p>
 					</div>
+				</div>
 
-					<!-- Module progress bar -->
-					<div class="h-1.5 rounded-full bg-[var(--bg-muted)] overflow-hidden mb-4">
-						<div
-							class="h-full rounded-full transition-all duration-500"
-							style="width: {modPercent}%; background: {modPercent === 100 ? 'var(--accent-green)' : 'var(--primary)'};"
-						></div>
-					</div>
+				<div
+					class="meter"
+					class:done={modPercent === 100}
+					role="progressbar"
+					aria-valuenow={modPercent}
+					aria-valuemin="0"
+					aria-valuemax="100"
+					aria-label={t(mod.titleKey)}
+				>
+					<span style="width: {modPercent}%"></span>
+				</div>
 
-					<!-- Lessons -->
-					<div class="space-y-1.5">
-						{#each mod.lessons as lesson (lesson.id)}
-							{@const lp = modProg?.lessons.find((l) => l.lessonId === lesson.id)}
-							{@const mastery = lp?.mastery ?? 'none'}
-							{@const isNext = next?.lessonId === lesson.id}
+				<ol class="contents">
+					{#each mod.lessons as lesson, li (lesson.id)}
+						{@const lp = modProg?.lessons.find((l) => l.lessonId === lesson.id)}
+						{@const mastery = lp?.mastery ?? 'none'}
+						{@const isNext = next?.lessonId === lesson.id}
 
-							<a
-								href="/learn/{course.id}/{lesson.id}"
-								class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-									{isNext ? 'bg-[var(--primary-muted)] border border-[var(--primary)]/30' : 'hover:bg-[var(--bg-card-hover)]'}"
-							>
-								<span class="text-sm {masteryClass(mastery)}" title={t(`learn.mastery_${mastery}`)}>
+						<li>
+							<a class="entry" class:is-next={isNext} href="/learn/{course.id}/{lesson.id}">
+								<span class="entry-no" aria-hidden="true">{String(li + 1).padStart(2, '0')}</span>
+								<span class={masteryClass(mastery)} title={t(`learn.mastery_${mastery}`)}>
 									{masteryIcon(mastery)}
 								</span>
-								<div class="flex-1 min-w-0">
-									<span class="text-sm text-[var(--text)] block truncate">{t(lesson.titleKey)}</span>
-									<span class="text-xs text-[var(--text-dim)] block truncate">{t(lesson.subtitleKey)}</span>
-								</div>
+								<span class="entry-body">
+									<span class="entry-title">{t(lesson.titleKey)}</span>
+									<span class="entry-sub">{t(lesson.subtitleKey)}</span>
+								</span>
 								{#if mastery === 'mastered'}
-									<span class="text-xs text-[var(--accent-gold)] font-medium shrink-0">◆</span>
+									<span class="entry-flag mastered" title={t('learn.mastery_mastered')}>◆</span>
 								{:else if isNext}
-									<span class="text-xs text-[var(--primary)] font-medium shrink-0">→</span>
+									<ArrowRight size={14} class="entry-go" aria-hidden="true" />
 								{/if}
 							</a>
-						{/each}
-					</div>
-				</div>
-			{/each}
-		</div>
+						</li>
+					{/each}
+				</ol>
+			</section>
+		{/each}
 
-		<!-- CTA -->
-		<div class="mt-8 text-center">
+		<!-- ── Foot ── -->
+		<div class="plate-foot">
 			{#if next}
-				<a
-					href="/learn/{course.id}/{next.lessonId}"
-					class="pill-btn pill-btn-primary inline-flex items-center gap-2 px-6 py-3 text-[var(--primary-text)] font-semibold text-sm transition-colors"
-				>
-					{percent > 0 ? t('learn.continue') : t('learn.start')} →
+				<a class="btn-stamp" href="/learn/{course.id}/{next.lessonId}">
+					{percent > 0 ? t('learn.continue') : t('learn.start')}
+					<ArrowRight size={15} aria-hidden="true" />
 				</a>
 			{:else if percent === 100}
-				<span class="text-sm text-[var(--accent-green)] font-medium inline-flex items-center gap-1"><Check size={16} class="text-[var(--accent-green)]" aria-hidden="true" /> {t('learn.complete')}</span>
+				<span class="done-note">
+					<Check size={16} aria-hidden="true" /> {t('learn.complete')}
+				</span>
 			{/if}
 		</div>
 	</main>
 {/if}
+
+<style>
+	/* ═══ The plate ═══════════════════════════════════════════════ */
+	.plate {
+		max-width: 46rem;
+		width: 100%;
+		margin: 0 auto;
+		padding: 2rem 1.25rem 5rem;
+	}
+	@media (min-width: 40rem) {
+		.plate { padding: 2.5rem 2rem 6rem; }
+	}
+	.plate-empty { text-align: center; padding-top: 5rem; }
+	.empty-note {
+		font-family: var(--font-display);
+		font-size: 1.125rem;
+		color: var(--text-muted);
+		margin: 0 0 1.25rem;
+	}
+
+	/* ── Breadcrumb ── */
+	.crumb {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+	.crumb:hover { color: var(--primary); }
+
+	/* ── Masthead ── */
+	.masthead {
+		margin-top: 1.5rem;
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid var(--border);
+		margin-bottom: 2.5rem;
+	}
+	.plate-mark {
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.19em;
+		text-transform: uppercase;
+		color: var(--primary);
+		font-weight: 600;
+		margin: 0 0 0.75rem;
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+	}
+	.plate-mark::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.3;
+	}
+	.masthead h1 {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		font-family: var(--font-display);
+		font-size: clamp(1.8rem, 5.2vw, 2.5rem);
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: -0.025em;
+		margin: 0;
+		color: var(--text);
+	}
+	.masthead h1 :global(.course-icon) { color: var(--primary); flex: none; }
+	.lede {
+		margin: 0.75rem 0 0;
+		max-width: 50ch;
+		font-size: 1.0625rem;
+		line-height: 1.6;
+		color: var(--text-muted);
+	}
+	.desc {
+		margin: 0.5rem 0 0;
+		max-width: 62ch;
+		font-size: 0.875rem;
+		line-height: 1.6;
+		color: var(--text-dim);
+	}
+
+	/* ── Meta rule line ── */
+	.course-meta,
+	.module-meta {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin: 1.25rem 0 0.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+	.module-meta { margin: 0.35rem 0 0; }
+	.level { color: var(--ink-blue); }
+	.module-no { color: var(--ink-blue); flex: none; }
+	.rule { flex: 1; height: 1px; background: var(--border); }
+	.pct { color: var(--text-dim); font-variant-numeric: tabular-nums; flex: none; }
+	.pct.done { color: var(--accent-green); }
+
+	/* ── Meter ── */
+	.meter {
+		height: 2px;
+		background: var(--border);
+		overflow: hidden;
+		margin-bottom: 0.9rem;
+	}
+	.meter-lg { height: 3px; margin-bottom: 0; }
+	.meter span {
+		display: block;
+		height: 100%;
+		background: var(--primary);
+		transition: width 0.5s ease;
+	}
+	.meter.done span { background: var(--accent-green); }
+
+	/* ── Module section ── */
+	.module {
+		padding-top: 2rem;
+		margin-top: 2rem;
+		border-top: 1px solid var(--border);
+	}
+	.module:first-of-type {
+		padding-top: 0;
+		margin-top: 0;
+		border-top: 0;
+	}
+	.module-head {
+		display: flex;
+		align-items: flex-start;
+		gap: 1rem;
+		margin-bottom: 0.9rem;
+	}
+	.rehearsal {
+		display: grid;
+		place-items: center;
+		flex: none;
+		min-width: 1.75rem;
+		height: 1.75rem;
+		padding: 0 0.35rem;
+		border: 1.5px solid var(--text);
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		color: var(--text);
+	}
+	.module-titles { flex: 1; min-width: 0; }
+	.module-titles h2 {
+		font-family: var(--font-display);
+		font-size: 1.3125rem;
+		font-weight: 600;
+		line-height: 1.25;
+		letter-spacing: -0.02em;
+		margin: 0;
+		color: var(--text);
+	}
+
+	/* ── Contents list ── */
+	.contents {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid var(--border);
+	}
+	.contents li { border-bottom: 1px solid var(--border); }
+	.entry {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.75rem 0.25rem;
+		text-decoration: none;
+		transition: background 0.12s, padding 0.12s;
+	}
+	.entry:hover {
+		background: var(--bg-card);
+		padding-left: 0.6rem;
+		padding-right: 0.6rem;
+	}
+	.entry.is-next {
+		background: var(--primary-muted);
+		padding-left: 0.6rem;
+		padding-right: 0.6rem;
+		box-shadow: inset 2px 0 0 var(--primary);
+	}
+	.entry-no {
+		flex: none;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.08em;
+		color: var(--text-dim);
+		font-variant-numeric: tabular-nums;
+	}
+	.mk { flex: none; font-size: 0.8125rem; line-height: 1; }
+	.mk-none { color: var(--text-dim); }
+	.mk-started { color: var(--accent-amber); }
+	.mk-completed { color: var(--accent-green); }
+	.mk-mastered { color: var(--accent-gold); }
+
+	.entry-body { flex: 1; min-width: 0; }
+	.entry-title {
+		display: block;
+		font-size: 0.9375rem;
+		line-height: 1.35;
+		color: var(--text);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.entry-sub {
+		display: block;
+		margin-top: 0.05rem;
+		font-size: 0.8125rem;
+		line-height: 1.35;
+		color: var(--text-dim);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.entry :global(.entry-go) { color: var(--primary); flex: none; }
+	.entry-flag { flex: none; font-size: 0.75rem; }
+	.entry-flag.mastered { color: var(--accent-gold); }
+
+	/* ── Foot ── */
+	.plate-foot {
+		margin-top: 2.5rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--border);
+	}
+	.btn-stamp {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-height: var(--tap-min);
+		padding: 0 1.5rem;
+		border: 1.5px solid var(--primary);
+		border-radius: var(--radius-sm);
+		background: var(--primary);
+		color: var(--primary-text);
+		font-size: 0.9375rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition: background 0.15s, border-color 0.15s;
+	}
+	.btn-stamp:hover {
+		background: var(--primary-hover);
+		border-color: var(--primary-hover);
+	}
+	.done-note {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		color: var(--accent-green);
+	}
+</style>
