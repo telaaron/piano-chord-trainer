@@ -165,3 +165,40 @@ export function convertChordNotation(chordName: string, system: NotationSystem):
 	if (chordName.startsWith('B') && !chordName.startsWith('Bb')) return 'H' + chordName.slice(1);
 	return chordName;
 }
+
+// ─── Pitched notes (with octave) ────────────────────────────
+
+/**
+ * A note name WITH its octave, e.g. "Bb4" — what a synth needs to sound the
+ * right pitch.
+ *
+ * `getNoteName` returns a pitch class, which is correct for naming a chord
+ * tone but cannot express direction: C→B is a major seventh UP or a minor
+ * second DOWN, and the name alone does not say which. Ear training has to
+ * say which, so intervals are built from an absolute semitone offset here.
+ *
+ * @param rootSemitone pitch class of the starting note (0 = C)
+ * @param interval signed semitone distance; negative descends
+ * @param octave octave of the starting note in scientific pitch notation
+ */
+export function getPitchedNote(
+	rootSemitone: number,
+	interval: number,
+	pref: AccidentalPreference,
+	octave = 4,
+): string {
+	const abs = rootSemitone + interval;
+	// Floor-divide so descending intervals cross the octave boundary correctly:
+	// C4 down a minor second is B3, not B4.
+	const oct = octave + Math.floor(abs / 12);
+	const index = ((abs % 12) + 12) % 12;
+	const names =
+		pref === 'sharps'
+			? NOTES_SHARPS
+			: pref === 'flats'
+				? NOTES_FLATS
+				: usesSharps(rootSemitone)
+					? NOTES_SHARPS
+					: NOTES_FLATS;
+	return `${names[index]}${oct}`;
+}

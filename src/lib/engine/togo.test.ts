@@ -23,6 +23,7 @@ import {
 	type ToGoResult,
 	type TheoryCardState,
 } from './togo';
+import { noteToSemitone } from './notes';
 
 /** Deterministic rng: cycles a fixed sequence so every test is reproducible. */
 function seeded(seq: number[] = [0.1, 0.5, 0.9, 0.3, 0.7, 0.05, 0.45, 0.85]) {
@@ -42,6 +43,69 @@ describe('exercise builders', () => {
 		if (ex.play.type === 'sequence') expect(ex.play.notes).toHaveLength(2);
 		expect(ex.options).toContain(ex.answerLabel);
 		expect(ex.options[ex.answerIndex]).toBe(ex.answerLabel);
+	});
+
+	/**
+	 * These three come from play-testing: a major seventh sounded as a semitone
+	 * DOWN, and an octave played the same note twice. Both were pitch-class
+	 * arithmetic — the notes carried no octave, so "distance" had no direction.
+	 * Asserting the label was not enough; the pitches themselves need checking.
+	 */
+	describe('interval: the notes actually sound the interval', () => {
+		/** "Bb4" → absolute semitone, so tests can measure real distance. */
+		function abs(note: string): number {
+			const m = note.match(/^([A-G][b#]?)(-?\d+)$/);
+			if (!m) throw new Error(`not a pitched note: ${note}`);
+			return noteToSemitone(m[1]) + 12 * Number(m[2]);
+		}
+
+		function notesOf(ex: ReturnType<typeof buildIntervalExercise>): string[] {
+			if (ex.play.type !== 'sequence') throw new Error('expected a sequence');
+			return ex.play.notes;
+		}
+
+		it('every ascending interval rises by exactly its semitone count', () => {
+			for (let depth = 2; depth <= INTERVAL_LADDER.length; depth++) {
+				const ex = buildIntervalExercise(seeded(), undefined, 'flats', depth);
+				const entry = INTERVAL_LADDER.find((i) => i.label === ex.answerLabel)!;
+				const [a, b] = notesOf(ex);
+				expect(abs(b) - abs(a)).toBe(entry.semitones);
+			}
+		});
+
+		it('every descending interval falls by exactly its semitone count', () => {
+			for (let depth = 2; depth <= INTERVAL_LADDER.length; depth++) {
+				const ex = buildIntervalExercise(seeded(), undefined, 'flats', depth, true);
+				const entry = INTERVAL_LADDER.find((i) => i.label === ex.answerLabel)!;
+				const [a, b] = notesOf(ex);
+				expect(abs(b) - abs(a)).toBe(-entry.semitones);
+			}
+		});
+
+		it('never sounds the same pitch twice — an octave is 12 apart, not 0', () => {
+			// The reported bug: 12 % 12 === 0, so both notes were identical.
+			for (let depth = 2; depth <= INTERVAL_LADDER.length; depth++) {
+				for (const down of [false, true]) {
+					const ex = buildIntervalExercise(seeded(), undefined, 'flats', depth, down);
+					const [a, b] = notesOf(ex);
+					expect(a).not.toBe(b);
+					expect(Math.abs(abs(b) - abs(a))).toBeGreaterThan(0);
+				}
+			}
+		});
+
+		it('carries an octave on both notes, so playback cannot guess', () => {
+			const ex = buildIntervalExercise(seeded());
+			for (const n of notesOf(ex)) expect(n).toMatch(/^[A-G][b#]?-?\d+$/);
+		});
+
+		it('distinguishes the two directions in its id and prompt', () => {
+			const up = buildIntervalExercise(seeded(), undefined, 'flats', 4, false);
+			const down = buildIntervalExercise(seeded(), undefined, 'flats', 4, true);
+			expect(up.id).toContain('up');
+			expect(down.id).toContain('down');
+			expect(up.promptKey).not.toBe(down.promptKey);
+		});
 	});
 
 	it('quality: sounds a real chord and the answer is among the options', () => {

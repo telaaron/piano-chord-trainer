@@ -152,6 +152,43 @@ public func getNoteName(_ rootSemitone: Int, _ interval: Int, _ pref: Accidental
     }
 }
 
+// MARK: - Pitched notes (with octave)
+
+/// A note name WITH its octave, e.g. "Bb4" — what a synth needs to sound the
+/// right pitch.
+///
+/// `getNoteName` returns a pitch class, which is correct for naming a chord
+/// tone but cannot express direction: C→B is a major seventh UP or a minor
+/// second DOWN, and the name alone does not say which. Ear training has to say
+/// which, so intervals are built from an absolute semitone offset here.
+///
+/// 1:1 port of `getPitchedNote` in `src/lib/engine/notes.ts`.
+///
+/// - Parameters:
+///   - rootSemitone: pitch class of the starting note (0 = C)
+///   - interval: signed semitone distance; negative descends
+///   - octave: octave of the starting note in scientific pitch notation
+public func getPitchedNote(
+    _ rootSemitone: Int,
+    _ interval: Int,
+    _ pref: AccidentalPreference,
+    octave: Int = 4
+) -> String {
+    let abs = rootSemitone + interval
+    // Floor-divide so descending intervals cross the octave boundary correctly:
+    // C4 down a minor second is B3, not B4. Swift's / truncates toward zero,
+    // so a plain abs / 12 would round -1 up to 0 and keep the note in octave 4.
+    let oct = octave + Int(floor(Double(abs) / 12.0))
+    let index = ((abs % 12) + 12) % 12
+    let names: [String]
+    switch pref {
+    case .sharps: names = NOTES_SHARPS
+    case .flats: names = NOTES_FLATS
+    case .both: names = usesSharps(rootSemitone) ? NOTES_SHARPS : NOTES_FLATS
+    }
+    return "\(names[index])\(oct)"
+}
+
 /// Convert a note name between international and German notation.
 public func convertNoteName(_ note: String, _ system: NotationSystem) -> String {
     if system == .german {

@@ -10,7 +10,7 @@
 // PURE TypeScript, ported 1:1 to Swift (ios/MusicEngine/.../ToGo.swift).
 
 import type { AccidentalPreference } from './notes';
-import { noteToSemitone, getNoteName } from './notes';
+import { noteToSemitone, getNoteName, getPitchedNote } from './notes';
 import { CHORD_INTERVALS, CHORDS_BY_DIFFICULTY } from './chords';
 import type { Difficulty } from './chords';
 import { getChordNotes } from './voicings';
@@ -396,17 +396,32 @@ function withDistractors(answer: string, pool: string[], count: number, rng: Rng
 	return { options, answerIndex: options.indexOf(answer) };
 }
 
-/** Hear two notes, name the distance. */
+/**
+ * Hear two notes, name the distance.
+ *
+ * Both notes carry an octave. Naming them by pitch class alone made the
+ * exercise lie: a major seventh over C came back as B in the same octave and
+ * sounded like a semitone DOWN, and an octave resolved to 12 % 12 = 0, so the
+ * same note played twice. An interval is a direction as well as a distance,
+ * and the ear is being trained on exactly that.
+ *
+ * @param descending play the second note below the first instead of above.
+ */
 export function buildIntervalExercise(
 	rng: Rng,
 	params: ToGoParams = DEFAULT_TOGO_PARAMS,
 	pref: AccidentalPreference = 'flats',
 	ladderDepth = INTERVAL_LADDER.length,
+	descending = false,
 ): ToGoExercise {
 	const entry = pick(INTERVAL_LADDER.slice(0, Math.max(2, ladderDepth)), rng);
 	const root = pick(KEYS_ALL, rng);
 	const rootSt = noteToSemitone(root);
-	const target = getNoteName(rootSt, entry.semitones % 12, pref);
+	// Descending starts an octave higher so the answer stays in a singable range.
+	const startOct = descending ? 5 : 4;
+	const step = descending ? -entry.semitones : entry.semitones;
+	const from = getPitchedNote(rootSt, 0, pref, startOct);
+	const target = getPitchedNote(rootSt, step, pref, startOct);
 	const { options, answerIndex } = withDistractors(
 		entry.label,
 		INTERVAL_LADDER.map((i) => i.label),
@@ -414,13 +429,13 @@ export function buildIntervalExercise(
 		rng,
 	);
 	return {
-		id: `interval|${root}|${entry.semitones}`,
+		id: `interval|${root}|${entry.semitones}|${descending ? 'down' : 'up'}`,
 		kind: 'interval',
-		play: { type: 'sequence', notes: [root, target], stepMs: params.sequenceStepMs },
+		play: { type: 'sequence', notes: [from, target], stepMs: params.sequenceStepMs },
 		input: { type: 'choice' },
 		options,
 		answerIndex,
-		promptKey: 'togo.prompt.interval',
+		promptKey: descending ? 'togo.prompt.interval_down' : 'togo.prompt.interval_up',
 		promptParams: {},
 		answerLabel: entry.label,
 	};
@@ -726,7 +741,10 @@ export function buildToGoSession(
 		const kind = order[i];
 		switch (kind) {
 			case 'interval':
-				exercises.push(buildIntervalExercise(rng, params, pref));
+				// Mix both directions: recognising a rising fifth does not mean you
+				// can name a falling one, and players who only ever hear ascending
+				// intervals learn the shape of the exercise instead of the sound.
+				exercises.push(buildIntervalExercise(rng, params, pref, undefined, rng() < 0.4));
 				break;
 			case 'quality':
 				exercises.push(

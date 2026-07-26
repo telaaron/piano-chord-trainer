@@ -2006,6 +2006,10 @@ export const de = {
     // Prompts aus der Engine.
     prompt: {
       interval: 'Wie weit liegen diese zwei Töne auseinander?',
+      // Die Richtung steht in der Frage: aufwärts und abwärts sind zwei
+      // verschiedene Fertigkeiten, und man soll wissen, welche gerade dran ist.
+      interval_up: 'Aufwärts — wie weit?',
+      interval_down: 'Abwärts — wie weit?',
       quality: 'Welche Farbe hat dieser Akkord?',
       progression: 'Welche Form ist das, in {key}?',
       sing: 'Sing die {degree} über {root}.',

@@ -32,6 +32,74 @@ final class ToGoParityTests: XCTestCase {
         XCTAssertEqual(ex.options[ex.answerIndex], ex.answerLabel)
     }
 
+    // The pitched-interval fixes, mirroring togo.test.ts. Found by play-testing:
+    // a major seventh sounded as a semitone DOWN, and an octave played the same
+    // note twice — pitch-class arithmetic, so "distance" had no direction.
+
+    /// "Bb4" → absolute semitone, so tests can measure real distance.
+    private func absSemitone(_ note: String) -> Int {
+        // Split at the first digit or minus: everything before is the note name,
+        // everything after is the octave.
+        guard let split = note.firstIndex(where: { $0.isNumber || $0 == "-" }) else {
+            XCTFail("not a pitched note: \(note)")
+            return 0
+        }
+        let name = String(note[note.startIndex..<split])
+        let octave = Int(note[split...]) ?? 0
+        return noteToSemitone(name) + 12 * octave
+    }
+
+    private func notesOf(_ ex: ToGoExercise) -> [String] {
+        if case let .sequence(notes, _) = ex.play { return notes }
+        XCTFail("expected a sequence")
+        return []
+    }
+
+    func testAscendingIntervalRisesByItsSemitoneCount() {
+        for depth in 2...INTERVAL_LADDER.count {
+            let ex = buildIntervalExercise(seeded(), DEFAULT_TOGO_PARAMS, .flats, ladderDepth: depth)
+            let entry = INTERVAL_LADDER.first { $0.label == ex.answerLabel }!
+            let n = notesOf(ex)
+            XCTAssertEqual(absSemitone(n[1]) - absSemitone(n[0]), entry.semitones)
+        }
+    }
+
+    func testDescendingIntervalFallsByItsSemitoneCount() {
+        for depth in 2...INTERVAL_LADDER.count {
+            let ex = buildIntervalExercise(
+                seeded(), DEFAULT_TOGO_PARAMS, .flats, ladderDepth: depth, descending: true)
+            let entry = INTERVAL_LADDER.first { $0.label == ex.answerLabel }!
+            let n = notesOf(ex)
+            XCTAssertEqual(absSemitone(n[1]) - absSemitone(n[0]), -entry.semitones)
+        }
+    }
+
+    func testIntervalNeverSoundsTheSamePitchTwice() {
+        for depth in 2...INTERVAL_LADDER.count {
+            for down in [false, true] {
+                let ex = buildIntervalExercise(
+                    seeded(), DEFAULT_TOGO_PARAMS, .flats, ladderDepth: depth, descending: down)
+                let n = notesOf(ex)
+                XCTAssertNotEqual(n[0], n[1])
+            }
+        }
+    }
+
+    func testIntervalDistinguishesDirection() {
+        let up = buildIntervalExercise(seeded(), DEFAULT_TOGO_PARAMS, .flats, ladderDepth: 4, descending: false)
+        let down = buildIntervalExercise(seeded(), DEFAULT_TOGO_PARAMS, .flats, ladderDepth: 4, descending: true)
+        XCTAssertTrue(up.id.contains("up"))
+        XCTAssertTrue(down.id.contains("down"))
+        XCTAssertNotEqual(up.promptKey, down.promptKey)
+    }
+
+    func testPitchedNoteCrossesTheOctaveBoundaryDownward() {
+        // C4 down a minor second is B3, not B4 — the floor-divide, in one case.
+        XCTAssertEqual(getPitchedNote(0, -1, .flats, octave: 4), "B3")
+        XCTAssertEqual(getPitchedNote(0, 12, .flats, octave: 4), "C5")
+        XCTAssertEqual(getPitchedNote(0, 0, .flats, octave: 4), "C4")
+    }
+
     func testQualitySoundsARealChordAndAnswerIsAmongOptions() {
         let ex = buildQualityExercise(seeded())
         XCTAssertEqual(ex.play.type, "chord")

@@ -2011,6 +2011,10 @@ export const en = {
     // Engine-supplied prompts.
     prompt: {
       interval: 'How far apart are these two notes?',
+      // Direction is part of the question: hearing a rising fifth and hearing
+      // a falling one are two skills, and you should know which is being asked.
+      interval_up: 'Upwards — how far?',
+      interval_down: 'Downwards — how far?',
       quality: 'What colour is this chord?',
       progression: 'Which shape is this, in {key}?',
       sing: 'Sing the {degree} over {root}.',

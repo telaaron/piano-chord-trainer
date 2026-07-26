@@ -536,16 +536,27 @@ func withDistractors(_ answer: String, _ pool: [String], _ count: Int, _ rng: Rn
 }
 
 /// Hear two notes, name the distance.
+/// Both notes carry an octave. Naming them by pitch class alone made the
+/// exercise lie: a major seventh over C came back as B in the same octave and
+/// sounded like a semitone DOWN, and an octave resolved to 12 % 12 = 0, so the
+/// same note played twice. An interval is a direction as well as a distance.
+///
+/// - Parameter descending: play the second note below the first instead of above.
 public func buildIntervalExercise(
     _ rng: Rng,
     _ params: ToGoParams = DEFAULT_TOGO_PARAMS,
     _ pref: AccidentalPreference = .flats,
-    ladderDepth: Int = INTERVAL_LADDER.count
+    ladderDepth: Int = INTERVAL_LADDER.count,
+    descending: Bool = false
 ) -> ToGoExercise {
     let entry = pick(Array(INTERVAL_LADDER.prefix(max(2, ladderDepth))), rng)
     let root = pick(TOGO_KEYS_ALL, rng)
     let rootSt = noteToSemitone(root)
-    let target = getNoteName(rootSt, entry.semitones % 12, pref)
+    // Descending starts an octave higher so the answer stays in a singable range.
+    let startOct = descending ? 5 : 4
+    let step = descending ? -entry.semitones : entry.semitones
+    let from = getPitchedNote(rootSt, 0, pref, octave: startOct)
+    let target = getPitchedNote(rootSt, step, pref, octave: startOct)
     let (options, answerIndex) = withDistractors(
         entry.label,
         INTERVAL_LADDER.map { $0.label },
@@ -553,13 +564,13 @@ public func buildIntervalExercise(
         rng
     )
     return ToGoExercise(
-        id: "interval|\(root)|\(entry.semitones)",
+        id: "interval|\(root)|\(entry.semitones)|\(descending ? "down" : "up")",
         kind: .interval,
-        play: .sequence(notes: [root, target], stepMs: params.sequenceStepMs),
+        play: .sequence(notes: [from, target], stepMs: params.sequenceStepMs),
         input: .choice,
         options: options,
         answerIndex: answerIndex,
-        promptKey: "togo.prompt.interval",
+        promptKey: descending ? "togo.prompt.interval_down" : "togo.prompt.interval_up",
         promptParams: [:],
         answerLabel: entry.label
     )
@@ -890,7 +901,10 @@ public func buildToGoSession(
         let kind = order[i]
         switch kind {
         case .interval:
-            exercises.append(buildIntervalExercise(rng, params, pref))
+            // Mix both directions: recognising a rising fifth does not mean you
+            // can name a falling one, and players who only ever hear ascending
+            // intervals learn the shape of the exercise instead of the sound.
+            exercises.append(buildIntervalExercise(rng, params, pref, descending: rng() < 0.4))
         case .quality:
             exercises.append(buildQualityExercise(
                 rng, params, pref, difficulty,
