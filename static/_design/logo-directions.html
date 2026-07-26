@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>jazzchords.app — drei Logo-Richtungen</title>
+<style>
+/* ============================================================
+   LOGO DIRECTIONS — A / B / C
+   Selbsttragende Vergleichsseite. Keine externen Assets.
+   Alle Marken sind Inline-SVG, gezeichnet auf einem 24er-Raster,
+   und erben die Tinte über currentColor.
+   ============================================================ */
+
+/* ---- Self-hosted type, identisch zu app.css ---- */
+@font-face{font-family:'Source Serif 4';src:url('/fonts/source-serif-4-latin-400-normal.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Source Serif 4';src:url('/fonts/source-serif-4-latin-600-normal.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Source Serif 4';src:url('/fonts/source-serif-4-latin-700-normal.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Inter Variable';src:url('/fonts/inter-latin-wght-normal.woff2') format('woff2-variations');font-weight:100 900;font-style:normal;font-display:swap}
+/* Akzidenzien ♭ ♯ ° ø — weder Source Serif 4 noch Inter enthalten sie.
+   Block wörtlich aus src/app.css übernommen. */
+@font-face{
+  font-family:'AccidentalFit';
+  src:local('Apple Symbols'),local('Segoe UI Symbol'),local('Noto Music'),
+      local('Noto Sans Symbols 2'),local('DejaVu Sans');
+  unicode-range:U+266D,U+266F,U+00B0,U+00F8;
+}
+
+:root{
+  --font-sans:'AccidentalFit','Inter Variable','Inter',system-ui,-apple-system,sans-serif;
+  --font-display:'AccidentalFit','Source Serif 4','Iowan Old Style',Palatino,Georgia,serif;
+
+  /* Dunkel = Basis, exakt die Tokens aus app.css :root */
+  --bg:#0e141d; --bg-card:#151d29; --bg-muted:#1a2431;
+  --border:#26323f; --border-hover:#38485a;
+  --text:#eef1f4; --text-muted:#a3b0bf; --text-dim:#71808f;
+  --primary:#e2685c; --primary-muted:rgba(226,104,92,.15);
+  --ink-blue:#7ba7d4; --ink-blue-muted:rgba(123,167,212,.14);
+  --accent-amber:#f5a623;
+  --good:#6ecb9c;
+  /* Uhr-Skala für Richtung B, dunkel */
+  --t-fast:#7fd6a8; --t-ok:#cfc65f; --t-slow:#f0a35c; --t-stuck:#f79288;
+  --dial:#232d3c;
+  --shadow-md:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.36);
+  --radius:3px;
+}
+
+/* Hell = Diazo-Papier, exakt die Tokens aus [data-theme="light"] */
+[data-theme="light"]{
+  --bg:#ecefe9; --bg-card:#fbfcf9; --bg-muted:#e2e6de;
+  --border:#d2d8cd; --border-hover:#b4bdad;
+  --text:#131a26; --text-muted:#4a5563; --text-dim:#6b7684;
+  --primary:#b0302a; --primary-muted:rgba(176,48,42,.12);
+  --ink-blue:#2c5985; --ink-blue-muted:rgba(44,89,133,.10);
+  --accent-amber:#8f5a05;
+  --good:#2f6b4f;
+  --t-fast:#2f6b4f; --t-ok:#6d6a24; --t-slow:#9c5713; --t-stuck:#a3241e;
+  --dial:#d5dbd2;
+  --shadow-md:0 1px 1px rgba(19,26,38,.06),0 4px 10px -3px rgba(19,26,38,.10);
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --bg:#ecefe9; --bg-card:#fbfcf9; --bg-muted:#e2e6de;
+    --border:#d2d8cd; --border-hover:#b4bdad;
+    --text:#131a26; --text-muted:#4a5563; --text-dim:#6b7684;
+    --primary:#b0302a; --primary-muted:rgba(176,48,42,.12);
+    --ink-blue:#2c5985; --ink-blue-muted:rgba(44,89,133,.10);
+    --accent-amber:#8f5a05;
+    --good:#2f6b4f;
+    --t-fast:#2f6b4f; --t-ok:#6d6a24; --t-slow:#9c5713; --t-stuck:#a3241e;
+    --dial:#d5dbd2;
+    --shadow-md:0 1px 1px rgba(19,26,38,.06),0 4px 10px -3px rgba(19,26,38,.10);
+  }
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--font-sans);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ---- Kopf ---- */
+.mast{
+  border-bottom:1px solid var(--border);background:var(--bg-card);
+  position:sticky;top:0;z-index:10;
+}
+.mast-in{
+  max-width:1180px;margin:0 auto;padding:14px 24px;
+  display:flex;align-items:center;gap:16px;
+}
+.mast h1{
+  font-family:var(--font-display);font-weight:600;
+  font-size:19px;margin:0;letter-spacing:-.01em;
+}
+.mast .sub{
+  color:var(--text-dim);font-size:12px;letter-spacing:.09em;
+  text-transform:uppercase;margin-left:auto;
+}
+.icon-btn{
+  width:38px;height:38px;display:grid;place-items:center;
+  background:transparent;border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text-muted);cursor:pointer;flex:none;
+}
+.icon-btn:hover{border-color:var(--border-hover);color:var(--text)}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 96px}
+
+.lede{
+  max-width:66ch;margin:40px 0 8px;color:var(--text-muted);
+  font-size:15.5px;line-height:1.65;
+}
+.lede strong{color:var(--text);font-weight:600}
+
+/* ---- Richtungs-Block ---- */
+.dir{
+  margin-top:56px;border-top:2px solid var(--text);padding-top:0;
+}
+.dir-head{
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  padding:16px 0 4px;
+}
+.dir-letter{
+  font-family:var(--font-display);font-weight:700;font-size:34px;
+  line-height:1;color:var(--primary);
+}
+.dir-title{
+  font-family:var(--font-display);font-size:23px;font-weight:600;
+  margin:0;letter-spacing:-.01em;
+}
+.dir-kicker{
+  color:var(--text-dim);font-size:11.5px;letter-spacing:.12em;
+  text-transform:uppercase;margin-left:auto;
+}
+.rationale{
+  max-width:70ch;color:var(--text-muted);font-size:15px;
+  line-height:1.65;margin:6px 0 0;
+}
+.weak{
+  max-width:70ch;margin:14px 0 0;padding:11px 14px;
+  border-left:3px solid var(--primary);background:var(--primary-muted);
+  font-size:14px;line-height:1.6;color:var(--text);
+}
+.weak b{
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--primary);display:block;margin-bottom:3px;font-weight:700;
+}
+
+/* ---- Panel-Raster ---- */
+.panels{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:18px;margin-top:26px;
+}
+.panel{
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--bg-card);padding:18px;min-width:0;
+}
+.panel-lbl{
+  font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--text-dim);margin-bottom:14px;
+}
+
+/* Große Marke auf beiden Gründen — feste Farben, damit man
+   beide Zustände gleichzeitig sieht, unabhängig vom Theme. */
+.ground{
+  display:grid;place-items:center;padding:30px 16px;
+  border-radius:var(--radius);min-height:300px;
+}
+.ground.on-light{background:#ecefe9;color:#131a26}
+.ground.on-dark{background:#0e141d;color:#eef1f4}
+.ground.on-light .mk-primary{color:#b0302a}
+.ground.on-dark  .mk-primary{color:#e2685c}
+.ground.on-light .mk-blue{color:#2c5985}
+.ground.on-dark  .mk-blue{color:#7ba7d4}
+
+/* ---- Größenleiter ---- */
+.ladder{
+  display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;
+  padding:20px 4px 4px;
+}
+.rung{display:flex;flex-direction:column;align-items:center;gap:9px}
+.rung-box{display:grid;place-items:center}
+.rung-cap{
+  font-size:10.5px;color:var(--text-dim);letter-spacing:.06em;
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.rung-cap b{color:var(--text-muted);font-weight:600}
+/* Die kleinen Stufen bekommen einen Hilfsrahmen, damit man die
+   Kante des Icons vom Kartenhintergrund unterscheiden kann. */
+.rung.small .rung-box{
+  outline:1px dashed var(--border);outline-offset:5px;
+}
+.ladder-note{
+  font-size:12.5px;color:var(--text-dim);line-height:1.55;
+  margin:18px 0 0;max-width:62ch;
+}
+
+/* iOS-Kachel: das Icon sitzt in einem Squircle mit Papiergrund,
+   so wie es auf dem Homescreen wirklich erscheint. */
+.ios-tile{
+  border-radius:22.37%;display:grid;place-items:center;
+  box-shadow:var(--shadow-md);
+}
+.ios-tile.paper{background:#ecefe9;color:#131a26}
+.ios-tile.paper .mk-primary{color:#b0302a}
+.ios-tile.night{background:#141b26;color:#eef1f4}
+.ios-tile.night .mk-primary{color:#e2685c}
+
+/* ---- Lockup / Nav ---- */
+.navdemo{
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--bg-card);padding:0;overflow:hidden;
+}
+.navbar{
+  display:flex;align-items:center;gap:26px;
+  padding:13px 20px;border-bottom:1px solid var(--border);
+}
+.brand{
+  display:flex;align-items:center;gap:11px;
+  text-decoration:none;color:var(--text);flex:none;
+}
+.brand-mark{display:flex;color:var(--text)}
+.brand-word{display:flex;flex-direction:column;line-height:1.05}
+.brand-name{
+  font-family:var(--font-display);font-size:19px;font-weight:600;
+  letter-spacing:-.015em;
+}
+.brand-tld{color:var(--text-dim);font-weight:400}
+.brand-sub{
+  font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--text-dim);margin-top:3px;
+}
+.nav-links{display:flex;gap:20px;margin-left:8px}
+.nav-links span{
+  font-size:13.5px;color:var(--text-muted);white-space:nowrap;
+}
+.nav-links span:first-child{color:var(--text);font-weight:600}
+.nav-tail{margin-left:auto;display:flex;gap:9px;flex:none}
+.chip{
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:5px 11px;font-size:12.5px;color:var(--text-muted);
+}
+.chip.solid{background:var(--primary);border-color:var(--primary);color:#fff}
+[data-theme="dark"] .chip.solid{color:#14090a}
+
+/* ---- Verdikt ---- */
+.verdict{
+  margin-top:60px;border:2px solid var(--text);border-radius:var(--radius);
+  padding:24px 26px;background:var(--bg-card);
+}
+.verdict h2{
+  font-family:var(--font-display);font-size:21px;margin:0 0 10px;font-weight:600;
+}
+.verdict p{max-width:74ch;color:var(--text-muted);font-size:15px;line-height:1.65;margin:0 0 12px}
+.verdict p:last-child{margin-bottom:0}
+.verdict strong{color:var(--text)}
+.pick{
+  display:inline-block;background:var(--primary);color:#fff;
+  font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  font-weight:700;padding:3px 9px;border-radius:2px;margin-right:9px;
+  vertical-align:2px;
+}
+[data-theme="dark"] .pick{color:#14090a}
+
+/* ---- Vergleichsreihe: alle drei bei 16 px nebeneinander ---- */
+.shootout{
+  display:flex;gap:34px;flex-wrap:wrap;align-items:flex-end;
+  margin-top:20px;padding:20px;border:1px solid var(--border);
+  border-radius:var(--radius);background:var(--bg-muted);
+}
+.shootout .rung-cap b{display:block}
+
+@media (max-width:640px){
+  .mast-in,.wrap{padding-left:16px;padding-right:16px}
+  .mast .sub{display:none}
+  .nav-links{display:none}
+  .ladder{gap:18px}
+}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-in">
+    <h1>Drei Logo-Richtungen</h1>
+    <span class="sub">jazzchords.app · Entwurf</span>
+    <button class="icon-btn" id="themeBtn" aria-label="Switch to dark theme" title="Theme"></button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <p class="lede">
+    Drei Marken, gezeichnet für dieselbe Aufgabe: sie müssen als <strong>Favicon bei 16 px</strong>
+    und als <strong>iOS-App-Icon bei 180 px</strong> funktionieren, in hellem und dunklem Grund,
+    ohne Rasterdatei. Jede Stufe unten ist bei ihrer <strong>tatsächlichen Größe</strong> gerendert —
+    nicht eine große Zeichnung, die man kleinrechnet. Genau dort sterben Marken.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════════
+       A — DAS B-VORZEICHEN, RICHTIG GEZEICHNET
+       Konstruiert aus Flächen statt Strichen: der Stiel ist ein
+       Rechteck mit Verjüngung, die Fahne eine geschlossene Kurve
+       mit echter Punze. Bei 16 px fällt die Punze weg, die Silhouette
+       bleibt. Kein Kasten unter 32 px — der Rahmen frisst das Zeichen.
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="dir">
+    <div class="dir-head">
+      <span class="dir-letter">A</span>
+      <h2 class="dir-title">Das b-Vorzeichen, richtig gezeichnet</h2>
+      <span class="dir-kicker">konstruiert · flächig · 24er-Raster</span>
+    </div>
+    <p class="rationale">
+      Das aktuelle Zeichen ist als Strich gebaut; hier ist es als <em>Fläche</em> konstruiert —
+      ein Stiel mit Gewicht, eine Fahne mit echter Punze, Proportionen aus dem Stich statt aus
+      der Schrift. Jeder Musiker liest es in einer Zehntelsekunde, und es ist unverwechselbar
+      Musik, ohne Klaviertaste oder Notenschlüssel zu bemühen.
+    </p>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-lbl">Groß · Papier</div>
+        <div class="ground on-light">
+          <!-- 240 px: volle Zeichnung mit Kasten und Punze -->
+          <svg width="240" height="240" viewBox="0 0 24 24" role="img" aria-label="Marke A groß auf hellem Grund">
+            <!-- Kopistenkasten: Haarlinie, quadratisch, kein Tile -->
+            <rect x="1.1" y="1.1" width="21.8" height="21.8" fill="none"
+                  stroke="currentColor" stroke-width="1.15" opacity=".85"/>
+            <!-- Stiel: oben schmal, unten voll — wie ein gestochener Schaft -->
+            <path d="M7.4 4.0 L9.5 4.0 L9.5 18.6 L7.4 19.4 Z" fill="currentColor"/>
+            <!-- Fahne: geschlossene Form mit ausgesparter Punze -->
+            <path fill="currentColor" fill-rule="evenodd" d="
+              M9.5 10.4
+              C11.4 8.6 14.2 8.5 15.6 10.0
+              C17.2 11.7 16.3 13.9 13.9 15.6
+              L9.5 18.7 Z
+              M11.1 12.0 L11.1 16.0 L13.2 14.5
+              C14.6 13.5 15.0 12.4 14.3 11.6
+              C13.6 10.8 12.2 11.0 11.1 12.0 Z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-lbl">Groß · Nacht</div>
+        <div class="ground on-dark">
+          <svg width="240" height="240" viewBox="0 0 24 24" role="img" aria-label="Marke A groß auf dunklem Grund">
+            <rect x="1.1" y="1.1" width="21.8" height="21.8" fill="none"
+                  stroke="currentColor" stroke-width="1.15" opacity=".85"/>
+            <path d="M7.4 4.0 L9.5 4.0 L9.5 18.6 L7.4 19.4 Z" fill="currentColor"/>
+            <path fill="currentColor" fill-rule="evenodd" d="
+              M9.5 10.4
+              C11.4 8.6 14.2 8.5 15.6 10.0
+              C17.2 11.7 16.3 13.9 13.9 15.6
+              L9.5 18.7 Z
+              M11.1 12.0 L11.1 16.0 L13.2 14.5
+              C14.6 13.5 15.0 12.4 14.3 11.6
+              C13.6 10.8 12.2 11.0 11.1 12.0 Z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <div class="panel-lbl">Größenleiter · tatsächliche Pixel</div>
+      <div class="ladder">
+
+        <!-- 512 -->
+        <div class="rung">
+          <div class="rung-box">
+            <span class="ios-tile paper" style="width:128px;height:128px">
+              <!-- Anmerkung: 512 wird hier auf 128 px Kachel gezeigt, das SVG selbst
+                   ist aber exportfähig; die kritischen Stufen sind 180/64/32/16. -->
+              <svg width="96" height="96" viewBox="0 0 24 24" role="img" aria-label="Marke A 512 (Kachel verkleinert dargestellt)">
+                <rect x="1.1" y="1.1" width="21.8" height="21.8" fill="none" stroke="currentColor" stroke-width="1.15" opacity=".85"/>
+                <path d="M7.4 4.0 L9.5 4.0 L9.5 18.6 L7.4 19.4 Z" fill="currentColor"/>
+                <path fill="currentColor" fill-rule="evenodd" d="M9.5 10.4 C11.4 8.6 14.2 8.5 15.6 10.0 C17.2 11.7 16.3 13.9 13.9 15.6 L9.5 18.7 Z M11.1 12.0 L11.1 16.0 L13.2 14.5 C14.6 13.5 15.0 12.4 14.3 11.6 C13.6 10.8 12.2 11.0 11.1 12.0 Z"/>
+              </svg>
+            </span>
+          </div>
+          <span class="rung-cap"><b>512</b> · Store</span>
+        </div>
+
+        <!-- 180 — iOS App-Icon, echte Größe -->
+        <div class="rung">
+          <div class="rung-box">
+            <span class="ios-tile paper" style="width:180px;height:180px">
+              <svg width="132" height="132" viewBox="0 0 24 24" role="img" aria-label="Marke A 180 iOS">
+                <rect x="1.1" y="1.1" width="21.8" height="21.8" fill="none" stroke="currentColor" stroke-width="1.15" opacity=".85"/>
+                <path d="M7.4 4.0 L9.5 4.0 L9.5 18.6 L7.4 19.4 Z" fill="currentColor"/>
+                <path fill="currentColor" fill-rule="evenodd" d="M9.5 10.4 C11.4 8.6 14.2 8.5 15.6 10.0 C17.2 11.7 16.3 13.9 13.9 15.6 L9.5 18.7 Z M11.1 12.0 L11.1 16.0 L13.2 14.5 C14.6 13.5 15.0 12.4 14.3 11.6 C13.6 10.8 12.2 11.0 11.1 12.0 Z"/>
+              </svg>
+            </span>
+          </div>
+          <span class="rung-cap"><b>180</b> · iOS</span>
+        </div>
+
+        <!-- 64 -->
+        <div class="rung">
+          <div class="rung-box">
+            <svg width="64" height="64" viewBox="0 0 24 24" role="img" aria-label="Marke A 64">
+              <rect x="1.4" y="1.4" width="21.2" height="21.2" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".9"/>
+              <path d="M7.4 4.4 L9.6 4.4 L9.6 18.4 L7.4 19.2 Z" fill="currentColor"/>
+              <path fill="currentColor" fill-rule="evenodd" d="M9.6 10.4 C11.5 8.6 14.3 8.6 15.7 10.1 C17.3 11.8 16.3 14.0 13.9 15.7 L9.6 18.7 Z M11.4 12.2 L11.4 15.9 L13.3 14.5 C14.6 13.5 15.0 12.5 14.3 11.7 C13.6 10.9 12.4 11.2 11.4 12.2 Z"/>
+            </svg>
+          </div>
+          <span class="rung-cap"><b>64</b></span>
+        </div>
+
+        <!-- 32 — Kasten wird schwerer, Punze noch da -->
+        <div class="rung small">
+          <div class="rung-box">
+            <svg width="32" height="32" viewBox="0 0 24 24" role="img" aria-label="Marke A 32">
+              <rect x="1.5" y="1.5" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9"/>
+              <path d="M7.6 5.0 L9.9 5.0 L9.9 18.0 L7.6 18.8 Z" fill="currentColor"/>
+              <path fill="currentColor" fill-rule="evenodd" d="M9.9 10.7 C11.6 9.0 14.2 9.0 15.5 10.4 C16.9 12.0 16.0 14.0 13.8 15.6 L9.9 18.4 Z M11.9 12.6 L11.9 15.6 L13.4 14.5 C14.5 13.7 14.8 12.8 14.2 12.1 C13.6 11.4 12.7 11.7 11.9 12.6 Z"/>
+            </svg>
+          </div>
+          <span class="rung-cap"><b>32</b></span>
+        </div>
+
+        <!-- 16 — Kasten ENTFÄLLT, Punze ENTFÄLLT. Nur Silhouette. -->
+        <div class="rung small">
+          <div class="rung-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="Marke A 16">
+              <!-- Bei 16 px ist 1 SVG-Einheit = 0,67 px. Rahmen und Punze
+                   liegen beide unter einem Pixel und würden zu Grau verschmieren.
+                   Also: massive Silhouette, auf ganze Pixel gerastert. -->
+              <path d="M6.0 3.0 L9.8 3.0 L9.8 21.0 L6.0 21.0 Z" fill="currentColor"/>
+              <path d="M9.8 10.5 C12.6 8.4 16.5 9.0 17.4 11.4 C18.3 13.9 15.6 16.4 12.0 18.9 L9.8 20.4 Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <span class="rung-cap"><b>16</b> · Favicon</span>
+        </div>
+      </div>
+      <p class="ladder-note">
+        Drei gezeichnete Fassungen, kein Skalieren: <b>≥64</b> mit Kasten und offener Punze,
+        <b>32</b> mit dickerem Rahmen und verkleinerter Punze, <b>16</b> ohne Kasten und ohne
+        Punze — nur die massive Silhouette, auf ganze Pixel gelegt. Der Kasten ist bei 16 px
+        eine 0,7-px-Linie und würde als grauer Schleier erscheinen; er muss weg.
+      </p>
+    </div>
+
+    <div class="navdemo" style="margin-top:18px">
+      <div class="navbar">
+        <a class="brand" href="#">
+          <span class="brand-mark">
+            <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="1.4" y="1.4" width="21.2" height="21.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M7.5 4.6 L9.7 4.6 L9.7 18.3 L7.5 19.1 Z" fill="currentColor"/>
+              <path fill="currentColor" fill-rule="evenodd" d="M9.7 10.5 C11.5 8.8 14.2 8.8 15.6 10.3 C17.1 12.0 16.1 14.0 13.8 15.7 L9.7 18.6 Z M11.6 12.4 L11.6 15.8 L13.3 14.5 C14.5 13.6 14.9 12.6 14.2 11.9 C13.6 11.1 12.5 11.4 11.6 12.4 Z"/>
+            </svg>
+          </span>
+          <span class="brand-word">
+            <span class="brand-name">jazzchords<span class="brand-tld">.app</span></span>
+            <span class="brand-sub">Akkorde auf Zeit</span>
+          </span>
+        </a>
+        <div class="nav-links"><span>Lernen</span><span>Trainieren</span><span>Für Lehrende</span></div>
+        <div class="nav-tail"><span class="chip">Anmelden</span><span class="chip solid">Starten</span></div>
+      </div>
+    </div>
+
+    <div class="weak">
+      <b>Schwächster Punkt</b>
+      Ein b-Vorzeichen ist kein Eigentum. Jede zweite Musik-App benutzt eine Akzidenz, und
+      bei 16 px ohne Kasten kann die Silhouette mit einem kleinen <em>b</em> verwechselt werden —
+      die Marke wird generisch, genau dort, wo sie am häufigsten erscheint.
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       B — DIE UHR ALS MARKE
+       Zwölf Segmente bei großer Größe. Der ehrliche Teil: bei
+       32 und 16 px sind zwölf Segmente physikalisch nicht
+       darstellbar, also reduziert die Marke stufenweise auf
+       vier und schließlich auf einen Ring mit einem Zeiger.
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="dir">
+    <div class="dir-head">
+      <span class="dir-letter">B</span>
+      <h2 class="dir-title">Die Uhr als Marke</h2>
+      <span class="dir-kicker">zwölf Segmente · reduziert nach unten</span>
+    </div>
+    <p class="rationale">
+      Logo und Kern-Diagnose des Produkts sind dieselbe Form: zwölf Tonarten als Ring, jede
+      eingefärbt danach, wie lange die Hände brauchen. Kein anderes Zeichen trägt die Idee
+      so direkt — wer die Marke kennt, kennt schon das Produkt.
+    </p>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-lbl">Groß · Papier</div>
+        <div class="ground on-light">
+          <svg width="240" height="240" viewBox="0 0 24 24" role="img" aria-label="Marke B groß auf hellem Grund">
+            <g id="b-dial-l">
+              <!-- Zwölf Segmente. Gezeichnet als dicke Ringbögen mit Lücke:
+                   stroke-dasharray auf einem Kreis mit Umfang 2πr. r=9 → U=56.55.
+                   Ein Segment = 4.712, davon 3.9 Tinte / 0.812 Luft. -->
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="4"
+                      stroke-dasharray="3.9 0.812" stroke-dashoffset="1.95" opacity=".22"/>
+              <!-- Vier "schnelle" Segmente in Stempelrot, oben beginnend:
+                   sie erzählen, dass das Zifferblatt gefüllt wird. -->
+              <circle cx="12" cy="12" r="9" fill="none" class="mk-primary" stroke="currentColor" stroke-width="4"
+                      pathLength="12" stroke-dasharray="4.62 7.38" transform="rotate(-90 12 12)"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-lbl">Groß · Nacht</div>
+        <div class="ground on-dark">
+          <svg width="240" height="240" viewBox="0 0 24 24" role="img" aria-label="Marke B groß auf dunklem Grund">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="4"
+                    stroke-dasharray="3.9 0.812" stroke-dashoffset="1.95" opacity=".22"/>
+            <circle cx="12" cy="12" r="9" fill="none" class="mk-primary" stroke="currentColor" stroke-width="4"
+                    pathLength="12" stroke-dasharray="4.62 7.38" transform="rotate(-90 12 12)"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <div class="panel-lbl">Größenleiter · tatsächliche Pixel</div>
+      <div class="ladder">
+
+        <div class="rung">
+          <div class="rung-box">
+            <span class="ios-tile paper" style="width:128px;height:128px">
+              <svg width="96" height="96" viewBox="0 0 24 24" role="img" aria-label="Marke B 512">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="3.9 0.812" stroke-dashoffset="1.95" opacity=".22"/>
+                <circle cx="12" cy="12" r="9" fill="none" class="mk-primary" stroke="currentColor" stroke-width="4" pathLength="12" stroke-dasharray="4.62 7.38" transform="rotate(-90 12 12)"/>
+              </svg>
+            </span>
+          </div>
+          <span class="rung-cap"><b>512</b> · zwölf</span>
+        </div>
+
+        <div class="rung">
+          <div class="rung-box">
+            <span class="ios-tile paper" style="width:180px;height:180px">
+              <svg width="132" height="132" viewBox="0 0 24 24" role="img" aria-label="Marke B 180 iOS">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="3.9 0.812" stroke-dashoffset="1.95" opacity=".22"/>
+                <circle cx="12" cy="12" r="9" fill="none" class="mk-primary" stroke="currentColor" stroke-width="4" pathLength="12" stroke-dasharray="4.62 7.38" transform="rotate(-90 12 12)"/>
+              </svg>
+            </span>
+          </div>
+          <span class="rung-cap"><b>180</b> · zwölf</span>
+        </div>
+
+        <!-- 64: zwölf Segmente überleben knapp, Lücke wird vergrößert -->
+        <div class="rung">
+          <div class="rung-box">
+            <svg width="64" height="64" viewBox="0 0 24 24" role="img" aria-label="Marke B 64">
+              <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="4.6"
+                      stroke-dasharray="3.30 1.20" stroke-dashoffset="1.65" opacity=".26"/>
+              <circle cx="12" cy="12" r="8.6" fill="none" class="mk-primary" stroke="currentColor" stroke-width="4.6"
+                      pathLength="12" stroke-dasharray="4.55 7.45" transform="rotate(-90 12 12)"/>
+            </svg>
+          </div>
+          <span class="rung-cap"><b>64</b> · zwölf</span>
+        </div>
+
+        <!-- 32: zwölf sind tot. Vier Quadranten. -->
+        <div class="rung small">
+          <div class="rung-box">
+            <svg width="32" height="32" viewBox="0 0 24 24" role="img" aria-label="Marke B 32">
+              <circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="5.2"
+                      pathLength="12" stroke-dasharray="2.4 0.6" stroke-dashoffset="1.5" opacity=".26"/>
+              <circle cx="12" cy="12" r="8.2" fill="none" class="mk-primary" stroke="currentColor" stroke-width="5.2"
+                      pathLength="12" stroke-dasharray="2.4 9.6" stroke-dashoffset="0" transform="rotate(-90 12 12)"/>
+            </svg>
+          </div>
+          <span class="rung-cap"><b>32</b> · vier</span>
+        </div>
+
+        <!-- 16: nur Ring + eine Lücke oben. Ehrlich: das ist keine Uhr mehr. -->
+        <div class="rung small">
+          <div class="rung-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="Marke B 16">
+              <circle cx="12" cy="12" r="7.6" fill="none" stroke="currentColor" stroke-width="6.2"
+                      pathLength="12" stroke-dasharray="9 3" stroke-dashoffset="1.5" opacity=".85"/>
+            </svg>
+          </div>
+          <span class="rung-cap"><b>16</b> · Ring</span>
+        </div>
+      </div>
+      <p class="ladder-note">
+        Der Ring hat bei 16 px einen Umfang von rund 32 px. Zwölf Segmente hieße
+        <b>2,7 px pro Segment inklusive Lücke</b> — unter der Auflösung des Bildschirms.
+        Deshalb: 64 px trägt noch zwölf, 32 px fällt auf vier Quadranten zurück,
+        16 px ist nur noch ein Ring mit einer Kerbe. Die Reduktion ist gezeichnet,
+        nicht gerechnet — aber sie ist ein <em>Verlust</em>, kein Gewinn.
+      </p>
+    </div>
+
+    <div class="navdemo" style="margin-top:18px">
+      <div class="navbar">
+        <a class="brand" href="#">
+          <span class="brand-mark">
+            <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="4.6"
+                      stroke-dasharray="3.30 1.20" stroke-dashoffset="1.65" opacity=".3"/>
+              <circle cx="12" cy="12" r="8.6" fill="none" stroke="var(--primary)" stroke-width="4.6"
+                      pathLength="12" stroke-dasharray="4.55 7.45" transform="rotate(-90 12 12)"/>
+            </svg>
+          </span>
+          <span class="brand-word">
+            <span class="brand-name">jazzchords<span class="brand-tld">.app</span></span>
+            <span class="brand-sub">Akkorde auf Zeit</span>
+          </span>
+        </a>
+        <div class="nav-links"><span>Lernen</span><span>Trainieren</span><span>Für Lehrende</span></div>
+        <div class="nav-tail"><span class="chip">Anmelden</span><span class="chip solid">Starten</span></div>
+      </div>
+    </div>
+
+    <div class="weak">
+      <b>Schwächster Punkt — und er ist nicht lösbar</b>
+      Bei 16 px bleibt von zwölf Segmenten ein Ring mit einer Kerbe übrig. Das ist sauber
+      gezeichnet und verschmiert nicht zu Grau — aber es ist auch kein Zwölf-Tonarten-Zifferblatt
+      mehr, sondern ein <em>Ladekreis</em>, und davon gibt es Millionen. Die Identität, die diese
+      Richtung stark macht, ist genau die Eigenschaft, die im Favicon verlorengeht.
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       C — GESCHNITTENE LETTER
+       Ein "jc"-Monogramm im Duktus eines geschnittenen Siebdruck-
+       Plakats: hoher Kontrast, fette Fläche, ein Schnitt quer
+       durch die Form. Dazu ein Icon-Companion für App-Gebrauch.
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="dir">
+    <div class="dir-head">
+      <span class="dir-letter">C</span>
+      <h2 class="dir-title">Geschnittene Letter</h2>
+      <span class="dir-kicker">Wortmarke + Monogramm · Siebdruck-Duktus</span>
+    </div>
+    <p class="rationale">
+      Kein Symbol, sondern Schrift mit Haltung: ein geschnittenes <em>jc</em> mit fettem
+      Schaft, hartem Kontrast und einem Schnitt quer durch die Form — der Duktus eines
+      Jazzclub-Plakats, das jemand mit dem Messer aus Karton geschnitten hat. Von den
+      dreien am nächsten am Wort „Jazz".
+    </p>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-lbl">Groß · Papier</div>
+        <div class="ground on-light">
+          <svg width="240" height="240" viewBox="0 0 24 24" role="img" aria-label="Marke C groß auf hellem Grund">
+            <!-- j: fetter Schaft mit geschnittener Fahne unten, Punkt als Quadrat -->
+            <rect x="4.6" y="2.4" width="3.4" height="3.0" fill="currentColor"/>
+            <path d="M4.6 7.4 L8.0 7.4 L8.0 17.4
+                     C8.0 20.2 6.4 21.6 3.6 21.6
+                     L2.4 21.6 L2.4 18.6 L3.4 18.6
+                     C4.2 18.6 4.6 18.1 4.6 17.1 Z" fill="currentColor"/>
+            <!-- c: geschnittener Bogen, hoher Kontrast — dick links, dünn oben/unten,
+                 mit hartem geraden Anschnitt rechts -->
+            <path fill="currentColor" d="
+              M21.4 9.4
+              L21.4 12.6
+              C20.3 11.4 19.0 10.8 17.5 10.8
+              C15.4 10.8 14.1 12.1 14.1 14.0
+              C14.1 15.9 15.4 17.2 17.5 17.2
+              C19.0 17.2 20.3 16.6 21.4 15.4
+              L21.4 18.6
+              C20.1 19.6 18.5 20.1 16.8 20.1
+              C13.0 20.1 10.4 17.6 10.4 14.0
+              C10.4 10.4 13.0 7.9 16.8 7.9
+              C18.5 7.9 20.1 8.4 21.4 9.4 Z"/>
+            <!-- Der Schnitt: eine diagonale Aussparung in Papierfarbe, wie ein
+                 Messerzug durchs Plakat. Liegt über beiden Buchstaben. -->
+            <path d="M0 16.4 L24 12.6 L24 13.7 L0 17.5 Z" fill="var(--cut, #ecefe9)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-lbl">Groß · Nacht</div>
+        <div class="ground on-dark" style="--cut:#0e141d">
+          <svg width="240" height="240" viewBox="0 0 24 24" role="img" aria-label="Marke C groß auf dunklem Grund">
+            <rect x="4.6" y="2.4" width="3.4" height="3.0" fill="currentColor"/>
+            <path d="M4.6 7.4 L8.0 7.4 L8.0 17.4 C8.0 20.2 6.4 21.6 3.6 21.6 L2.4 21.6 L2.4 18.6 L3.4 18.6 C4.2 18.6 4.6 18.1 4.6 17.1 Z" fill="currentColor"/>
+            <path fill="currentColor" d="M21.4 9.4 L21.4 12.6 C20.3 11.4 19.0 10.8 17.5 10.8 C15.4 10.8 14.1 12.1 14.1 14.0 C14.1 15.9 15.4 17.2 17.5 17.2 C19.0 17.2 20.3 16.6 21.4 15.4 L21.4 18.6 C20.1 19.6 18.5 20.1 16.8 20.1 C13.0 20.1 10.4 17.6 10.4 14.0 C10.4 10.4 13.0 7.9 16.8 7.9 C18.5 7.9 20.1 8.4 21.4 9.4 Z"/>
+            <path d="M0 16.4 L24 12.6 L24 13.7 L0 17.5 Z" fill="var(--cut,#0e141d)"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Die Wortmarke selbst, geschnitten gesetzt -->
+    <div class="panel" style="margin-top:18px">
+      <div class="panel-lbl">Wortmarke · der eigentliche Auftritt</div>
+      <div class="ground on-light" style="min-height:170px">
+        <svg width="520" height="110" viewBox="0 0 260 55" role="img" aria-label="Wortmarke jazzchords.app">
+          <text x="0" y="38" font-family="'Source Serif 4',Georgia,serif" font-weight="700"
+                font-size="40" letter-spacing="-1.6" fill="currentColor">jazzchords<tspan
+                fill="currentColor" opacity=".45">.app</tspan></text>
+          <!-- derselbe Messerzug, quer durchs Wort -->
+          <path d="M-4 33.5 L264 28.5 L264 30.6 L-4 35.6 Z" fill="#ecefe9"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <div class="panel-lbl">Companion-Icon · Größenleiter · tatsächliche Pixel</div>
+      <div class="ladder">
+
+        <div class="rung">
+          <div class="rung-box">
+            <span class="ios-tile paper" style="width:128px;height:128px;--cut:#ecefe9">
+              <!-- Für App-Gebrauch: nur das j, massiv, mit Schnitt -->
+              <svg width="96" height="96" viewBox="0 0 24 24" role="img" aria-label="Marke C 512">
+                <rect x="8.4" y="3.2" width="6.4" height="5.4" fill="currentColor"/>
+                <path d="M8.4 10.6 L14.8 10.6 L14.8 17.0 C14.8 20.4 12.4 22.2 8.8 22.2 L5.6 22.2 L5.6 17.4 L8.0 17.4 C8.0 17.4 8.4 17.3 8.4 16.4 Z" fill="currentColor"/>
+                <path d="M2 17.2 L22 14.0 L22 15.9 L2 19.1 Z" fill="var(--cut,#ecefe9)"/>
+              </svg>
+            </span>
+          </div>
+          <span class="rung-cap"><b>512</b> · Store</span>
+        </div>
+
+        <div class="rung">
+          <div class="rung-box">
+            <span class="ios-tile paper" style="width:180px;height:180px;--cut:#ecefe9">
+              <svg width="132" height="132" viewBox="0 0 24 24" role="img" aria-label="Marke C 180 iOS">
+                <rect x="8.4" y="3.2" width="6.4" height="5.4" fill="currentColor"/>
+                <path d="M8.4 10.6 L14.8 10.6 L14.8 17.0 C14.8 20.4 12.4 22.2 8.8 22.2 L5.6 22.2 L5.6 17.4 L8.0 17.4 C8.0 17.4 8.4 17.3 8.4 16.4 Z" fill="currentColor"/>
+                <path d="M2 17.2 L22 14.0 L22 15.9 L2 19.1 Z" fill="var(--cut,#ecefe9)"/>
+              </svg>
+            </span>
+          </div>
+          <span class="rung-cap"><b>180</b> · iOS</span>
+        </div>
+
+        <div class="rung">
+          <div class="rung-box" style="--cut:var(--bg-card)">
+            <svg width="64" height="64" viewBox="0 0 24 24" role="img" aria-label="Marke C 64">
+              <rect x="8.4" y="3.4" width="6.4" height="5.2" fill="currentColor"/>
+              <path d="M8.4 10.8 L14.8 10.8 L14.8 17.0 C14.8 20.4 12.4 22.2 8.8 22.2 L5.8 22.2 L5.8 17.6 L8.0 17.6 C8.0 17.6 8.4 17.4 8.4 16.5 Z" fill="currentColor"/>
+              <path d="M2 17.2 L22 14.0 L22 16.1 L2 19.3 Z" fill="var(--cut,var(--bg-card))"/>
+            </svg>
+          </div>
+          <span class="rung-cap"><b>64</b></span>
+        </div>
+
+        <!-- 32: Schnitt wird auf 1 px gelegt, Punkt bleibt getrennt -->
+        <div class="rung small">
+          <div class="rung-box" style="--cut:var(--bg-card)">
+            <svg width="32" height="32" viewBox="0 0 24 24" role="img" aria-label="Marke C 32">
+              <rect x="8.2" y="3.0" width="7.2" height="5.6" fill="currentColor"/>
+              <path d="M8.2 11.0 L15.4 11.0 L15.4 16.8 C15.4 20.6 12.6 22.6 8.6 22.6 L5.2 22.6 L5.2 17.6 L8.0 17.6 C8.0 17.6 8.2 17.3 8.2 16.4 Z" fill="currentColor"/>
+              <path d="M2 17.4 L22 14.6 L22 16.4 L2 19.2 Z" fill="var(--cut,var(--bg-card))"/>
+            </svg>
+          </div>
+          <span class="rung-cap"><b>32</b></span>
+        </div>
+
+        <!-- 16: Schnitt ENTFÄLLT, Punkt verschmilzt nicht — Abstand aufgezogen -->
+        <div class="rung small">
+          <div class="rung-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="Marke C 16">
+              <!-- Punkt und Schaft brauchen bei 16 px mindestens 1 ganzes Pixel
+                   Luft (1.5 Einheiten), sonst laufen sie zu einem Klotz zusammen.
+                   Der Schnitt entfällt: er wäre 0,7 px breit. -->
+              <rect x="7.5" y="2.0" width="9" height="6" fill="currentColor"/>
+              <path d="M7.5 11.0 L16.5 11.0 L16.5 16.5 C16.5 20.6 13.5 22.5 9.0 22.5 L4.5 22.5 L4.5 17.0 L7.5 17.0 Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <span class="rung-cap"><b>16</b> · Favicon</span>
+        </div>
+      </div>
+      <p class="ladder-note">
+        Der Messerzug ist bei 32 px noch 1,3 px breit und trägt; bei 16 px wäre er 0,7 px
+        und würde als grauer Strich verschmieren — er entfällt, und der Abstand zwischen
+        Punkt und Schaft wird auf ein volles Pixel aufgezogen. Übrig bleibt ein kompaktes,
+        fettes <em>j</em>, das seine Silhouette behält.
+      </p>
+    </div>
+
+    <div class="navdemo" style="margin-top:18px">
+      <div class="navbar">
+        <a class="brand" href="#">
+          <span class="brand-mark" style="--cut:var(--bg-card)">
+            <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="8.4" y="3.4" width="6.6" height="5.2" fill="currentColor"/>
+              <path d="M8.4 10.8 L15.0 10.8 L15.0 17.0 C15.0 20.4 12.5 22.2 8.8 22.2 L5.6 22.2 L5.6 17.6 L8.0 17.6 C8.0 17.6 8.4 17.4 8.4 16.5 Z" fill="currentColor"/>
+              <path d="M2 17.2 L22 14.0 L22 16.1 L2 19.3 Z" fill="var(--cut,var(--bg-card))"/>
+            </svg>
+          </span>
+          <span class="brand-word">
+            <span class="brand-name">jazzchords<span class="brand-tld">.app</span></span>
+            <span class="brand-sub">Akkorde auf Zeit</span>
+          </span>
+        </a>
+        <div class="nav-links"><span>Lernen</span><span>Trainieren</span><span>Für Lehrende</span></div>
+        <div class="nav-tail"><span class="chip">Anmelden</span><span class="chip solid">Starten</span></div>
+      </div>
+    </div>
+
+    <div class="weak">
+      <b>Schwächster Punkt</b>
+      Der Messerzug — das Einzige, was diese Marke wirklich unverwechselbar macht — ist ein
+      Negativ-Schnitt und muss die Hintergrundfarbe kennen. Auf Papier und Nacht ist das
+      gelöst, aber über einem Foto, einem farbigen Store-Banner oder einem getönten iOS-Icon
+      bricht er. Und ohne Schnitt ist es nur ein fettes <em>j</em>.
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       DIREKTVERGLEICH BEI 16 PX
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="dir">
+    <div class="dir-head">
+      <span class="dir-letter">·</span>
+      <h2 class="dir-title">Alle drei bei 16 px, nebeneinander</h2>
+      <span class="dir-kicker">der eigentliche Test</span>
+    </div>
+    <p class="rationale">
+      So sieht der Tab aus. Kein Zoom, keine Erklärung — nur die Silhouette.
+    </p>
+    <div class="shootout">
+      <div class="rung small">
+        <div class="rung-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="A bei 16">
+            <path d="M6.0 3.0 L9.8 3.0 L9.8 21.0 L6.0 21.0 Z" fill="currentColor"/>
+            <path d="M9.8 10.5 C12.6 8.4 16.5 9.0 17.4 11.4 C18.3 13.9 15.6 16.4 12.0 18.9 L9.8 20.4 Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="rung-cap"><b>A</b> b-Zeichen</span>
+      </div>
+      <div class="rung small">
+        <div class="rung-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="B bei 16">
+            <circle cx="12" cy="12" r="7.6" fill="none" stroke="currentColor" stroke-width="6.2"
+                    pathLength="12" stroke-dasharray="9 3" stroke-dashoffset="1.5" opacity=".85"/>
+          </svg>
+        </div>
+        <span class="rung-cap"><b>B</b> Uhr</span>
+      </div>
+      <div class="rung small">
+        <div class="rung-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="C bei 16">
+            <rect x="7.5" y="2.0" width="9" height="6" fill="currentColor"/>
+            <path d="M7.5 11.0 L16.5 11.0 L16.5 16.5 C16.5 20.6 13.5 22.5 9.0 22.5 L4.5 22.5 L4.5 17.0 L7.5 17.0 Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="rung-cap"><b>C</b> j-Monogramm</span>
+      </div>
+      <!-- Kontrolle: das aktuelle Zeichen, damit man den Fortschritt sieht -->
+      <div class="rung small">
+        <div class="rung-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" role="img" aria-label="Aktuelles Zeichen bei 16">
+            <rect x="1" y="1" width="22" height="22" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M9 4.5 V18" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M9 11.2 C11.6 9 15 10.1 15 12.4 C15 14.6 12.4 16.2 9 18" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+        </div>
+        <span class="rung-cap">heute · Kontrolle</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       EMPFEHLUNG
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="verdict">
+    <h2><span class="pick">Empfehlung</span>A — mit einem Zusatz</h2>
+    <p>
+      <strong>A gewinnt den Test, den die Marke jeden Tag bestehen muss.</strong> Sie ist bei
+      16 px die einzige der drei, die noch dasselbe sagt wie bei 240 px: eine Akzidenz, eine
+      Silhouette, ein Gedanke. Dass ein b-Vorzeichen nicht exklusiv ist, stimmt — aber Exklusivität
+      entsteht hier ohnehin nicht aus dem Symbol, sondern aus dem Kasten, der Farbe und dem
+      Wortbild, in dem es sitzt.
+    </p>
+    <p>
+      <strong>B ist die beste Idee und die schwächste Marke.</strong> Als Produkt-Diagnose ist die
+      Uhr unschlagbar; als 16-px-Favicon ist sie ein Ladekreis. Ich habe die Reduktion so weit
+      getrieben, wie es ehrlich geht — zwölf bis 64 px, vier bei 32, ein Ring bei 16 — und
+      genau da bricht sie: sauber, aber austauschbar. Die Uhr gehört auf die Startseite und
+      ins Ergebnis-Bild, nicht in den Tab.
+    </p>
+    <p>
+      <strong>C hat die meiste Persönlichkeit und die größte Abhängigkeit.</strong> Der Schnitt
+      trägt die ganze Marke, und er ist ein Negativ — er funktioniert nur, solange der Hintergrund
+      bekannt ist. Für Plakat, Startseite und Merch ist das die stärkste der drei; als App-Icon
+      unter iOS 18 (getönt, dunkel, hell) ist es die riskanteste.
+    </p>
+    <p>
+      <strong>Der Zusatz:</strong> A als Marke nehmen, C als <em>Wortmarke</em> danebenstellen —
+      das geschnittene <em>jazzchords.app</em> ist unabhängig vom Symbol und macht den Auftritt
+      sofort jazziger. Die Uhr bleibt, was sie ist: die Grafik, die das Produkt erklärt.
+      Drei Rollen, kein Konflikt.
+    </p>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('themeBtn');
+  var sun = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+  var moon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>';
+  function systemDark() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function isDark() {
+    var t = root.getAttribute('data-theme');
+    if (t === 'dark') return true;
+    if (t === 'light') return false;
+    return systemDark();
+  }
+  function paint() {
+    var d = isDark();
+    btn.innerHTML = d ? sun : moon;
+    btn.setAttribute('aria-label', d ? 'Switch to light theme' : 'Switch to dark theme');
+  }
+  btn.addEventListener('click', function () {
+    root.setAttribute('data-theme', isDark() ? 'light' : 'dark');
+    paint();
+  });
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onChange = function () { if (!root.getAttribute('data-theme')) paint(); };
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  }
+  paint();
+})();
+</script>
+</body>
+</html>

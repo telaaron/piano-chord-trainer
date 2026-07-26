@@ -498,23 +498,53 @@
 	.btn:hover { transform: translateY(-1px); }
 	.btn:active { transform: none; }
 
+	/* The one action that matters. Amber is the system's "live" ink and a
+	   start button is exactly that — it also separates the invitation to play
+	   from stamp red, which is the narrative voice everywhere else on the
+	   page. Bigger and heavier than its neighbours on purpose: three buttons
+	   of equal weight is the same as none. */
 	.btn-stamp {
-		background: var(--primary);
-		border-color: var(--primary);
-		color: var(--primary-text);
+		/* Not var(--accent-amber): that token darkens to ochre on the light
+		   theme so amber TEXT can hold 4.5:1. This is a filled button with
+		   near-black on top, so it wants the bright amber in BOTH themes —
+		   the invitation to press should not change character with the
+		   theme. Measured 9.65:1 either way. */
+		background: #f5a623;
+		border-color: #f5a623;
+		color: #14090a;
+		min-height: 3.1rem;
+		padding: 0 1.9rem;
+		font-size: 1.02rem;
+		font-weight: 700;
 	}
 	.btn-stamp:hover {
-		background: var(--primary-hover);
-		border-color: var(--primary-hover);
+		background: #ffb840;
+		border-color: #ffb840;
 	}
+	/* On diazo paper the amber fill only separates from the ground at 1.75:1,
+	   so the button's SHAPE goes soft even though its label is at 9.65:1.
+	   An ink edge gives it back its cut, the way a printed block sits on
+	   paper. Dark ground needs none — there it separates at 9.12:1. */
+	:global([data-theme='light']) .btn-stamp {
+		border-color: #14090a;
+	}
+	/* Secondary actions step back to quiet text with a rule — present for
+	   anyone looking for them, never competing with the start button. */
 	.btn-ghost {
 		background: transparent;
-		border-color: var(--border);
-		color: var(--text);
+		border-color: transparent;
+		color: var(--text-muted);
+		font-weight: 500;
+		padding: 0 0.85rem;
+		text-underline-offset: 4px;
+		text-decoration: underline;
+		text-decoration-color: var(--border-hover);
+		text-decoration-thickness: 1px;
 	}
 	.btn-ghost:hover {
-		border-color: var(--text);
-		background: var(--bg-card);
+		color: var(--text);
+		text-decoration-color: var(--accent-amber);
+		background: transparent;
 	}
 
 	/* ── Hero ─────────────────────────────────────────────────── */

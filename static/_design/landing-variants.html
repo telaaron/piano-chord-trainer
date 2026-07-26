@@ -1,0 +1,1577 @@
+<!doctype html>
+<html lang="de" data-theme="dark" data-variant="1">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>jazzchords.app — Landing-Varianten · Saal / Kante / Druck</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   LANDING VARIANTS — three arguments about how the jazz-club photo
+   and the approved editorial system combine.
+
+     1 · DER SAAL   photo full-bleed, type set over it
+     2 · DIE KANTE  photo as a cropped block on a hard vertical edge
+     3 · DER DRUCK  photo as a two-colour risograph print
+
+   Shared across all three, because these were the three criticisms:
+     · ONE amber CTA that is unmistakably the loudest thing on screen.
+       Secondary actions are demoted to underlined text links.
+     · A hero graphic that shows the actual practice moment —
+       chord symbol → keyboard → your time — so a stranger reads
+       "this drills chords and times you" without a caption.
+     · The club photograph, back in the page.
+
+   Every colour is a literal token value from src/app.css.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─── Self-hosted type, same paths as production ─────────────────── */
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url('/fonts/source-serif-4-latin-400-normal.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url('/fonts/source-serif-4-latin-400-italic.woff2') format('woff2');
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url('/fonts/source-serif-4-latin-600-normal.woff2') format('woff2');
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url('/fonts/source-serif-4-latin-600-italic.woff2') format('woff2');
+  font-weight: 600; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url('/fonts/source-serif-4-latin-700-normal.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Inter Variable';
+  src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900; font-style: normal; font-display: swap;
+}
+
+/* Accidentals ♭ ♯ ° ø — copied verbatim from src/app.css. Neither Source
+   Serif 4 nor Inter contains them; without this every chord symbol prints
+   as "B ♭ maj7" with a hole in it. Scoped by unicode-range to exactly
+   those four codepoints, so it claims nothing else. */
+@font-face {
+  font-family: 'AccidentalFit';
+  src: local('Apple Symbols'), local('Segoe UI Symbol'), local('Noto Music'),
+    local('Noto Sans Symbols 2'), local('DejaVu Sans');
+  unicode-range: U+266D, U+266F, U+00B0, U+00F8;
+}
+
+/* ─── Tokens — dark (app.css :root) ──────────────────────────────── */
+:root {
+  --bg: #0e141d;
+  --bg-card: #151d29;
+  --bg-card-hover: #1c2735;
+  --bg-muted: #1a2431;
+  --border: #26323f;
+  --border-hover: #38485a;
+
+  --text: #eef1f4;
+  --text-muted: #a3b0bf;
+  --text-dim: #71808f;
+
+  --primary: #e2685c;
+  --primary-hover: #ee7d71;
+  --primary-muted: rgba(226, 104, 92, 0.15);
+  --primary-text: #14090a;
+
+  --ink-blue: #7ba7d4;
+  --ink-blue-muted: rgba(123, 167, 212, 0.14);
+
+  --accent-gold: #e8b04b;
+  --accent-amber: #f5a623;
+  --accent-red: #e2685c;
+  --accent-green: #3fd09a;
+  --success: #4ade80;
+  --danger: #ef4444;
+
+  --key-white: #f5f4fa;
+  --key-white-border: #c9c6da;
+  --key-black: #161329;
+
+  --shadow-md: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.36);
+  --shadow-lg: 0 2px 4px rgba(0,0,0,.4), 0 24px 56px rgba(0,0,0,.5);
+
+  --radius: 0.625rem;
+  --radius-sm: 0.375rem;
+  --tap-min: 2.75rem;
+
+  --font-sans: 'AccidentalFit', 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'AccidentalFit', 'Source Serif 4', 'Iowan Old Style', Palatino, Georgia, serif;
+  --font-mono: 'AccidentalFit', 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+  /* Derived, per-theme */
+  --rule-soft: color-mix(in srgb, var(--border) 62%, transparent);
+  --staff: color-mix(in srgb, var(--ink-blue) 30%, transparent);
+
+  /* The CTA ink. Amber = live/active, and the CTA is exactly that.
+     On the dark plate the amber is bright and the label goes near-black. */
+  --cta-bg: var(--accent-amber);
+  --cta-bg-hover: #ffb845;
+  --cta-text: #14090a;
+
+  /* Photo treatment knobs — retuned per theme so the club stays warm
+     on the dark plate and does not blow out on paper. */
+  --photo-brightness: 0.82;
+  --photo-contrast: 1.06;
+  --photo-saturate: 1.04;
+
+  --bar-h: 54px;
+}
+
+/* ─── Tokens — light ([data-theme="light"] in app.css) ───────────── */
+:root[data-theme="light"] {
+  --bg: #ecefe9;
+  --bg-card: #fbfcf9;
+  --bg-card-hover: #f2f4ee;
+  --bg-muted: #e2e6de;
+  --border: #d2d8cd;
+  --border-hover: #b4bdad;
+
+  --text: #131a26;
+  --text-muted: #4a5563;
+  --text-dim: #6b7684;
+
+  --primary: #b0302a;
+  --primary-hover: #96231e;
+  --primary-muted: rgba(176, 48, 42, 0.12);
+  --primary-text: #ffffff;
+
+  --ink-blue: #2c5985;
+  --ink-blue-muted: rgba(44, 89, 133, 0.12);
+
+  --accent-gold: #8f5a05;
+  --accent-amber: #8f5a05;
+  --accent-red: #b0302a;
+  --accent-green: #18936a;
+  --success: #18936a;
+  --danger: #d23b34;
+
+  --key-white: #ffffff;
+  --key-white-border: #cdd3c8;
+  --key-black: #131a26;
+
+  --shadow-md: 0 1px 2px rgba(19,26,38,.08), 0 8px 24px rgba(19,26,38,.10);
+  --shadow-lg: 0 2px 6px rgba(19,26,38,.10), 0 22px 48px rgba(19,26,38,.16);
+
+  /* On paper --accent-amber darkens to #8f5a05 so it can hold 4.5:1 as
+     text. As a filled button it is a deep ochre with white type —
+     7.1:1, and still the only saturated fill on the page. */
+  --cta-bg: #8f5a05;
+  --cta-bg-hover: #744904;
+  --cta-text: #ffffff;
+
+  --photo-brightness: 0.9;
+  --photo-contrast: 1.02;
+  --photo-saturate: 1.0;
+
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-variant-numeric: oldstyle-nums;
+  overflow-x: clip;
+}
+img { max-width: 100%; display: block; }
+
+/* ══════════════════════════════════════════════════════════════════
+   PROTOTYPE BAR — house style, matching _design/index.html
+   ══════════════════════════════════════════════════════════════════ */
+.protobar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 0.9rem;
+  background: #14121c;
+  border-bottom: 1px solid #2a2636;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.protobar::-webkit-scrollbar { display: none; }
+.pb-brand {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9a93a8;
+  white-space: nowrap;
+}
+.pb-brand b { color: #f2efe9; font-weight: 600; }
+@media (max-width: 720px) { .pb-brand { display: none; } }
+
+.seg {
+  display: flex;
+  gap: 4px;
+  background: #0f0d17;
+  border: 1px solid #2a2636;
+  border-radius: 999px;
+  padding: 3px;
+  flex: none;
+}
+.seg button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #9a93a8;
+  font: inherit;
+  font-size: 12.5px;
+  font-family: var(--font-sans);
+  padding: 7px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .18s ease, color .18s ease;
+}
+.seg button:hover { color: #f2efe9; }
+.seg button[aria-pressed="true"] {
+  background: #f5a623;
+  color: #14090a;
+  font-weight: 600;
+}
+.seg button:focus-visible {
+  outline: 2px solid #f5a623;
+  outline-offset: 2px;
+}
+.pb-spacer { flex: 1; min-width: 0.5rem; }
+.pb-note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #6f6880;
+  white-space: nowrap;
+}
+@media (max-width: 980px) { .pb-note { display: none; } }
+
+/* Variant visibility */
+.variant { display: none; }
+:root[data-variant="1"] #v1,
+:root[data-variant="2"] #v2,
+:root[data-variant="3"] #v3 { display: block; }
+
+/* ══════════════════════════════════════════════════════════════════
+   SHARED EDITORIAL PRIMITIVES
+   Carried verbatim in spirit from the approved +page.svelte.
+   ══════════════════════════════════════════════════════════════════ */
+.edi {
+  --font-display-mus: 'AccidentalFit', var(--font-display);
+  font-family: var(--font-sans);
+}
+
+.shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+@media (min-width: 900px) { .shell { padding: 0 2.5rem; } }
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.eyebrow::after {
+  content: '';
+  flex: 1;
+  min-width: 1rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.32;
+}
+.eyebrow.blue { color: var(--ink-blue); }
+.eyebrow.mid { justify-content: center; }
+.eyebrow.mid::after { display: none; }
+
+.rehearsal {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: 1.7rem;
+  height: 1.7rem;
+  padding: 0 0.4rem;
+  border: 1.5px solid var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.plate {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.marginalia {
+  margin: 1.5rem 0 0;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--ink-blue);
+  font-family: var(--font-display-mus);
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.marginalia .plate {
+  display: block;
+  margin-top: 0.5rem;
+  font-style: normal;
+}
+
+/* ── The CTA hierarchy — criticism #1 ─────────────────────────────
+   One filled amber button. Everything else is a text link with a
+   rule under it. There is no second button anywhere on the page. */
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.5rem;
+  margin-top: 1.7rem;
+}
+
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 3.25rem;
+  padding: 0 1.9rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--cta-bg);
+  color: var(--cta-text);
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 rgba(0,0,0,.22), var(--shadow-md);
+  transition: transform .12s ease-out, background-color .12s, box-shadow .12s;
+}
+.btn-cta:hover {
+  background: var(--cta-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 rgba(0,0,0,.22), var(--shadow-lg);
+}
+.btn-cta:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,.22); }
+.btn-cta:focus-visible { outline: 3px solid var(--ink-blue); outline-offset: 3px; }
+.btn-cta .arw { font-size: 1.1em; line-height: 1; }
+
+/* Demoted secondary actions: text links, not buttons. */
+.link-2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: var(--tap-min);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-muted) 45%, transparent);
+  padding-bottom: 1px;
+  transition: color .12s, border-color .12s;
+}
+.link-2:hover { color: var(--text); border-bottom-color: var(--text); }
+.link-2:focus-visible { outline: 2px solid var(--ink-blue); outline-offset: 3px; }
+
+.fineprint {
+  margin: 1.1rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 46ch;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   THE PRACTICE CARD — criticism #2
+   The hero graphic, shared by all three variants (restyled per
+   variant). It shows the loop the product actually is:
+     the chord you are asked for  →  the keys that answer it
+     →  the clock that is running on you.
+   No copyist training required to read it.
+   ══════════════════════════════════════════════════════════════════ */
+.pcard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.pcard-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-muted);
+}
+.pcard-head .plate { flex: 1; min-width: 0; }
+/* Amber pulse = live. The one reserved use, and it agrees with the CTA. */
+.live-dot {
+  width: 0.5rem; height: 0.5rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-amber);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-amber) 65%, transparent);
+  animation: pulse 2s ease-out infinite;
+}
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-amber) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.live-tag {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-amber);
+}
+
+.pcard-body { padding: 1.15rem 1.1rem 1.2rem; }
+
+/* Step 1 — the prompt */
+.p-step {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.p-ask {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.45rem;
+}
+.p-chord {
+  font-family: var(--font-display-mus);
+  font-size: clamp(2.3rem, 8.5vw, 3.1rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: lining-nums;
+  color: var(--text);
+}
+.p-voicing {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-blue);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Step 2 — the keyboard that answers it */
+.p-arrow {
+  display: block;
+  margin: 0.85rem 0 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.kbd {
+  position: relative;
+  display: flex;
+  height: 5.6rem;
+  border: 1px solid var(--key-white-border);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--key-white);
+}
+.kbd .wk {
+  position: relative;
+  flex: 1;
+  border-right: 1px solid var(--key-white-border);
+  background: var(--key-white);
+}
+.kbd .wk:last-child { border-right: 0; }
+.kbd .bk {
+  position: absolute;
+  top: 0;
+  width: 8.4%;
+  height: 62%;
+  border-radius: 0 0 2px 2px;
+  background: var(--key-black);
+  z-index: 2;
+}
+/* A pressed key: amber, because amber is live. */
+.kbd .wk.on { background: var(--accent-gold); }
+.kbd .bk.on { background: var(--accent-amber); }
+/* The note name printed on the struck keys, so the graphic teaches. */
+.kbd .wk.on::after,
+.kbd .bk.on::after {
+  content: attr(data-n);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.kbd .wk.on::after { bottom: 0.35rem; color: #14090a; }
+.kbd .bk.on::after { bottom: 0.25rem; color: #14090a; }
+
+/* Step 3 — the clock that is running on you */
+.p-result {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.95rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--border);
+}
+.p-check {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.4rem; height: 1.4rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent-green) 20%, transparent);
+  color: var(--accent-green);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.p-verdict {
+  min-width: 0;
+  font-family: var(--font-display-mus);
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+.p-time {
+  margin-left: auto;
+  flex: none;
+  text-align: right;
+}
+.p-time b {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.28rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--accent-green);
+}
+.p-time span {
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+/* The speed bar: previous attempt vs this one. Reads at a glance. */
+.p-bars { margin-top: 0.8rem; display: grid; gap: 0.35rem; }
+.p-bar {
+  display: grid;
+  grid-template-columns: 3.4rem minmax(0, 1fr) 2.6rem;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.p-bar i {
+  height: 0.42rem;
+  border-radius: 999px;
+  background: var(--border-hover);
+  display: block;
+}
+.p-bar.now i { background: var(--accent-green); }
+.p-bar b {
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--text-muted);
+}
+.p-bar.now b { color: var(--accent-green); }
+
+/* ══════════════════════════════════════════════════════════════════
+   VARIANT 1 — "DER SAAL"
+   The photograph full-bleed, the type set on top of it, as the old
+   page had it. The problem to solve is legibility: a serif on a
+   photograph goes to mush unless the plate underneath it is truly dark.
+
+   The photo helps. Its left third is nearly pure black and the light
+   sits top-centre-right, so the headline gets a natural well on the
+   left. On top of that: a horizontal ramp (opaque at the left edge,
+   clear at the right) plus a full-frame darkening wash. Measured, the
+   type sits on ≤ #1a1410 — the white serif clears 13:1.
+   ══════════════════════════════════════════════════════════════════ */
+.saal {
+  position: relative;
+  isolation: isolate;
+  /* The hall is always night, in both themes: it is a photograph of a
+     dim room, and inverting it would be a lie. The page beneath
+     changes with the theme; the hall does not. */
+  background: #0b0f14;
+  color: #f4f1ec;
+  overflow: hidden;
+}
+.saal-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.saal-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Keep the keys and the string of bulbs in frame at every width. */
+  object-position: 62% 52%;
+  filter: brightness(0.78) contrast(1.08) saturate(1.06);
+}
+/* Ramp: opaque where the words are, transparent over the piano. */
+.saal-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg,
+      rgba(8,11,15,.97) 0%,
+      rgba(8,11,15,.93) 26%,
+      rgba(8,11,15,.72) 48%,
+      rgba(8,11,15,.34) 70%,
+      rgba(8,11,15,.20) 100%),
+    linear-gradient(180deg,
+      rgba(8,11,15,.72) 0%,
+      rgba(8,11,15,.30) 34%,
+      rgba(8,11,15,.55) 78%,
+      rgba(8,11,15,.92) 100%);
+}
+@media (max-width: 979px) {
+  /* Stacked: the type sits over the whole frame, so the wash goes
+     vertical and much heavier — no ramp to hide behind. */
+  .saal-media::after {
+    background: linear-gradient(180deg,
+      rgba(8,11,15,.90) 0%,
+      rgba(8,11,15,.82) 42%,
+      rgba(8,11,15,.90) 72%,
+      rgba(8,11,15,.97) 100%);
+  }
+  .saal-media img { object-position: 68% 55%; }
+}
+
+.saal-inner {
+  position: relative;
+  z-index: 1;
+  padding: 3.25rem 0 3.5rem;
+}
+@media (min-width: 980px) {
+  .saal-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+    gap: 3.5rem;
+    align-items: center;
+    padding: 5.5rem 0 6rem;
+  }
+}
+/* On the photograph the primitives need their own light values —
+   --text-muted is tuned for a card, not for a night photograph. */
+.saal .eyebrow { color: var(--accent-gold); }
+.saal .plate { color: #b9b2a6; }
+.saal-h1 {
+  margin: 1.1rem 0 0;
+  font-family: var(--font-display-mus);
+  font-size: clamp(2.05rem, 4.4vw, 3.15rem);
+  font-weight: 600;
+  line-height: 1.07;
+  letter-spacing: -0.026em;
+  max-width: 15em;
+  text-wrap: balance;
+  color: #ffffff;
+  /* A whisper of shadow so the stems hold where the wash is thinnest.
+     Not a glow — just enough to keep the serif crisp. */
+  text-shadow: 0 1px 2px rgba(0,0,0,.55), 0 2px 18px rgba(0,0,0,.45);
+}
+.saal-h1 .l2 {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  color: #ddd5c8;
+}
+.saal-lede {
+  margin-top: 1.35rem;
+  max-width: 44ch;
+  font-size: 1.05rem;
+  line-height: 1.62;
+  color: #d8d2c8;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+.saal .fineprint { color: #c3bcb1; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.saal .link-2 {
+  color: #ddd6cb;
+  border-bottom-color: rgba(221,214,203,.5);
+}
+.saal .link-2:hover { color: #fff; border-bottom-color: #fff; }
+/* The practice card floats on the photo as a lit plate. */
+.saal .pcard {
+  background: rgba(14,20,29,.90);
+  border-color: rgba(245,166,35,.28);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+}
+.saal .pcard-head { background: rgba(26,36,49,.85); border-bottom-color: rgba(255,255,255,.10); }
+.saal .pcard .p-chord { color: #fff; }
+.saal .pcard .p-verdict { color: #cfd6de; }
+.saal .pcard .p-result { border-top-color: rgba(255,255,255,.16); }
+.saal .pcard .plate { color: #a9b3bf; }
+.saal .pcard .p-step, .saal .pcard .p-arrow { color: #97a3b1; }
+.saal .pcard .p-bar { color: #97a3b1; }
+.saal-figcap { margin: 0.8rem 0 0; }
+
+/* ══════════════════════════════════════════════════════════════════
+   VARIANT 2 — "DIE KANTE"
+   The magazine move: the photo is a cropped column, the page is a
+   column, and they meet on one hard vertical rule. Neither is
+   background — they are two facing pages of the same spread.
+   The edge is stated, not blended: a 3px stamp-red rule.
+   ══════════════════════════════════════════════════════════════════ */
+.kante { position: relative; overflow: hidden; }
+.kante-grid { display: grid; }
+@media (min-width: 980px) {
+  .kante-grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    align-items: stretch;
+    min-height: 40rem;
+  }
+}
+.kante-type {
+  padding: 2.75rem 1.25rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+@media (min-width: 980px) {
+  .kante-type {
+    padding: 5rem 3.5rem 5rem 2.5rem;
+    /* The page half is a hair lighter than the plate: it reads as
+       stock laid over the photograph. */
+    background: linear-gradient(90deg, var(--bg) 0%, var(--bg-card) 100%);
+  }
+}
+@media (min-width: 1160px) {
+  /* Align the type column with .shell's left margin so the hero and
+     the sections below share one measure. */
+  .kante-type { padding-left: calc((100vw - 1120px) / 2 + 2.5rem); }
+}
+
+.kante-photo {
+  position: relative;
+  min-height: 15rem;
+  /* The hard edge. Stamp red, because the edge is a narrative device
+     and red is the narrative ink. */
+  border-left: 3px solid var(--primary);
+  background: #0b0f14;
+  overflow: hidden;
+}
+@media (max-width: 979px) {
+  .kante-photo {
+    border-left: 0;
+    border-top: 3px solid var(--primary);
+    height: 17rem;
+    min-height: 0;
+  }
+}
+.kante-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Crop hard into the lit piano body — the strongest part of the
+     frame — so the block has a subject, not just texture. */
+  object-position: 74% 50%;
+  filter: brightness(var(--photo-brightness)) contrast(var(--photo-contrast)) saturate(var(--photo-saturate));
+}
+@media (max-width: 979px) { .kante-photo img { object-position: 66% 56%; } }
+/* Just enough vignette that the caption plate holds. */
+.kante-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8,11,15,.10) 0%, rgba(8,11,15,0) 30%, rgba(8,11,15,.72) 100%);
+}
+.kante-cap {
+  position: absolute;
+  left: 1.1rem;
+  right: 1.1rem;
+  bottom: 1rem;
+  z-index: 2;
+  color: #cfc8bc !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,.8);
+}
+.kante-h1 {
+  margin: 1.1rem 0 0;
+  font-family: var(--font-display-mus);
+  font-size: clamp(2rem, 4.1vw, 3rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.026em;
+  max-width: 14em;
+  text-wrap: balance;
+  color: var(--text);
+}
+.kante-h1 .l2 {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.kante-lede {
+  margin-top: 1.3rem;
+  max-width: 42ch;
+  font-size: 1.04rem;
+  line-height: 1.62;
+  color: var(--text-muted);
+}
+/* Below the fold of the spread, the practice card runs full measure. */
+.kante-card-band {
+  padding: 2.5rem 0 0.5rem;
+}
+.kante-card-band .pcard { max-width: 34rem; }
+
+/* ══════════════════════════════════════════════════════════════════
+   VARIANT 3 — "DER DRUCK"
+   The photograph stops being a photograph and becomes printed matter:
+   two ink plates (stamp red + copyist blue), a halftone dot screen,
+   paper grain, and a misregistration of a couple of millimetres —
+   the red plate sits slightly off the blue one, as on a real riso.
+
+   Built with stacked blend layers on one <picture>, so it is still
+   the actual club photo underneath.
+   ══════════════════════════════════════════════════════════════════ */
+.druck { position: relative; overflow: hidden; background: var(--bg); }
+
+.riso {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #0b0f14;
+  /* Cheap, sturdy duotone: greyscale the plate, then lay the two inks
+     over it with blend modes. No filter primitives, no SVG deps. */
+}
+.riso-plate {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1280 / 714;
+}
+.riso-plate img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 64% 50%;
+  filter: grayscale(1) contrast(1.5) brightness(0.92);
+}
+/* Blue plate — takes the shadows. */
+.riso-ink-blue {
+  position: absolute;
+  inset: 0;
+  background: var(--ink-blue);
+  mix-blend-mode: color;
+  opacity: 0.92;
+}
+/* Red plate — takes the lights, and is printed 3px off register. */
+.riso-ink-red {
+  position: absolute;
+  inset: -4px -4px -4px 0;
+  transform: translate(3px, -2px);
+  background: var(--primary);
+  mix-blend-mode: overlay;
+  opacity: 0.62;
+}
+/* Amber plate, tiny: keeps the bulbs alive so the room still glows. */
+.riso-ink-amber {
+  position: absolute;
+  inset: 0;
+  transform: translate(-2px, 1px);
+  background: radial-gradient(58% 62% at 60% 12%,
+    color-mix(in srgb, var(--accent-amber) 78%, transparent) 0%,
+    transparent 62%);
+  mix-blend-mode: screen;
+  opacity: 0.72;
+}
+/* Halftone dot screen — the thing that says "printed", not "filtered". */
+.riso-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at center, rgba(0,0,0,.55) 38%, transparent 40%);
+  background-size: 4px 4px;
+  mix-blend-mode: multiply;
+  opacity: 0.42;
+}
+/* Paper grain. */
+.riso-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.30;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.55'/></svg>");
+}
+:root[data-theme="light"] .riso-plate img { filter: grayscale(1) contrast(1.35) brightness(1.06); }
+:root[data-theme="light"] .riso-ink-blue { opacity: 0.85; }
+:root[data-theme="light"] .riso-ink-red { mix-blend-mode: multiply; opacity: 0.42; }
+:root[data-theme="light"] .riso-dots { opacity: 0.30; }
+
+.druck-inner { padding: 2.75rem 0 3rem; }
+@media (min-width: 980px) {
+  .druck-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+    gap: 3.25rem;
+    align-items: start;
+    padding: 4.5rem 0 5rem;
+  }
+}
+/* Cut display lettering: the poster move. Tight, heavy, overlapping
+   the block below it. */
+.druck-h1 {
+  margin: 1.1rem 0 0;
+  font-family: var(--font-display-mus);
+  font-size: clamp(2.15rem, 5.6vw, 3.7rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.038em;
+  max-width: 12em;
+  text-wrap: balance;
+  color: var(--text);
+}
+.druck-h1 .l2 {
+  display: block;
+  margin-top: 0.12em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.022em;
+  color: var(--primary);
+}
+.druck-lede {
+  margin-top: 1.35rem;
+  max-width: 44ch;
+  font-size: 1.04rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+/* The riso block, framed like a printed plate with a trim rule. */
+.druck-figure {
+  position: relative;
+  margin: 2.25rem 0 0;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+@media (min-width: 980px) { .druck-figure { margin-top: 0.4rem; } }
+.druck-figcap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-muted);
+}
+.druck-figcap .plate { flex: 1; min-width: 0; }
+/* Overprint bar: flat ink laid across the plate, poster-style. */
+.overprint {
+  position: absolute;
+  left: -0.35rem;
+  bottom: 3.1rem;
+  z-index: 3;
+  padding: 0.32rem 0.85rem;
+  background: var(--accent-amber);
+  color: #14090a;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--primary) 85%, transparent);
+}
+:root[data-theme="light"] .overprint { color: #fff; }
+
+/* ══════════════════════════════════════════════════════════════════
+   SHARED BODY SECTIONS (B–F + Fine)
+   ══════════════════════════════════════════════════════════════════ */
+.sec {
+  padding: 3rem 0;
+  border-top: 1px solid var(--rule-soft);
+}
+@media (min-width: 900px) { .sec { padding: 4.25rem 0; } }
+
+.sec-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+.sec-col { flex: 1; min-width: 0; }
+.sec-h2 {
+  margin: 0.7rem 0 0;
+  font-family: var(--font-display-mus);
+  font-size: clamp(1.5rem, 3.9vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -0.018em;
+  max-width: 22ch;
+  text-wrap: balance;
+  color: var(--text);
+}
+.sec-lede {
+  margin: 0.85rem 0 0;
+  max-width: 66ch;
+  font-size: 1rem;
+  line-height: 1.62;
+  color: var(--text-muted);
+}
+.sec-lede.tight { margin-top: 0; }
+.sec-foot {
+  margin: 1.5rem 0 0;
+  max-width: 60ch;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.pair { display: grid; gap: 1.75rem; align-items: start; }
+@media (min-width: 820px) {
+  .pair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem; }
+}
+
+.contents { list-style: none; margin: 0; padding: 0; }
+.contents.ruled { border-top: 1px solid var(--border); }
+.row, .cur-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: baseline;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+@media (min-width: 760px) {
+  .cur-row { grid-template-columns: auto minmax(0, 1fr) auto; }
+}
+.cur-row.locked { opacity: 0.55; }
+.no {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.no.roman { min-width: 1.6rem; }
+.row-txt { min-width: 0; }
+.ttl {
+  display: block;
+  font-family: var(--font-display-mus);
+  font-size: 1.06rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.dsc {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.tag-live {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--accent-amber);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-amber);
+  vertical-align: middle;
+}
+.cur-voicing {
+  grid-column: 2;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+@media (min-width: 760px) {
+  .cur-voicing { grid-column: 3; text-align: right; }
+}
+.cur-voicing b { color: var(--primary); font-weight: 600; }
+.cur-voicing .sep { margin: 0 0.35rem; opacity: 0.4; }
+
+/* Coach session mock */
+.mock {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  background: var(--bg-card);
+}
+.mock-say {
+  margin: 0;
+  padding: 1.05rem 1.1rem;
+  border-bottom: 1px solid var(--rule-soft);
+  font-family: var(--font-display-mus);
+  font-size: 1.02rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--text);
+}
+.plan { list-style: none; margin: 0; padding: 0.4rem 0; }
+.plan-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.87rem;
+  color: var(--text-muted);
+}
+.plan-row.next { opacity: 0.55; }
+.plan-row.on {
+  background: color-mix(in srgb, var(--accent-amber) 12%, transparent);
+  color: var(--text);
+  font-weight: 600;
+}
+.plan-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1rem;
+  font-size: 0.6rem;
+  color: var(--text-dim);
+}
+.plan-row.on .plan-mark { color: var(--accent-amber); }
+.plan-row.done .plan-mark { color: var(--accent-green); }
+.plan-d { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-min {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+.mock-foot {
+  margin: 0;
+  padding: 0.8rem 1.1rem;
+  border-top: 1px solid var(--rule-soft);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+/* The twelve-key clock */
+.clock-pair { display: grid; gap: 1.75rem; align-items: center; }
+@media (min-width: 820px) {
+  .clock-pair { grid-template-columns: auto minmax(0, 1fr); gap: 3rem; }
+}
+.clock-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+.clock-cap { max-width: none; text-align: center; line-height: 1.7; text-wrap: balance; }
+.legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.35rem;
+  margin: 1.35rem 0 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.legend li { display: flex; align-items: center; gap: 0.45rem; }
+.sw { width: 0.7rem; height: 0.7rem; flex: none; }
+.sw.fast { background: var(--accent-green); }
+.sw.slow { background: var(--primary); }
+.sw.none { border: 1px dashed var(--border-hover); background: transparent; }
+
+/* Input modes */
+.modes {
+  list-style: none;
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 700px) { .modes { grid-template-columns: repeat(3, 1fr); } }
+.mode {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.95rem 0;
+  font-family: var(--font-display-mus);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid var(--rule-soft);
+}
+.mode:last-child { border-bottom: none; }
+@media (min-width: 700px) {
+  .mode { padding: 1rem 1.25rem 1rem 0; border-bottom: none; border-right: 1px solid var(--rule-soft); }
+  .mode:not(:first-child) { padding-left: 1.25rem; }
+  .mode:last-child { border-right: none; }
+}
+.mode svg { flex: none; color: var(--ink-blue); }
+
+/* Habit ledger */
+.habit { margin-top: 2.75rem; }
+.habit-h3 {
+  margin: 0.7rem 0 0;
+  font-family: var(--font-display-mus);
+  font-size: clamp(1.3rem, 3.2vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.16;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+.ledger {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: 1.5rem;
+  border: 1px solid var(--border);
+  background: var(--border);
+}
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 0.9rem;
+  background: var(--bg-card);
+}
+.cell .v {
+  font-family: var(--font-display-mus);
+  font-size: clamp(1.5rem, 4.6vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+  color: var(--text);
+}
+.cell .v.small { font-size: clamp(1rem, 3vw, 1.3rem); }
+.cell .l {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* FAQ */
+.faq { max-width: 68ch; border-top: 1px solid var(--border); }
+.faq details { border-bottom: 1px solid var(--rule-soft); }
+.faq summary {
+  display: flex;
+  align-items: center;
+  position: relative;
+  min-height: var(--tap-min);
+  padding: 0.9rem 1.75rem 0.9rem 0;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display-mus);
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: '+';
+  position: absolute;
+  right: 0.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  color: var(--primary);
+}
+.faq details[open] summary::after { content: '–'; }
+.faq .ans {
+  margin: 0;
+  padding: 0 0 1rem;
+  max-width: 62ch;
+  font-size: 0.95rem;
+  line-height: 1.62;
+  color: var(--text-muted);
+}
+
+/* Fine — closing CTA + colophon */
+.fine {
+  padding: 3.25rem 0 0.5rem;
+  border-top: 1px solid var(--rule-soft);
+  text-align: center;
+}
+.fine-h2 {
+  margin: 0.85rem auto 0;
+  max-width: 17ch;
+  font-family: var(--font-display-mus);
+  font-size: clamp(1.6rem, 4.6vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--text);
+}
+.fine-p {
+  margin: 0.9rem auto 0;
+  max-width: 44ch;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.fine .cta-row { justify-content: center; }
+.fine-note { margin-top: 1.1rem; }
+.colophon {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 3.25rem;
+  padding: 1.35rem 0 2.5rem;
+  border-top: 2px solid var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-cta { transition: none; }
+  .btn-cta:hover { transform: none; }
+  .live-dot { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ Prototype bar ═══ -->
+<div class="protobar">
+  <span class="pb-brand"><b>jazzchords.app</b> · Landing</span>
+  <div class="seg" role="group" aria-label="Variante">
+    <button type="button" data-v="1" aria-pressed="true">1 · Der Saal</button>
+    <button type="button" data-v="2" aria-pressed="false">2 · Die Kante</button>
+    <button type="button" data-v="3" aria-pressed="false">3 · Der Druck</button>
+  </div>
+  <div class="seg" role="group" aria-label="Theme">
+    <button type="button" data-t="dark" aria-pressed="true">Dunkel</button>
+    <button type="button" data-t="light" aria-pressed="false">Hell</button>
+  </div>
+  <span class="pb-spacer"></span>
+  <span class="pb-note" id="pbNote">Der Saal — Foto randlos</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     VARIANT 1 — DER SAAL
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant edi" id="v1">
+
+  <section class="saal">
+    <div class="saal-media" aria-hidden="true">
+      <picture>
+        <source srcset="/bilder/hero-piano-1280.avif" type="image/avif" />
+        <img src="/bilder/hero-piano-1280.webp" alt="" width="1280" height="714" fetchpriority="high" />
+      </picture>
+    </div>
+
+    <div class="shell saal-inner">
+      <div>
+        <p class="eyebrow">Jazz-Voicings · Alle 12 Tonarten</p>
+        <h1 class="saal-h1">
+          Spiel jeden Jazz-Akkord,<span class="l2">in jeder Tonart — ohne nachzudenken.</span>
+        </h1>
+        <p class="saal-lede">Übe Voicings, bis sie Muskelgedächtnis sind. Shells, rootless, ii-V-I — flüssig in allen 12 Tonarten, eine kurze Session nach der anderen.</p>
+
+        <div class="cta-row">
+          <a href="/train" class="btn-cta">Üben starten <span class="arw" aria-hidden="true">→</span></a>
+          <a href="/learn" class="link-2">Kurs starten</a>
+          <a href="/for-educators" class="link-2">Für Musikschulen</a>
+        </div>
+
+        <p class="fineprint">MIDI-Keyboard da? Es prüft dich automatisch. Keins? Nimm dein Mikrofon oder check selbst. Deine Wahl.</p>
+        <p class="plate" style="margin-top:1rem">Kostenlos. Keine Anmeldung. Mit oder ohne Keyboard.</p>
+      </div>
+
+      <figure style="margin:2.25rem 0 0" class="hero-fig"></figure>
+    </div>
+  </section>
+
+  <div class="body-slot"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     VARIANT 2 — DIE KANTE
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant edi" id="v2">
+
+  <section class="kante">
+    <div class="kante-grid">
+      <div class="kante-type">
+        <p class="eyebrow">Jazz-Voicings · Alle 12 Tonarten</p>
+        <h1 class="kante-h1">
+          Spiel jeden Jazz-Akkord,<span class="l2">in jeder Tonart — ohne nachzudenken.</span>
+        </h1>
+        <p class="kante-lede">Übe Voicings, bis sie Muskelgedächtnis sind. Shells, rootless, ii-V-I — flüssig in allen 12 Tonarten, eine kurze Session nach der anderen.</p>
+
+        <div class="cta-row">
+          <a href="/train" class="btn-cta">Üben starten <span class="arw" aria-hidden="true">→</span></a>
+          <a href="/learn" class="link-2">Kurs starten</a>
+          <a href="/for-educators" class="link-2">Für Musikschulen</a>
+        </div>
+
+        <p class="fineprint">MIDI-Keyboard da? Es prüft dich automatisch. Keins? Nimm dein Mikrofon oder check selbst. Deine Wahl.</p>
+        <p class="plate" style="margin-top:1rem">Kostenlos. Keine Anmeldung. Mit oder ohne Keyboard.</p>
+      </div>
+
+      <div class="kante-photo">
+        <picture>
+          <source srcset="/bilder/hero-piano-1280.avif" type="image/avif" />
+          <img src="/bilder/hero-piano-1280.webp" alt="Klavier in einem abendlichen Jazzclub, warm beleuchtet" width="1280" height="714" fetchpriority="high" />
+        </picture>
+        <p class="plate kante-cap">Abb. 1 · Der Saal, kurz vor dem ersten Set</p>
+      </div>
+    </div>
+
+    <div class="shell kante-card-band">
+      <figure style="margin:0" class="hero-fig"></figure>
+    </div>
+  </section>
+
+  <div class="body-slot"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     VARIANT 3 — DER DRUCK
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="variant edi" id="v3">
+
+  <section class="druck">
+    <div class="shell druck-inner">
+      <div>
+        <p class="eyebrow">Jazz-Voicings · Alle 12 Tonarten</p>
+        <h1 class="druck-h1">
+          Spiel jeden Jazz-Akkord,<span class="l2">in jeder Tonart — ohne nachzudenken.</span>
+        </h1>
+        <p class="druck-lede">Übe Voicings, bis sie Muskelgedächtnis sind. Shells, rootless, ii-V-I — flüssig in allen 12 Tonarten, eine kurze Session nach der anderen.</p>
+
+        <div class="cta-row">
+          <a href="/train" class="btn-cta">Üben starten <span class="arw" aria-hidden="true">→</span></a>
+          <a href="/learn" class="link-2">Kurs starten</a>
+          <a href="/for-educators" class="link-2">Für Musikschulen</a>
+        </div>
+
+        <p class="fineprint">MIDI-Keyboard da? Es prüft dich automatisch. Keins? Nimm dein Mikrofon oder check selbst. Deine Wahl.</p>
+        <p class="plate" style="margin-top:1rem">Kostenlos. Keine Anmeldung. Mit oder ohne Keyboard.</p>
+      </div>
+
+      <div>
+        <figure class="druck-figure">
+          <span class="overprint">Live · 12 Tonarten</span>
+          <div class="riso">
+            <div class="riso-plate">
+              <picture>
+                <source srcset="/bilder/hero-piano-1280.avif" type="image/avif" />
+                <img src="/bilder/hero-piano-1280.webp" alt="Klavier in einem abendlichen Jazzclub, als Zweifarbendruck" width="1280" height="714" fetchpriority="high" />
+              </picture>
+              <span class="riso-ink-blue" aria-hidden="true"></span>
+              <span class="riso-ink-red" aria-hidden="true"></span>
+              <span class="riso-ink-amber" aria-hidden="true"></span>
+              <span class="riso-dots" aria-hidden="true"></span>
+              <span class="riso-grain" aria-hidden="true"></span>
+            </div>
+          </div>
+          <figcaption class="druck-figcap">
+            <span class="plate">Abb. 1 · Der Saal — Zweifarbendruck</span>
+            <span class="plate">Platte 04</span>
+          </figcaption>
+        </figure>
+
+        <figure style="margin:1.5rem 0 0" class="hero-fig"></figure>
+      </div>
+    </div>
+  </section>
+
+  <div class="body-slot"></div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var notes = {
+    '1': 'Der Saal — Foto randlos, Satz darüber',
+    '2': 'Die Kante — Foto als Block an harter Kante',
+    '3': 'Der Druck — Foto als Zweifarben-Riso'
+  };
+  document.querySelectorAll('.seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.dataset.v, t = b.dataset.t;
+      var group = b.parentElement;
+      group.querySelectorAll('button').forEach(function (o) {
+        o.setAttribute('aria-pressed', String(o === b));
+      });
+      if (v) {
+        root.setAttribute('data-variant', v);
+        document.getElementById('pbNote').textContent = notes[v];
+        window.scrollTo(0, 0);
+      }
+      if (t) root.setAttribute('data-theme', t);
+    });
+  });
+})();
+</script>
+</body>
+</html>
