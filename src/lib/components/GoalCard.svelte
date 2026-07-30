@@ -28,62 +28,192 @@
 
 	const isCompleted = $derived(!!goal.completedAt);
 
+	// Per-goal-type ink, on the system's semantic tokens rather than a private
+	// palette. `review` and `accuracy` both read as the annotating blue — the
+	// two are told apart by their printed mark (adaptive vs accuracy) and their
+	// title, not by inventing a seventh hue outside the system.
 	const GOAL_COLORS: Record<string, string> = {
-		speed: '#fb923c',
-		consistency: '#4ade80',
-		mastery: '#f59e0b',
-		exploration: '#a78bfa',
-		endurance: '#f472b6',
-		review: '#38bdf8',
-		accuracy: '#06b6d4',
+		speed: 'var(--accent-amber)',
+		consistency: 'var(--accent-green)',
+		mastery: 'var(--accent-gold)',
+		exploration: 'var(--ink-blue)',
+		endurance: 'var(--primary)',
+		review: 'var(--info)',
+		accuracy: 'var(--info)',
 	};
 
-	const color = $derived(GOAL_COLORS[goal.type] || '#fb923c');
+	const color = $derived(GOAL_COLORS[goal.type] || 'var(--accent-amber)');
 </script>
 
+<!-- A goal is a ruled entry, not a card: a 2px ink rule on the left carries the
+     goal's type colour, the mark sits in the margin, the tally is set in mono
+     at the right. No radius, no fill beyond the plate. -->
 <div
-	class="goal-card bg-(--bg-muted) border border-[color:var(--border)] border-l-[3px]
-		rounded-[var(--radius,8px)] py-2 px-3 transition-all duration-200 ease-in-out
-		hover:bg-(--bg-card-hover) hover:border-[color:var(--goal-color)] hover:border-l-[color:var(--goal-color)]
-		max-sm:py-2.5
-		{isCompleted ? 'opacity-60 border-l-[color:var(--accent-green,#4ade80)]' : 'border-l-[color:var(--goal-color)]'}"
+	class="goal-card {isCompleted ? 'done' : ''}"
 	style="--goal-color: {color}"
 >
-	<div class="flex items-start gap-2 mb-1.5">
-		<span class="goal-icon shrink-0 mt-px"><Icon name={goalIconName(goal.type)} size={18} /></span>
-		<div class="flex flex-col gap-px flex-1 min-w-0">
-			<span class="goal-title text-xs font-semibold text-[var(--text)] min-w-0 max-sm:text-[0.85rem]">{t(goal.titleKey, goal.titleParams) || goal.title}</span>
+	<div class="goal-head">
+		<span class="goal-icon" aria-hidden="true"><Icon name={goalIconName(goal.type)} size={18} /></span>
+		<div class="goal-txt">
+			<span class="goal-title">{t(goal.titleKey, goal.titleParams) || goal.title}</span>
 			{#if goal.descriptionKey}
-				<span class="goal-desc text-[0.6rem] text-(--text-dim) whitespace-nowrap overflow-hidden text-ellipsis max-sm:text-[0.68rem] max-sm:whitespace-normal max-sm:line-clamp-2">{t(goal.descriptionKey, goal.descriptionParams)}</span>
+				<span class="goal-desc">{t(goal.descriptionKey, goal.descriptionParams)}</span>
 			{/if}
 		</div>
 		{#if isCompleted}
-			<span class="text-[var(--accent-green,#4ade80)] inline-flex"><Check size={16} aria-hidden="true" /></span>
+			<span class="goal-check" aria-hidden="true"><Check size={16} /></span>
 		{/if}
 	</div>
 
-	<div class="flex items-center gap-2">
-		<div class="goal-bar flex-1 h-1 bg-(--bg-muted) rounded-full overflow-hidden max-sm:h-[5px]">
-			<div class="h-full bg-[var(--goal-color)] rounded-full transition-[width] duration-[0.8s] ease-out" style="width: {progressPct}%"></div>
+	<div class="goal-foot">
+		<div class="goal-bar">
+			<div class="goal-fill" style="width: {progressPct}%"></div>
 		</div>
 		{#if progressPct === 0 && !isCompleted}
-			<span class="goal-new text-[0.6rem] text-[var(--text-muted)] font-medium uppercase tracking-[0.03em] min-w-[28px] text-right shrink-0 max-sm:text-[0.62rem]">New</span>
+			<span class="goal-new">{t('habit.goal_new')}</span>
 		{:else}
-			<span class="goal-pct text-[0.6rem] text-[var(--goal-color)] font-semibold tabular-nums min-w-[28px] text-right shrink-0 max-sm:text-[0.65rem]">{progressPct}%</span>
+			<span class="goal-pct">{progressPct}%</span>
 		{/if}
-		<span class="goal-xp text-[0.6rem] text-[var(--text-dim)] font-medium shrink-0 max-sm:text-[0.65rem]">+{goal.xpReward} XP</span>
+		{#if goal.xpReward}
+			<span class="goal-xp">{t('habit.xp_amount', { amount: goal.xpReward })}</span>
+		{/if}
 	</div>
 </div>
 
 <style>
+	/* ── A goal as a ruled entry ──────────────────────────────── */
+
+	.goal-card {
+		padding: 0.5rem 0.75rem;
+		border: 1px solid var(--border);
+		border-left: 2px solid var(--goal-color);
+		background: var(--bg-muted);
+		transition: background-color 0.16s, border-color 0.16s;
+	}
+	.goal-card:hover {
+		background: var(--bg-card-hover);
+		border-color: var(--goal-color);
+	}
+	.goal-card.done {
+		opacity: 0.62;
+		border-left-color: var(--accent-green);
+	}
+	@media (max-width: 640px) {
+		.goal-card { padding: 0.625rem 0.75rem; }
+	}
+
+	.goal-head {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		margin-bottom: 0.375rem;
+	}
+
+	.goal-icon {
+		flex: none;
+		margin-top: 1px;
+		color: var(--goal-color);
+	}
+
+	.goal-txt {
+		display: flex;
+		flex: 1;
+		min-width: 0;
+		flex-direction: column;
+		gap: 1px;
+	}
+
+	/* Read, not scanned — the display serif, as everywhere else. */
+	.goal-title {
+		min-width: 0;
+		font-family: 'AccidentalFit', var(--font-display);
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.3;
+		color: var(--text);
+	}
+
+	.goal-desc {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		font-size: 0.66rem;
+		line-height: 1.35;
+		color: var(--text-dim);
+	}
+	@media (max-width: 640px) {
+		.goal-title { font-size: 0.95rem; }
+		.goal-desc {
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			line-clamp: 2;
+			-webkit-box-orient: vertical;
+			white-space: normal;
+			font-size: 0.72rem;
+		}
+	}
+
+	.goal-check {
+		display: inline-flex;
+		flex: none;
+		color: var(--accent-green);
+	}
+
+	.goal-foot {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	/* A measured rail, squared off — a printed bar, not a pill. */
+	.goal-bar {
+		flex: 1;
+		height: 3px;
+		overflow: hidden;
+		background: color-mix(in srgb, var(--border) 70%, transparent);
+	}
+	.goal-fill {
+		height: 100%;
+		background: var(--goal-color);
+		transition: width 0.8s ease-out;
+	}
+
+	/* Every figure and label in the footer is mono — this is the tally line. */
+	.goal-new,
+	.goal-pct,
+	.goal-xp {
+		flex: none;
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+	.goal-new {
+		min-width: 28px;
+		text-align: right;
+		color: var(--text-muted);
+	}
+	.goal-pct {
+		min-width: 28px;
+		text-align: right;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		color: var(--goal-color);
+	}
+	.goal-xp {
+		font-variant-numeric: tabular-nums;
+		color: var(--text-dim);
+	}
+	@media (max-width: 640px) {
+		.goal-new,
+		.goal-pct,
+		.goal-xp { font-size: 0.65rem; }
+	}
+
 	/* ── iPad / large touch ─────────────────────── */
 	@media (hover: none) and (pointer: coarse) and (min-width: 768px) {
 		.goal-card {
 			padding: 14px 16px;
-		}
-
-		.goal-icon {
-			font-size: 1.1rem;
 		}
 
 		.goal-title {
@@ -102,19 +232,18 @@
 		}
 
 		.goal-bar {
-			height: 6px;
+			height: 5px;
 		}
 
-		.goal-pct {
-			font-size: 0.8rem;
-		}
-
-		.goal-new {
+		.goal-pct,
+		.goal-new,
+		.goal-xp {
 			font-size: 0.78rem;
 		}
+	}
 
-		.goal-xp {
-			font-size: 0.8rem;
-		}
+	@media (prefers-reduced-motion: reduce) {
+		.goal-card,
+		.goal-fill { transition: none; }
 	}
 </style>

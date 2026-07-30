@@ -1121,6 +1121,7 @@ export const en = {
     day: 'day',
     days: 'days',
     start_arrow: 'Start',
+    goal_new: 'New',
     goal_consistency: 'Practice {days} days this week',
     goal_consistency_desc: 'Building the habit is more important than any single session',
     goal_speed: 'Get {root} {voicing} under {target}s',

@@ -2192,19 +2192,22 @@
 							}}
 						/>
 					{:else}
-						<div class="surface-glass flex items-center justify-between gap-4 rounded-2xl px-4 py-3.5 sm:px-5">
-							<div class="flex items-center gap-4 min-w-0">
-								<span class="text-lg font-bold text-(--text) truncate">{greeting}!</span>
-								<div class="flex items-center gap-1.5 text-sm font-semibold text-(--xp)">
-									<Icon name="streak" size={18} />
-									<span>{streak.current}</span>
-									<span class="text-(--text-dim) font-normal">{streak.current === 1 ? t('habit.day') : t('habit.days')}</span>
-								</div>
+						<!-- Masthead line, when there is no habit profile to head the page:
+						     the greeting set in the display serif, the streak as a printed
+						     tally, the MIDI state as a small-caps plate. Ruled, not glazed. -->
+						<div class="head-line">
+							<div class="flex min-w-0 items-baseline gap-3.5">
+								<span class="head-greet truncate">{greeting}</span>
+								<span class="head-tally">
+									<Icon name="streak" size={15} />
+									<span class="head-tally-n">{streak.current}</span>
+									<span class="head-tally-u">{streak.current === 1 ? t('habit.day') : t('habit.days')}</span>
+								</span>
 							</div>
-							<a href="/midi-test?tab=midi" class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs no-underline transition-opacity hover:opacity-80 {midiState === 'connected' && midiDevices.length > 0 ? 'bg-[var(--success-muted)] text-(--success)' : 'bg-(--bg-muted) text-(--text-dim)'}">
+							<a href="/midi-test?tab=midi" class="head-midi {midiState === 'connected' && midiDevices.length > 0 ? 'live' : ''}">
 								<Icon name="midi" size={14} label="MIDI" />
-								<span>{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : t('settings.no_midi')}</span>
-								<span class="opacity-50"><Settings size={14} aria-hidden="true" /></span>
+								<span class="truncate">{midiState === 'connected' && midiDevices.length > 0 ? (midiDevices[0]?.name ?? 'MIDI') : t('settings.no_midi')}</span>
+								<span class="head-midi-cog"><Settings size={13} aria-hidden="true" /></span>
 							</a>
 						</div>
 					{/if}
@@ -2225,11 +2228,13 @@
 						</div>
 
 						{#if loadHistory().length === 0}
-							<div class="flex items-start gap-2.5 rounded-2xl border border-[var(--border)]/60 bg-[var(--bg-card)]/40 px-4 py-3">
-								<span class="mt-0.5 shrink-0"><Icon name="weak-spots" size={20} /></span>
-								<p class="text-sm leading-relaxed text-(--text-muted)">
-									<span class="font-semibold text-(--text)">{t('settings.how_it_works_goal')}</span>
-									<span class="block text-(--text-dim)">{t('settings.how_it_works_steps')}</span>
+							<!-- First visit: what this screen is for. A marginal note on a
+							     blue rule — the annotating ink, same as /togo's notice. -->
+							<div class="note-blue">
+								<span class="note-mark" aria-hidden="true"><Icon name="weak-spots" size={18} /></span>
+								<p class="note-body">
+									<span class="note-goal">{t('settings.how_it_works_goal')}</span>
+									<span class="note-steps">{t('settings.how_it_works_steps')}</span>
 								</p>
 							</div>
 						{/if}
@@ -2255,28 +2260,31 @@
 					{/if}
 
 					<!-- ④ Advanced setup — full plan library + custom settings, opt-in -->
-					<section class="surface-glass overflow-hidden rounded-2xl">
+					<!-- The full plan library and custom settings, folded away. A ruled
+					     drawer: hairline box, a mono head, and the current setup printed
+					     as small-caps plates rather than translucent pills. -->
+					<section class="drawer">
 						<button
-							class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-(--bg-card-hover) sm:px-5"
+							class="drawer-btn"
 							onclick={() => (advancedOpen = !advancedOpen)}
 							aria-expanded={advancedOpen}
 						>
-							<div class="flex items-center gap-3 min-w-0">
-								<span class="text-sm font-semibold text-(--text)">{t('settings.advanced_setup')}</span>
+							<div class="flex min-w-0 items-center gap-3">
+								<span class="drawer-ttl">{t('settings.advanced_setup')}</span>
 								<div class="hidden items-center gap-1.5 sm:flex">
-									<span class="rounded-full border border-[var(--border)]/60 bg-black/20 px-2.5 py-0.5 text-[11px] text-(--text-muted)">{t('settings.difficulty_' + difficulty)}</span>
-									<span class="rounded-full border border-[var(--border)]/60 bg-black/20 px-2.5 py-0.5 text-[11px] text-(--text-muted)">{t(VOICING_KEYS[voicing])}</span>
-									<span class="rounded-full border border-[var(--border)]/60 bg-black/20 px-2.5 py-0.5 text-[11px] text-(--text-muted)">{t(PROGRESSION_KEYS[progressionMode])}</span>
+									<span class="chip">{t('settings.difficulty_' + difficulty)}</span>
+									<span class="chip">{t(VOICING_KEYS[voicing])}</span>
+									<span class="chip">{t(PROGRESSION_KEYS[progressionMode])}</span>
 									{#if inTimeMode}
-										<span class="rounded-full border border-[var(--success)]/30 bg-[var(--success-muted)] px-2.5 py-0.5 text-[11px] text-(--success)">{t('settings.in_time_mode')}</span>
+										<span class="chip live">{t('settings.in_time_mode')}</span>
 									{/if}
 								</div>
 							</div>
-							<span class="shrink-0 text-(--text-dim) transition-transform duration-200 {advancedOpen ? 'rotate-180' : ''}">▾</span>
+							<span class="drawer-caret {advancedOpen ? 'open' : ''}" aria-hidden="true">▾</span>
 						</button>
 
 						{#if advancedOpen}
-							<div class="border-t border-[var(--border)]/30 px-4 py-4 sm:px-5 sm:py-5 space-y-5" transition:slide={{ duration: 220 }}>
+							<div class="drawer-body" transition:slide={{ duration: 220 }}>
 								<div class="flex flex-wrap items-center gap-2">
 									<button class="pill-btn pill-btn-primary text-sm px-4 py-2" onclick={startGame}>{t('settings.start_training')}</button>
 									<button class="pill-btn pill-btn-secondary text-sm px-3 py-2" onclick={() => (settingsOpen = true)}>{t('settings.custom_settings')}</button>
@@ -3438,20 +3446,20 @@
 		<!-- ─────── Coach: Teacher Feedback Screen ─────── -->
 		{#if screen === 'coach-feedback'}
 			<div in:scale={{ start: 0.95, duration: 300, delay: 50 }} style="transform-origin: center top" class="mx-auto max-w-[560px]">
-				<div class="surface-glass rounded-2xl p-6 sm:p-8 flex flex-col gap-6">
-					<div class="flex flex-col items-center gap-3 text-center">
-						<span class="grid h-14 w-14 place-items-center rounded-full bg-[var(--primary-muted)] text-[var(--primary)]" aria-hidden="true">
-							<Icon name="weak-spots" size={30} />
-						</span>
-						<h1 class="text-xl sm:text-2xl font-bold text-(--text)">{t('coach.feedback.title')}</h1>
+				<!-- The teacher's report, set as a page: a rule under the title, the
+				     statements as a printed list, the verdict on a rule of its own. -->
+				<div class="report">
+					<div class="report-head">
+						<span class="report-mark" aria-hidden="true"><Icon name="weak-spots" size={26} /></span>
+						<h1 class="report-ttl">{t('coach.feedback.title')}</h1>
 					</div>
 
 					<!-- Teacher statements (honest, from promotion/hold decisions) -->
 					{#if coachFeedback.length > 0}
-						<ul class="flex flex-col gap-2.5">
+						<ul class="report-list">
 							{#each coachFeedback as stmt, i (i)}
-								<li class="flex items-start gap-2.5 text-[var(--text-base)] leading-relaxed text-(--text)">
-									<span class="mt-1 shrink-0 text-[var(--primary)]" aria-hidden="true"><Check size={16} /></span>
+								<li class="report-item">
+									<span class="report-tick" aria-hidden="true"><Check size={15} /></span>
 									<span>{t(stmt.key, localizeCoachParams(stmt.params))}</span>
 								</li>
 							{/each}
@@ -3460,17 +3468,17 @@
 
 					<!-- System-detected verdict — the app never asks "too easy?". -->
 					{#if coachVerdict === 'excellent'}
-						<div class="flex items-center justify-center gap-2 rounded-[var(--radius)] bg-[var(--success-muted,var(--primary-muted))] px-4 py-3 text-center text-sm font-medium text-(--text)">
-							<Check size={16} class="text-(--accent-green)" />
-							{t('coach.verdict.excellent')}
-						</div>
+						<p class="verdict good">
+							<Check size={15} aria-hidden="true" />
+							<span>{t('coach.verdict.excellent')}</span>
+						</p>
 					{:else if coachVerdict === 'struggling' && !coachFeedbackGiven}
-						<div class="flex flex-col gap-2 rounded-[var(--radius)] border border-[var(--border)] px-4 py-3">
-							<span class="text-sm text-(--text-muted)">{t('coach.verdict.struggling')}</span>
+						<div class="verdict hold">
+							<span class="verdict-txt">{t('coach.verdict.struggling')}</span>
 							<button
 								type="button"
 								onclick={startEasierAndContinue}
-								class="self-start rounded-[var(--radius)] border-2 border-[var(--primary)] px-3 py-2 text-sm font-medium text-(--primary) transition-colors hover:bg-[var(--primary-muted)]"
+								class="btn-outline"
 							>
 								{t('coach.verdict.start_easier')}
 							</button>
@@ -3478,18 +3486,18 @@
 					{/if}
 
 					<!-- Keep going (next building session) / Done for today -->
-					<div class="flex flex-col gap-2">
+					<div class="report-acts">
 						<button
 							type="button"
 							onclick={restartCoachSession}
-							class="w-full rounded-[var(--radius)] bg-[var(--primary)] px-4 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+							class="btn-stamp"
 						>
 							{t('coach.feedback.keep_going')}
 						</button>
 						<button
 							type="button"
 							onclick={() => { endCoachMode(); resetToSetup(); }}
-							class="w-full rounded-[var(--radius)] px-4 py-2 text-sm font-medium text-(--text-muted) transition-colors hover:text-(--text)"
+							class="btn-quiet"
 						>
 							{t('coach.feedback.enough_today')}
 						</button>
@@ -3509,16 +3517,17 @@
 		in:fade={{ duration: 180 }}
 		aria-label={t('coach.transition.tap_continue')}
 	>
-		<div class="surface-glass flex max-w-[420px] flex-col items-center gap-4 rounded-2xl px-6 py-8 text-center" in:scale={{ start: 0.94, duration: 220 }}>
-			<div class="flex items-center gap-2 text-[var(--success)]">
-				<Check size={20} aria-hidden="true" />
-				<span class="text-base font-semibold">{t('coach.done.' + coachTransition.doneKind)}</span>
-			</div>
-			<div class="h-px w-16 bg-[var(--border)]" aria-hidden="true"></div>
-			<p class="text-lg font-medium text-(--text)">
+		<!-- Between blocks: a stamped slip. What just closed, a rule, what comes
+		     next set in the display serif, and the instruction as a plate. -->
+		<div class="slip" in:scale={{ start: 0.94, duration: 220 }}>
+			<span class="slip-done">
+				<Check size={17} aria-hidden="true" />
+				<span>{t('coach.done.' + coachTransition.doneKind)}</span>
+			</span>
+			<p class="slip-next">
 				{t(coachTransition.next.labelKey, localizeCoachParams(coachTransition.next.labelParams))}
 			</p>
-			<span class="text-xs text-(--text-dim)">{t('coach.transition.tap_continue')}</span>
+			<span class="slip-cue">{t('coach.transition.tap_continue')}</span>
 		</div>
 	</button>
 {/if}
@@ -3717,6 +3726,397 @@
 			grid-template-columns: 1fr 320px;
 			gap: 1rem;
 		}
+	}
+
+	/* ── The setup screen's last glass panels, converted ──────────
+	   Five panels that still read as rounded translucent cards next to the
+	   converted work. Same vocabulary as QuickStart and /togo: hairline boxes,
+	   an ink rule down the left where something is being announced, small-caps
+	   mono for labels and figures, the display serif for anything read. */
+
+	/* ① Masthead line — greeting, streak tally, MIDI state. */
+	.head-line {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.7rem 0 0.8rem;
+		border-bottom: 2px solid var(--text);
+	}
+	.head-greet {
+		min-width: 0;
+		font-family: var(--font-display-mus);
+		font-size: 1.32rem;
+		font-weight: 600;
+		letter-spacing: -0.018em;
+		color: var(--text);
+	}
+	.head-tally {
+		display: inline-flex;
+		flex: none;
+		align-items: center;
+		gap: 0.34rem;
+		color: var(--accent-gold);
+	}
+	.head-tally-n {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+	.head-tally-u {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+	/* The MIDI state is a stamped plate: a hairline box when idle, and it
+	   takes the amber live ink only when a device is actually connected. */
+	.head-midi {
+		display: inline-flex;
+		flex: none;
+		align-items: center;
+		gap: 0.4rem;
+		max-width: 13rem;
+		padding: 0.28rem 0.6rem;
+		border: 1px solid var(--border);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+		text-decoration: none;
+		transition: border-color 0.12s, color 0.12s;
+	}
+	.head-midi:hover { border-color: var(--border-hover); color: var(--text-muted); }
+	.head-midi.live {
+		border-color: var(--accent-amber);
+		color: var(--accent-amber);
+	}
+	.head-midi-cog { opacity: 0.55; }
+
+	/* ② The first-visit note — annotating blue, in the margin. */
+	.note-blue {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.7rem;
+		padding: 0.15rem 0 0.15rem 0.9rem;
+		border-left: 2px solid var(--ink-blue);
+	}
+	.note-mark {
+		flex: none;
+		margin-top: 0.2rem;
+		color: var(--ink-blue);
+	}
+	.note-body { margin: 0; max-width: 56ch; }
+	.note-goal {
+		display: block;
+		font-family: var(--font-display-mus);
+		font-size: 0.97rem;
+		font-style: italic;
+		line-height: 1.45;
+		color: var(--text);
+	}
+	.note-steps {
+		display: block;
+		margin-top: 0.2rem;
+		font-size: 0.83rem;
+		line-height: 1.5;
+		color: var(--text-dim);
+	}
+
+	/* ③ Advanced setup — a ruled drawer. */
+	.drawer {
+		border: 1px solid var(--border);
+		background: var(--bg-card);
+	}
+	.drawer-btn {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		width: 100%;
+		min-height: var(--tap-min);
+		padding: 0.75rem 1rem;
+		border: 0;
+		background: transparent;
+		font-family: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: background-color 0.12s;
+	}
+	.drawer-btn:hover { background: var(--bg-card-hover); }
+	.drawer-btn:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: -2px;
+	}
+	.drawer-ttl {
+		font-family: var(--font-mono);
+		font-size: 0.66rem;
+		font-weight: 600;
+		letter-spacing: 0.17em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+	/* The current setup, printed as plates. Squared, hairline, mono — the same
+	   mark /togo uses for a parameter that has been set. */
+	.chip {
+		padding: 0.16rem 0.5rem;
+		border: 1px solid var(--border);
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+	.chip.live {
+		border-color: var(--accent-amber);
+		color: var(--accent-amber);
+	}
+	.drawer-caret {
+		flex: none;
+		color: var(--text-dim);
+		transition: transform 0.2s;
+	}
+	.drawer-caret.open { transform: rotate(180deg); }
+	.drawer-body {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		padding: 1rem;
+		border-top: 1px solid var(--rule-soft);
+	}
+	@media (min-width: 640px) {
+		.drawer-btn { padding: 0.8rem 1.25rem; }
+		.drawer-body { padding: 1.25rem; }
+	}
+
+	/* ④ The teacher's report. */
+	.report {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		padding: 1.5rem 1.25rem;
+		border: 1px solid var(--border);
+		border-top: 2px solid var(--primary);
+		background: var(--bg-card);
+	}
+	@media (min-width: 640px) {
+		.report { padding: 2rem 2.25rem; }
+	}
+	.report-head {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		padding-bottom: 0.9rem;
+		border-bottom: 1px solid var(--rule-soft);
+	}
+	.report-mark { flex: none; color: var(--primary); }
+	.report-ttl {
+		margin: 0;
+		font-family: var(--font-display-mus);
+		font-size: 1.4rem;
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		color: var(--text);
+	}
+	@media (min-width: 640px) {
+		.report-ttl { font-size: 1.65rem; }
+	}
+	.report-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.report-item {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: var(--text);
+	}
+	.report-tick {
+		flex: none;
+		margin-top: 0.24rem;
+		color: var(--primary);
+	}
+
+	/* The verdict sits on a rule of its own — green when the block was clean,
+	   plain ink when the coach is offering an easier way in. */
+	.verdict {
+		margin: 0;
+		padding-left: 0.85rem;
+		border-left: 2px solid var(--accent-green);
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--text);
+	}
+	.verdict.good {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--accent-green);
+	}
+	.verdict.hold {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.7rem;
+		border-left-color: var(--border-hover);
+	}
+	.verdict-txt {
+		font-size: 0.9rem;
+		line-height: 1.55;
+		color: var(--text-muted);
+	}
+
+	.btn-outline {
+		min-height: var(--tap-min);
+		padding: 0 1rem;
+		border: 1.5px solid var(--primary);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		font-family: inherit;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: var(--primary);
+		cursor: pointer;
+		transition: background-color 0.12s, color 0.12s;
+	}
+	.btn-outline:hover {
+		background: var(--primary);
+		color: var(--primary-text);
+	}
+	.btn-outline:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	.report-acts {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	/* Carrying on is the one filled action on this screen, so it takes the
+	   stamp — same amber slab, same fixed near-black ink, as QuickStart's
+	   start and /togo's. Values are fixed in both themes for that reason. */
+	.btn-stamp {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-height: 3.1rem;
+		padding: 0 1.25rem;
+		border: 1.5px solid var(--stamp);
+		border-radius: var(--radius-sm);
+		background: var(--stamp);
+		font-family: var(--font-display-mus);
+		font-size: 1.04rem;
+		font-weight: 700;
+		color: var(--stamp-ink);
+		cursor: pointer;
+		transition: transform 0.12s ease-out, background-color 0.12s, border-color 0.12s;
+	}
+	.btn-stamp:hover {
+		transform: translateY(-1px);
+		background: var(--stamp-hover);
+		border-color: var(--stamp-hover);
+	}
+	.btn-stamp:active { transform: none; }
+	.btn-stamp:focus-visible {
+		outline: 2px solid var(--text);
+		outline-offset: 2px;
+	}
+	/* On diazo paper the amber fill separates from the ground at only 1.75:1,
+	   so the button's SHAPE goes soft though its label is fine. */
+	:global([data-theme='light']) .btn-stamp {
+		border-color: var(--stamp-ink);
+	}
+
+	.btn-quiet {
+		width: 100%;
+		min-height: 2.4rem;
+		border: 0;
+		background: transparent;
+		font-family: inherit;
+		font-size: 0.86rem;
+		font-weight: 500;
+		color: var(--text-muted);
+		text-decoration: underline;
+		text-decoration-color: var(--border-hover);
+		text-decoration-thickness: 1px;
+		text-underline-offset: 4px;
+		cursor: pointer;
+		transition: color 0.12s, text-decoration-color 0.12s;
+	}
+	.btn-quiet:hover {
+		color: var(--text);
+		text-decoration-color: var(--accent-amber);
+	}
+	.btn-quiet:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	/* ⑤ The between-block slip. Lives outside .train-page (it is a fixed
+	   overlay), so it declares its own display stack. */
+	.slip {
+		--font-display-mus: 'AccidentalFit', var(--font-display);
+		display: flex;
+		max-width: 420px;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.9rem;
+		padding: 1.75rem 1.5rem;
+		border: 1px solid var(--border);
+		border-top: 2px solid var(--accent-amber);
+		background: var(--bg-card);
+		font-family: 'AccidentalFit', var(--font-sans);
+		text-align: center;
+	}
+	/* What just closed — small-caps, in the green of a completed thing. */
+	.slip-done {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+		font-family: var(--font-mono);
+		font-size: 0.64rem;
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--accent-green);
+	}
+	/* What comes next is the thing being read — the display serif, largest. */
+	.slip-next {
+		margin: 0;
+		font-family: var(--font-display-mus);
+		font-size: 1.28rem;
+		font-weight: 600;
+		line-height: 1.25;
+		letter-spacing: -0.015em;
+		color: var(--text);
+	}
+	.slip-cue {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.btn-stamp { transition: none; }
+		.btn-stamp:hover { transform: none; }
+		.drawer-caret { transition: none; }
 	}
 
 	/* Shake animation for wrong guess */

@@ -269,14 +269,8 @@
 [data-theme="light"] .pill-input:focus {
 	background: #ffffff;
 }
-[data-theme="light"] .pill-btn-secondary {
-	background: rgba(255, 255, 255, 0.85);
-	border-color: rgba(194, 188, 224, 0.7);
-}
-[data-theme="light"] .pill-btn-secondary:hover {
-	background: rgba(238, 236, 248, 0.95);
-	border-color: rgba(199, 127, 18, 0.45);
-}
+/* The secondary button is transparent with a rule in both themes now, so it
+   needs no light-theme override — the tokens already carry the difference. */
 [data-theme="light"] .status-glass {
 	background: rgba(199, 127, 18, 0.08);
 	border-color: rgba(199, 127, 18, 0.28);
@@ -353,39 +347,45 @@ h1, h2, h3, .font-display {
 	background: rgba(10, 9, 8, 0.9);
 }
 
+/* Shared action buttons, used in ~18 places across Results, the progression
+   editor and the drill. The class name still says "pill" for the call sites'
+   sake, but the shape is a printed block now: 2px corners, one flat pull of
+   ink, a real 1px rule. The gradient and the near-black translucent fill were
+   the last of the old look still reachable from converted screens. */
 .pill-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	padding: 0.6rem 1rem;
-	border-radius: 999px;
+	border-radius: 2px;
 	font-weight: 600;
-	transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-}
-
-.pill-btn:active {
-	transform: translateY(1px);
+	transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .pill-btn-primary {
-	background: linear-gradient(135deg, var(--primary) 0%, var(--accent-amber) 100%);
-	color: white;
-	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: var(--primary);
+	color: var(--primary-text);
+	border: 1px solid var(--primary);
 }
 
 .pill-btn-primary:hover {
-	filter: brightness(1.05);
+	background: var(--primary-hover);
+	border-color: var(--primary-hover);
 }
 
+/* --border is tuned for hairlines BETWEEN things, where it only needs to be
+   perceptible. On a transparent button it IS the shape, and measured against
+   diazo paper it came back at 1.25:1 — no edge at all. --border-hover was only
+   1.67:1. --text-dim gives the button a real cut (3.98:1 on paper) while
+   staying quieter than its own label at 15:1. */
 .pill-btn-secondary {
-	background: rgba(26, 20, 16, 0.76);
-	border: 1px solid rgba(45, 41, 82, 0.62);
+	background: transparent;
+	border: 1px solid var(--text-dim);
 	color: var(--text);
 }
 
 .pill-btn-secondary:hover {
-	background: rgba(34, 26, 21, 0.88);
-	border-color: rgba(245, 166, 35, 0.46);
+	border-color: var(--text);
 }
 
 .status-glass {

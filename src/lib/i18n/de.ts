@@ -1128,6 +1128,7 @@ export const de = {
     day: 'Tag',
     days: 'Tage',
     start_arrow: 'Start',
+    goal_new: 'Neu',
     goal_consistency: 'Übe {days} Tage diese Woche',
     goal_consistency_desc: 'Die Gewohnheit aufzubauen ist wichtiger als jede einzelne Session',
     goal_speed: '{root} {voicing} unter {target}s',
