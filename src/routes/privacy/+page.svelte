@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
+	// This page is prerendered, so {@html t(...)} would freeze the build-time
+	// (English) locale into the markup. RichText re-reads t() after hydration.
+	import RichText from '$lib/components/RichText.svelte';
 </script>
 
 <svelte:head>
@@ -16,45 +19,31 @@
 			<p class="meta">{t('privacy.last_updated')}</p>
 		</header>
 
-		<p class="lede">
-			{@html t('privacy.intro')}
-		</p>
+		<RichText key="privacy.intro" class="lede" />
 
 		<h2>{t('privacy.h_data_collect')}</h2>
 
 		<h3>{t('privacy.h_local_storage')}</h3>
-		<p>
-			{@html t('privacy.p_local_storage')}
-		</p>
+		<RichText key="privacy.p_local_storage" />
 		<ul>
 			<li>{t('privacy.li_settings')}</li>
 			<li>{t('privacy.li_history')}</li>
 			<li>{t('privacy.li_streak')}</li>
 			<li>{t('privacy.li_theme')}</li>
 		</ul>
-		<p>
-			{@html t('privacy.p_local_storage_end')}
-		</p>
+		<RichText key="privacy.p_local_storage_end" />
 
 		<h3>{t('privacy.h_midi')}</h3>
-		<p>
-			{@html t('privacy.p_midi')}
-		</p>
+		<RichText key="privacy.p_midi" />
 
 		<h3>{t('privacy.h_analytics')}</h3>
-		<p>
-			{@html t('privacy.p_analytics')}
-		</p>
+		<RichText key="privacy.p_analytics" />
 
 		<h3>{t('privacy.h_hosting')}</h3>
-		<p>
-			{@html t('privacy.p_hosting')}
-		</p>
+		<RichText key="privacy.p_hosting" />
 
 		<h3>{t('privacy.h_fonts')}</h3>
-		<p>
-			{@html t('privacy.p_fonts')}
-		</p>
+		<RichText key="privacy.p_fonts" />
 
 		<h2>{t('privacy.h_no_collect')}</h2>
 		<ul>
@@ -101,10 +90,10 @@
 		<h2>{t('privacy.h_rights')}</h2>
 		<p>{t('privacy.p_rights')}</p>
 		<ul>
-			<li>{@html t('privacy.li_access')}</li>
-			<li>{@html t('privacy.li_delete')}</li>
-			<li>{@html t('privacy.li_portability')}</li>
-			<li>{@html t('privacy.li_object')}</li>
+			<RichText key="privacy.li_access" as="li" />
+			<RichText key="privacy.li_delete" as="li" />
+			<RichText key="privacy.li_portability" as="li" />
+			<RichText key="privacy.li_object" as="li" />
 		</ul>
 
 		<h2>{t('privacy.h_children')}</h2>
@@ -180,7 +169,9 @@
 	/* The lede is an opening paragraph, not a subheading: it stays on the
 	   sans so it belongs to the body, and earns its emphasis from size and
 	   ink instead of switching face. */
-	.lede {
+	/* :global because RichText renders this <p> in its own component scope, so
+	   the page's scoped class never lands on it. */
+	.legal-sheet :global(.lede) {
 		font-size: 1.08rem;
 		line-height: 1.65;
 		color: var(--text);

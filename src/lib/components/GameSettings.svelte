@@ -115,209 +115,477 @@
 		'voice-leading-flow':'voice-leading',
 	};
 
-	const LEVEL_CONFIG: Record<'beginner' | 'intermediate' | 'advanced', { color: string; shadow: string; dotsFilled: number }> = {
-		beginner:     { color: '#4ade80', shadow: '0 0 18px rgba(74,222,128,0.15)',  dotsFilled: 2 },
-		intermediate: { color: '#fb923c', shadow: '0 0 18px rgba(251,146,60,0.15)', dotsFilled: 3 },
-		advanced:     { color: '#ef4444', shadow: '0 0 18px rgba(239,68,68,0.15)',  dotsFilled: 5 },
+	/**
+	 * Level is printed, not glowed. Each level gets an ink and a count of filled
+	 * marks — the same information the old coloured glow carried, but as type and
+	 * a hairline rather than a halo. Green/amber/red are the semantic tokens; the
+	 * grade is legible without relying on colour alone because the marks count.
+	 */
+	const LEVEL_CONFIG: Record<'beginner' | 'intermediate' | 'advanced', { color: string; marks: number }> = {
+		beginner:     { color: 'var(--accent-green)', marks: 1 },
+		intermediate: { color: 'var(--ink-blue)',     marks: 2 },
+		advanced:     { color: 'var(--primary)',      marks: 3 },
 	};
 
+	/** The grade, printed as filled/empty marks: ▮▮▯ reads at 10px, a glow does not. */
+	function marks(level: 'beginner' | 'intermediate' | 'advanced'): string {
+		const n = LEVEL_CONFIG[level].marks;
+		return '▮'.repeat(n) + '▯'.repeat(3 - n);
+	}
 </script>
 
-<div class="space-y-6">
-	<!-- ── Empfohlen ── -->
-	<button
-		class="card surface-glass w-full p-5 sm:p-6 text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors group relative overflow-hidden"
-		style="border-left: 3px solid {LEVEL_CONFIG[suggested.level].color}; box-shadow: {LEVEL_CONFIG[suggested.level].shadow};"
-		onclick={() => onstartplan(suggested)}
-	>
-		<div aria-hidden="true" class="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[rgba(251,146,60,0.14)] blur-2xl transition-opacity duration-300 group-hover:opacity-100 opacity-70"></div>
-		<!-- Difficulty badge -->
-		<div
-			class="absolute top-3 right-3 uppercase font-medium"
-			style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[suggested.level].color};"
-		>
-			{t('settings.difficulty_' + suggested.level)}
-		</div>
-		<div class="flex items-start gap-4">
+<div class="gs">
+	<!-- ── The recommendation: one ruled plate, the only accented thing here ── -->
+	<section class="rec">
+		<p class="eyebrow blue">{t('settings.suggested_plan')}</p>
+		<button class="rec-btn" onclick={() => onstartplan(suggested)}>
 			<Icon
 				name={PLAN_ICON[suggested.id]}
-				size={52}
+				size={48}
 				class="suggested-icon shrink-0"
-				glow
 				label={t(suggested.name)}
 			/>
-			<div class="flex-1 min-w-0">
-				<div class="text-xs text-[var(--text-dim)] font-medium mb-1">{t('settings.suggested_plan')}</div>
-				<div class="text-xl font-bold group-hover:text-[var(--primary)] transition-colors">{t(suggested.name)}</div>
-				<div class="text-sm text-[var(--text-muted)] mt-1">{t(suggested.tagline)}</div>
-				<p class="text-xs text-[var(--text-dim)] mt-2 overflow-hidden transition-all duration-300 max-h-0 group-hover:max-h-24">{t(suggested.description)}</p>
-			</div>
-			<div class="flex flex-col items-end justify-center gap-2 self-center">
-				<span class="text-[var(--primary)] opacity-60 group-hover:opacity-100 transition-opacity flex"><Play size={24} aria-hidden="true" /></span>
-				<span class="pill-btn pill-btn-primary text-xs px-3 py-1.5">{t('settings.start_training')}</span>
-			</div>
-		</div>
-	</button>
+			<span class="rec-txt">
+				<span class="rec-head">
+					<span class="rec-name">{t(suggested.name)}</span>
+					<span class="grade" style="color: {LEVEL_CONFIG[suggested.level].color}">
+						<span class="grade-m" aria-hidden="true">{marks(suggested.level)}</span>
+						<span class="grade-l">{t('settings.difficulty_' + suggested.level)}</span>
+					</span>
+				</span>
+				<span class="rec-tag">{t(suggested.tagline)}</span>
+				<span class="rec-desc">{t(suggested.description)}</span>
+			</span>
+			<span class="rec-go">
+				<Play size={18} fill="currentColor" aria-hidden="true" />
+				<span class="rec-go-l">{t('settings.start_training')}</span>
+			</span>
+		</button>
+	</section>
 
-	<!-- ── Practice Plans Library ── -->
-	<div>
-		<div class="mb-3 flex items-center justify-between gap-3">
-			<h3 class="text-sm font-medium text-[var(--text-muted)]">{t('settings.all_plans')}</h3>
-			<button
-				class="pill-btn pill-btn-secondary text-xs px-3 py-1.5"
-				onclick={() => (showPlanLibrary = !showPlanLibrary)}
-			>
-				{showPlanLibrary ? 'Hide Plans' : 'Show Plans'}
+	<!-- ── The library, as a printed index ── -->
+	<section class="lib">
+		<div class="lib-head">
+			<p class="eyebrow">{t('settings.all_plans')}</p>
+			<button class="toggle plate" onclick={() => (showPlanLibrary = !showPlanLibrary)}>
+				{showPlanLibrary ? t('settings.fewer_plans') : t('settings.more_plans')}
 			</button>
 		</div>
 
 		{#if !showPlanLibrary}
-			<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-				{#each PRACTICE_PLANS.filter((p) => p.id !== suggested.id).slice(0, 3) as quick}
-					<button
-						class="surface-glass p-3 rounded-xl text-left cursor-pointer hover:border-[var(--border-hover)] transition-colors"
-						onclick={() => onstartplan(quick)}
-					>
-						<div class="flex items-center gap-2.5">
-							<Icon name={PLAN_ICON[quick.id]} size={28} class="shrink-0" label={t(quick.name)} />
-							<div class="min-w-0 flex-1">
-								<div class="text-sm font-semibold truncate">{t(quick.name)}</div>
-								<div class="text-[10px] text-[var(--text-dim)] uppercase tracking-wide">{t('settings.difficulty_' + quick.level)}</div>
-							</div>
-							<span class="text-[var(--primary)] text-sm font-semibold">Start</span>
-						</div>
-					</button>
+			<ol class="contents ruled">
+				{#each PRACTICE_PLANS.filter((p) => p.id !== suggested.id).slice(0, 3) as quick, i (quick.id)}
+					<li class="row">
+						<button class="row-btn" onclick={() => onstartplan(quick)}>
+							<span class="no">{String(i + 1).padStart(2, '0')}</span>
+							<span class="row-icon" aria-hidden="true"><Icon name={PLAN_ICON[quick.id]} size={24} /></span>
+							<span class="row-txt">
+								<span class="ttl">{t(quick.name)}</span>
+								<span class="dsc">{t(quick.tagline)}</span>
+							</span>
+							<span class="grade" style="color: {LEVEL_CONFIG[quick.level].color}">
+								<span class="grade-m" aria-hidden="true">{marks(quick.level)}</span>
+								<span class="grade-l">{t('settings.difficulty_' + quick.level)}</span>
+							</span>
+							<span class="go plate">{t('habit.start_arrow')}</span>
+						</button>
+					</li>
 				{/each}
-			</div>
+			</ol>
 		{:else}
-		<div class="plan-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
-			{#each PRACTICE_PLANS.filter((p) => p.id !== suggested.id) as plan}
-				{#if plan.id === 'voice-leading-flow'}
-					<!-- Voice Leading Flow: full-width card spanning all 3 columns with mode sub-cards -->
-					<div
-						class="vl-flow-card card surface-glass text-left transition-all duration-200 relative"
-						style="grid-column: 1 / -1; border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
-					>
-						<div class="absolute top-3 right-3 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
-							{t('settings.difficulty_' + plan.level)}
-						</div>
-						<!-- Header: icon + name -->
-						<div class="flex items-center gap-3 p-4 pb-3">
-							<Icon name={PLAN_ICON[plan.id]} size={44} class="shrink-0" glow label={t(plan.name)} />
-							<div class="font-semibold text-sm">{t(plan.name)}</div>
-						</div>
-						<!-- 3 equal mode sub-cards -->
-						<div class="grid grid-cols-3 gap-3 px-4 pb-4">
-							{#each (['guided', 'find-inversion', 'free'] as VoiceLeadingMode[]) as mode}
-								{@const cfg = VL_MODE_CONFIG[mode]}
-									{@const VlIcon = cfg.icon}
-								<button
-									class="vl-mode-btn flex flex-col items-start p-3 rounded-[var(--radius)] border cursor-pointer transition-all text-left hover:scale-105 hover:z-10 {vlMode === mode ? 'border-[var(--primary)] bg-[var(--primary-muted)]' : 'border-[var(--border)] bg-[var(--bg)]/60 hover:border-[var(--border-hover)]'}"
-									onclick={() => { vlMode = mode; onstartplan(plan); }}
-								>
-									<span class="vl-mode-icon mb-2 leading-none flex"><VlIcon size={24} aria-hidden="true" /></span>
-									<span class="vl-mode-label text-xs font-bold {vlMode === mode ? 'text-[var(--primary)]' : ''} mb-1">{t(cfg.labelKey)}</span>
-									<span class="text-[10px] text-[var(--text-dim)] leading-snug">{t(cfg.descKey)}</span>
-								</button>
-							{/each}
-						</div>
-					</div>
-				{:else}
-					<button
-					class="plan-card card surface-glass p-4 text-left cursor-pointer transition-all duration-200 group relative hover:z-10 hover:scale-105 hover:border-[var(--border-hover)]"
-					style="border-left: 3px solid {LEVEL_CONFIG[plan.level].color}; box-shadow: {LEVEL_CONFIG[plan.level].shadow};"
-					onclick={() => onstartplan(plan)}
-				>
-					<div class="absolute top-2 right-2 uppercase font-medium" style="font-size: 0.65rem; letter-spacing: 0.05em; color: {LEVEL_CONFIG[plan.level].color};">
-						{t('settings.difficulty_' + plan.level)}
-					</div>
-					<Icon name={PLAN_ICON[plan.id]} size={56} class="plan-icon mb-2" glow label={t(plan.name)} />
-					<div class="plan-name font-semibold text-sm group-hover:text-[var(--primary)] transition-colors">{t(plan.name)}</div>
-						<div class="absolute inset-x-0 bottom-0 translate-y-full pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-							<div class="rounded-[var(--radius)] border border-[var(--border-hover)] bg-[var(--bg-card,#1a1a1a)] p-3 shadow-xl"
-								style="box-shadow: 0 8px 32px rgba(0,0,0,0.6), {LEVEL_CONFIG[plan.level].shadow};">
-								<div class="text-xs font-medium text-[var(--text-muted)] mb-1">{t(plan.tagline)}</div>
-								<div class="text-xs text-[var(--text-dim)] leading-snug">{t(plan.description)}</div>
+			<ol class="contents ruled">
+				{#each PRACTICE_PLANS.filter((p) => p.id !== suggested.id) as plan, i (plan.id)}
+					{#if plan.id === 'voice-leading-flow'}
+						<!-- Voice Leading Flow carries three modes, so it is set as a
+						     block entry: the plan line, then its modes indented under
+						     it the way a score prints divisi. -->
+						<li class="row block">
+							<div class="row-btn as-head">
+								<span class="no">{String(i + 1).padStart(2, '0')}</span>
+								<span class="row-icon" aria-hidden="true"><Icon name={PLAN_ICON[plan.id]} size={24} /></span>
+								<span class="row-txt">
+									<span class="ttl">{t(plan.name)}</span>
+									<span class="dsc">{t(plan.tagline)}</span>
+								</span>
+								<span class="grade" style="color: {LEVEL_CONFIG[plan.level].color}">
+									<span class="grade-m" aria-hidden="true">{marks(plan.level)}</span>
+									<span class="grade-l">{t('settings.difficulty_' + plan.level)}</span>
+								</span>
 							</div>
-						</div>
-					</button>
-				{/if}
-			{/each}
-		</div>
+							<div class="modes">
+								{#each (['guided', 'find-inversion', 'free'] as VoiceLeadingMode[]) as mode}
+									{@const cfg = VL_MODE_CONFIG[mode]}
+									{@const VlIcon = cfg.icon}
+									<button
+										class="mode"
+										class:on={vlMode === mode}
+										aria-pressed={vlMode === mode}
+										onclick={() => { vlMode = mode; onstartplan(plan); }}
+									>
+										<span class="mode-icon" aria-hidden="true"><VlIcon size={20} /></span>
+										<span class="mode-l">{t(cfg.labelKey)}</span>
+										<span class="mode-d">{t(cfg.descKey)}</span>
+									</button>
+								{/each}
+							</div>
+						</li>
+					{:else}
+						<li class="row">
+							<button class="row-btn" onclick={() => onstartplan(plan)}>
+								<span class="no">{String(i + 1).padStart(2, '0')}</span>
+								<span class="row-icon" aria-hidden="true"><Icon name={PLAN_ICON[plan.id]} size={24} /></span>
+								<span class="row-txt">
+									<span class="ttl">{t(plan.name)}</span>
+									<span class="dsc">{t(plan.tagline)}</span>
+								</span>
+								<span class="grade" style="color: {LEVEL_CONFIG[plan.level].color}">
+									<span class="grade-m" aria-hidden="true">{marks(plan.level)}</span>
+									<span class="grade-l">{t('settings.difficulty_' + plan.level)}</span>
+								</span>
+								<span class="go plate">{t('habit.start_arrow')}</span>
+							</button>
+						</li>
+					{/if}
+				{/each}
+			</ol>
 		{/if}
-	</div>
-
+	</section>
 </div>
 
 <style>
-	/* ── iPad / large touch: native app feel ─────────────── */
+	/* The setup form on the editorial plate. This is SECONDARY furniture — it
+	   sits behind a disclosure and must read as a printed index of plans, not
+	   as a wall of glass cards competing with the start button above it. */
+
+	.gs {
+		--rule-soft: color-mix(in srgb, var(--border) 62%, transparent);
+		/* AccidentalFit is unicode-range-scoped, so it only ever claims ♭ ♯ ° ø;
+		   every other character still comes from the normal stack below it. */
+		--font-display-mus: 'AccidentalFit', var(--font-display);
+		display: flex;
+		flex-direction: column;
+		gap: 1.85rem;
+		font-family: 'AccidentalFit', var(--font-sans);
+	}
+
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin: 0 0 0.55rem;
+		font-family: var(--font-mono);
+		font-size: 0.63rem;
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+	.eyebrow::after {
+		content: '';
+		flex: 1;
+		min-width: 1rem;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.32;
+	}
+	.eyebrow.blue { color: var(--ink-blue); }
+
+	.plate {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	/* ── The recommendation ───────────────────────────────────── */
+
+	.rec-btn {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 0.9rem;
+		align-items: start;
+		width: 100%;
+		padding: 1rem;
+		border: 1px solid var(--border);
+		border-left: 3px solid var(--primary);
+		background: var(--bg-card);
+		font-family: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: border-color 0.12s, background-color 0.12s;
+	}
+	.rec-btn:hover {
+		border-color: var(--border-hover);
+		border-left-color: var(--primary);
+		background: var(--bg-card-hover);
+	}
+	.rec-btn:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	.rec-txt { min-width: 0; }
+	.rec-head {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.5rem 0.75rem;
+	}
+	.rec-name {
+		font-family: var(--font-display-mus);
+		font-size: 1.22rem;
+		font-weight: 600;
+		line-height: 1.2;
+		letter-spacing: -0.015em;
+		color: var(--text);
+	}
+	.rec-btn:hover .rec-name { color: var(--primary); }
+
+	.rec-tag {
+		display: block;
+		margin-top: 0.3rem;
+		font-family: var(--font-display-mus);
+		font-size: 0.95rem;
+		font-style: italic;
+		line-height: 1.4;
+		color: var(--text-muted);
+	}
+	.rec-desc {
+		display: block;
+		margin-top: 0.45rem;
+		max-width: 54ch;
+		font-size: 0.85rem;
+		line-height: 1.55;
+		color: var(--text-dim);
+	}
+
+	/* The recommendation's own action. Stamp-red outline — loud enough to be
+	   found, quiet enough that the amber coach hero above still wins. */
+	.rec-go {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		grid-column: 2;
+		justify-self: start;
+		margin-top: 0.85rem;
+		min-height: var(--tap-min);
+		padding: 0 1rem;
+		border: 1.5px solid var(--primary);
+		border-radius: var(--radius-sm);
+		color: var(--primary);
+		transition: background-color 0.12s, color 0.12s;
+	}
+	.rec-go-l {
+		font-family: var(--font-mono);
+		font-size: 0.64rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+	.rec-btn:hover .rec-go {
+		background: var(--primary);
+		color: var(--primary-text);
+	}
+
+	/* ── The grade ────────────────────────────────────────────── */
+
+	.grade {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex: none;
+	}
+	.grade-m {
+		font-size: 0.6rem;
+		letter-spacing: 0.06em;
+		line-height: 1;
+	}
+	.grade-l {
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		font-weight: 600;
+		letter-spacing: 0.13em;
+		text-transform: uppercase;
+	}
+
+	/* ── The library index ────────────────────────────────────── */
+
+	.lib-head {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+	}
+	.lib-head .eyebrow { flex: 1; margin-bottom: 0; }
+
+	.toggle {
+		flex: none;
+		padding: 0.4rem 0.7rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		cursor: pointer;
+		transition: border-color 0.12s, color 0.12s;
+	}
+	.toggle:hover { border-color: var(--border-hover); color: var(--text); }
+	.toggle:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	.contents {
+		list-style: none;
+		margin: 0.6rem 0 0;
+		padding: 0;
+	}
+	.contents.ruled { border-top: 1px solid var(--border); }
+
+	.row { border-bottom: 1px solid var(--rule-soft); }
+
+	.row-btn {
+		display: grid;
+		grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+		gap: 0.8rem;
+		align-items: center;
+		width: 100%;
+		min-height: var(--tap-min);
+		padding: 0.75rem 0.25rem;
+		border: 0;
+		background: transparent;
+		font-family: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: background-color 0.12s;
+	}
+	.row-btn:hover { background: var(--bg-card); }
+	.row-btn:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: -2px;
+	}
+	/* The voice-leading header is a label, not a button: its modes are the
+	   actions, so it must not look pressable. */
+	.row-btn.as-head {
+		grid-template-columns: auto auto minmax(0, 1fr) auto;
+		cursor: default;
+	}
+	.row-btn.as-head:hover { background: transparent; }
+
+	.no {
+		font-family: var(--font-mono);
+		font-size: 0.66rem;
+		letter-spacing: 0.08em;
+		font-variant-numeric: lining-nums tabular-nums;
+		color: var(--text-dim);
+	}
+	.row-icon { display: flex; flex: none; }
+
+	.row-txt { min-width: 0; }
+	.ttl {
+		display: block;
+		font-family: var(--font-display-mus);
+		font-size: 1rem;
+		font-weight: 600;
+		line-height: 1.25;
+		color: var(--text);
+	}
+	.row-btn:hover .ttl { color: var(--primary); }
+	.dsc {
+		display: block;
+		margin-top: 0.12rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: 0.82rem;
+		line-height: 1.45;
+		color: var(--text-muted);
+	}
+
+	.go { white-space: nowrap; }
+	.row-btn:hover .go { color: var(--primary); }
+
+	/* Narrow: the grade label and the GO plate would wrap the row — keep the
+	   marks (which carry the level) and drop the words. */
+	@media (max-width: 560px) {
+		.row-btn { grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 0.6rem; }
+		.row-btn.as-head { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+		.grade-l { display: none; }
+		.row-btn .go { display: none; }
+		.dsc { white-space: nowrap; }
+	}
+
+	/* ── Voice-leading modes ──────────────────────────────────── */
+
+	.modes {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.5rem;
+		margin: 0 0 0.8rem;
+		padding-left: 1.5rem;
+	}
+	@media (max-width: 560px) {
+		.modes { grid-template-columns: 1fr; padding-left: 0; }
+	}
+
+	.mode {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.3rem;
+		min-height: var(--tap-min);
+		padding: 0.65rem 0.7rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		font-family: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: border-color 0.12s, background-color 0.12s, color 0.12s;
+	}
+	.mode:hover { border-color: var(--border-hover); background: var(--bg-card); }
+	.mode:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+	/* The selected mode IS the live one — the reserved use of amber. */
+	.mode.on {
+		border-color: var(--accent-amber);
+		background: color-mix(in srgb, var(--accent-amber) 10%, transparent);
+	}
+	.mode-icon { display: flex; color: var(--text-dim); }
+	.mode.on .mode-icon { color: var(--accent-amber); }
+	.mode-l {
+		font-family: var(--font-display-mus);
+		font-size: 0.92rem;
+		font-weight: 600;
+		line-height: 1.2;
+		color: var(--text);
+	}
+	.mode.on .mode-l { color: var(--accent-amber); }
+	.mode-d {
+		font-size: 0.76rem;
+		line-height: 1.4;
+		color: var(--text-muted);
+	}
+
+	/* ── iPad / large touch: native app feel ─────────────────── */
 	@media (hover: none) and (pointer: coarse) and (min-width: 768px) {
-		/* 3-column grid, larger gap */
-		.plan-grid {
-			gap: 1rem;
-		}
-
-		/* Taller, more padded plan cards */
-		.plan-card {
-			padding: 1.25rem !important;
-			min-height: 150px;
-		}
-
-		/* Bigger icons */
-		:global(.plan-icon) {
-			width: 76px !important;
-			height: 76px !important;
-			margin-bottom: 0.75rem !important;
-		}
-
-		/* Larger card name text */
-		.plan-name {
-			font-size: 1rem !important;
-			font-weight: 700;
-		}
-
-		/* Disable hover scale on touch */
-		.plan-card:hover {
-			transform: none !important;
-		}
-		.plan-card:active {
-			transform: scale(0.97) !important;
-		}
-
-		/* Bigger suggested plan icon */
+		.rec-name { font-size: 1.4rem; }
+		.rec-tag { font-size: 1.02rem; }
+		.ttl { font-size: 1.1rem; }
+		.dsc { font-size: 0.9rem; }
+		.row-btn { padding: 0.95rem 0.25rem; }
 		:global(.suggested-icon) {
-			width: 72px !important;
-			height: 72px !important;
+			width: 64px !important;
+			height: 64px !important;
 		}
+		.mode { padding: 0.85rem; }
+		.mode-l { font-size: 1rem; }
+		.mode-d { font-size: 0.82rem; }
+		.row-btn:hover, .mode:hover { background: transparent; }
+		.row-btn:active { background: var(--bg-card); }
+		.mode:active { background: var(--bg-card); }
+	}
 
-		/* Voice leading mode sub-cards */
-		.vl-mode-btn {
-			padding: 1rem !important;
-		}
-		.vl-mode-icon {
-			font-size: 2rem !important;
-			margin-bottom: 0.75rem !important;
-		}
-		.vl-mode-label {
-			font-size: 0.875rem !important;
-		}
-		.vl-mode-btn span:last-child {
-			font-size: 0.75rem !important;
-		}
-		.vl-mode-btn:hover {
-			transform: none !important;
-		}
-		.vl-mode-btn:active {
-			transform: scale(0.97) !important;
-		}
-		/* VL header icon */
-		.vl-flow-card .flex :global(svg) {
-			width: 56px !important;
-			height: 56px !important;
-		}
-		.vl-flow-card .flex .font-semibold {
-			font-size: 1rem !important;
-			font-weight: 700 !important;
-		}
+	@media (prefers-reduced-motion: reduce) {
+		.rec-btn, .row-btn, .mode, .toggle, .rec-go { transition: none; }
 	}
 </style>

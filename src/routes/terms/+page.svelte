@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
+	// This page is prerendered, so {@html t(...)} would freeze the build-time
+	// (English) locale into the markup. RichText re-reads t() after hydration.
+	import RichText from '$lib/components/RichText.svelte';
 </script>
 
 <svelte:head>
@@ -37,7 +40,7 @@
 		<p>{t('terms.p_withdrawal')}</p>
 
 		<h2>{t('terms.h_data')}</h2>
-		<p>{@html t('terms.p_data')}</p>
+		<RichText key="terms.p_data" />
 
 		<h2>{t('terms.h_ip')}</h2>
 		<p>{t('terms.p_ip')}</p>
@@ -61,10 +64,10 @@
 		<p>{t('terms.p_changes')}</p>
 
 		<h2>{t('terms.h_governing')}</h2>
-		<p>{@html t('terms.p_governing')}</p>
+		<RichText key="terms.p_governing" />
 
 		<h2>{t('terms.h_contact')}</h2>
-		<p>{@html t('terms.p_contact')}</p>
+		<RichText key="terms.p_contact" />
 	</article>
 </main>
 
@@ -120,7 +123,8 @@
 	/* The lede is an opening paragraph, not a subheading: it stays on the
 	   sans so it belongs to the body, and earns its emphasis from size and
 	   ink instead of switching face. */
-	.lede {
+	/* :global because RichText renders this <p> in its own component scope. */
+	.legal-sheet :global(.lede) {
 		font-size: 1.08rem;
 		line-height: 1.65;
 		color: var(--text);

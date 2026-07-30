@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
 	import { ArrowRight, Check, Mail } from 'lucide-svelte';
+	// This page is prerendered, so {@html t(...)} would freeze the build-time
+	// (English) locale into the markup. RichText re-reads t() after hydration.
+	import RichText from '$lib/components/RichText.svelte';
 
 	const platforms = [
 		{ name: 'Open Studio Jazz', descKey: 'educators.platform_open_studio', href: '/open-studio' },
@@ -118,7 +121,7 @@
 		<div class="shell">
 			<p class="eyebrow">{t('educators.badge')}</p>
 			<h1 class="head-h1">
-				<span class="quote">{@html t('educators.hero_h1_gradient')}</span>
+				<RichText key="educators.hero_h1_gradient" as="span" class="quote" />
 				<span class="l2">{t('educators.hero_h1_b')}</span>
 			</h1>
 			<p class="head-lede">{t('educators.hero_p')}</p>
@@ -164,7 +167,7 @@
 					<p class="eyebrow">{t('educators.problem_title')}</p>
 				</div>
 			</div>
-			<blockquote class="problem">{@html t('educators.problem_desc')}</blockquote>
+			<blockquote class="problem"><RichText key="educators.problem_desc" as="span" /></blockquote>
 		</section>
 
 		<!-- ═══ C · The solution, as a numbered contents list ═══ -->
@@ -386,7 +389,8 @@
 	}
 	/* The teacher's demand, set as the quotation it is — red pencil, italic.
 	   Replaces the old gradient-filled text. */
-	.head-h1 .quote {
+	/* :global because RichText renders this span in its own component scope. */
+	.head-h1 :global(.quote) {
 		display: block;
 		font-style: italic;
 		color: var(--primary);

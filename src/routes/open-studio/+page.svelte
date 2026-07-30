@@ -18,6 +18,9 @@
 		Piano,
 	} from 'lucide-svelte';
 	import { t } from '$lib/i18n';
+	// This page is prerendered, so {@html t(...)} would freeze the build-time
+	// (English) locale into the markup. RichText re-reads t() after hydration.
+	import RichText from '$lib/components/RichText.svelte';
 </script>
 
 <svelte:head>
@@ -82,12 +85,10 @@
 			<p class="plate plate-center">{t('open_studio.badge')}</p>
 
 			<h1 class="os-h1">
-				{@html t('open_studio.hero_h1')}
+				<RichText key="open_studio.hero_h1" as="span" />
 			</h1>
 
-			<p class="text-lg sm:text-xl text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-10">
-				{@html t('open_studio.hero_p')}
-			</p>
+			<RichText key="open_studio.hero_p" class="text-lg sm:text-xl text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed mb-10" />
 
 			<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
 				<a
@@ -116,9 +117,7 @@
 				<p class="text-[var(--text-muted)] leading-relaxed text-lg">
 					{t('open_studio.opportunity_p1')}
 				</p>
-				<p class="text-[var(--text-muted)] leading-relaxed text-lg mt-4">
-					{@html t('open_studio.opportunity_p2')}
-				</p>
+				<RichText key="open_studio.opportunity_p2" class="text-[var(--text-muted)] leading-relaxed text-lg mt-4" />
 			</div>
 		</div>
 	</section>
@@ -378,7 +377,7 @@
 	<section class="px-4 py-14 sm:py-16">
 		<div class="max-w-4xl mx-auto">
 			<div class="panel p-8 sm:p-10">
-				<h2 class="panel-h mb-6">{@html t('open_studio.comparison_title')}</h2>
+				<h2 class="panel-h mb-6"><RichText key="open_studio.comparison_title" as="span" /></h2>
 
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
 					<div class="compare p-4 sm:p-5">
@@ -403,9 +402,7 @@
 					</div>
 				</div>
 
-				<p class="text-[var(--text-muted)] mt-6 text-sm leading-relaxed">
-					{@html t('open_studio.comparison_summary')}
-				</p>
+				<RichText key="open_studio.comparison_summary" class="text-[var(--text-muted)] mt-6 text-sm leading-relaxed" />
 			</div>
 		</div>
 	</section>

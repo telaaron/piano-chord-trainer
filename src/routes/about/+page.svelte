@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
+	// This page is prerendered, so {@html t(...)} would freeze the build-time
+	// (English) locale into the markup. RichText re-reads t() after hydration.
+	import RichText from '$lib/components/RichText.svelte';
 
 	/* The i18n headline carries a hard <br>. Rendering it raw and hiding the
 	   break with CSS butts the words together ("2 AM,because"), so split on the
@@ -43,16 +46,16 @@
 	<!-- ═══ The story — one column, generous measure ═══ -->
 	<section class="shell">
 		<div class="story">
-			<p class="lede">{@html t('about.p1')}</p>
-			<p>{@html t('about.p2')}</p>
-			<p>{@html t('about.p3')}</p>
+			<RichText key="about.p1" class="lede" />
+			<RichText key="about.p2" />
+			<RichText key="about.p3" />
 		</div>
 
 		<!-- ═══ Colophon: who prints this ═══ -->
 		<div class="colophon">
 			<div class="col">
 				<p class="plate">{t('about.company_title')}</p>
-				<p class="col-body">{@html t('about.company_address')}</p>
+				<RichText key="about.company_address" class="col-body" />
 			</div>
 			<div class="col">
 				<p class="plate">{t('about.contact_title')}</p>
@@ -165,8 +168,9 @@
 	}
 	.story :global(p:last-child) { margin-bottom: 0; }
 
-	/* The opening paragraph is set larger — a printed drop-in. */
-	.story .lede {
+	/* The opening paragraph is set larger — a printed drop-in.
+	   :global because RichText renders it in its own component scope. */
+	.story :global(.lede) {
 		font-family: var(--font-display);
 		font-size: clamp(1.12rem, 2.3vw, 1.35rem);
 		line-height: 1.6;

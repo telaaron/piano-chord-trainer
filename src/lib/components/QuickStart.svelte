@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
 	import { PRACTICE_PLANS, type PracticePlan } from '$lib/engine';
-	import { Card, Icon } from '$lib/components/ui';
+	import { Icon } from '$lib/components/ui';
 
 	import { Play } from 'lucide-svelte';
 
@@ -105,78 +105,255 @@
 
 		return out;
 	});
+
+	// The alternatives are printed as a running order, the way /togo sets its
+	// seven disciplines. Roman numerals: these are movements of one programme,
+	// not a ranked list.
+	const ROMAN = ['I', 'II', 'III', 'IV', 'V'] as const;
 </script>
 
-<section aria-label={t('quickstart.section_label')} class="flex flex-col gap-4">
+<section aria-label={t('quickstart.section_label')} class="qs">
 	{#if onstartcoach}
-		<!-- Coach hero — the single dominant "just start" action. -->
-		<div class="flex flex-col gap-2">
-			<button
-				type="button"
-				onclick={onstartcoach}
-				class="group flex w-full items-center gap-4 rounded-2xl bg-[var(--primary)] px-5 py-4 text-left text-white shadow-lg transition-all hover:opacity-95 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
-			>
-				<span class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white/20" aria-hidden="true">
-					<Play size={26} fill="currentColor" />
-				</span>
-				<span class="min-w-0 flex-1">
-					<span class="block text-lg font-bold">{t('quickstart.coach_hero_title')}</span>
-					{#if coachAnnouncement}
-						<span class="mt-0.5 block truncate text-sm text-white/85">{coachAnnouncement}</span>
-					{:else}
-						<span class="mt-0.5 block truncate text-sm text-white/85">{t('quickstart.coach_hero_sub')}</span>
-					{/if}
-				</span>
-			</button>
-		</div>
+		<!-- The one filled action on the whole screen. Amber is the system's
+		     live ink and starting a session is exactly that; the values are
+		     fixed in both themes for the same reason /togo fixes them —
+		     near-black on bright amber measures 9.65:1 either way, and the
+		     invitation to press must not change character on paper. -->
+		<button type="button" onclick={onstartcoach} class="stamp">
+			<Play size={22} fill="currentColor" aria-hidden="true" />
+			<span class="stamp-txt">
+				<span class="stamp-t">{t('quickstart.coach_hero_title')}</span>
+				<span class="stamp-s">{coachAnnouncement || t('quickstart.coach_hero_sub')}</span>
+			</span>
+		</button>
 
-		<!-- "Pick it yourself" — the manual cards live below the coach. -->
-		<div class="flex items-center gap-3">
-			<span class="h-px flex-1 bg-[var(--border)]"></span>
-			<span class="text-xs font-medium uppercase tracking-[0.06em] text-(--text-muted)">{t('quickstart.pick_yourself')}</span>
-			<span class="h-px flex-1 bg-[var(--border)]"></span>
-		</div>
+		<!-- "Pick it yourself" — a ruled head, not a divider with a label in it. -->
+		<p class="eyebrow blue rule-head">{t('quickstart.pick_yourself')}</p>
 	{/if}
 
-	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-		{#each cards as card (card.key)}
-			<Card interactive onclick={card.run} ariaLabel={t(card.titleKey)} padding="md">
-				<div class="flex items-start gap-3.5">
-					<span
-						class="grid h-12 w-12 shrink-0 place-items-center rounded-[var(--radius-lg)]"
-						style="background: color-mix(in srgb, {card.accent} 16%, transparent);"
-						aria-hidden="true"><Icon name={card.icon} size={30} /></span>
-					<div class="min-w-0">
-						<div class="text-[var(--text-base)] font-semibold text-[var(--text)]">{t(card.titleKey)}</div>
-						<div class="text-[var(--text-sm)] text-[var(--text-dim)] mt-0.5">{t(card.descKey)}</div>
-					</div>
-				</div>
-			</Card>
+	<ol class="contents ruled">
+		{#each cards as card, i (card.key)}
+			<li class="row">
+				<button type="button" onclick={card.run} aria-label={t(card.titleKey)} class="row-btn">
+					<span class="no roman">{ROMAN[i] ?? String(i + 1)}</span>
+					<span class="row-icon" aria-hidden="true"><Icon name={card.icon} size={26} /></span>
+					<span class="row-txt">
+						<span class="ttl">{t(card.titleKey)}</span>
+						<span class="dsc">{t(card.descKey)}</span>
+					</span>
+					<span class="go plate">{t('habit.start_arrow')}</span>
+				</button>
+			</li>
 		{/each}
-	</div>
+	</ol>
 
-	<div class="flex items-center gap-3 text-[var(--text-sm)]">
-		<button
-			type="button"
-			onclick={onstartdefault}
-			class="font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded px-1"
-		>
+	<div class="fin">
+		<button type="button" onclick={onstartdefault} class="link primary">
 			{t('quickstart.start_custom')}
 		</button>
-		<span class="text-[var(--text-dim)]">·</span>
-		<button
-			type="button"
-			onclick={oncustomize}
-			class="font-medium text-[var(--text-muted)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded px-1"
-		>
+		<span class="sep" aria-hidden="true">·</span>
+		<button type="button" onclick={oncustomize} class="link">
 			{t('quickstart.customize')}
 		</button>
-		<span class="text-[var(--text-dim)]">·</span>
-		<a
-			href="/togo"
-			class="font-medium text-[var(--text-muted)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded px-1"
-		>
-			{t('togo.entry')}
-		</a>
+		<span class="sep" aria-hidden="true">·</span>
+		<a href="/togo" class="link">{t('togo.entry')}</a>
 	</div>
 </section>
+
+<style>
+	/* The pre-session screen on the editorial plate. Same vocabulary as the
+	   landing page and /togo — hairline rules, a printed contents list, the
+	   display serif for anything read rather than scanned. This screen is
+	   seen before EVERY session, so exactly one thing is loud: the start. */
+
+	.qs {
+		--rule-soft: color-mix(in srgb, var(--border) 62%, transparent);
+		/* AccidentalFit is unicode-range-scoped, so it only ever claims ♭ ♯ ° ø;
+		   every other character still comes from the normal stack below it. */
+		--font-display-mus: 'AccidentalFit', var(--font-display);
+		font-family: 'AccidentalFit', var(--font-sans);
+	}
+
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.66rem;
+		font-weight: 600;
+		letter-spacing: 0.19em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+	.eyebrow::after {
+		content: '';
+		flex: 1;
+		min-width: 1rem;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.32;
+	}
+	.eyebrow.blue { color: var(--ink-blue); }
+	.rule-head { margin: 1.75rem 0 0.25rem; }
+
+	.plate {
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--text-dim);
+	}
+
+	/* ── The start ────────────────────────────────────────────── */
+
+	.stamp {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
+		width: 100%;
+		min-height: 3.85rem;
+		padding: 0.75rem 1.25rem;
+		border: 1.5px solid var(--accent-amber);
+		border-radius: var(--radius-sm);
+		background: var(--accent-amber);
+		color: var(--primary-text);
+		font-family: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: transform 0.12s ease-out, background-color 0.12s, border-color 0.12s;
+	}
+	.stamp:hover { transform: translateY(-1px); }
+	.stamp:active { transform: none; }
+	.stamp:focus-visible {
+		outline: 2px solid var(--text);
+		outline-offset: 2px;
+	}
+	.stamp :global(svg) { flex: none; }
+
+	.stamp-txt { display: block; min-width: 0; }
+	.stamp-t {
+		display: block;
+		font-family: var(--font-display-mus);
+		font-size: 1.16rem;
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: -0.012em;
+	}
+	.stamp-s {
+		display: block;
+		margin-top: 0.14rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 0.79rem;
+		font-weight: 500;
+		line-height: 1.35;
+		opacity: 0.82;
+	}
+
+	/* ── The alternatives, as a printed running order ─────────── */
+
+	.contents {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.contents.ruled { border-top: 1px solid var(--border); }
+
+	.row { border-bottom: 1px solid var(--rule-soft); }
+
+	.row-btn {
+		display: grid;
+		grid-template-columns: auto auto minmax(0, 1fr) auto;
+		gap: 0.85rem;
+		align-items: center;
+		width: 100%;
+		min-height: var(--tap-min);
+		padding: 0.8rem 0.25rem;
+		border: 0;
+		background: transparent;
+		font-family: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: background-color 0.12s;
+	}
+	.row-btn:hover { background: var(--bg-card); }
+	.row-btn:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: -2px;
+	}
+
+	.no {
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		letter-spacing: 0.08em;
+		color: var(--text-dim);
+	}
+	.no.roman { min-width: 1.6rem; }
+
+	.row-icon { display: flex; flex: none; }
+
+	.row-txt { min-width: 0; }
+	.ttl {
+		display: block;
+		font-family: var(--font-display-mus);
+		font-size: 1.04rem;
+		font-weight: 600;
+		line-height: 1.25;
+		color: var(--text);
+	}
+	.dsc {
+		display: block;
+		margin-top: 0.15rem;
+		font-size: 0.86rem;
+		line-height: 1.45;
+		color: var(--text-muted);
+	}
+
+	.go { white-space: nowrap; }
+	.row-btn:hover .go { color: var(--primary); }
+
+	/* ── The quiet exits ──────────────────────────────────────── */
+
+	.fin {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 1.1rem;
+	}
+
+	.link {
+		padding: 0.25rem 0;
+		border: 0;
+		background: transparent;
+		font-family: inherit;
+		font-size: 0.86rem;
+		font-weight: 500;
+		color: var(--text-muted);
+		text-decoration: underline;
+		text-decoration-color: var(--border-hover);
+		text-decoration-thickness: 1px;
+		text-underline-offset: 4px;
+		cursor: pointer;
+		transition: color 0.12s, text-decoration-color 0.12s;
+	}
+	.link:hover {
+		color: var(--text);
+		text-decoration-color: var(--accent-amber);
+	}
+	.link.primary { color: var(--primary); }
+	.link.primary:hover { color: var(--primary-hover); }
+	.link:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	.sep { color: var(--text-dim); }
+
+	@media (prefers-reduced-motion: reduce) {
+		.stamp { transition: none; }
+		.stamp:hover { transform: none; }
+	}
+</style>
