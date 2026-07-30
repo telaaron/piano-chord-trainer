@@ -18,12 +18,19 @@ import {
 	XP_LONG_SESSION,
 	XP_DEDICATED,
 	XP_FULL_CIRCLE,
+	XP_KEY_FLUENT,
+	XP_CIRCLE_QUARTER,
+	XP_CIRCLE_HALF,
+	XP_CIRCLE_COMPLETE,
+	diffDial,
+	calculateDialXP,
 	getDailyProgress,
 	getDailyMotivation,
 	type HabitProfile,
 	type SmartGoal,
 	type ChordReview,
 } from './habits';
+import type { SessionResult } from '../services/progress';
 
 // ─── Level System ───────────────────────────────────────────
 
@@ -485,5 +492,94 @@ describe('getDailyMotivation', () => {
 		const motivation = getDailyMotivation(profile, streak);
 		expect(motivation.type).toBe('almost-there');
 		expect(motivation.messageParams.remaining).toBe(2);
+	});
+});
+describe('diffDial — the circle of fifths as a reward surface', () => {
+	/** A session that plays `root` at a fixed speed, `count` times. */
+	function play(root: string, ms: number, count = 3): SessionResult {
+		return {
+			chordTimings: Array.from({ length: count }, () => ({
+				root,
+				chord: root + 'maj7',
+				durationMs: ms,
+				correct: true,
+			})),
+			settings: { voicing: 'shell' },
+		} as unknown as SessionResult;
+	}
+
+	it('reports a key that crossed the threshold', () => {
+		const before = [play('Db', 3000)];
+		const after = [...before, play('Db', 800)];
+		const d = diffDial(before, after);
+		expect(d.gained.map((g) => g.root)).toEqual(['Db']);
+		expect(d.fluentBefore).toBe(0);
+		expect(d.fluentAfter).toBe(1);
+	});
+
+	it('does not re-award a key that was already fluent', () => {
+		const before = [play('C', 500)];
+		const after = [...before, play('C', 450)];
+		expect(diffDial(before, after).gained).toEqual([]);
+	});
+
+	it('ignores a key that got faster but stayed slow', () => {
+		const before = [play('Gb', 3200)];
+		const after = [...before, play('Gb', 2600)];
+		const d = diffDial(before, after);
+		expect(d.gained).toEqual([]);
+		expect(d.fluentAfter).toBe(0);
+	});
+
+	it('pays a milestone once, on the session that crosses it', () => {
+		const keys = ['C', 'G', 'D'];
+		const before = keys.slice(0, 2).map((k) => play(k, 600));
+		const after = keys.map((k) => play(k, 600));
+		// Third key crosses the 3-key milestone.
+		expect(diffDial(before, after).milestones).toEqual([3]);
+		// Running it again from the new baseline pays nothing more.
+		expect(diffDial(after, after).milestones).toEqual([]);
+	});
+
+	it('treats the threshold as inclusive, matching the dial', () => {
+		// buildKeyDial marks fluent at avgMs <= threshold; the diff must agree,
+		// or a key could show green on the dial and pay no XP.
+		const before = [play('A', 2100)];
+		const after = [...before, play('A', 1900)];
+		const d = diffDial(before, after, 2000);
+		expect(d.gained.map((g) => g.root)).toEqual(['A']);
+	});
+
+	it('never claims a gain for a key nobody has played', () => {
+		const d = diffDial([], [play('C', 600)]);
+		expect(d.gained).toHaveLength(1);
+		expect(d.gained[0].beforeMs).toBeNull();
+	});
+});
+
+describe('calculateDialXP', () => {
+	it('pays per fluent key and per milestone', () => {
+		const events = calculateDialXP({
+			gained: [{ root: 'Db', beforeMs: 3000, afterMs: 900 }],
+			fluentBefore: 2,
+			fluentAfter: 3,
+			milestones: [3],
+		});
+		expect(events).toHaveLength(2);
+		expect(events[0].amount).toBe(XP_KEY_FLUENT);
+		expect(events[0].reasonParams).toEqual({ key: 'Db' });
+		expect(events[1].amount).toBe(XP_CIRCLE_QUARTER);
+	});
+
+	it('scales the milestone reward with the milestone', () => {
+		const at = (m: number) =>
+			calculateDialXP({ gained: [], fluentBefore: 0, fluentAfter: m, milestones: [m] })[0].amount;
+		expect(at(3)).toBe(XP_CIRCLE_QUARTER);
+		expect(at(6)).toBe(XP_CIRCLE_HALF);
+		expect(at(12)).toBe(XP_CIRCLE_COMPLETE);
+	});
+
+	it('awards nothing when the dial did not move', () => {
+		expect(calculateDialXP({ gained: [], fluentBefore: 4, fluentAfter: 4, milestones: [] })).toEqual([]);
 	});
 });

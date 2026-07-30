@@ -2,7 +2,7 @@
 // Pure TypeScript, no DOM, no side effects.
 
 import type { SessionResult, StreakData, WeakChord, WeakSpot } from '../services/progress';
-import { analyzeWeakChords, analyzeWeakSpots } from '../services/progress';
+import { analyzeWeakChords, analyzeWeakSpots, buildKeyDial } from '../services/progress';
 
 // ─── XP Constants ───────────────────────────────────────────
 
@@ -16,8 +16,24 @@ export const XP_GOAL_COMPLETED = 25;
 export const XP_NEW_VOICING = 15;
 export const XP_LONG_SESSION = 10; // > 5 min
 export const XP_DEDICATED = 20; // 3+ sessions in one day
-export const XP_FULL_CIRCLE = 30; // all 12 keys
+export const XP_FULL_CIRCLE = 30; // all 12 keys touched in one session
 export const XP_HIGH_ACCURACY = 5; // ≥ 95% MIDI accuracy
+
+/**
+ * A key crossing into fluency — its mean time drops to the mastery threshold
+ * for the first time.
+ *
+ * This is deliberately a different reward from XP_FULL_CIRCLE, which fires
+ * when twelve keys are merely TOUCHED in one session. That one pays for
+ * attendance: you can tap all twelve slowly and collect it, while someone with
+ * seven keys genuinely under two seconds gets nothing. This pays for the thing
+ * the app actually teaches.
+ */
+export const XP_KEY_FLUENT = 15;
+/** Milestones on the dial: a quarter, half, and the whole circle fluent. */
+export const XP_CIRCLE_QUARTER = 25;
+export const XP_CIRCLE_HALF = 60;
+export const XP_CIRCLE_COMPLETE = 150;
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -1003,4 +1019,95 @@ export function getDailyMotivation(
 		messageParams: { remaining: progress.remainingMinutes, practiced: progress.practicedMinutes },
 		emoji: '',
 	};
+}
+
+// ─── The dial as a reward surface ───────────────────────────
+
+/** One key crossing into fluency during a session. */
+export interface KeyFluencyGain {
+	/** Root as the engine spells it, e.g. "Db". */
+	root: string;
+	/** Mean before this session, or null if the key was never played. */
+	beforeMs: number | null;
+	/** Mean after. */
+	afterMs: number;
+}
+
+export interface DialProgress {
+	/** Keys that crossed the threshold in this session. */
+	gained: KeyFluencyGain[];
+	/** Fluent count before and after — the dial's hub number. */
+	fluentBefore: number;
+	fluentAfter: number;
+	/** Milestones newly reached (4, 6, 12). */
+	milestones: number[];
+}
+
+/**
+ * Compare the dial before and after a session.
+ *
+ * Both arguments are full histories: `before` is what was stored when the
+ * session started, `after` includes it. Passing histories rather than dials
+ * keeps the threshold in one place — the caller cannot accidentally compare
+ * two dials built with different thresholds.
+ */
+export function diffDial(
+	before: SessionResult[],
+	after: SessionResult[],
+	thresholdMs = 2000,
+): DialProgress {
+	const dialBefore = buildKeyDial(before, thresholdMs);
+	const dialAfter = buildKeyDial(after, thresholdMs);
+
+	const wasFluent = new Map(dialBefore.map((d) => [d.root, d.fluent]));
+	const msBefore = new Map(dialBefore.map((d) => [d.root, d.avgMs]));
+
+	const gained: KeyFluencyGain[] = [];
+	for (const d of dialAfter) {
+		// Only a genuine crossing counts: fluent now, not fluent before.
+		if (d.fluent && !wasFluent.get(d.root) && d.avgMs !== null) {
+			gained.push({ root: d.root, beforeMs: msBefore.get(d.root) ?? null, afterMs: d.avgMs });
+		}
+	}
+
+	const fluentBefore = dialBefore.filter((d) => d.fluent).length;
+	const fluentAfter = dialAfter.filter((d) => d.fluent).length;
+
+	// A milestone counts only when this session crossed it, so it pays once.
+	const milestones = [3, 6, 12].filter((m) => fluentAfter >= m && fluentBefore < m);
+
+	return { gained, fluentBefore, fluentAfter, milestones };
+}
+
+/**
+ * XP for dial movement, on top of what calculateSessionXP awards.
+ *
+ * Kept separate because it needs the history from BEFORE the session, which
+ * calculateSessionXP does not receive — and threading it through there would
+ * change a signature four call sites depend on.
+ */
+export function calculateDialXP(progress: DialProgress): XPEvent[] {
+	const events: XPEvent[] = [];
+
+	for (const g of progress.gained) {
+		events.push({
+			amount: XP_KEY_FLUENT,
+			reason: `${g.root} is fluent`,
+			reasonKey: 'habit.xp_key_fluent',
+			reasonParams: { key: g.root },
+		});
+	}
+
+	for (const m of progress.milestones) {
+		const amount =
+			m >= 12 ? XP_CIRCLE_COMPLETE : m >= 6 ? XP_CIRCLE_HALF : XP_CIRCLE_QUARTER;
+		events.push({
+			amount,
+			reason: `${m} of 12 keys fluent`,
+			reasonKey: m >= 12 ? 'habit.xp_circle_complete' : 'habit.xp_circle_milestone',
+			reasonParams: { count: m },
+		});
+	}
+
+	return events;
 }
