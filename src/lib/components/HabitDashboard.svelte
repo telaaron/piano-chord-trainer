@@ -67,7 +67,10 @@
 			case 'extra-credit': return 'var(--accent-green)';
 			case 'streak-at-risk': return 'var(--accent-amber)';
 			case 'almost-there': return 'var(--text)';
-			default: return 'var(--text-muted)';
+			// The default state still reports the day's standing, so it sits on
+			// --text rather than --text-muted: as an italic line at 0.95rem the
+			// muted ink washed out entirely on diazo paper.
+			default: return 'var(--text)';
 		}
 	});
 

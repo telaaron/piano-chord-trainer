@@ -627,24 +627,24 @@
 		   near-black on top, so it wants the bright amber in BOTH themes —
 		   the invitation to press should not change character with the
 		   theme. Measured 9.65:1 either way. */
-		background: #f5a623;
-		border-color: #f5a623;
-		color: #14090a;
+		background: var(--stamp);
+		border-color: var(--stamp);
+		color: var(--stamp-ink);
 		min-height: 3.1rem;
 		padding: 0 1.9rem;
 		font-size: 1.02rem;
 		font-weight: 700;
 	}
 	.btn-stamp:hover {
-		background: #ffb840;
-		border-color: #ffb840;
+		background: var(--stamp-hover);
+		border-color: var(--stamp-hover);
 	}
 	/* On diazo paper the amber fill only separates from the ground at 1.75:1,
 	   so the button's SHAPE goes soft even though its label is at 9.65:1.
 	   An ink edge gives it back its cut, the way a printed block sits on
 	   paper. Dark ground needs none — there it separates at 9.12:1. */
 	:global([data-theme='light']) .btn-stamp {
-		border-color: #14090a;
+		border-color: var(--stamp-ink);
 	}
 	/* Secondary actions step back to quiet text with a rule — present for
 	   anyone looking for them, never competing with the start button. */
@@ -968,7 +968,7 @@
 	   bright fill, white on the ochre. Measured 9.63:1 and 6.05:1. */
 	.kbd .wk.on::after {
 		bottom: 0.35rem;
-		color: #14090a;
+		color: var(--stamp-ink);
 	}
 	:global([data-theme='light']) .kbd .wk.on::after {
 		color: #ffffff;

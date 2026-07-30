@@ -214,22 +214,38 @@
 		width: 100%;
 		min-height: 3.85rem;
 		padding: 0.75rem 1.25rem;
-		border: 1.5px solid var(--accent-amber);
+		/* Fixed values in BOTH themes, for the reason /togo fixes them: the
+		   light theme resolves --accent-amber to the paper-safe ochre #8f5a05,
+		   which turns the one invitation on the screen into a muddy brown slab.
+		   Near-black on bright amber measures 9.65:1 either way, and the
+		   invitation to press must not change character on paper. */
+		border: 1.5px solid var(--stamp);
 		border-radius: var(--radius-sm);
-		background: var(--accent-amber);
-		color: var(--primary-text);
+		background: var(--stamp);
+		color: var(--stamp-ink);
 		font-family: inherit;
 		text-align: left;
 		cursor: pointer;
 		transition: transform 0.12s ease-out, background-color 0.12s, border-color 0.12s;
 	}
-	.stamp:hover { transform: translateY(-1px); }
+	.stamp:hover {
+		transform: translateY(-1px);
+		background: var(--stamp-hover);
+		border-color: var(--stamp-hover);
+	}
 	.stamp:active { transform: none; }
 	.stamp:focus-visible {
 		outline: 2px solid var(--text);
 		outline-offset: 2px;
 	}
 	.stamp :global(svg) { flex: none; }
+
+	/* On diazo paper the amber fill separates from the ground at only 1.75:1,
+	   so the button's SHAPE goes soft though its label is fine. An ink edge
+	   gives it back its cut. Dark ground needs none. */
+	:global([data-theme='light']) .stamp {
+		border-color: var(--stamp-ink);
+	}
 
 	.stamp-txt { display: block; min-width: 0; }
 	.stamp-t {

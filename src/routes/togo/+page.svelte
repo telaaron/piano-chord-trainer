@@ -683,20 +683,20 @@
 	   landing page fixes them: near-black on bright amber measures 9.65:1
 	   either way, and the invitation to press should not change character. */
 	.btn-stamp {
-		background: #f5a623;
-		border-color: #f5a623;
-		color: #14090a;
+		background: var(--stamp);
+		border-color: var(--stamp);
+		color: var(--stamp-ink);
 		font-weight: 700;
 	}
 	.btn-stamp:hover {
-		background: #ffb840;
-		border-color: #ffb840;
+		background: var(--stamp-hover);
+		border-color: var(--stamp-hover);
 	}
 	/* On diazo paper the amber fill separates from the ground at only 1.75:1,
 	   so the button's SHAPE goes soft though its label is fine. An ink edge
 	   gives it back its cut. Dark ground needs none. */
 	:global([data-theme='light']) .btn-stamp {
-		border-color: #14090a;
+		border-color: var(--stamp-ink);
 	}
 
 	.btn-ghost {

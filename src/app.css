@@ -105,6 +105,17 @@
 	--accent-red: #e2685c;
 	--accent-green: #3fd09a;
 
+	/* The stamp button — the one "press this" action per screen.
+	   Deliberately NOT --accent-amber: that token darkens to ochre on the light
+	   theme so amber TEXT can hold 4.5:1, but this is a filled button carrying
+	   near-black, so it wants the bright amber in BOTH themes — the invitation
+	   to press should not change character with the theme. Measured 9.65:1
+	   either way. These three lived as literals in four files before; the
+	   reasoning belongs in one place. */
+	--stamp: #f5a623;
+	--stamp-hover: #ffb840;
+	--stamp-ink: #14090a;
+
 	/* Semantic status — single source of truth (was hard-coded #fb923c etc. in components) */
 	--success: #4ade80;
 	--success-muted: rgba(74, 222, 128, 0.15);
