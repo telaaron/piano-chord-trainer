@@ -39,6 +39,9 @@
 		<h3>{t('privacy.h_analytics')}</h3>
 		<RichText key="privacy.p_analytics" />
 
+		<h3>{t('privacy.h_coach_data')}</h3>
+		<RichText key="privacy.p_coach_data" />
+
 		<h3>{t('privacy.h_hosting')}</h3>
 		<RichText key="privacy.p_hosting" />
 

@@ -403,6 +403,9 @@ export const en = {
     learn_short: 'Learn',
     educators: 'For Educators',
     educators_short: 'Educators',
+    // The bar entry is just "To-Go" — the brand name is short enough, and the
+    // long explanation lives on the landing page.
+    togo: 'To-Go',
     home: 'Home',
     about: 'About',
     privacy: 'Privacy',
@@ -522,6 +525,32 @@ export const en = {
     cur_s5_t: 'Altered & upper structures',
     cur_s5_d: 'Tension and release — the grown-up dominant sounds',
     cur_foot: "The next step unlocks when the current one sits — not before.",
+    // ── To-Go on the landing page ──
+    // Tone and vocabulary come from the `togo` block further down, so the
+    // section promises exactly what the page then actually does.
+    hero_togo: 'No piano to hand?',
+    togo_eyebrow: 'Practice without a piano',
+    togo_title: 'The train, the lunch break, the walk to rehearsal.',
+    togo_desc:
+      'Ear, time and theory need no keys — just headphones. Seven disciplines, eight quick rounds, about three minutes.',
+    togo_d1_t: 'Intervals',
+    togo_d1_d: 'Two notes — name the distance.',
+    togo_d2_t: 'Chord colours',
+    togo_d2_d: 'Hear a chord, name its quality.',
+    togo_d3_t: 'Progressions',
+    togo_d3_d: 'Hear a cadence, name the shape.',
+    togo_d4_t: 'Singing',
+    togo_d4_d: 'Find a scale degree with your voice.',
+    togo_d5_t: 'Time',
+    togo_d5_d: 'Tap the groove against the click.',
+    togo_d6_t: 'Licks',
+    togo_d6_d: 'Hear a phrase, tap it back.',
+    togo_d7_t: 'Theory',
+    togo_d7_d: 'Silent flashcards — works anywhere.',
+    togo_note_silent: 'silent',
+    togo_note_mic: 'microphone',
+    togo_foot: 'What you train here counts towards the same ear map as the piano work.',
+    togo_cta: 'Open To-Go',
     listen_eyebrow: 'Instant feedback',
     listen_title: "It doesn't just show you chords. It hears you play them.",
     listen_desc: "Every chord is checked as you play — octave-tolerant, auto-advancing the moment you nail it.",
@@ -1007,7 +1036,11 @@ export const en = {
     p_midi: 'If you grant permission, the App accesses your MIDI devices through the Web MIDI API. MIDI data (note on/off events) is processed <strong>entirely in your browser</strong> and is never transmitted.',
     
     h_analytics: '1.3 Analytics',
-    p_analytics: 'We use <strong>Vercel Analytics</strong> to collect anonymous, aggregated usage data: page views, country, browser type, and device type. No personal data, cookies, or tracking IDs are used. Vercel Analytics is GDPR-compliant and does not use cookies.',
+    p_analytics: 'We use <strong>Vercel Analytics</strong> to collect anonymous, aggregated usage data: page views, country, browser type, and device type. No personal data and no cookies are used. Vercel Analytics is GDPR-compliant.',
+    // The coach telemetry was not described in this policy, even though it
+    // stores a persistent device ID and transmits events.
+    h_coach_data: '1.4 Practice data used to improve the coach',
+    p_coach_data: 'To make the practice coach better, we transmit <strong>anonymous events</strong> about your practice sessions: which block you played, average times, and whether you ended a session early. For this we store a random <strong>device ID</strong> in your browser — it contains no name, no email and no IP address, and cannot be traced back to you. With an account, your user ID is sent as well so sessions from the same account can be grouped. You can turn this off at any time <a href="/account" class="underline">in your account settings</a>; transmission stops immediately.',
     
     h_hosting: '1.4 Hosting',
     p_hosting: 'The App is hosted on <strong>Vercel</strong> (Vercel Inc., San Francisco, CA). Vercel may collect server logs including IP addresses for security and performance purposes. See <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Vercel\'s Privacy Policy</a>.',
@@ -1981,6 +2014,54 @@ export const en = {
     last_active: 'Last Active',
     no_data: 'No data available',
     signups_chart: 'Signups (last 30 days)',
+    loading: 'Loading data …',
+    section_overview: 'Overview',
+    section_grant: 'Membership',
+    section_signups: 'Intake',
+    section_users: 'Directory',
+    grant_person: 'Person',
+    grant_person_hint: 'Type to filter — or enter a new email.',
+    grant_tier_label: 'Tier',
+    grant_search_placeholder: 'Search name or email …',
+    grant_no_matches: 'No matches — this address will be used as a new email.',
+    grant_new_email: 'New address',
+    grant_selected: 'Selected',
+    grant_clear: 'Clear selection',
+    grant_current_tier: 'currently {tier}',
+    signups_total: '{count} in 30 days',
+    signups_none: 'Nobody signed up in the last 30 days.',
+    signups_sparse: 'Light intake — each bar is a single signup.',
+    signups_peak: 'Peak {count} on {day}',
+    chart_day_count: '{day}: {count}',
+    users_count: '{count} accounts',
+    tier_free: 'Free',
+  },
+
+  // ── Feedback — the direct line ───────────────────────────────────────────
+  // First person singular, deliberately: Aaron reads these himself. No support
+  // voice, no "your request has been logged" — the promise is a personal and
+  // quick reply, so the page sounds like one.
+  feedback: {
+    title: 'Feedback',
+    eyebrow: 'Direct line',
+    heading: 'Tell me what is missing.',
+    lede: 'I read every message myself — no ticket system, no queue. What broke, what is missing, what annoyed you: just write it down.',
+    message_label: 'Your message',
+    message_placeholder: 'What did you notice?',
+    message_hint: 'The more specific, the more it helps.',
+    email_label: 'Email',
+    email_optional: 'optional',
+    email_placeholder: 'you@example.com',
+    email_hint: 'Only so I can reply. Leave it blank to stay anonymous.',
+    submit: 'Send',
+    sending: 'Sending …',
+    sent_title: 'Got it.',
+    sent_body: 'I read this personally — no bot, no auto-reply. If you left an address, you will usually hear back from me within a few days.',
+    sent_again: 'Write another',
+    error_empty: 'Please write a few words before sending.',
+    error_email: 'That email address does not look right.',
+    error_rate: 'That was a lot of messages just now. Try again in an hour.',
+    error_generic: 'Could not send. Please try again.',
   },
 
   // ── To-Go — practice away from the piano ─────────────────────────────────
