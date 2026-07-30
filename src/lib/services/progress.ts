@@ -91,6 +91,25 @@ export function loadHistory(): SessionResult[] {
 	}
 }
 
+/**
+ * History as it should be *displayed* to a given tier.
+ *
+ * The free tier sees a rolling window (FREE_LIMITS.historyDays); Studio sees
+ * everything. Nothing is ever deleted — the data stays on the device and comes
+ * back in full the moment someone upgrades.
+ *
+ * Note this is deliberately NOT applied inside `loadHistory()`: the coach,
+ * the habit engine and the streak counter all read the full history, and
+ * truncating their input would quietly make the coach dumber and break streaks
+ * for free users. The limit is a display rule, not a data rule.
+ */
+export function loadVisibleHistory(fullAccess: boolean, days: number, now = Date.now()): SessionResult[] {
+	const all = loadHistory();
+	if (fullAccess) return all;
+	const cutoff = now - days * 24 * 60 * 60 * 1000;
+	return all.filter((s) => s.timestamp >= cutoff);
+}
+
 export function saveSession(session: Omit<SessionResult, 'id'>): SessionResult {
 	const full: SessionResult = { ...session, id: generateId() };
 	const history = loadHistory();
@@ -163,11 +182,63 @@ export interface SavedSettings {
 	customDegrees?: number[];
 }
 
+/**
+ * Allowed values per enum field, and what to fall back to.
+ *
+ * These mirror the engine's own types. They are listed rather than derived
+ * because a TypeScript union does not exist at runtime, and this function's
+ * whole job is to police data that arrives from outside the type system.
+ */
+const SETTINGS_ENUMS = {
+	difficulty: { values: ['beginner', 'intermediate', 'advanced'], fallback: 'beginner' },
+	notation: { values: ['standard', 'symbols', 'short'], fallback: 'standard' },
+	voicing: {
+		values: [
+			'root', 'shell', 'half-shell', 'full',
+			'rootless-a', 'rootless-b',
+			'inversion-1', 'inversion-2', 'inversion-3',
+		],
+		fallback: 'root',
+	},
+	displayMode: { values: ['off', 'always', 'verify'], fallback: 'always' },
+	accidentals: { values: ['sharps', 'flats', 'both'], fallback: 'flats' },
+	notationSystem: { values: ['international', 'german'], fallback: 'international' },
+	progressionMode: {
+		values: ['random', '2-5-1', '1-6-2-5', 'cycle-of-4ths', '3-6-2-5', '1-4-5', 'diatonic', 'custom'],
+		fallback: 'random',
+	},
+	inputMode: { values: ['none', 'midi', 'microphone'], fallback: 'none' },
+} as const;
+
+/**
+ * Read saved settings, replacing any value this build does not recognise.
+ *
+ * Without this, a stale or hand-edited localStorage entry flows straight into
+ * the UI: a stored `difficulty: "easy"` (a KeyTier, never a Difficulty) made
+ * the settings chip render the literal string "settings.difficulty_easy",
+ * because t() returns the key it cannot resolve. Reproduced, then fixed here.
+ *
+ * The boundary is the right place for it — one guard covers every screen that
+ * reads these settings, and the values persist across releases, so a rename in
+ * the engine would otherwise poison every returning player's profile.
+ */
 export function loadSettings(): SavedSettings | null {
 	if (typeof localStorage === 'undefined') return null;
 	try {
 		const raw = localStorage.getItem(SETTINGS_KEY);
-		return raw ? JSON.parse(raw) : null;
+		if (!raw) return null;
+		const parsed = JSON.parse(raw);
+		if (!parsed || typeof parsed !== 'object') return null;
+
+		for (const [field, spec] of Object.entries(SETTINGS_ENUMS)) {
+			const current = parsed[field];
+			// Leave absent optional fields absent; only correct wrong ones.
+			if (current === undefined || current === null) continue;
+			if (!(spec.values as readonly string[]).includes(current)) {
+				parsed[field] = spec.fallback;
+			}
+		}
+		return parsed as SavedSettings;
 	} catch {
 		return null;
 	}

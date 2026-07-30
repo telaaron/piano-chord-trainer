@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { buildKeyDial, CIRCLE_OF_FIFTHS } from './progress';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { buildKeyDial, CIRCLE_OF_FIFTHS, loadSettings } from './progress';
 import type { SessionResult } from './progress';
 
 /**
@@ -68,5 +68,111 @@ describe('buildKeyDial', () => {
 		const dial = buildKeyDial([{ settings: { voicing: 'shell' } } as SessionResult]);
 		expect(dial).toHaveLength(12);
 		expect(dial.every((d) => d.avgMs === null)).toBe(true);
+	});
+});
+
+// ─── loadSettings validation ────────────────────────────────
+
+describe('loadSettings — stored values are policed at the boundary', () => {
+	const KEY = 'chord-trainer-settings';
+
+	const VALID = {
+		difficulty: 'intermediate',
+		notation: 'standard',
+		voicing: 'shell',
+		displayMode: 'always',
+		accidentals: 'flats',
+		notationSystem: 'german',
+		totalChords: 12,
+		progressionMode: '2-5-1',
+		midiEnabled: false,
+	};
+
+	/* These tests run in vitest's node environment, which has no DOM. Rather
+	   than pull in jsdom for one suite, stub the three methods loadSettings
+	   touches — the behaviour under test is the validation, not the browser. */
+	beforeEach(() => {
+		const store = new Map<string, string>();
+		(globalThis as { localStorage?: unknown }).localStorage = {
+			getItem: (k: string) => store.get(k) ?? null,
+			setItem: (k: string, v: string) => void store.set(k, v),
+			removeItem: (k: string) => void store.delete(k),
+			clear: () => store.clear(),
+		};
+	});
+
+	afterEach(() => {
+		delete (globalThis as { localStorage?: unknown }).localStorage;
+	});
+
+	it('returns null when nothing is stored', () => {
+		expect(loadSettings()).toBeNull();
+	});
+
+	it('passes a valid profile through untouched', () => {
+		localStorage.setItem(KEY, JSON.stringify(VALID));
+		expect(loadSettings()).toEqual(VALID);
+	});
+
+	it('replaces a value this build does not recognise', () => {
+		// The reported bug: "easy" is a KeyTier, never a Difficulty. Stored, it
+		// reached the UI and rendered as the literal "settings.difficulty_easy".
+		localStorage.setItem(KEY, JSON.stringify({ ...VALID, difficulty: 'easy' }));
+		expect(loadSettings()!.difficulty).toBe('beginner');
+	});
+
+	it('corrects every enum field, not just difficulty', () => {
+		localStorage.setItem(
+			KEY,
+			JSON.stringify({
+				...VALID,
+				difficulty: 'nonsense',
+				notation: 'nonsense',
+				voicing: 'nonsense',
+				displayMode: 'nonsense',
+				accidentals: 'nonsense',
+				notationSystem: 'nonsense',
+				progressionMode: 'nonsense',
+			}),
+		);
+		const s = loadSettings()!;
+		expect(s.difficulty).toBe('beginner');
+		expect(s.notation).toBe('standard');
+		expect(s.voicing).toBe('root');
+		expect(s.displayMode).toBe('always');
+		expect(s.accidentals).toBe('flats');
+		expect(s.notationSystem).toBe('international');
+		expect(s.progressionMode).toBe('random');
+	});
+
+	it('leaves non-enum fields alone', () => {
+		localStorage.setItem(KEY, JSON.stringify({ ...VALID, totalChords: 37, customDegrees: [0, 3, 4] }));
+		const s = loadSettings()!;
+		expect(s.totalChords).toBe(37);
+		expect(s.customDegrees).toEqual([0, 3, 4]);
+	});
+
+	it('does not invent a value for an absent optional field', () => {
+		// inputMode is optional; absent must stay absent so the caller's own
+		// default applies rather than this function guessing.
+		const { ...withoutInput } = VALID;
+		localStorage.setItem(KEY, JSON.stringify(withoutInput));
+		expect(loadSettings()!.inputMode).toBeUndefined();
+	});
+
+	it('survives corrupt JSON', () => {
+		localStorage.setItem(KEY, '{not json');
+		expect(loadSettings()).toBeNull();
+	});
+
+	it('every fallback is itself a legal value', () => {
+		// Guards the guard: a typo in a fallback would quietly write an invalid
+		// value on every load, which is worse than the bug being fixed.
+		localStorage.setItem(KEY, JSON.stringify({ ...VALID, difficulty: 'x', notation: 'x', voicing: 'x',
+			displayMode: 'x', accidentals: 'x', notationSystem: 'x', progressionMode: 'x' }));
+		const first = loadSettings()!;
+		localStorage.setItem(KEY, JSON.stringify(first));
+		// Feeding the corrected profile back in must change nothing.
+		expect(loadSettings()).toEqual(first);
 	});
 });
