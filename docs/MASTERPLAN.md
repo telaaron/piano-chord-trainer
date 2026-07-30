@@ -181,12 +181,18 @@ Nicht alle Kanäle gleichzeitig. Einer nach dem anderen, jeder wird gemessen (je
 
 **Ziel:** die ersten 10 echten zahlenden Kunden. Nicht 100. Zehn.
 
-| # | Maßnahme | Begründung |
+> **Vollständig ausgearbeitet in → [MONETARISIERUNG.md](./MONETARISIERUNG.md)** (Tarife, Konditionen, Featureschnitt, Umsetzungsreihenfolge).
+
+Kurzfassung der dort getroffenen Entscheidungen:
+
+| # | Entscheidung | Begründung |
 |---|---|---|
-| 3.1 | **Pro-Wertversprechen neu schneiden** | Aktuell zahlt niemand, weil das Gratisangebot alles kann. Kandidaten zum Verschieben: unbegrenzte Coach-Historie, Statistiktiefe, Custom Progressions. **Der Coach selbst bleibt frei** — er ist unser Alleinstellungsmerkmal und Wachstumsmotor. |
-| 3.2 | **Jahresabo einführen** | 49 €/Jahr statt 4,99 €/Monat. Passt exakt zum Marktkorridor (120–240 €/Jahr), verbessert Cash-Flow und senkt Abwanderung. |
-| 3.3 | **Preis auf 7,99 €/Monat prüfen** | 4,99 € ist unter Wert. Zielgruppe zahlt 40–100 € pro Klavierstunde. Zu billig wirkt wie „nicht ernst zu nehmen". |
-| 3.4 | **Studentenrabatt 50 % mit Nachweis** | Beantwortet deine Frage: Studenten nicht über den Grundpreis abholen, sondern über einen sichtbaren Rabatt — Vollpreis bleibt der Anker. Genau Open Studios Modell. |
+| 3.1 | **Vier Tarife: Übung (0 €) · Studio (7,99 €/59 € Jahr) · Lehrpult (29 €) · Institut (ab 690 €/Jahr)** | Zwei Zielgruppen, ein Preisgerüst |
+| 3.2 | **Die eine wirksame Grenze: 1 Coach-Session/Tag im Gratistarif** | Täglich spürbar für Vielübende, unsichtbar für Gelegenheitsnutzer. Freies Üben bleibt unbegrenzt. |
+| 3.3 | **Preis 4,99 € → 7,99 €, plus Jahresabo** | Zielgruppe zahlt 40–100 € pro Klavierstunde; 4,99 € signalisiert Nebenprojekt |
+| 3.4 | **Trial: 14 Tage mit Karte → 7 Tage ohne Karte** | Kartenpflicht widerspricht „Free. No signup." und kostet uns Trial-Starts, die wir bei 4 Anmeldungen/Monat nicht entbehren können |
+| 3.5 | **Studentenrabatt 50 % mit Nachweis statt niedrigem Grundpreis** | Vollpreis bleibt Anker; Institut-Tarif löst das Studentengeld-Problem strukturell (die Institution zahlt) |
+| 3.6 | **Kurse, Voicings, MIDI und Coach-Qualität bleiben frei** | Reichweitenmotor und Alleinstellungsmerkmal — nur die *Menge* wird begrenzt, nie die *Qualität* |
 
 ### Phase 4 — B2B (ab Q1 2027)
 

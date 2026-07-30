@@ -97,8 +97,6 @@ export const en = {
   // Captions for the clock in the session frame. The dial itself comes from
   // KeyClock; these only say what it is currently showing.
   train: {
-    clock_focus: "Today's keys",
-    clock_all: 'All twelve',
   },
 
   settings: {
@@ -482,12 +480,14 @@ export const en = {
     hero_title_line2: 'in any key — without thinking.',
     hero_subtitle: 'Shells, rootless, ii-V-I — fluent in all 12 keys.',
     hero_subtitle_mobile: 'Drill jazz voicings until they are muscle memory.',
-    hero_no_midi: 'A MIDI keyboard checks you automatically. Otherwise use your mic or the on-screen keys.',
+    hero_no_midi: 'A MIDI keyboard checks you automatically. Otherwise use your mic or the on-screen keyboard.',
     badge: 'Jazz Voicings · All 12 Keys',
     cta_start: 'Start Practicing',
     cta_learn: 'Start Course',
     cta_educators: 'For Music Schools',
     footnote: 'Free. No signup. Works with or without a keyboard.',
+    // Sits directly under the start button — has to fit on one line.
+    cta_badge: 'Free · no signup',
     footnote_mobile: 'Free · No signup · No keyboard needed',
     coach_eyebrow: 'New — your built-in coach',
     coach_title: 'Open the app. Press play. The rest is planned.',
@@ -527,7 +527,7 @@ export const en = {
     listen_desc: "Every chord is checked as you play — octave-tolerant, auto-advancing the moment you nail it.",
     listen_chip1: 'MIDI keyboard',
     listen_chip2: 'Microphone',
-    listen_chip3: 'On-screen keys',
+    listen_chip3: 'On-screen keyboard',
     listen_caption: 'Heard it. Next chord.',
     habit_eyebrow: 'Five minutes a day',
     habit_title: 'Small sessions. Compounding results.',
@@ -543,7 +543,7 @@ export const en = {
     faq2_q: 'Do I need to know jazz already?',
     faq2_a: "No. If you can find notes on a keyboard, the coach starts you on simple shells. If you already play, you skip ahead.",
     faq3_q: 'Can I practice with a MIDI keyboard?',
-    faq3_a: 'Yes — via USB or Bluetooth (Chrome or Edge on desktop). No MIDI? The microphone or on-screen keys work too.',
+    faq3_a: 'Yes — via USB or Bluetooth (Chrome or Edge on desktop). No MIDI? The microphone or the on-screen keyboard work too.',
     faq4_q: 'How much time do I need?',
     faq4_a: 'Five minutes a day is a real session. Consistency beats marathon practice.',
     faq5_q: 'Is it free?',
@@ -560,7 +560,6 @@ export const en = {
     clock_legend_none: 'Never played',
     // The dial's fifths logic, set as a copyist's annotation in blue.
     clock_fifths_label: 'Circle of fifths',
-    clock_fifths_note: 'Each step clockwise is a fifth up',
     clock_fifths_chain: 'C → G → D → A → E → B',
     // ── Hero practice card: the loop the app actually runs ──
     pcard_live: 'Live',
@@ -1987,6 +1986,12 @@ export const en = {
   // ── To-Go — practice away from the piano ─────────────────────────────────
   // Teacher's voice, same warmth as `coach`. Keys under prompt/tap/lick/card/say
   // are produced by the engine (src/lib/engine/togo.ts) and must keep their names.
+  // The clock — hub labels. Counts what sits, not what is missing.
+  clock: {
+    hub_fluent: 'FLUENT',
+    hub_empty: 'KEYS',
+  },
+
   togo: {
     entry: 'Practice without a piano',
     title: 'To-Go',

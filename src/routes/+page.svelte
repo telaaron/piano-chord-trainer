@@ -180,16 +180,22 @@
 				<p class="hero-lede">{t('landing.hero_subtitle')}</p>
 
 				<div class="hero-cta">
-					<a href="/train" class="btn btn-stamp">
-						{t('landing.cta_start')}
-						<ArrowRight size={17} />
-					</a>
+					<span class="cta-stack">
+						<a href="/train" class="btn btn-stamp">
+							{t('landing.cta_start')}
+							<ArrowRight size={17} />
+						</a>
+						<!-- The reassurance belongs ON the decision, not three
+						     paragraphs below it. Small, green, one line: it answers
+						     "what does this cost me" before the click without
+						     competing with the button it sits under. -->
+						<span class="cta-badge">{t('landing.cta_badge')}</span>
+					</span>
 					<a href="/learn" class="btn btn-ghost">{t('landing.cta_learn')}</a>
 					<a href="/for-educators" class="btn btn-ghost hide-sm">{t('landing.cta_educators')}</a>
 				</div>
 
 				<p class="hero-fine">{t('landing.hero_no_midi')}</p>
-				<p class="plate hero-plate">{t('landing.footnote')}</p>
 			</div>
 
 			<!-- The practice card: the loop the app actually runs, top to bottom.
@@ -371,7 +377,6 @@
 					</figcaption>
 					<KeyClock {dial} size={252} showTimes={false} />
 					<p class="fifths-chain">{t('landing.clock_fifths_chain')}</p>
-					<p class="fifths-note">{t('landing.clock_fifths_note')}</p>
 					<p class="plate clock-cap">{t('landing.clock_caption')}</p>
 				</figure>
 				<div class="clock-copy">
@@ -794,8 +799,38 @@
 	.hero-cta {
 		display: flex;
 		flex-wrap: wrap;
+		align-items: flex-start;
 		gap: 0.7rem;
 		margin-top: 1.6rem;
+	}
+	/* The button and its badge travel together, so the badge stays attached to
+	   the decision even when the row wraps on a narrow screen. */
+	.cta-stack {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.45rem;
+	}
+	.cta-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.34rem;
+		font-family: var(--font-mono);
+		font-size: 0.64rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--accent-green);
+		white-space: nowrap;
+	}
+	/* A small filled dot rather than a checkmark glyph: it reads as a status
+	   light at this size, where a ✓ turns to mush. */
+	.cta-badge::before {
+		content: '';
+		width: 0.36rem;
+		height: 0.36rem;
+		border-radius: 50%;
+		background: var(--accent-green);
+		flex: none;
 	}
 
 	.hero-fine {
@@ -806,7 +841,6 @@
 		color: var(--hall-plate);
 		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 	}
-	.hero-plate { margin-top: 1rem; }
 
 	@media (max-width: 640px) {
 		.hide-sm { display: none; }
@@ -1363,16 +1397,6 @@
 		text-wrap: balance;
 		color: var(--ink-blue);
 	}
-	.fifths-note {
-		margin: 0;
-		font-size: 0.82rem;
-		font-style: italic;
-		line-height: 1.5;
-		text-align: center;
-		text-wrap: balance;
-		color: var(--text-muted);
-	}
-
 	.clock-cap {
 		/* Mono uppercase eats width fast; a 22ch cap broke this to four ragged
 		   lines under the dial. Let it run the frame's width and sit on two. */

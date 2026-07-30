@@ -97,8 +97,6 @@ export const de = {
   // Beschriftungen für die Uhr im Session-Rahmen. Die Uhr selbst kommt aus
   // KeyClock; hier steht nur, was sie gerade zeigt.
   train: {
-    clock_focus: 'Heutige Tonarten',
-    clock_all: 'Alle zwölf',
   },
 
   settings: {
@@ -483,12 +481,14 @@ export const de = {
     hero_title_line2: 'in jeder Tonart — ohne nachzudenken.',
     hero_subtitle: 'Shells, rootless, ii-V-I — flüssig in allen 12 Tonarten.',
     hero_subtitle_mobile: 'Übe Jazz-Voicings, bis sie sitzen.',
-    hero_no_midi: 'MIDI-Keyboard prüft dich automatisch. Sonst Mikrofon oder Bildschirm-Tasten.',
+    hero_no_midi: 'MIDI-Keyboard prüft dich automatisch. Sonst Mikrofon oder die Klaviatur am Bildschirm.',
     badge: 'Jazz-Voicings · Alle 12 Tonarten',
     cta_start: 'Üben starten',
     cta_learn: 'Kurs starten',
     cta_educators: 'Für Musikschulen',
     footnote: 'Kostenlos. Keine Anmeldung. Mit oder ohne Keyboard.',
+    // Sitzt direkt unter dem Start-Knopf — muss in eine Zeile passen.
+    cta_badge: 'Kostenlos · ohne Anmeldung',
     footnote_mobile: 'Kostenlos · Ohne Anmeldung · Kein Keyboard nötig',
     coach_eyebrow: 'Neu — dein eingebauter Coach',
     coach_title: 'App öffnen. Play drücken. Der Rest ist geplant.',
@@ -528,7 +528,7 @@ export const de = {
     listen_desc: 'Jeder Akkord wird beim Spielen geprüft — oktav-tolerant, automatisch weiter, sobald er sitzt.',
     listen_chip1: 'MIDI-Keyboard',
     listen_chip2: 'Mikrofon',
-    listen_chip3: 'Bildschirm-Tasten',
+    listen_chip3: 'Klaviatur am Bildschirm',
     listen_caption: 'Gehört. Nächster Akkord.',
     habit_eyebrow: 'Fünf Minuten am Tag',
     habit_title: 'Kleine Sessions. Zinseszins-Effekt.',
@@ -544,7 +544,7 @@ export const de = {
     faq2_q: 'Muss ich schon Jazz können?',
     faq2_a: 'Nein. Findest du Töne auf dem Keyboard, startet der Coach bei einfachen Shells. Spielst du schon, springst du nach vorn.',
     faq3_q: 'Kann ich mit einem MIDI-Keyboard üben?',
-    faq3_a: 'Ja — per USB oder Bluetooth (Chrome oder Edge am Desktop). Kein MIDI? Mikrofon oder Bildschirm-Tasten gehen auch.',
+    faq3_a: 'Ja — per USB oder Bluetooth (Chrome oder Edge am Desktop). Kein MIDI? Mikrofon oder die Klaviatur am Bildschirm gehen auch.',
     faq4_q: 'Wie viel Zeit brauche ich?',
     faq4_a: 'Fünf Minuten am Tag sind eine echte Session. Regelmäßigkeit schlägt Marathon-Üben.',
     faq5_q: 'Ist es kostenlos?',
@@ -561,7 +561,6 @@ export const de = {
     clock_legend_none: 'Nie gespielt',
     // Die Quintenlogik des Zifferblatts, als Copyist-Anmerkung in Blau.
     clock_fifths_label: 'Quintenzirkel',
-    clock_fifths_note: 'Im Uhrzeigersinn jeweils eine Quinte höher',
     clock_fifths_chain: 'C → G → D → A → E → B',
     // ── Übungskarte im Hero: die Schleife, die die App wirklich fährt ──
     pcard_live: 'Live',
@@ -1999,6 +1998,12 @@ export const de = {
   // ── To-Go — Üben ohne Klavier ────────────────────────────────────────────
   // Lehrer-Stimme, gleiche Wärme wie `coach`. Die Keys unter prompt/tap/lick/
   // card/say kommen aus der Engine (src/lib/engine/togo.ts) — Namen fix lassen.
+  // Die Uhr — Beschriftung der Mitte. Zählt, was sitzt, nicht was fehlt.
+  clock: {
+    hub_fluent: 'SITZEN',
+    hub_empty: 'TONARTEN',
+  },
+
   togo: {
     entry: 'Ohne Klavier üben',
     title: 'To-Go',

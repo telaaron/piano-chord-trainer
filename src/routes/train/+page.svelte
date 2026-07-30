@@ -12,7 +12,6 @@
 	import { toggleLightDark, isLightActive } from '$lib/services/theme';
 	import { Sun, Moon, Eye, Settings, TabletSmartphone, Piano, RefreshCw, Ear, Volume2, VolumeX, Music, Target, Check, X, CornerDownLeft, ArrowDown, Play, Pause, RotateCcw, ArrowLeft } from 'lucide-svelte';
 	import ChordCard from '$lib/components/ChordCard.svelte';
-	import KeyClock from '$lib/components/KeyClock.svelte';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import Results from '$lib/components/Results.svelte';
 	import MidiStatus from '$lib/components/MidiStatus.svelte';
@@ -34,7 +33,7 @@
 	import { MidiSoundEngine } from '$lib/services/midi-sound';
 	import { AudioInputService } from '$lib/services/audio-input';
 	import type { AudioInputState } from '$lib/services/audio-input';
-	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadRecentPlanIds, loadHistory, computeStats, analyzeWeakSpots, buildKeyDial, type ProgressStats, type StreakData, type ChordTiming, type SessionResult } from '$lib/services/progress';
+	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadRecentPlanIds, loadHistory, computeStats, analyzeWeakSpots, type ProgressStats, type StreakData, type ChordTiming, type SessionResult } from '$lib/services/progress';
 	import { playChord, playChordAtTime, playNote, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll, setSoundPreset, getSoundPreset, SOUND_PRESETS, type SoundPreset } from '$lib/services/audio';
 	import {
 		CHORDS_BY_DIFFICULTY,
@@ -443,28 +442,9 @@
 	// from saved history, and the highlight is read off state the coach has
 	// already decided. It never influences what is practised.
 
-	/** Per-key timings for the dial. Rebuilt when a session is written. */
-	let sessionDial = $state(buildKeyDial([]));
-
-	/** localStorage is a browser thing — build the real dial after mount. */
-	function refreshDial(): void {
-		sessionDial = buildKeyDial(loadHistory());
-	}
-
-	/**
-	 * The roots this session is actually targeting, so the dial dims to them.
-	 * A Coach block names its own focus roots; a plain run is the whole circle,
-	 * and dimming nothing is the honest answer there — `undefined` leaves every
-	 * segment at full strength rather than pretending to a focus that does not
-	 * exist. Roots the dial does not carry are dropped, so a stray value can
-	 * never blank the ring.
-	 */
-	const dialHighlight = $derived.by(() => {
-		if (focusRoots.length === 0) return undefined;
-		const known = new Set(sessionDial.map((d) => d.root));
-		const hit = focusRoots.filter((r) => known.has(r));
-		return hit.length > 0 ? hit : undefined;
-	});
+	/* The dial and its focus-dimming lived here. Both are gone from the drill —
+	   see the note where the figure used to be. `focusRoots` stays: it feeds
+	   the weighted chord pool, which is coach logic, not display. */
 
 	// ─── Status bar helpers ──────────────────────────────────────
 	function greetingText(): string {
@@ -1298,8 +1278,6 @@
 
 		// Refresh dashboard stats
 		dashStats = computeStats(loadHistory());
-		// …and the dial, so the next block opens on times that include this one.
-		refreshDial();
 
 		// Adaptive teaser: the free user just felt the coaching — convert now.
 		if (sessionWasAdaptive) {
@@ -2024,7 +2002,6 @@
 
 		// Load dashboard stats
 		dashStats = computeStats(loadHistory());
-		refreshDial();
 
 		// ─── Habit Engine init ───────────────────────────────────
 		habitProfile = loadHabitProfile();
@@ -2802,8 +2779,11 @@
 						{#if audioEnabled}<Volume2 size={16} aria-hidden="true" />{:else}<VolumeX size={16} aria-hidden="true" />{/if} {t('ui.audio')}
 					</button>
 					{#if audioEnabled}
+						<!-- The native arrow is drawn inside the right padding, so a
+						     symmetric px-2.5 crammed it against the border. Extra room
+						     on the right only, and squared to match the plates. -->
 						<select
-							class="rounded-full border border-[var(--border)]/60 bg-[var(--bg)]/70 px-2.5 py-1.5 text-xs text-[var(--text-muted)] transition-colors hover:border-[var(--border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] cursor-pointer"
+							class="sound-select rounded-[2px] border border-[var(--border)]/60 bg-[var(--bg)]/70 py-1.5 pl-2.5 pr-7 text-xs text-[var(--text-muted)] transition-colors hover:border-[var(--border-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] cursor-pointer"
 							value={soundPreset}
 							onchange={(e) => changeSoundPreset((e.target as HTMLSelectElement).value as SoundPreset)}
 							aria-label={t('ui.audio')}
@@ -2925,21 +2905,10 @@
 				</div>
 					</div>
 
-					<!-- The dial. Small, times off — at this size the digits inside a
-					     segment are noise, and the colour already carries the verdict.
-					     `highlight` dims every key the session is NOT drilling. -->
-					<figure class="sess-clock">
-						<figcaption class="plate sess-clock-cap">
-							{dialHighlight ? t('train.clock_focus') : t('train.clock_all')}
-						</figcaption>
-						<KeyClock
-							dial={sessionDial}
-							size={152}
-							showTimes={false}
-							highlight={dialHighlight}
-							{notationSystem}
-						/>
-					</figure>
+					<!-- The dial used to sit here. It is a diagnosis, and mid-drill
+					     nobody is diagnosing: the screen has one job, which is the
+					     chord. It stays on the landing page and the progress view,
+					     where reading it is the point. -->
 				</div>
 
 				<!-- Start overlay (before timer started) -->
@@ -3658,29 +3627,7 @@
 		min-width: 0;
 	}
 
-	.sess-clock {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.4rem;
-		flex: none;
-		margin: 0;
-		padding-left: 1.5rem;
-		border-left: 1px solid var(--rule-soft);
-	}
-	.sess-clock-cap {
-		font-family: var(--font-mono);
-		font-size: 0.58rem;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		text-align: center;
-		color: var(--text-dim);
-	}
-	/* Below ~900px the dial and the progress rail fight for the same row and
-	   both lose. The rail is the one a player needs mid-drill, so the dial
-	   stands down — it is a between-chords glance, not a live readout. */
 	@media (max-width: 900px) {
-		.sess-clock { display: none; }
 		.sess-frame { padding: 0.85rem 1rem; }
 	}
 

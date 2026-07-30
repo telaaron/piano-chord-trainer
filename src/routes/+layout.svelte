@@ -374,6 +374,9 @@
 		text-transform: uppercase;
 		color: var(--text-dim);
 		line-height: 1;
+		/* The wordmark's own descenders leave no room, so the strapline sat on
+		   its baseline. A small explicit gap reads as a lockup instead. */
+		margin-top: 0.28rem;
 	}
 	@media (min-width: 900px) {
 		.brand-sub {
@@ -694,7 +697,7 @@
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 		color: var(--text-dim);
-		margin-top: 3px;
+		margin-top: 0.28rem;
 	}
 	.foot-links {
 		display: flex;
