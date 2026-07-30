@@ -60,19 +60,21 @@
 
 	// ── The intake chart ────────────────────────────────────────
 	//
-	// This box used to render empty, and the cause was a key mismatch rather
-	// than a drawing bug. The API buckets signups by UTC day
-	// (`new Date(created_at).toISOString().slice(0,10)`), but the axis here was
-	// built by mutating a LOCAL date and then calling toISOString() on it —
-	// which shifts by the UTC offset and lands on the neighbouring day for most
-	// of the world. Every lookup therefore missed. Building the axis from UTC
-	// puts both sides in the same key space.
+	// This box used to render as an empty frame, and the reason was simply that
+	// it was nearly empty: 4 signups across 30 days, each on its own day. Bar
+	// height was `count / max * 100`, so max is 1, the four days are 100% —
+	// and the other 26 are 0%, i.e. invisible. A frame with four thin bars and
+	// no axis reads as broken even when it is telling the truth.
 	//
-	// Fixing the keys does not conjure traffic, though: this instance genuinely
-	// has very few signups, so an honest chart is mostly flat. Rather than
-	// present a frame full of 2%-tall stubs as if it were a graph, the panel
-	// states the count in words when there is nothing (or almost nothing) to
-	// draw, and only renders bars once they would actually mean something.
+	// So the panel now states the count in words when there is little to draw,
+	// gives empty days a 1px hairline so the axis is visible as an axis, and
+	// notes when every bar is a single signup.
+	//
+	// The axis is also built in UTC. That was NOT the cause — checked against
+	// the real rows, the old local-date version resolved to the same keys at
+	// this offset — but the API buckets by UTC day, so an axis built from a
+	// local date can drift onto the neighbouring day at some offsets. Same key
+	// space on both sides removes the class of bug rather than one instance.
 
 	function getLast30Days(): string[] {
 		const days: string[] = [];
