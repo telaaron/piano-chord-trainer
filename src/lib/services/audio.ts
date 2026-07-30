@@ -426,12 +426,21 @@ export function disposeAudio(): void {
 //  Drone — a held reference tone for singing against (To-Go mode)
 // ══════════════════════════════════════════════════════════════════════════════
 //
-// Independent of the chord instrument: singing over a warm pad works better than
-// over a decaying piano sample, and the drone must survive while other sounds
-// come and go. Uses triggerAttack / triggerRelease so it sustains indefinitely.
+// The reference is a PIANO, struck repeatedly — not a held pad.
+//
+// A sawtooth pad sustains for free, which is why it was chosen, but it is a
+// harsh thing to sing against: its upper partials beat against the voice and
+// singers reported it as unpleasant. A pianist giving you a note does not hold
+// a synthesiser under it; they strike the key again when it fades. So this
+// re-strikes an FM electric piano on a timer.
+//
+// Electric piano rather than the grand: the grand is a sampler that fetches 17
+// files, and a reference tone must sound the instant it is asked for.
 
 let droneSynth: ToneType.PolySynth | null = null;
 let droneNote: string | null = null;
+/** Re-strike timer — the reference is struck, not held. */
+let droneTimer: ReturnType<typeof setInterval> | null = null;
 /** Guards against a stopDrone() that lands while startDrone() is still awaiting. */
 let droneGeneration = 0;
 
@@ -439,8 +448,14 @@ let droneGeneration = 0;
 function getDroneSynth(): ToneType.PolySynth {
 	if (!droneSynth) {
 		const T = _tone!;
-		const cfg = SYNTH_CONFIGS['synth-pad'];
-		droneSynth = new T.PolySynth(T.Synth as any, { ...cfg.config, volume: -18 });
+		const cfg = SYNTH_CONFIGS['electric-piano'];
+		// Longer release than the drill preset: a reference note should ring out
+		// rather than stop dead, so consecutive strikes overlap into one tone.
+		droneSynth = new T.PolySynth(T.FMSynth as any, {
+			...cfg.config,
+			envelope: { attack: 0.005, decay: 1.4, sustain: 0.08, release: 2.2 },
+			volume: -14,
+		});
 		droneSynth.maxPolyphony = 4;
 		droneSynth.toDestination();
 	}
@@ -464,20 +479,41 @@ export async function startDrone(note: string): Promise<void> {
 	if (gen !== droneGeneration) return;
 
 	const synth = getDroneSynth();
-	if (droneNote) synth.triggerRelease([droneNote]);
 	droneNote = toneNote;
-	synth.triggerAttack([toneNote]);
+
+	// Strike now, then again every 2.4 s. With a 2.2 s release each strike is
+	// still ringing when the next lands, so the reference reads as continuous
+	// without ever being a sustained pad.
+	const strike = () => {
+		if (gen !== droneGeneration) return;
+		synth.triggerAttackRelease([toneNote], 2.2);
+	};
+	strike();
+	clearDroneTimer();
+	droneTimer = setInterval(strike, 2400);
 }
 
-/** Release the held tone. Safe to call when nothing is sounding. */
+/** Stop the re-strike timer. Separate so both start and stop can call it. */
+function clearDroneTimer(): void {
+	if (droneTimer !== null) {
+		clearInterval(droneTimer);
+		droneTimer = null;
+	}
+}
+
+/** Stop the reference tone. Safe to call when nothing is sounding. */
 export function stopDrone(): void {
+	// Bump the generation FIRST: a strike already queued checks it and bails,
+	// so nothing can sound after this returns.
 	droneGeneration++;
+	clearDroneTimer();
 	if (!droneSynth) {
 		droneNote = null;
 		return;
 	}
-	if (droneNote) droneSynth.triggerRelease([droneNote]);
-	else droneSynth.releaseAll();
+	// releaseAll rather than releasing one note: strikes overlap, so several
+	// voices may be ringing at once.
+	droneSynth.releaseAll();
 	droneNote = null;
 }
 

@@ -1,9 +1,10 @@
 <script lang="ts">
-	// Sing a scale degree over a drone; the mic grades the pitch class.
+	// Sing a scale degree over a reference tone; the mic grades the pitch class.
 	//
-	// The detector runs on ~800 ms cycles, so we ACCUMULATE every MIDI number it
-	// reports across the whole attempt rather than reading one snapshot — a held
-	// note only has to be caught once for `gradeSing` to find its pitch class.
+	// The detector runs on ~800 ms cycles, so we accumulate across the whole
+	// attempt rather than reading one snapshot — a held note only has to be
+	// caught once. Accumulation is into a pitch-class SET, which is all the
+	// grader reads and which cannot grow past twelve entries.
 
 	import { onDestroy } from 'svelte';
 	import { t } from '$lib/i18n';
@@ -11,8 +12,8 @@
 	import { Mic } from 'lucide-svelte';
 
 	interface Props {
-		/** Answer callback — the accumulated MIDI numbers the mic heard. */
-		onanswer: (sungMidi: number[]) => void;
+		/** Answer callback — the pitch classes (0–11) the mic heard. */
+		onanswer: (sungPitchClasses: number[]) => void;
 		/** Freeze input once the answer is in. */
 		locked?: boolean;
 	}
@@ -25,21 +26,42 @@
 	let micState = $state<AudioInputState>('idle');
 	let listening = $state(false);
 	let level = $state(0);
-	/** Every MIDI number the mic reported during this attempt. */
-	let heard = $state<number[]>([]);
+	/**
+	 * The pitch classes heard during this attempt.
+	 *
+	 * This used to be every MIDI number the mic ever reported, appended with
+	 * `heard = [...heard, ...notes]`. Grading only cares WHICH pitch classes
+	 * were sung, so the raw list was never read — but it grew without bound,
+	 * copied itself on every mic callback, and re-derived a Set over the whole
+	 * thing each time. A long note froze the page. Twelve slots cannot grow.
+	 */
+	let heardSet = $state<Set<number>>(new Set());
 	let levelTimer: ReturnType<typeof setInterval> | null = null;
 
-	const heardNames = $derived([...new Set(heard.map((m) => ((m % 12) + 12) % 12))].map((pc) => NOTE_NAMES[pc]));
+	const heardNames = $derived([...heardSet].sort((a, b) => a - b).map((pc) => NOTE_NAMES[pc]));
 
 	async function startListening() {
 		if (listening) return;
-		heard = [];
+		heardSet = new Set();
 		listening = true;
 		mic = new AudioInputService();
 		mic.onConnection((s) => (micState = s));
 		mic.onNotes((notes) => {
 			if (notes.size === 0) return;
-			heard = [...heard, ...notes];
+			// Fold to pitch class immediately: an octave is not a different answer,
+			// and this caps the state at twelve entries no matter how long you hold.
+			let added = false;
+			const next = new Set(heardSet);
+			for (const m of notes) {
+				const pc = ((m % 12) + 12) % 12;
+				if (!next.has(pc)) {
+					next.add(pc);
+					added = true;
+				}
+			}
+			// Only reassign when something actually changed, so a steady note stops
+			// re-rendering the component forty times a minute.
+			if (added) heardSet = next;
 		});
 		const ok = await mic.init();
 		if (!ok) {
@@ -63,7 +85,9 @@
 	}
 
 	function submit() {
-		const collected = [...heard];
+		// Pitch classes, not MIDI numbers — gradeSing folds with % 12 anyway, so
+		// a pitch class passes through unchanged.
+		const collected = [...heardSet];
 		teardown();
 		onanswer(collected);
 	}
