@@ -167,6 +167,7 @@ export const en = {
     bars_per_chord: 'Bars per Chord',
     bar_singular: 'bar',
     bar_plural: 'bars',
+    notation: 'Notation',
     notation_system: 'Notation System',
     notation_system_desc: 'International: B = the note below C. German: H = the note below C, B = Bb.',
     notation_system_international: 'International',
@@ -802,6 +803,8 @@ export const en = {
     lesson_click_hint: 'Click keys to play · connect a MIDI keyboard for input',
 
     next_chord: 'Next Chord',
+    // Same button as next_chord, on the last chord of the round.
+    finish: 'Finish',
     shortcut_next: 'next',
     shortcut_pause: 'pause',
     shortcut_lookahead: 'look-ahead',
@@ -895,6 +898,19 @@ export const en = {
     vl_find_desc: 'Find the closest inversion yourself via MIDI',
     vl_free_label: 'Free',
     vl_free_desc: 'Any voicing — scored by movement distance',
+
+    // Voice-leading feedback in the "find inversion" and "free" modes.
+    vl_movement: '{n} semitones of movement',
+    correct_but_not_closest: 'Correct — but not the closest inversion',
+    vl_your_movement: 'Your movement: {player} semitones · optimal: {optimal}',
+    vl_wrong_notes: 'Different notes — listen again.',
+
+    // Progression editor and the look-ahead overlay.
+    name_optional: 'optional',
+    loop_label: 'Loop',
+    clear: 'Clear',
+    timing_note: 'The clock starts on your first note',
+    continue_playing: 'Keep playing',
   },
 
   voicing_info: {
@@ -907,61 +923,6 @@ export const en = {
     inversion_1_tip: '3rd on bottom. Same notes, different bass note changes the color.',
     inversion_2_tip: '5th on bottom. Creates a more open, spread sound.',
     inversion_3_tip: '7th on bottom. The most tension — resolves beautifully.',
-    
-    // Progression Editor & Player
-    custom_progression: 'Custom Progression',
-    custom_progression_desc: 'Practice your own chord sequence with metronome',
-    load_templates: 'Load jazz standard templates',
-    hide_templates: 'Hide templates',
-    progression_name_label: 'Name',
-    progression_name_placeholder: 'e.g. Autumn Leaves A',
-    progression_input_placeholder: 'Type chords (e.g. Dm7 G7 Cmaj7)...',
-    progression_loops: 'Loops',
-    progression_save_play: 'Save & Play',
-    progression_play: 'Play',
-    progression_save: 'Save',
-    progression_delete: 'Delete',
-    saved_progressions: 'Saved Progressions',
-    no_saved_progressions: 'No saved progressions yet',
-    start_typing_suggestion: 'Start by typing a progression above',
-    no_valid_chords: 'No valid chords recognized. Use e.g. "Dm7 | G7 | CMaj7"',
-    loop_counter: 'Loop {current}/{total}',
-    notes_missing: '{count} note(s) missing',
-    stop: 'Stop',
-    count_in: 'Count in…',
-    play_along_tip: 'Play the chords along on your piano',
-    finished: 'Finished!',
-    back_editor: 'Back to Editor',
-    play_again: 'Play Again',
-    
-    // Results
-    grade_perfect: 'Perfect',
-    grade_excellent: 'Excellent',
-    grade_good: 'Good',
-    grade_room_to_grow: 'Room to grow',
-    grade_keep_practicing: 'Keep practicing',
-    chord_accuracy: 'Chord Accuracy',
-    timing_offset: '⌀ Timing Offset',
-    total_time: 'Total Time',
-    results_loops: 'Loops',
-    results_weakest_chords: 'Weakest Chords',
-    results_weak_desc: 'These chords were often missed — focus on them!',
-    results_detail_last: 'Detail (last loop)',
-
-    // Voice Leading card hints
-    vl_find_inversion: '{voicing} — find the closest inversion',
-    vl_free: 'Any voicing — minimum movement',
-
-    // Lesson MIDI hint
-    lesson_click_hint: 'Click keys to play · Connect MIDI for keyboard input',
-
-    // VL mode labels (GameSettings)
-    vl_guided_label: 'Follow along',
-    vl_guided_desc: 'Keyboard shows the optimal inversion — play it back',
-    vl_find_label: 'Find inversion',
-    vl_find_desc: 'Find the closest inversion yourself via MIDI',
-    vl_free_label: 'Free',
-    vl_free_desc: 'Any voicing — scored by movement distance',
   },
 
   midi: {

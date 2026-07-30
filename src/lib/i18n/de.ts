@@ -761,6 +761,8 @@ export const de = {
   ui: {
     disconnected_reconnect: '{device} getrennt — bitte wieder verbinden',
     next_chord: 'Nächster Akkord',
+    // Steht auf demselben Knopf wie next_chord, beim letzten Akkord der Runde.
+    finish: 'Fertig',
     shortcut_next: 'weiter',
     shortcut_pause: 'Pause',
     shortcut_lookahead: 'Vorschau',
@@ -903,6 +905,19 @@ export const de = {
     vl_free_label: 'Frei',
     vl_free_desc: 'Beliebiges Voicing — bewertet nach Bewegungsdistanz',
     loading: 'Lädt',
+
+    // Voice-Leading-Rückmeldung in den Modi „Umkehrung finden" und „Frei".
+    vl_movement: '{n} Halbtöne Bewegung',
+    correct_but_not_closest: 'Richtig — aber nicht die nächste Umkehrung',
+    vl_your_movement: 'Deine Bewegung: {player} Halbtöne · optimal: {optimal}',
+    vl_wrong_notes: 'Andere Töne — hör noch mal hin.',
+
+    // Progression-Editor und Vorschau-Overlay.
+    name_optional: 'optional',
+    loop_label: 'Schleife',
+    clear: 'Leeren',
+    timing_note: 'Zeit läuft ab dem ersten Ton',
+    continue_playing: 'Weiterspielen',
   },
 
   voicing_info: {
