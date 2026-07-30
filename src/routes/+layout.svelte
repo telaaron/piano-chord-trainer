@@ -148,9 +148,10 @@
 				<div class="nav-links">
 					<a href="/learn" class="nav-link" class:active={page.url.pathname.startsWith('/learn')}><span class="nav-num" aria-hidden="true">I</span>{t('nav.learn')}</a>
 					<a href="/train" class="nav-link" class:active={page.url.pathname.startsWith('/train')}><span class="nav-num" aria-hidden="true">II</span>{t('nav.train')}</a>
-					<a href="/for-educators" class="nav-link" class:active={page.url.pathname === '/for-educators'}><span class="nav-num" aria-hidden="true">III</span>{t('nav.educators_short')}</a>
+					<a href="/togo" class="nav-link" class:active={page.url.pathname.startsWith('/togo')}><span class="nav-num" aria-hidden="true">III</span>{t('nav.togo')}</a>
+					<a href="/for-educators" class="nav-link" class:active={page.url.pathname === '/for-educators'}><span class="nav-num" aria-hidden="true">IV</span>{t('nav.educators_short')}</a>
 					{#if isAdmin}
-						<a href="/admin" class="nav-link" class:active={page.url.pathname === '/admin'} title="Admin Dashboard"><span class="nav-num" aria-hidden="true">IV</span>Admin</a>
+						<a href="/admin" class="nav-link" class:active={page.url.pathname === '/admin'} title="Admin Dashboard"><span class="nav-num" aria-hidden="true">V</span>Admin</a>
 					{/if}
 				</div>
 
@@ -192,10 +193,11 @@
 				<div class="nav-mobile">
 					<a href="/learn" class="nav-mobile-link" class:active={page.url.pathname.startsWith('/learn')}><span class="nav-num" aria-hidden="true">I</span>{t('nav.learn')}</a>
 					<a href="/train" class="nav-mobile-link" class:active={page.url.pathname.startsWith('/train')}><span class="nav-num" aria-hidden="true">II</span>{t('nav.train')}</a>
-					<a href="/for-educators" class="nav-mobile-link" class:active={page.url.pathname === '/for-educators'}><span class="nav-num" aria-hidden="true">III</span>{t('nav.educators')}</a>
-					<a href="/pricing" class="nav-mobile-link" class:active={page.url.pathname === '/pricing'}><span class="nav-num" aria-hidden="true">IV</span>{t('nav_auth.pricing')}</a>
+					<a href="/togo" class="nav-mobile-link" class:active={page.url.pathname.startsWith('/togo')}><span class="nav-num" aria-hidden="true">III</span>{t('nav.togo')}</a>
+					<a href="/for-educators" class="nav-mobile-link" class:active={page.url.pathname === '/for-educators'}><span class="nav-num" aria-hidden="true">IV</span>{t('nav.educators')}</a>
+					<a href="/pricing" class="nav-mobile-link" class:active={page.url.pathname === '/pricing'}><span class="nav-num" aria-hidden="true">V</span>{t('nav_auth.pricing')}</a>
 					{#if isAdmin}
-						<a href="/admin" class="nav-mobile-link" class:active={page.url.pathname === '/admin'}><span class="nav-num" aria-hidden="true">V</span>Admin</a>
+						<a href="/admin" class="nav-mobile-link" class:active={page.url.pathname === '/admin'}><span class="nav-num" aria-hidden="true">VI</span>Admin</a>
 					{/if}
 				</div>
 			{/if}
@@ -255,6 +257,7 @@
 					<a href="/privacy">{t('nav.privacy')}</a>
 					<a href="/terms">{t('nav_auth.terms')}</a>
 					<a href="/impressum">{t('nav.impressum')}</a>
+					<a href="/feedback">{t('feedback.title')}</a>
 					<a href="mailto:info@jazzchords.app">{t('nav.contact')}</a>
 				</nav>
 
