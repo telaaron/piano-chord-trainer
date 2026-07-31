@@ -137,13 +137,15 @@
 	     outside this box: 256px wide with translate-x-1/2, it reached 1307px in a
 	     1280px viewport and gave the whole page a horizontal scrollbar. Clipping
 	     it here keeps the effect and drops the overflow. -->
-	<div class="card surface-glass p-5 sm:p-6 w-full space-y-6 sm:space-y-8 border-l-4 border-l-[var(--primary)] shadow-[0_0_30px_rgba(251,146,60,0.06)] relative overflow-hidden">
+	<div class="card surface-glass p-5 sm:p-7 w-full space-y-8 sm:space-y-10 border-l-4 border-l-[var(--primary)] shadow-[0_0_30px_rgba(251,146,60,0.06)] relative overflow-hidden">
 
 		<!-- Optional subtle background glow -->
 		<div class="absolute top-0 right-0 w-64 h-64 bg-[var(--primary)]/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
 		<!-- Top Row: Big Metrics -->
-		<div class="flex flex-wrap items-center justify-between gap-6 pb-2 border-b border-[var(--border)]/30">
+		<!-- pb-6, not pb-2: the rule reads as the floor of this group, so it needs
+		     air above it rather than sitting tight under the labels. -->
+		<div class="flex flex-wrap items-center justify-between gap-6 pb-6 border-b border-[var(--border)]/30">
 			<!-- Metric 1: Sessions -->
 			<div class="flex flex-col items-center flex-1 min-w-[80px]">
 				<span class="text-3xl font-bold text-[var(--primary)] font-mono leading-none mb-1">{stats.totalSessions}</span>
@@ -229,7 +231,7 @@
 
 		<!-- ── Bottom: Bar Chart ── -->
 		{#if sparkData}
-			<div class="bg-[var(--bg-muted)]/20 border border-[var(--border)] rounded-[var(--radius)] p-4 sm:p-5">
+			<div class="bg-[var(--bg-muted)]/20 border border-[var(--border)] rounded-[var(--radius)] p-5 sm:p-6">
 				<!-- Header -->
 				<div class="flex justify-between items-start mb-5">
 					<div>
@@ -280,7 +282,7 @@
 		{/if}
 
 		<!-- Footer: Best Times & History (Collapsible) -->
-		<div class="space-y-4 pt-4 border-t border-[var(--border)]">
+		<div class="space-y-5 pt-7 border-t border-[var(--border)]">
 			
 			<!-- Personal Bests Toggle -->
 			{#if Object.keys(stats.personalBests).length > 0}
