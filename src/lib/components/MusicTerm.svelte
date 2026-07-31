@@ -82,7 +82,7 @@
 		bottom: calc(100% + 6px);
 		left: 50%;
 		transform: translateX(-50%);
-		background: var(--bg-elevated, #1a1612);
+		background: var(--bg-card);
 		color: var(--text);
 		border: 1px solid var(--border);
 		padding: 4px 10px;

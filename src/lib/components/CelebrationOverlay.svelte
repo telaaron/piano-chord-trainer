@@ -17,12 +17,16 @@
 	let visible = $state(true);
 	let confettiPieces: { x: number; y: number; rotation: number; color: string; delay: number; size: number }[] = $state([]);
 
+	// Each tint is layered OVER an opaque `--bg-card` base. Without that base the
+	// card was pure translucency and borrowed its body from the black scrim
+	// behind it — fine in dark mode, but in light mode `--text` flips to near-black
+	// and sat on that dark scrim, which is what made these unreadable.
 	const TYPE_CONFIG: Record<string, { icon: typeof LucideIcon; bg: string; glow: string }> = {
-		'level-up': { icon: PartyPopper, bg: 'linear-gradient(135deg, rgba(251,146,60,0.15) 0%, rgba(245,158,11,0.1) 100%)', glow: 'rgba(251,146,60,0.4)' },
-		'goal-complete': { icon: Target, bg: 'linear-gradient(135deg, rgba(74,222,128,0.12) 0%, rgba(34,197,94,0.08) 100%)', glow: 'rgba(74,222,128,0.35)' },
-		'streak-milestone': { icon: Flame, bg: 'linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(251,146,60,0.08) 100%)', glow: 'rgba(239,68,68,0.35)' },
-		'personal-best': { icon: Trophy, bg: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(251,146,60,0.08) 100%)', glow: 'rgba(245,158,11,0.4)' },
-		'xp-gain': { icon: Zap, bg: 'linear-gradient(135deg, rgba(251,146,60,0.1) 0%, rgba(245,158,11,0.05) 100%)', glow: 'rgba(251,146,60,0.25)' },
+		'level-up': { icon: PartyPopper, bg: 'linear-gradient(135deg, rgba(251,146,60,0.15) 0%, rgba(245,158,11,0.1) 100%), var(--bg-card)', glow: 'rgba(251,146,60,0.4)' },
+		'goal-complete': { icon: Target, bg: 'linear-gradient(135deg, rgba(74,222,128,0.12) 0%, rgba(34,197,94,0.08) 100%), var(--bg-card)', glow: 'rgba(74,222,128,0.35)' },
+		'streak-milestone': { icon: Flame, bg: 'linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(251,146,60,0.08) 100%), var(--bg-card)', glow: 'rgba(239,68,68,0.35)' },
+		'personal-best': { icon: Trophy, bg: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(251,146,60,0.08) 100%), var(--bg-card)', glow: 'rgba(245,158,11,0.4)' },
+		'xp-gain': { icon: Zap, bg: 'linear-gradient(135deg, rgba(251,146,60,0.1) 0%, rgba(245,158,11,0.05) 100%), var(--bg-card)', glow: 'rgba(251,146,60,0.25)' },
 	};
 
 	const current = $derived(celebrations[currentIndex]);
@@ -91,33 +95,33 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			class="border border-white/10 rounded-2xl py-8 px-7 text-center max-w-[340px] w-full"
+			class="border border-[var(--border)] rounded-2xl py-8 px-7 text-center max-w-[340px] w-full"
 			transition:scale={{ duration: 300, start: 0.8 }}
 			style="background: {currentConfig.bg}; box-shadow: 0 0 40px {currentConfig.glow};"
 			onclick={(e) => e.stopPropagation()}
 		>
-			<div class="celebration-emoji mb-3 flex justify-center text-[#fb923c]"><CurrentIcon size={64} aria-hidden="true" /></div>
-			<h2 class="text-xl font-extrabold text-[var(--text,#fff)] m-0 mb-1.5">
+			<div class="celebration-emoji mb-3 flex justify-center text-[var(--xp)]"><CurrentIcon size={64} aria-hidden="true" /></div>
+			<h2 class="text-xl font-extrabold text-[var(--text)] m-0 mb-1.5">
 				{t(current.titleKey, current.titleParams) || current.title}
 			</h2>
 			{#if current.subtitle}
-				<p class="text-[0.85rem] text-[var(--text-muted,#888)] m-0 mb-4">
+				<p class="text-[0.85rem] text-[var(--text-muted)] m-0 mb-4">
 					{t(current.subtitleKey || '', current.subtitleParams) || current.subtitle}
 				</p>
 			{/if}
 
 			{#if current.xpGained > 0}
-				<div class="xp-toast inline-block py-1 px-3.5 rounded-full bg-orange-400/15 text-orange-400 text-[0.8rem] font-bold mb-5">+{current.xpGained} XP</div>
+				<div class="xp-toast inline-block py-1 px-3.5 rounded-full bg-[var(--xp-muted)] text-[var(--xp)] text-[0.8rem] font-bold mb-5">+{current.xpGained} XP</div>
 			{/if}
 
-			<button class="block w-full py-2.5 px-5 border-none rounded-[var(--radius,8px)] bg-[#fb923c] text-black text-[0.85rem] font-bold cursor-pointer transition-all duration-200 hover:bg-[#f59e0b] hover:-translate-y-px" onclick={handleNext}>
+			<button class="block w-full py-2.5 px-5 border-none rounded-[var(--radius,8px)] bg-[var(--stamp)] text-[var(--stamp-ink)] text-[0.85rem] font-bold cursor-pointer transition-all duration-200 hover:bg-[var(--stamp-hover)] hover:-translate-y-px" onclick={handleNext}>
 				{hasMore ? t('habit.celebration_next') || 'Next' : t('habit.celebration_continue') || 'Continue'}
 			</button>
 
 			{#if celebrations.length > 1}
 				<div class="flex justify-center gap-1.5 mt-3.5">
 					{#each celebrations as _, i}
-						<div class="w-1.5 h-1.5 rounded-full transition-all duration-200 {i === currentIndex ? 'bg-[#fb923c] scale-[1.3]' : i < currentIndex ? 'bg-[rgba(251,146,60,0.4)]' : 'bg-white/15'}"></div>
+						<div class="w-1.5 h-1.5 rounded-full transition-all duration-200 {i === currentIndex ? 'bg-[var(--xp)] scale-[1.3]' : i < currentIndex ? 'bg-[var(--xp-muted)]' : 'bg-[var(--border)]'}"></div>
 					{/each}
 				</div>
 			{/if}
