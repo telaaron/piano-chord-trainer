@@ -1,7 +1,11 @@
 <script lang="ts">
 	import PianoKeyboard from './PianoKeyboard.svelte';
+	import KeyClock from './KeyClock.svelte';
+	import type { KeyDial } from '$lib/services/progress';
+	import type { DialProgress } from '$lib/engine/habits';
 	import {
 		convertChordNotation,
+		convertNoteName,
 		typesetChordName,
 		formatVoicing,
 		VOICING_LABELS,
@@ -50,6 +54,14 @@
 		vlModeActive?: string;
 		/** Whether the player has enough history to drill weak spots. */
 		candrillweak?: boolean;
+		/** The dial as it stands AFTER this session. Omitted = no dial shown. */
+		dial?: KeyDial[];
+		/** Roots touched in this session — lit up, the rest dimmed. */
+		dialHighlight?: string[];
+		/** What moved. Only a genuine crossing produces a line. */
+		dialProgress?: DialProgress | null;
+		/** Mastery threshold, so the dial's reference ring matches the engine. */
+		dialThresholdMs?: number;
 		onrestart: () => void;
 		onreset: () => void;
 		/** Launch a focused drill on the player's weakest chords. */
@@ -78,10 +90,58 @@
 		vlTotalChords = 0,
 		vlModeActive = '',
 		candrillweak = false,
+		dial,
+		dialHighlight,
+		dialProgress = null,
+		dialThresholdMs = 2000,
 		onrestart,
 		onreset,
 		ondrillweak,
 	}: Props = $props();
+
+	// ─── The dial, as the session left it ──────────────────────
+	/* Note names arrive from the engine as ASCII ("Db"). They go through the
+	   player's own notation setting first (German shows H for B), then the
+	   accidental is typeset as a real ♭/♯ — same path KeyClock uses, so the
+	   line and the ring never disagree about what a key is called. */
+	const keyName = (root: string) =>
+		convertNoteName(root, notationSystem).replace('b', '♭').replace('#', '♯');
+
+	const secs = (ms: number) => (ms / 1000).toFixed(1).replace('.', ',') + ' s';
+
+	const hasDial = $derived(!!dial && dial.length > 0);
+
+	/**
+	 * The fluency line. Silence is the default: if nothing crossed the
+	 * threshold this session, we say nothing rather than inventing praise for
+	 * a session that did not move the dial.
+	 */
+	const fluencyLine = $derived.by<string | null>(() => {
+		if (!dialProgress) return null;
+		const { gained, milestones } = dialProgress;
+		if (milestones.includes(12)) return t('clock.milestone_complete');
+		if (gained.length === 1) {
+			const g = gained[0];
+			return g.beforeMs === null
+				? t('clock.gained_one_fresh', { key: keyName(g.root), after: secs(g.afterMs) })
+				: t('clock.gained_one', {
+						key: keyName(g.root),
+						before: secs(g.beforeMs),
+						after: secs(g.afterMs),
+					});
+		}
+		if (gained.length > 1) {
+			return t('clock.gained_many', { keys: gained.map((g) => keyName(g.root)).join(', ') });
+		}
+		return null;
+	});
+
+	/** A milestone below 12 is worth its own quieter line under the first. */
+	const milestoneLine = $derived.by<string | null>(() => {
+		if (!dialProgress) return null;
+		const m = dialProgress.milestones.filter((x) => x < 12).at(-1);
+		return m ? t('clock.milestone', { count: m }) : null;
+	});
 
 	// ─── Performance-based recommendation ──────────────────────
 	const secondsPerChord = $derived(elapsedMs / totalChords / 1000);
@@ -138,6 +198,33 @@
 			{t('results.time_per_chord', { seconds: (elapsedMs / totalChords / 1000).toFixed(2) })}
 		</div>
 	</div>
+
+	<!-- The dial: what this session moved. Highlighted keys are the ones just
+	     played; the fluency line appears only when something actually crossed. -->
+	{#if hasDial}
+		<div class="bg-[var(--bg-muted)]/35 rounded-[var(--radius-lg)] p-5 sm:p-6 border border-[var(--border)]/40 backdrop-blur-sm flex flex-col items-center gap-3">
+			<div>
+				<div class="text-sm font-semibold text-[var(--text)]">{t('clock.results_title')}</div>
+				<div class="text-xs text-[var(--text-muted)] mt-0.5">{t('clock.results_sub')}</div>
+			</div>
+
+			<KeyClock
+				dial={dial ?? []}
+				thresholdMs={dialThresholdMs}
+				size={248}
+				highlight={dialHighlight}
+				showTimes={false}
+				{notationSystem}
+			/>
+
+			{#if fluencyLine}
+				<p class="text-sm font-semibold text-[var(--accent-green)]">{fluencyLine}</p>
+			{/if}
+			{#if milestoneLine}
+				<p class="text-xs text-[var(--text-muted)]">{milestoneLine}</p>
+			{/if}
+		</div>
+	{/if}
 
 	<!-- Stats grid -->
 	<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
