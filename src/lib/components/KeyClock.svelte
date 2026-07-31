@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { KeyDial } from '$lib/services/progress';
 	import { convertNoteName, type NotationSystem } from '$lib/engine';
+	import { t } from '$lib/i18n';
 
 	/**
 	 * The clock — twelve keys on the circle of fifths, each segment sized and
@@ -47,8 +48,17 @@
 	const slowCount = $derived(
 		dial.filter((d) => d.avgMs !== null && d.avgMs > thresholdMs).length,
 	);
+	/** Keys at or under the threshold — the number the hub reports. */
+	const fluentCount = $derived(
+		dial.filter((d) => d.avgMs !== null && d.avgMs <= thresholdMs).length,
+	);
 	const playedCount = $derived(dial.filter((d) => d.count > 0).length);
 	const hasData = $derived(playedCount > 0);
+
+	/* The hub labels were hardcoded German, which showed through on the English
+	   site. Both locales now carry them. */
+	const hubLabel = $derived(t('clock.hub_fluent'));
+	const emptyLabel = $derived(t('clock.hub_empty'));
 
 	/**
 	 * Segment reaches outward in proportion to time. The floor of 0.3 keeps a
@@ -201,12 +211,17 @@
 		<circle class="hub" cx={CENTRE} cy={CENTRE} r={R_IN - 1} />
 
 		{#if hasData}
-			<text class="hub-n" x={CENTRE} y={CENTRE - 4} text-anchor="middle">{slowCount}</text>
-			<text class="hub-l" x={CENTRE} y={CENTRE + 7} text-anchor="middle">ÜBER {seconds(thresholdMs)} S</text>
-			<text class="hub-l" x={CENTRE} y={CENTRE + 14} text-anchor="middle">VON 12</text>
+			<!-- Counting what SITS, not what is missing. The hub used to print the
+			     slow count, which meant a player with no slow key saw a bare "0"
+			     over "ÜBER 2,0 S / VON 12" — arithmetically right and unreadable
+			     as a statement. "7/12 sitzen" says the same thing forwards. -->
+			<text class="hub-n" x={CENTRE} y={CENTRE - 2} text-anchor="middle"
+				>{fluentCount}<tspan class="hub-of">/12</tspan></text
+			>
+			<text class="hub-l" x={CENTRE} y={CENTRE + 9} text-anchor="middle">{hubLabel}</text>
 		{:else}
 			<text class="hub-n" x={CENTRE} y={CENTRE - 2} text-anchor="middle">12</text>
-			<text class="hub-l" x={CENTRE} y={CENTRE + 9} text-anchor="middle">TONARTEN</text>
+			<text class="hub-l" x={CENTRE} y={CENTRE + 9} text-anchor="middle">{emptyLabel}</text>
 		{/if}
 	</svg>
 </figure>
@@ -281,6 +296,13 @@
 		font-size: 15px;
 		font-weight: 700;
 		fill: var(--text);
+	}
+	/* The denominator is context, not the reading — it steps back so the eye
+	   lands on the count. */
+	.hub-of {
+		font-size: 8px;
+		font-weight: 600;
+		fill: var(--text-muted);
 	}
 	.hub-l {
 		font-family: var(--font-mono);

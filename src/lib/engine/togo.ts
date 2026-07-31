@@ -106,6 +106,17 @@ export const ALL_TOGO_KINDS: ToGoKind[] = [
 	'theory',
 ];
 
+/**
+ * The three disciplines the free tier keeps. Chosen so the free To-Go is a
+ * complete little practice on its own — ear (interval), recognition (quality)
+ * and silent theory, the one that works with no sound at all.
+ *
+ * The remaining four (progression, sing, time, lick) are Studio. Declared here
+ * as plain data because the engine must not import services; the gate itself
+ * is applied in the UI via the 'togo-full' feature key.
+ */
+export const FREE_TOGO_KINDS: ToGoKind[] = ['interval', 'quality', 'theory'];
+
 // ─── Tunables ───────────────────────────────────────────────
 
 export interface ToGoParams {
@@ -703,6 +714,12 @@ export function buildToGoSession(
 		difficulty?: Difficulty;
 		/** Restrict to one discipline (the player picked it explicitly). */
 		only?: ToGoKind;
+		/**
+		 * Disciplines the caller is entitled to. Omit for all of them.
+		 * Used by the tier gate so a mixed session never deals a locked
+		 * discipline — the engine stays pure and just honours the list.
+		 */
+		allow?: ToGoKind[];
 		pref?: AccidentalPreference;
 	} = {},
 	params: ToGoParams = DEFAULT_TOGO_PARAMS,
@@ -714,9 +731,11 @@ export function buildToGoSession(
 	const cardStates = opts.cardStates ?? {};
 
 	// Which disciplines can run right now?
+	const allowed = opts.allow ?? ALL_TOGO_KINDS;
 	let kinds: ToGoKind[] = opts.only
 		? [opts.only]
 		: ALL_TOGO_KINDS.filter((k) => {
+				if (!allowed.includes(k)) return false; // not in this tier
 				if (k === 'theory') return deck.length > 0; // silent — always allowed
 				if (!caps.audio) return false; // everything else needs sound
 				if (k === 'sing') return caps.mic;

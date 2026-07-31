@@ -2,7 +2,7 @@
 	import { t } from '$lib/i18n';
 	import KeyClock from '$lib/components/KeyClock.svelte';
 	import { buildKeyDial, loadHistory } from '$lib/services/progress';
-	import { ArrowRight, Check, Keyboard, Mic, Play } from 'lucide-svelte';
+	import { ArrowRight, Check, Headphones, Keyboard, Mic, Play } from 'lucide-svelte';
 
 	const curriculumSteps = [
 		{ state: 'done', num: 'I', titleKey: 'landing.cur_s1_t', descKey: 'landing.cur_s1_d', chord: 'Cmaj7', notes: 'C · E · B' },
@@ -18,6 +18,20 @@
 		{ labelKey: 'landing.coach_mock_b3', min: '3', state: 'now' },
 		{ labelKey: 'landing.coach_mock_b4', min: '3', state: 'next' },
 		{ labelKey: 'landing.coach_mock_b5', min: '2', state: 'next' }
+	] as const;
+
+	/* The seven To-Go disciplines, in the order the engine lists them
+	   (ALL_TOGO_KINDS in src/lib/engine/togo.ts). `note` marks the two rows
+	   that behave differently from the rest: theory needs no sound at all,
+	   singing is the only one that wants a microphone. */
+	const togoDisciplines = [
+		{ num: '01', titleKey: 'landing.togo_d1_t', descKey: 'landing.togo_d1_d', note: null },
+		{ num: '02', titleKey: 'landing.togo_d2_t', descKey: 'landing.togo_d2_d', note: null },
+		{ num: '03', titleKey: 'landing.togo_d3_t', descKey: 'landing.togo_d3_d', note: null },
+		{ num: '04', titleKey: 'landing.togo_d4_t', descKey: 'landing.togo_d4_d', note: 'landing.togo_note_mic' },
+		{ num: '05', titleKey: 'landing.togo_d5_t', descKey: 'landing.togo_d5_d', note: null },
+		{ num: '06', titleKey: 'landing.togo_d6_t', descKey: 'landing.togo_d6_d', note: null },
+		{ num: '07', titleKey: 'landing.togo_d7_t', descKey: 'landing.togo_d7_d', note: 'landing.togo_note_silent' }
 	] as const;
 
 	const faqItems = [
@@ -180,16 +194,27 @@
 				<p class="hero-lede">{t('landing.hero_subtitle')}</p>
 
 				<div class="hero-cta">
-					<a href="/train" class="btn btn-stamp">
-						{t('landing.cta_start')}
-						<ArrowRight size={17} />
-					</a>
+					<span class="cta-stack">
+						<a href="/train" class="btn btn-stamp">
+							{t('landing.cta_start')}
+							<ArrowRight size={17} />
+						</a>
+						<!-- The reassurance belongs ON the decision, not three
+						     paragraphs below it. Small, green, one line: it answers
+						     "what does this cost me" before the click without
+						     competing with the button it sits under. -->
+						<span class="cta-badge">{t('landing.cta_badge')}</span>
+					</span>
 					<a href="/learn" class="btn btn-ghost">{t('landing.cta_learn')}</a>
+					<!-- To-Go's whole promise in four words. It sits with the other
+					     secondary links rather than in the lede, because the hero is
+					     deliberately sparse — one more line of prose would undo the
+					     cut that was made here two rounds ago. -->
+					<a href="/togo" class="btn btn-ghost">{t('landing.hero_togo')}</a>
 					<a href="/for-educators" class="btn btn-ghost hide-sm">{t('landing.cta_educators')}</a>
 				</div>
 
 				<p class="hero-fine">{t('landing.hero_no_midi')}</p>
-				<p class="plate hero-plate">{t('landing.footnote')}</p>
 			</div>
 
 			<!-- The practice card: the loop the app actually runs, top to bottom.
@@ -371,7 +396,6 @@
 					</figcaption>
 					<KeyClock {dial} size={252} showTimes={false} />
 					<p class="fifths-chain">{t('landing.clock_fifths_chain')}</p>
-					<p class="fifths-note">{t('landing.clock_fifths_note')}</p>
 					<p class="plate clock-cap">{t('landing.clock_caption')}</p>
 				</figure>
 				<div class="clock-copy">
@@ -386,11 +410,60 @@
 		</div>
 	</section>
 
-	<!-- ═══ E · It listens ═══ -->
+	<!-- ═══ E · To-Go — practice away from the piano ═══
+	     Placed here on purpose: D has just told the reader the goal is all
+	     twelve keys, which sounds like a lot of bench time. This is the answer
+	     to the objection that raises — and it has to land BEFORE F, which is
+	     entirely about MIDI, microphone and the on-screen keyboard, i.e. about
+	     being at the instrument. -->
 	<section class="sec">
 		<div class="shell">
 			<div class="sec-head">
 				<span class="rehearsal">E</span>
+				<div class="sec-col">
+					<p class="eyebrow">{t('landing.togo_eyebrow')}</p>
+					<h2 class="sec-h2">{t('landing.togo_title')}</h2>
+					<p class="sec-lede">{t('landing.togo_desc')}</p>
+				</div>
+			</div>
+
+			<!-- The running order, same ruled-contents pattern as B and C.
+			     Seven rows read as a syllabus; seven cards would read as a
+			     feature grid, which is not the voice of this page. -->
+			<ol class="contents ruled togo-list">
+				{#each togoDisciplines as d}
+					<li class="row togo-row">
+						<span class="no">{d.num}</span>
+						<span class="row-txt">
+							<span class="ttl">{t(d.titleKey)}</span>
+							<span class="dsc">{t(d.descKey)}</span>
+						</span>
+						{#if d.note}
+							<span class="togo-note">{t(d.note)}</span>
+						{/if}
+					</li>
+				{/each}
+			</ol>
+
+			<p class="sec-foot">{t('landing.togo_foot')}</p>
+
+			<!-- Secondary treatment by design: the hero's start button is the
+			     one filled amber action on the page, and a second one here
+			     would split the decision. A ruled block with the headphones
+			     mark reads as an invitation without shouting over it. -->
+			<a href="/togo" class="togo-cta">
+				<Headphones size={17} aria-hidden="true" />
+				<span>{t('landing.togo_cta')}</span>
+				<ArrowRight size={16} aria-hidden="true" />
+			</a>
+		</div>
+	</section>
+
+	<!-- ═══ F · It listens ═══ -->
+	<section class="sec">
+		<div class="shell">
+			<div class="sec-head">
+				<span class="rehearsal">F</span>
 				<div class="sec-col">
 					<p class="eyebrow">{t('landing.listen_eyebrow')}</p>
 					<h2 class="sec-h2">{t('landing.listen_title')}</h2>
@@ -425,11 +498,11 @@
 		</div>
 	</section>
 
-	<!-- ═══ F · FAQ ═══ -->
+	<!-- ═══ G · FAQ ═══ -->
 	<section class="sec">
 		<div class="shell">
 			<div class="sec-head">
-				<span class="rehearsal">F</span>
+				<span class="rehearsal">G</span>
 				<div class="sec-col">
 					<p class="eyebrow">{t('landing.sec_faq_eyebrow')}</p>
 					<h2 class="sec-h2">{t('landing.faq_title')}</h2>
@@ -794,8 +867,38 @@
 	.hero-cta {
 		display: flex;
 		flex-wrap: wrap;
+		align-items: flex-start;
 		gap: 0.7rem;
 		margin-top: 1.6rem;
+	}
+	/* The button and its badge travel together, so the badge stays attached to
+	   the decision even when the row wraps on a narrow screen. */
+	.cta-stack {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.45rem;
+	}
+	.cta-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.34rem;
+		font-family: var(--font-mono);
+		font-size: 0.64rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--accent-green);
+		white-space: nowrap;
+	}
+	/* A small filled dot rather than a checkmark glyph: it reads as a status
+	   light at this size, where a ✓ turns to mush. */
+	.cta-badge::before {
+		content: '';
+		width: 0.36rem;
+		height: 0.36rem;
+		border-radius: 50%;
+		background: var(--accent-green);
+		flex: none;
 	}
 
 	.hero-fine {
@@ -806,7 +909,6 @@
 		color: var(--hall-plate);
 		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 	}
-	.hero-plate { margin-top: 1rem; }
 
 	@media (max-width: 640px) {
 		.hide-sm { display: none; }
@@ -1297,6 +1399,73 @@
 		color: var(--primary);
 	}
 
+	/* ── To-Go — the running order of the seven disciplines ───── */
+
+	/* Seven rows is a long list, so it gets a third column for the two
+	   qualifiers that actually change what you need to bring (a mic, or
+	   nothing at all). Same grid as .cur-row so the two syllabus lists on the
+	   page line up with each other. */
+	.togo-row {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+	@media (min-width: 620px) {
+		.togo-row { grid-template-columns: auto minmax(0, 1fr) auto; }
+	}
+	/* Copyist blue: this is an annotation about the material, not a state —
+	   amber would claim it is live, and stamp red is the narrative voice. */
+	.togo-note {
+		grid-column: 2;
+		justify-self: start;
+		margin-top: 0.35rem;
+		padding: 0.1rem 0.45rem;
+		border: 1px solid color-mix(in srgb, var(--ink-blue) 45%, transparent);
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--ink-blue);
+	}
+	@media (min-width: 620px) {
+		.togo-note {
+			grid-column: 3;
+			justify-self: end;
+			margin-top: 0;
+		}
+	}
+
+	/* The section's own action. Ruled, not filled — see the markup note. The
+	   amber only arrives on hover, as the same "you may press this" signal
+	   the ghost buttons use, without holding a second filled block on the
+	   page at rest. */
+	.togo-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		min-height: var(--tap-min);
+		margin-top: 1.75rem;
+		padding: 0 1.35rem;
+		border: 1.5px solid var(--text);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		font-size: 0.94rem;
+		font-weight: 600;
+		color: var(--text);
+		text-decoration: none;
+		transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+	}
+	.togo-cta :global(svg) {
+		flex: none;
+		color: var(--ink-blue);
+		transition: color 0.12s;
+	}
+	.togo-cta:hover {
+		border-color: var(--accent-amber);
+		background: color-mix(in srgb, var(--accent-amber) 10%, transparent);
+	}
+	.togo-cta:hover :global(svg) { color: var(--accent-amber); }
+
 	/* ── The clock — mid-weight, never the hero ───────────────── */
 
 	.clock-pair {
@@ -1363,16 +1532,6 @@
 		text-wrap: balance;
 		color: var(--ink-blue);
 	}
-	.fifths-note {
-		margin: 0;
-		font-size: 0.82rem;
-		font-style: italic;
-		line-height: 1.5;
-		text-align: center;
-		text-wrap: balance;
-		color: var(--text-muted);
-	}
-
 	.clock-cap {
 		/* Mono uppercase eats width fast; a 22ch cap broke this to four ragged
 		   lines under the dial. Let it run the frame's width and sit on two. */

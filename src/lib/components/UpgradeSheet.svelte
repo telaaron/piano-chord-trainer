@@ -25,6 +25,12 @@
 		if (teaserMode && feature === 'advanced-stats')
 			return { title: t('upgrade.teaser_stats_title'), desc: t('upgrade.teaser_stats_desc') };
 		switch (feature) {
+			case 'unlimited-coach-sessions':
+				return { title: t('upgrade.lock_sessions_title'), desc: t('upgrade.lock_sessions_desc') };
+			case 'togo-full':
+				return { title: t('upgrade.lock_togo_title'), desc: t('upgrade.lock_togo_desc') };
+			case 'full-history':
+				return { title: t('upgrade.lock_history_title'), desc: t('upgrade.lock_history_desc') };
 			case 'adaptive-difficulty':
 				return { title: t('upgrade.lock_adaptive_title'), desc: t('upgrade.lock_adaptive_desc') };
 			case 'custom-progressions':
@@ -38,7 +44,10 @@
 		}
 	});
 
+	// Unlimited sessions leads: it is the one limit a free user meets daily,
+	// and therefore the reason most of them are reading this sheet at all.
 	const points = [
+		{ icon: 'speed', key: 'upgrade.point_sessions' },
 		{ icon: 'weak-spots', key: 'upgrade.point_adaptive' },
 		{ icon: 'custom-progression', key: 'upgrade.point_custom' },
 		{ icon: 'progress', key: 'upgrade.point_stats' },

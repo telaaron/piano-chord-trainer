@@ -9,6 +9,7 @@ import {
 	buildTheoryExercise,
 	buildTheoryDeck,
 	buildToGoSession,
+	FREE_TOGO_KINDS,
 	gradeChoice,
 	gradeSing,
 	gradeNotes,
@@ -359,6 +360,36 @@ describe('buildToGoSession', () => {
 	it('fills a session of the configured length', () => {
 		const s = buildToGoSession(seeded(), CAPS_ALL, { deck: buildTheoryDeck() });
 		expect(s.exercises).toHaveLength(DEFAULT_TOGO_PARAMS.sessionLength);
+	});
+
+	// The tier gate. A mixed session must never deal a discipline the user
+	// isn't entitled to — that's the paid feature leaking out for free.
+	it('deals only allowed disciplines when `allow` is given', () => {
+		const s = buildToGoSession(seeded(), CAPS_ALL, {
+			deck: buildTheoryDeck(),
+			allow: FREE_TOGO_KINDS,
+		});
+		expect(s.exercises.length).toBeGreaterThan(0);
+		expect(s.exercises.every((e) => FREE_TOGO_KINDS.includes(e.kind))).toBe(true);
+	});
+
+	it('deals every discipline when `allow` is omitted', () => {
+		const s = buildToGoSession(seeded(), CAPS_ALL, { deck: buildTheoryDeck() });
+		const kinds = new Set(s.exercises.map((e) => e.kind));
+		// At least one paid-only discipline shows up for an unrestricted caller.
+		expect([...kinds].some((k) => !FREE_TOGO_KINDS.includes(k))).toBe(true);
+	});
+
+	it('still produces a session when allow and capabilities both narrow it', () => {
+		// Free tier on a silent device: theory is the only thing left, and the
+		// session must degrade to it rather than come back empty.
+		const s = buildToGoSession(
+			seeded(),
+			{ mic: false, audio: false },
+			{ deck: buildTheoryDeck(), allow: FREE_TOGO_KINDS },
+		);
+		expect(s.exercises.length).toBeGreaterThan(0);
+		expect(s.exercises.every((e) => e.kind === 'theory')).toBe(true);
 	});
 
 	it('drops sing when there is no mic', () => {

@@ -70,9 +70,20 @@ export function hasAccess(requiredTier: SubscriptionTier, currentTier: Subscript
 
 /**
  * Feature gate definitions — what tier each feature requires.
+ *
+ * The rule behind this split (see docs/MONETARISIERUNG.md):
+ * free is everything that BUILDS the habit, paid is everything that
+ * AMPLIFIES, ACCELERATES or PRESERVES it. Nothing a first-week user needs
+ * sits behind the wall.
+ *
+ * Note what is deliberately NOT gated: the courses (our reach and SEO engine),
+ * every voicing type (a crippled free tier teaches a fragment of jazz and earns
+ * bad word of mouth — currently our only channel), MIDI and microphone input
+ * (the one reason someone picks us over the iOS competitors), and the coach's
+ * QUALITY. Only the coach's daily VOLUME is limited, never how good it is.
  */
 export const FEATURE_GATES: Record<string, SubscriptionTier> = {
-	// Free features — a genuinely strong free tier
+	// ─── Free ("Übung") — a genuinely strong free tier ───
 	'courses': 'free',
 	'speed-drill-random': 'free',
 	'shell-voicings': 'free',
@@ -83,23 +94,50 @@ export const FEATURE_GATES: Record<string, SubscriptionTier> = {
 	'microphone-input': 'free',
 	'habit-basic': 'free',
 	'i18n': 'free',
+	/** Unlimited free practice — the release valve that keeps the daily coach
+	 *  limit feeling like an offer rather than a lockout. Never gate this. */
+	'free-practice': 'free',
+	/** To-Go without an instrument: the three disciplines that carry the
+	 *  free tier. The other four are Studio (see 'togo-full'). */
+	'togo-basic': 'free',
 
-	// Pro features — coaching + power tools + persistence
+	// ─── Studio (tier key 'pro') — volume, memory and depth ───
+	/** More than one coach session per day. The one limit a motivated user
+	 *  feels daily, and the primary reason to upgrade. */
+	'unlimited-coach-sessions': 'pro',
+	/** The remaining four To-Go disciplines: sing, time, lick, progression. */
+	'togo-full': 'pro',
+	/** History beyond the free tier's rolling 7-day window. */
+	'full-history': 'pro',
 	'adaptive-difficulty': 'pro',
 	'custom-progressions': 'pro',
 	'advanced-stats': 'pro',
 	'cloud-sync': 'pro',
 
-	// Educator features
+	// ─── Lehrpult (tier key 'educator') ───
 	'embed-widget': 'educator',
 	'student-progress': 'educator',
+	'student-seats': 'educator',
+	'assignments': 'educator',
 
-	// Institution features
+	// ─── Institut (tier key 'institution') ───
 	'custom-branding': 'institution',
 	'lms-integration': 'institution',
 	'api-access': 'institution',
 	'sso': 'institution',
 };
+
+/**
+ * Free-tier limits. Enforcement lives with the features themselves
+ * (coach session start, history read) — this is the single place the
+ * numbers are defined so they can be tuned without hunting through the UI.
+ */
+export const FREE_LIMITS = {
+	/** Coach sessions per calendar day on the free tier. */
+	coachSessionsPerDay: 1,
+	/** Days of practice history visible on the free tier. */
+	historyDays: 7,
+} as const;
 
 export function isFeatureAvailable(feature: string, tier: SubscriptionTier): boolean {
 	if (IS_BETA) return true;

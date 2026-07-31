@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
+	import KeyClock from '$lib/components/KeyClock.svelte';
+	import { buildKeyDial, loadHistory, loadSettings, type KeyDial } from '$lib/services/progress';
+	import type { NotationSystem } from '$lib/engine';
 	import { getAuthState, onAuthChange, signOut, deleteAccount, updatePassword } from '$lib/services/auth';
 	import { downloadCloudData, uploadLocalDataToCloud } from '$lib/services/cloud-sync';
 	import { getSubscription, isBeta, createPortalSession } from '$lib/services/subscription';
@@ -22,6 +25,19 @@
 	let displayName = $state('');
 	let savingName = $state(false);
 	let telemetryEnabled = $state(isTelemetryEnabled());
+
+	// ─── Progress: the dial, at a size you can actually read ───
+	/** The coach's mastery threshold — the same one the trainer diffs against. */
+	const DIAL_THRESHOLD_MS = 2000;
+	/* localStorage is off-limits until mount, so both start empty and fill in. */
+	let dial: KeyDial[] = $state(buildKeyDial([]));
+	let notationSystem: NotationSystem = $state('international');
+	$effect(() => {
+		dial = buildKeyDial(loadHistory(), DIAL_THRESHOLD_MS);
+		notationSystem = (loadSettings()?.notationSystem ?? 'international') as NotationSystem;
+	});
+	const fluentCount = $derived(dial.filter((d) => d.fluent).length);
+	const playedCount = $derived(dial.filter((d) => d.count > 0).length);
 
 	function handleTelemetryToggle() {
 		telemetryEnabled = !telemetryEnabled;
@@ -116,6 +132,25 @@
 			<p class="plate">{t('nav_auth.account')}</p>
 			<h1>{t('account.heading')}</h1>
 		</header>
+
+		<!-- Progress: the circle of fifths, with the times on. This is the
+		     "look back at where I am" surface, so it shows the numbers the
+		     setup screen's compact dial deliberately leaves out.
+
+		     Deliberately OUTSIDE the auth branch: the dial reads local practice
+		     history, not account data, so someone practising without an account
+		     has every right to see where they stand. It stays hidden until
+		     there is history to show. -->
+		{#if playedCount > 0}
+			<section class="panel">
+				<h2 class="panel-title">{t('account.progress')}</h2>
+				<div class="dial-panel">
+					<KeyClock {dial} thresholdMs={DIAL_THRESHOLD_MS} size={300} {notationSystem} />
+					<p class="dial-count">{t('clock.fluent_count', { count: fluentCount })}</p>
+					<p class="note-body">{t('clock.account_sub')}</p>
+				</div>
+			</section>
+		{/if}
 
 		{#if !auth.user}
 			<section class="panel panel-empty">
@@ -328,6 +363,20 @@
 		font-size: 0.88rem;
 		line-height: 1.55;
 		color: var(--text-muted);
+	}
+	/* The dial sits centred in its panel; the count reads as the caption. */
+	.dial-panel {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.6rem;
+		text-align: center;
+	}
+	.dial-count {
+		font-family: var(--font-display);
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--text);
 	}
 	.dim {
 		color: var(--text-dim);

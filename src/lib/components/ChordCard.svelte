@@ -33,8 +33,12 @@
 	const vlText = $derived(showVoiceLeading && voiceLeading && vlMode === 'guided' ? formatVoiceLeading(voiceLeading) : '');
 </script>
 
+<!-- select-none because this card is tapped repeatedly and fast: without it
+     every second click drags a selection across the chord name, and a
+     double-tap highlights it outright. It is a button, so there is nothing
+     here anyone wants to select. -->
 <div
-	class="card surface-glass p-8 sm:p-12 text-center cursor-pointer active:scale-[0.98] transition-transform"
+	class="card surface-glass select-none p-8 sm:p-12 text-center cursor-pointer active:scale-[0.98] transition-transform"
 	role="button"
 	tabindex="0"
 	{onclick}
