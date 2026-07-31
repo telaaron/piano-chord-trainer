@@ -787,22 +787,38 @@ function placeByCalibration(
 	const calVoicing = ladder[0]?.voicing;
 
 	// Walk the qualities easy→hard. A quality is "solid" when the player was fast
-	// and (where known) correct on it. Place every unit of each solid quality as
-	// mastered — CONTIGUOUS: the first non-solid quality stops the walk, so we
-	// never place a hard quality the player skipped past by luck. A pro who's
-	// solid up to 13 gets placed there; a beginner stops after Maj7 (or nothing).
+	// and mostly correct on it. Place every unit of each solid quality as mastered
+	// — CONTIGUOUS: a quality the player demonstrably STRUGGLED with stops the
+	// walk, so we never place a hard quality they skipped past by luck.
+	//
+	// Untested ≠ failed. The drill samples chords, so it cannot cover every
+	// quality; treating "no data" as a stop meant a perfect run placed NOTHING
+	// whenever the sample happened to miss the very first quality — which, at 12
+	// chords over 15 qualities, was a coin flip (~44%). An untested quality is
+	// simply skipped: it is neither evidence of mastery nor evidence of struggle.
 	for (const quality of CALIBRATION_QUALITIES) {
 		const qt = byQuality.get(quality);
-		// No data for this quality (calibration didn't reach it) → stop climbing.
-		if (!qt || qt.length === 0) break;
-		const avg = qt.reduce((s, t) => s + t.durationMs, 0) / qt.length;
-		const fast = avg <= params.masteryThresholdMs;
-		const clean = qt.every((t) => t.correct !== false);
-		if (!fast || !clean) break; // first shaky quality → placement stops here.
+		if (!qt || qt.length === 0) continue; // untested → no evidence either way
+
+		// Median, not mean: one 8-second fumble (a dropped MIDI note, a sneeze)
+		// must not wipe out an otherwise fluent quality.
+		const sorted = [...qt].map((t) => t.durationMs).sort((a, b) => a - b);
+		const mid = Math.floor(sorted.length / 2);
+		const median =
+			sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+		const fast = median <= params.masteryThresholdMs;
+
+		// Allow the same error budget the rest of the controller uses for
+		// promotion, rather than demanding a spotless run: "almost no mistakes"
+		// should place you, and a single slip should not veto everything above it.
+		const correctCount = qt.filter((t) => t.correct !== false).length;
+		const clean = correctCount / qt.length >= params.promotionRatio;
+
+		if (!fast || !clean) break; // first quality they actually struggled with
 
 		for (const unit of ladder) {
 			if (unit.quality !== quality || unit.voicing !== calVoicing) continue;
-			state.unitStates[unit.id] = { state: 'mastered', bestAvgMs: avg, holds: 0 };
+			state.unitStates[unit.id] = { state: 'mastered', bestAvgMs: median, holds: 0 };
 		}
 	}
 }

@@ -497,6 +497,88 @@ describe('calibration placement', () => {
 		expect(next.calibrated).toBe(true);
 		expect(next.frontierIndex).toBe(0);
 	});
+
+	// The drill draws 12 chords at random from 15 qualities, so it frequently
+	// never presents Maj7 at all. Treating that absence as a failure placed a
+	// flawless player at zero — a ~44% coin flip, and the bug behind the
+	// "0 Bausteine" report.
+	it('places a strong player even when the drill never presented Maj7', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// Fast and clean, but the sample skipped Maj7 entirely.
+		const timings = [
+			...['C', 'F'].map((k) => qTiming(k, '7', 1100, true)),
+			...['D', 'G'].map((k) => qTiming(k, 'm7', 1150, true)),
+		];
+		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const masteredIds = Object.entries(next.unitStates)
+			.filter(([, u]) => u.state === 'mastered')
+			.map(([id]) => id);
+		// The demonstrated qualities are credited...
+		expect(masteredIds.some((id) => id.includes('7'))).toBe(true);
+		expect(masteredIds.length).toBeGreaterThan(0);
+		// ...while the frontier still points at the untested Maj7, which is
+		// correct: the player never showed it, so the coach must not skip it.
+		// Before the fix, NOTHING was placed here at all.
+	});
+
+	it('one slip does not veto an otherwise fluent quality', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// 5 of 6 correct = 83%, above the 0.8 promotion ratio the rest of the
+		// controller uses. "Almost zero mistakes" should still place you.
+		const timings = [
+			qTiming('C', 'Maj7', 1100, true),
+			qTiming('F', 'Maj7', 1150, true),
+			qTiming('Bb', 'Maj7', 1200, true),
+			qTiming('Eb', 'Maj7', 1100, true),
+			qTiming('Ab', 'Maj7', 1250, true),
+			qTiming('Db', 'Maj7', 1300, false), // the one slip
+		];
+		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const mastered = Object.values(next.unitStates).filter((u) => u.state === 'mastered');
+		expect(mastered.length).toBeGreaterThan(0);
+	});
+
+	it('a single slow fumble does not sink a fast quality (median, not mean)', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// Four quick chords and one 9-second stall. The mean (2.9s) exceeds the
+		// 2s threshold; the median (1.2s) reflects how the player actually plays.
+		const timings = [
+			qTiming('C', 'Maj7', 1100, true),
+			qTiming('F', 'Maj7', 1200, true),
+			qTiming('Bb', 'Maj7', 1200, true),
+			qTiming('Eb', 'Maj7', 1300, true),
+			qTiming('Ab', 'Maj7', 9000, true),
+		];
+		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const mastered = Object.values(next.unitStates).filter((u) => u.state === 'mastered');
+		expect(mastered.length).toBeGreaterThan(0);
+	});
+
+	it('still stops at a quality the player genuinely struggled with', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// Fluent on Maj7, clearly not on m7 — placement must not climb past m7.
+		const timings = [
+			...['C', 'F'].map((k) => qTiming(k, 'Maj7', 1100, true)),
+			...['D', 'G', 'A'].map((k) => qTiming(k, 'm7', 6000, false)),
+			...['C', 'F'].map((k) => qTiming(k, 'Maj9', 1000, true)),
+		];
+		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const masteredIds = Object.entries(next.unitStates)
+			.filter(([, u]) => u.state === 'mastered')
+			.map(([id]) => id);
+		expect(masteredIds.some((id) => id.includes('Maj7'))).toBe(true);
+		// m7 was shaky → neither it nor anything above it gets placed.
+		expect(masteredIds.some((id) => id.includes('m7'))).toBe(false);
+		expect(masteredIds.some((id) => id.includes('Maj9'))).toBe(false);
+	});
 });
 
 // ─── difficultyBias clamp ───────────────────────────────────
