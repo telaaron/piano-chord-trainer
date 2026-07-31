@@ -11,6 +11,7 @@
 	import { t } from '$lib/i18n';
 	import {
 		ALL_TOGO_KINDS,
+		FREE_TOGO_KINDS,
 		DEFAULT_TOGO_PARAMS,
 		applyResultsToCards,
 		buildTheoryDeck,
@@ -42,6 +43,8 @@
 	import SingInput from '$lib/components/togo/SingInput.svelte';
 	import TapInput from '$lib/components/togo/TapInput.svelte';
 	import NotesInput from '$lib/components/togo/NotesInput.svelte';
+	import UpgradeSheet from '$lib/components/UpgradeSheet.svelte';
+	import { canUse } from '$lib/services/subscription-store.svelte';
 	import { ArrowLeft, Check, Ear, Play, RotateCcw, X } from 'lucide-svelte';
 
 	type Phase = 'start' | 'run' | 'results';
@@ -57,6 +60,8 @@
 
 	// ─── Session state ──────────────────────────────────────────
 	let phase = $state<Phase>('start');
+	/** Studio offer, opened by a locked discipline row. */
+	let upgradeOpen = $state(false);
 	let session = $state<ToGoSession | null>(null);
 	let index = $state(0);
 	let results = $state<ToGoResult[]>([]);
@@ -195,6 +200,8 @@
 				focusQuality: focus?.quality,
 				focusUnitId: focus?.unitId,
 				only,
+				// A mixed session must not deal disciplines the tier doesn't include.
+				allow: canUse('togo-full') ? undefined : FREE_TOGO_KINDS,
 			},
 			DEFAULT_TOGO_PARAMS,
 		);
@@ -305,18 +312,35 @@
 		return 'togo.results_rough';
 	});
 
-	/** Which disciplines are runnable right now, and why not if they aren't. */
+	/**
+	 * Which disciplines are runnable right now, and why not if they aren't.
+	 *
+	 * Two independent reasons a row can be closed: the device can't do it
+	 * (no sound, no mic) or the tier doesn't include it. They're kept apart
+	 * because they need different answers — "turn your sound on" is a fix the
+	 * user can make, "this is Studio" is an offer. A discipline the device
+	 * can't run is never sold as an upgrade.
+	 */
 	const kindAvailability = $derived(
 		ALL_TOGO_KINDS.map((kind) => {
-			if (kind === 'theory') return { kind, available: true, noteKey: 'togo.silent_ok' };
-			if (kind === 'sing') {
-				return {
-					kind,
-					available: caps.audio && caps.mic,
-					noteKey: caps.mic ? 'togo.needs_mic' : 'togo.mic_off',
-				};
-			}
-			return { kind, available: caps.audio, noteKey: 'togo.needs_audio' };
+			const locked = !FREE_TOGO_KINDS.includes(kind) && !canUse('togo-full');
+			const base =
+				kind === 'theory'
+					? { available: true, noteKey: 'togo.silent_ok' }
+					: kind === 'sing'
+						? {
+								available: caps.audio && caps.mic,
+								noteKey: caps.mic ? 'togo.needs_mic' : 'togo.mic_off',
+							}
+						: { available: caps.audio, noteKey: 'togo.needs_audio' };
+			// Device problems win: fix what's fixable before offering an upgrade.
+			if (!base.available) return { kind, ...base, locked: false };
+			return {
+				kind,
+				available: !locked,
+				noteKey: locked ? 'togo.studio_only' : base.noteKey,
+				locked,
+			};
 		}),
 	);
 
@@ -405,7 +429,14 @@
 		<ol class="contents ruled">
 			{#each kindAvailability as k, i (k.kind)}
 				<li class="disc-row" class:off={!k.available}>
-					<button type="button" onclick={() => begin(k.kind)} disabled={!k.available} class="disc-btn">
+					<!-- A Studio-locked row stays pressable and opens the offer; a row the
+					     device can't run stays disabled, because there is nothing to sell. -->
+					<button
+						type="button"
+						onclick={() => (k.locked ? (upgradeOpen = true) : begin(k.kind))}
+						disabled={!k.available && !k.locked}
+						class="disc-btn"
+					>
 						<span class="no roman">{ROMAN[i] ?? String(i + 1)}</span>
 						<span class="row-txt">
 							<span class="ttl">{t(`togo.kind.${k.kind}`)}</span>
@@ -582,6 +613,8 @@
 		</div>
 	{/if}
 </div>
+
+<UpgradeSheet bind:open={upgradeOpen} feature="togo-full" />
 
 <style>
 	/* To-Go on the editorial plate. Same vocabulary as the landing page —

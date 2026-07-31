@@ -218,21 +218,54 @@ Die Tabelle sagt vor allem eines: **Der Hebel liegt nicht im Preis, sondern in d
 
 Nichts davon geschieht vor Abschluss von Masterplan Phase 1 (Retention). Ein Preisschild an einem Produkt, das niemand am zweiten Tag öffnet, verdient nichts.
 
-### Stufe A — Vorbereitung (parallel zu Phase 1, geringer Aufwand)
-| # | Aufgabe | Aufwand |
-|---|---|---|
-| A1 | Trial auf 7 Tage ohne Karte umstellen (`checkout/+server.ts`) | 1 h |
-| A2 | Stripe: neue Preise anlegen (Studio 7,99/59, Lehrpult 29/290) + Student-Coupons | 1 h |
-| A3 | `FEATURE_GATES` auf neuen Schnitt umstellen | 2 h |
+### Stufe A — Vorbereitung ✅ **erledigt am 30.07.2026**
 
-### Stufe B — Die eine wirksame Grenze (Beginn Phase 3)
-| # | Aufgabe | Aufwand |
+| # | Aufgabe | Status |
 |---|---|---|
-| B1 | **Tageslimit für Coach-Sessions** + kontextbezogenes Angebot beim zweiten Versuch | 1–2 Tage |
-| B2 | Verlaufsbegrenzung auf 7 Tage im Free-Tarif | 0,5 Tag |
-| B3 | To-Go: 4 der 7 Disziplinen auf Studio legen | 0,5 Tag |
-| B4 | `/pricing` auf die neuen Tarife und Namen umbauen, Studentenrabatt sichtbar | 1 Tag |
-| B5 | Jahresabo im Checkout | 0,5 Tag |
+| A1 | Trial auf 7 Tage ohne Karte umstellen (`checkout/+server.ts`) | ✅ `trial_period_days: 7`, `payment_method_collection: 'if_required'`, `end_behavior.missing_payment_method: 'cancel'` |
+| A2 | Stripe: Preise anlegen + Student-Coupon | ✅ siehe Tabelle unten |
+| A3 | `FEATURE_GATES` auf neuen Schnitt umstellen | ✅ inkl. `FREE_LIMITS` als zentrale Stelle für die Zahlenwerte |
+
+**Angelegte Stripe-Objekte (LIVE):**
+
+| Zweck | Price ID | Betrag |
+|---|---|---|
+| Studio monatlich | `price_1Tyz2JCbwjlRIGJJ6InVkwdj` | 7,99 €/Monat |
+| Studio jährlich | `price_1Tyz2KCbwjlRIGJJn0qaM0su` | 59,00 €/Jahr |
+| Lehrpult monatlich | `price_1Tyz2SCbwjlRIGJJkByH29Bs` | 29,00 €/Monat |
+| Lehrpult jährlich | `price_1Tyz2SCbwjlRIGJJxJMW6Pt6` | 290,00 €/Jahr |
+| Studentenrabatt | Coupon `R6w4LQsw`, Promo-Code **`STUDENT50`** | 50 % dauerhaft |
+| Produkt Lehrpult | `prod_UywwJTnnIglBAs` | neu angelegt |
+
+Der alte Pro-Preis (4,99 €, `price_1TdHDXCbwjlRIGJJHSVMEyB3`) bleibt als `STRIPE_PRICE_PRO_LEGACY` aktiv, damit bestehende Abos gültig bleiben. Er wird nicht mehr angeboten.
+
+> **Nebenbefund, mitrepariert:** `STRIPE_PRICE_EDUCATOR` und `STRIPE_PRICE_INSTITUTION` enthielten **Test-Mode-IDs bei einem Live-Key** — beide Checkouts hätten mit „No such price" abgebrochen. Educator zeigt jetzt auf den echten Lehrpult-Preis; Institution ist bewusst leer (Rechnung statt Karte) und wird im Checkout mit einer klaren Meldung abgefangen.
+
+**Verifiziert:** `pnpm check` 0 Fehler · `pnpm test` 248/248 grün · `pnpm build` erfolgreich · Test-Checkout gegen Live-Stripe erzeugt (`amount_total: 0` → Trial greift, keine Kartenabfrage), danach wieder verworfen. Vercel-Env für Production/Preview/Development aktualisiert.
+
+### Stufe B — Die eine wirksame Grenze ✅ **erledigt am 30.07.2026**
+
+| # | Aufgabe | Status |
+|---|---|---|
+| B1 | Tageslimit für Coach-Sessions + kontextbezogenes Angebot | ✅ `usage-limit.ts`, gezählt wird erst beim tatsächlichen Blockstart |
+| B2 | Verlaufsbegrenzung auf 7 Tage im Free-Tarif | ✅ `loadVisibleHistory()` — reine Anzeigeregel |
+| B3 | To-Go: 4 der 7 Disziplinen auf Studio | ✅ `FREE_TOGO_KINDS` + `allow`-Option in der Engine |
+| B4 | `/pricing` auf neue Tarife, Studentenrabatt sichtbar | ✅ inkl. Jahres-/Monats-Umschalter |
+| B5 | Jahresabo im Checkout | ✅ `pro-yearly` / `educator-yearly` Plan-Keys |
+
+**Umsetzungsentscheidungen, die von der ursprünglichen Skizze abweichen:**
+
+1. **Das Tageslimit zählt erst, wenn wirklich gespielt wird** — nicht beim Bauen des Plans. Die Telemetrie sagt, die meisten Abbrüche passieren vor dem ersten Akkord ([[jazzchords-coach-abbruch-diagnose]]); jemandem das Tageskontingent für eine Session abzuziehen, die er nie gespielt hat, wäre der denkbar schlechteste erste Eindruck.
+
+2. **Die Verlaufsgrenze ist eine Anzeige-, keine Datenregel.** `loadHistory()` bleibt unangetastet, weil Coach, Habit-Engine und Streak-Zähler daraus lesen — eine Kürzung an der Quelle hätte den Coach still dümmer gemacht und Streaks für Gratis-Nutzer zerrissen. Gekappt wird nur im Dashboard, mit dem Hinweis „gespeichert, nicht gelöscht".
+
+3. **Geräte-Probleme schlagen Tarif-Sperren.** In To-Go wird eine Disziplin, die das Gerät nicht kann (kein Ton, kein Mikro), nie als Upgrade verkauft — erst wenn sie technisch liefe, erscheint „Studio".
+
+4. **Die Engine bleibt rein.** Der Tarif-Filter kam als `allow`-Option in `buildToGoSession()`, nicht als Service-Import — sonst hätte eine gemischte Session weiter gesperrte Disziplinen ausgeteilt (das war eine echte Lücke, jetzt durch Tests abgedeckt).
+
+**Nebenbefund, mitrepariert:** Trial-Dauer und Preis standen an sieben Stellen noch auf „14 Tage / 4,99 € / Karte erforderlich" — darunter die **AGB** (`p_subscriptions`), also ein Rechtstext, der eine nicht mehr zutreffende Abbuchungsmechanik beschrieb. Ebenso beschrieb der Untertitel der Preisseite noch das alte Gating („Voicings und Voice-Leading sind Pro"), obwohl beides längst gratis ist. Alles auf 7 Tage ohne Karte und die neuen Preise gebracht, DE und EN.
+
+**Verifiziert:** `pnpm check` 0 Fehler · `pnpm test` 258/258 (10 neue Tests für Tageslimit und To-Go-Filter) · `pnpm build` erfolgreich · Preisseite und To-Go im Browser geprüft, DE und EN, Umschalter Jahr↔Monat funktioniert (59/290 € ↔ 7,99/29 €), gesperrte To-Go-Zeilen öffnen das Angebot, keine Konsolenfehler.
 
 ### Stufe C — Lehrpult (nach den ersten 10 Studio-Kunden)
 | # | Aufgabe | Aufwand |

@@ -42,79 +42,109 @@
 		}
 	}
 
+	/** Monthly or yearly. Yearly is the default: it is the better deal, and
+	 *  showing it first frames the price per year rather than per month. */
+	let billing = $state<'yearly' | 'monthly'>('yearly');
+
 	/* Roman numerals rather than a "most popular" rosette: this is a price
 	   list in a printed catalogue, and the tiers are numbered entries. */
-	const plans = [
+	const plans = $derived([
 		{
 			id: 'free',
 			num: 'I',
 			key: 'pricing.free',
 			price: '0',
 			period: '',
+			note: '',
 			features: [
+				'pricing.feat_one_session_day',
+				'pricing.feat_free_practice',
 				'pricing.feat_all_courses',
 				'pricing.feat_all_voicings_free',
-				'pricing.feat_voice_leading_free',
-				'pricing.feat_progressions',
 				'pricing.feat_midi_mic',
-				'pricing.feat_habit_basic',
+				'pricing.feat_history_7d',
 			],
 			cta: 'pricing.cta_free',
 			href: '/train',
 			highlighted: false,
+			waitlist: false,
 		},
 		{
 			id: 'pro',
 			num: 'II',
-			key: 'pricing.pro',
-			price: '4.99',
-			period: 'pricing.per_month',
+			key: 'pricing.studio',
+			price: billing === 'yearly' ? '59' : '7.99',
+			period: billing === 'yearly' ? 'pricing.per_year' : 'pricing.per_month',
+			// Only shown on yearly — the monthly equivalent makes the saving concrete.
+			note: billing === 'yearly' ? 'pricing.studio_yearly_note' : '',
 			features: [
-				'pricing.feat_everything_free',
+				'pricing.feat_unlimited_sessions',
+				'pricing.feat_togo_full',
+				'pricing.feat_full_history',
 				'pricing.feat_adaptive',
 				'pricing.feat_custom_progressions',
-				'pricing.feat_advanced_stats',
 				'pricing.feat_cloud_sync',
 			],
 			cta: 'pricing.cta_pro',
 			href: '/auth/login',
 			highlighted: true,
+			waitlist: false,
 		},
 		{
 			id: 'educator',
 			num: 'III',
-			key: 'pricing.educator',
-			price: '29',
-			period: 'pricing.per_month',
+			key: 'pricing.lehrpult',
+			price: billing === 'yearly' ? '290' : '29',
+			period: billing === 'yearly' ? 'pricing.per_year' : 'pricing.per_month',
+			note: billing === 'yearly' ? 'pricing.lehrpult_yearly_note' : '',
 			features: [
-				'pricing.feat_everything_pro',
-				'pricing.feat_embed',
-				'pricing.feat_student_progress',
+				'pricing.feat_everything_studio',
 				'pricing.feat_30_students',
+				'pricing.feat_student_progress',
+				'pricing.feat_assignments',
+				'pricing.feat_embed',
 			],
 			cta: 'pricing.cta_educator',
-			href: 'mailto:info@jazzchords.app?subject=Educator%20Plan',
+			href: 'mailto:info@jazzchords.app?subject=Lehrpult%20Vormerkung',
 			highlighted: false,
+			/* Seats, the student dashboard and assignments are Stufe C — not built
+			   yet. Until they are, this must not take money: a real checkout here
+			   would be selling four features that do not exist. The Stripe price
+			   stays live, so switching this back on is a one-line change. */
+			waitlist: true,
 		},
 		{
 			id: 'institution',
 			num: 'IV',
-			key: 'pricing.institution',
-			price: '99',
-			period: 'pricing.per_month',
+			key: 'pricing.institut',
+			// Institutions are invoiced, so this is a starting point, not a checkout price.
+			price: 'pricing.institut_from',
+			period: '',
+			note: 'pricing.institut_note',
 			features: [
-				'pricing.feat_everything_educator',
+				'pricing.feat_everything_lehrpult',
+				'pricing.feat_unlimited_students',
+				'pricing.feat_invoice',
 				'pricing.feat_custom_branding',
 				'pricing.feat_lms',
-				'pricing.feat_api',
 				'pricing.feat_sso',
-				'pricing.feat_unlimited_students',
 			],
 			cta: 'pricing.cta_institution',
-			href: 'mailto:info@jazzchords.app?subject=Institution%20Plan',
+			href: 'mailto:info@jazzchords.app?subject=Institut%20Lizenz',
 			highlighted: false,
+			waitlist: false,
 		},
-	];
+	]);
+
+	/** Price id for the currently selected billing period. */
+	function priceFor(planId: string): string {
+		if (planId === 'educator') {
+			return billing === 'yearly' ? data.priceIdEducatorYearly : data.priceIdEducator;
+		}
+		// Studio is the only self-service plan today; anything unexpected is
+		// safer priced as Studio than as a silently wrong tier.
+		return billing === 'yearly' ? data.priceIdProYearly : data.priceIdPro;
+	}
 
 	const faqKeys = $derived(
 		beta ? ['beta', 'data', 'cancel', 'educator'] : ['trial', 'guarantee', 'cancel', 'data', 'educator'],
@@ -156,6 +186,32 @@
 				</div>
 			</div>
 
+			{#if !beta}
+				<!-- Billing period. Two plain buttons rather than a switch: the
+				     saving belongs on the label, where it can be read. -->
+				<div class="billing" role="group" aria-label={t('pricing.billing_label')}>
+					<button
+						type="button"
+						class="bill-opt"
+						class:on={billing === 'yearly'}
+						aria-pressed={billing === 'yearly'}
+						onclick={() => (billing = 'yearly')}
+					>
+						{t('pricing.billing_yearly')}
+						<span class="save">{t('pricing.billing_save')}</span>
+					</button>
+					<button
+						type="button"
+						class="bill-opt"
+						class:on={billing === 'monthly'}
+						aria-pressed={billing === 'monthly'}
+						onclick={() => (billing = 'monthly')}
+					>
+						{t('pricing.billing_monthly')}
+					</button>
+				</div>
+			{/if}
+
 			<div class="tiers">
 				{#each plans as plan}
 					<article class="tier" class:featured={plan.highlighted} class:muted={beta && plan.id !== 'free'}>
@@ -166,6 +222,9 @@
 								<span class="tag">{t('pricing.popular')}</span>
 							{:else if beta && plan.id !== 'free'}
 								<span class="tag live">{t('pricing.beta_free')}</span>
+							{:else if plan.waitlist && !beta}
+								<!-- Says plainly that this one cannot be bought yet. -->
+								<span class="tag soon">{t('pricing.waitlist_tag')}</span>
 							{/if}
 						</header>
 
@@ -173,11 +232,17 @@
 							{#if beta && plan.id !== 'free'}
 								<span class="was">{plan.price} €</span>
 								<span class="now">0 €</span>
+							{:else if plan.id === 'institution'}
+								<!-- Invoiced, so this reads "from X" rather than a flat figure. -->
+								<span class="now">{t(plan.price)}</span>
 							{:else}
 								<span class="now">{plan.price} €</span>
 							{/if}
 							{#if plan.period}<span class="per">/ {t(plan.period)}</span>{/if}
 						</p>
+						{#if plan.note && !beta}
+							<p class="plate amount-note">{t(plan.note)}</p>
+						{/if}
 
 						<ul class="feats">
 							{#each plan.features as feat}
@@ -187,23 +252,36 @@
 
 						{#if beta && plan.id !== 'free'}
 							<button disabled class="btn btn-ghost btn-block">{t('pricing.coming_soon')}</button>
-						{:else if plan.id === 'pro'}
+						{:else if !plan.waitlist && (plan.id === 'pro' || plan.id === 'educator')}
 							<button
-								onclick={() => startCheckout(data.priceIdPro, 'pro')}
-								disabled={checkoutLoading === 'pro'}
-								class="btn btn-stamp btn-block"
+								onclick={() => startCheckout(priceFor(plan.id), plan.id)}
+								disabled={checkoutLoading === plan.id}
+								class="btn btn-block {plan.highlighted ? 'btn-stamp' : 'btn-ghost'}"
 							>
-								{checkoutLoading === 'pro' ? '…' : t('pricing.cta_pro_trial')}
+								{checkoutLoading === plan.id ? '…' : t('pricing.cta_pro_trial')}
 							</button>
 							<p class="plate trial-note">{t('pricing.pro_trial_note')}</p>
 						{:else}
 							<a href={plan.href} class="btn btn-block {plan.highlighted ? 'btn-stamp' : 'btn-ghost'}">
 								{t(plan.cta)}
 							</a>
+							{#if plan.waitlist && !beta}
+								<p class="plate trial-note">{t('pricing.waitlist_note')}</p>
+							{/if}
 						{/if}
 					</article>
 				{/each}
 			</div>
+
+			{#if !beta}
+				<!-- Students. Stated plainly under the list rather than as a fifth
+				     column: it is a discount on Studio, not a plan of its own. -->
+				<p class="student-note">
+					<strong>{t('pricing.student_title')}</strong>
+					{t('pricing.student_desc')}
+					<code class="promo">STUDENT50</code>
+				</p>
+			{/if}
 		</section>
 
 		<!-- ═══ B · Risk reversal, as a ledger ═══ -->
@@ -527,6 +605,12 @@
 		border-color: var(--accent-amber);
 		color: var(--accent-amber);
 	}
+	/* Not-yet-buyable. Quieter than the "most popular" stamp — it marks a
+	   limitation, so it should not compete with the tier that can be bought. */
+	.tag.soon {
+		border-color: var(--border);
+		color: var(--text-dim);
+	}
 
 	.amount {
 		display: flex;
@@ -582,6 +666,76 @@
 		margin-top: 0.6rem;
 		text-align: center;
 		line-height: 1.6;
+	}
+
+	/* The per-month equivalent under a yearly price. Quiet — it explains the
+	   figure above rather than competing with it. */
+	.amount-note {
+		margin-top: 0.35rem;
+		font-size: 0.72rem;
+		color: var(--text-dim);
+	}
+
+	/* Billing period. Set as two printed options on a rule, not a toggle switch. */
+	.billing {
+		display: flex;
+		justify-content: center;
+		gap: 0.5rem;
+		margin: 0 0 1.75rem;
+		flex-wrap: wrap;
+	}
+	.bill-opt {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.4rem 0.9rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: transparent;
+		font-size: 0.82rem;
+		font-weight: 500;
+		color: var(--text-muted);
+		cursor: pointer;
+		transition: border-color 0.15s, color 0.15s, background 0.15s;
+	}
+	.bill-opt:hover {
+		color: var(--text);
+		border-color: var(--text-dim);
+	}
+	.bill-opt.on {
+		background: var(--bg-muted);
+		border-color: var(--text);
+		color: var(--text);
+	}
+	.bill-opt .save {
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: var(--accent-green, var(--accent-gold));
+	}
+
+	/* Student discount. A footnote to the list, in the same register as the
+	   trial note — an aside, not a fifth tier. */
+	.student-note {
+		margin: 1.5rem 0 0;
+		text-align: center;
+		font-size: 0.82rem;
+		line-height: 1.7;
+		color: var(--text-muted);
+	}
+	.student-note strong {
+		color: var(--text);
+		font-weight: 600;
+	}
+	.promo {
+		display: inline-block;
+		margin-left: 0.15rem;
+		padding: 0.1rem 0.45rem;
+		border: 1px dashed var(--border);
+		border-radius: var(--radius-sm, 4px);
+		font-family: var(--font-mono, monospace);
+		font-size: 0.78rem;
+		letter-spacing: 0.04em;
+		color: var(--text);
 	}
 
 	/* ── Risk-reversal ledger ─────────────────────────────────── */

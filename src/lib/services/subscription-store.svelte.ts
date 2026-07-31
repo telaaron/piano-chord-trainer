@@ -8,6 +8,7 @@ import {
 	isBeta as isBetaFlag,
 	type SubscriptionTier,
 } from './subscription';
+import { hasFreeSessionLeft, remainingFreeSessions } from './usage-limit';
 
 interface ProState {
 	tier: SubscriptionTier;
@@ -68,4 +69,22 @@ export function canUse(feature: string): boolean {
 /** Should we *show* a lock/upgrade affordance for this feature? */
 export function showLock(feature: string): boolean {
 	return !state.isBeta && !canUse(feature);
+}
+
+/**
+ * May the user start a coach session right now?
+ *
+ * Studio and above: always. Free: once per calendar day (FREE_LIMITS).
+ * Callers should use this rather than combining tier and usage themselves —
+ * the daily allowance is the one limit the free tier has, and it should be
+ * asked about in exactly one way.
+ */
+export function canStartCoachSession(): boolean {
+	if (state.isBeta || canUse('unlimited-coach-sessions')) return true;
+	return hasFreeSessionLeft();
+}
+
+/** Free sessions left today. Meaningless for Pro — check `canUse` first. */
+export function freeSessionsLeftToday(): number {
+	return remainingFreeSessions();
 }

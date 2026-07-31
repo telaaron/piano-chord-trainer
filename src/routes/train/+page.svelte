@@ -7,7 +7,8 @@
 	import { Icon } from '$lib/components/ui';
 	import UpgradeSheet from '$lib/components/UpgradeSheet.svelte';
 	import ProBadge from '$lib/components/ProBadge.svelte';
-	import { canUse, showLock } from '$lib/services/subscription-store.svelte';
+	import { canUse, showLock, canStartCoachSession } from '$lib/services/subscription-store.svelte';
+	import { recordCoachSessionStart } from '$lib/services/usage-limit';
 	import { hasUsedTeaser, markTeaserUsed } from '$lib/utils/teaser';
 	import { toggleLightDark, isLightActive } from '$lib/services/theme';
 	import { Sun, Moon, Eye, Settings, TabletSmartphone, Piano, RefreshCw, Ear, Volume2, VolumeX, Music, Target, Check, X, CornerDownLeft, ArrowDown, Play, Pause, RotateCcw, ArrowLeft } from 'lucide-svelte';
@@ -26,14 +27,16 @@
 	import HabitOnboarding from '$lib/components/HabitOnboarding.svelte';
 	import CelebrationOverlay from '$lib/components/CelebrationOverlay.svelte';
 	import { initAuth, onAuthChange, getAuthState, type AuthState } from '$lib/services/auth';
+	import KeyClock from '$lib/components/KeyClock.svelte';
 	import type { HabitProfile, CelebrationEvent, QuickStartSuggestion, TimeOfDay } from '$lib/engine/habits';
+	import { diffDial, calculateDialXP, sumXP, type DialProgress } from '$lib/engine/habits';
 	import { loadHabitProfile, saveHabitProfile, processSessionHabits, scheduleDailyReminder, scheduleStreakSaver } from '$lib/services/habits';
 	import { MidiService, isIOSorIPadOS } from '$lib/services/midi';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
 	import { MidiSoundEngine } from '$lib/services/midi-sound';
 	import { AudioInputService } from '$lib/services/audio-input';
 	import type { AudioInputState } from '$lib/services/audio-input';
-	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadRecentPlanIds, loadHistory, computeStats, analyzeWeakSpots, type ProgressStats, type StreakData, type ChordTiming, type SessionResult } from '$lib/services/progress';
+	import { saveSession, loadSettings, saveSettings, loadStreak, recordPracticeDay, recordPlanUsed, loadRecentPlanIds, loadHistory, computeStats, analyzeWeakSpots, buildKeyDial, type KeyDial, type ProgressStats, type StreakData, type ChordTiming, type SessionResult } from '$lib/services/progress';
 	import { playChord, playChordAtTime, playNote, stopAll, startMetronome, stopMetronome, setMetronomeBpm, isMetronomeRunning, disposeAll, setSoundPreset, getSoundPreset, SOUND_PRESETS, type SoundPreset } from '$lib/services/audio';
 	import {
 		CHORDS_BY_DIFFICULTY,
@@ -45,6 +48,7 @@
 		formatVoicing,
 		displayToQuality,
 		convertChordNotation,
+		convertNoteName,
 		noteToSemitone,
 		generateProgression,
 		analyzeVoiceLeading,
@@ -184,6 +188,43 @@
 	let showOnboarding = $state(false);
 	let pendingHabitOffer = $state(false);
 	let pendingCelebrations: CelebrationEvent[] = $state([]);
+
+	// ─── The dial ───────────────────────────────────────────────
+	/**
+	 * History as it stood BEFORE the current session started. `diffDial` needs
+	 * it to tell a genuine crossing from a key that was already fluent.
+	 *
+	 * Captured at session START, not in endGame: a Coach session is several
+	 * blocks and endGame runs once per block, so a snapshot taken there would
+	 * already contain this session's own earlier blocks and the crossing would
+	 * be credited to the wrong block — or swallowed entirely.
+	 */
+	let historyBeforeSession: SessionResult[] = [];
+	/** The dial after the finished session, for the results screen. */
+	let resultDial: KeyDial[] = $state([]);
+	/** Roots played in the finished session — lit on the results dial. */
+	let resultDialHighlight: string[] = $state([]);
+	/** What the finished session moved. Null when nothing crossed. */
+	let resultDialProgress: DialProgress | null = $state(null);
+	/** The setup/insights dial, rebuilt whenever we land back on setup. */
+	let setupDial: KeyDial[] = $state([]);
+
+	/** The coach's mastery threshold, shared by dial, diff and XP. */
+	const DIAL_THRESHOLD_MS = 2000;
+
+	/**
+	 * A root as the player should READ it: through their notation setting
+	 * (German shows H for B), with the accidental as a real ♭/♯ glyph. Same
+	 * path KeyClock uses, so a celebration card and the dial never disagree.
+	 */
+	const dialKeyLabel = (root: string) =>
+		convertNoteName(root, notationSystem).replace('b', '♭').replace('#', '♯');
+
+	/** How many keys sit, and how many were touched at all — the dial's caption. */
+	const setupFluentCount = $derived({
+		fluent: setupDial.filter((d) => d.fluent).length,
+		played: setupDial.filter((d) => d.count > 0).length,
+	});
 	let notificationCleanup: (() => void) | null = $state(null);
 	let streakSaverCleanup: (() => void) | null = $state(null);
 
@@ -589,6 +630,10 @@
 	}
 
 	function startGame() {
+		// Snapshot the dial's starting point before a single chord is played.
+		// In Coach mode startCoachSession has already taken it for the whole
+		// session, and each block must not overwrite it.
+		if (!coachMode) historyBeforeSession = loadHistory();
 		generateChords();
 		currentIdx = 0;
 		playPhase = 'playing';
@@ -946,6 +991,16 @@
 	 * plan has no blocks (defensive — the engine always returns ≥1).
 	 */
 	function startCoachSession() {
+		// The free tier's one daily coach session. Asked before any work is done
+		// so the upgrade sheet appears instead of a session that cannot run.
+		if (!canStartCoachSession()) {
+			openUpgrade('unlimited-coach-sessions', false);
+			return;
+		}
+		// One snapshot for the WHOLE coach session — its blocks each call
+		// endGame, and the dial must be diffed against where the player stood
+		// before block one, not before the last block.
+		historyBeforeSession = loadHistory();
 		const state = loadCoachState() ?? createInitialCoachState();
 		const plan = buildCoachPlan(
 			loadHistory(),
@@ -973,6 +1028,8 @@
 			frontierUnitId: plan.frontierUnitId,
 			dayIndex: state.dayIndex,
 		});
+		// Spend the daily allowance only now that a block is really starting.
+		recordCoachSessionStart();
 		startCoachBlock(0);
 	}
 
@@ -1102,13 +1159,16 @@
 		// Now — once for the whole session — award the streak, XP, goal progress
 		// and any celebrations. They land on the feedback screen, where there is
 		// room to read them, instead of interrupting the blocks.
+		const allTimings = coachSessionBlocks.flatMap((b) => b.chordTimings ?? []);
 		awardSessionHabits({
 			...lastSession,
 			totalChords,
 			avgMs: totalChords > 0 ? totalMs / totalChords : lastSession.avgMs,
 			elapsedMs: Date.now() - coachSessionStartedAt,
-			chordTimings: coachSessionBlocks.flatMap((b) => b.chordTimings ?? []),
+			chordTimings: allTimings,
 		});
+		// Once for the whole coach session, over every block's timings.
+		buildResultDial(allTimings);
 
 		screen = 'coach-feedback';
 	}
@@ -1201,6 +1261,23 @@
 	}
 
 	/**
+	 * Build the dial the results screen shows: where the player stands now,
+	 * which keys this session touched, and what crossed into fluency.
+	 *
+	 * Reads the freshly saved history, so it must run after saveSession.
+	 */
+	function buildResultDial(timings: ChordTiming[]) {
+		const after = loadHistory();
+		resultDial = buildKeyDial(after, DIAL_THRESHOLD_MS);
+		resultDialHighlight = [...new Set(timings.map((ct) => ct.root))];
+		const progress = diffDial(historyBeforeSession, after, DIAL_THRESHOLD_MS);
+		// Nothing crossed → null, so the results screen stays silent rather
+		// than manufacturing encouragement for a session that moved nothing.
+		resultDialProgress =
+			progress.gained.length > 0 || progress.milestones.length > 0 ? progress : null;
+	}
+
+	/**
 	 * Streak, XP, goal progress and celebrations for one completed SESSION.
 	 * Split out of endGame so the Coach can call it once after its last block
 	 * instead of once per block.
@@ -1219,8 +1296,43 @@
 		const previousBestAvg = sameKey.length > 0 ? Math.min(...sameKey.map((h) => h.avgMs)) : undefined;
 		const habitResult = processSessionHabits(sessionResult, previousBestAvg);
 		habitProfile = loadHabitProfile(); // reload after processing
-		if (habitResult.celebrations.length > 0) {
-			pendingCelebrations = habitResult.celebrations;
+
+		// The dial's own XP, on top of what processSessionHabits awarded.
+		// It has to happen here, after that call: processSessionHabits both
+		// mutates and SAVES the profile, so adding XP before it would be
+		// overwritten. `history` is the post-save history — exactly the "after"
+		// diffDial wants, against the snapshot taken at session start.
+		const celebrations = [...habitResult.celebrations];
+		const progress = diffDial(historyBeforeSession, history, DIAL_THRESHOLD_MS);
+		const dialXP = calculateDialXP(progress);
+		if (dialXP.length > 0) {
+			const gained = sumXP(dialXP);
+			habitProfile.totalXP += gained;
+			habitProfile.weeklyXP += gained;
+			saveHabitProfile(habitProfile);
+			// One card per dial event, in the same overlay the rest of the XP
+			// uses — the reasons are already i18n keys, so they translate.
+			//
+			// The engine spells roots ASCII ("Db"), which is right for storage
+			// and wrong on screen. Typeset the key param through the player's
+			// notation setting so the card reads D♭ (or H, in German notation)
+			// exactly like the dial it is celebrating.
+			for (const e of dialXP) {
+				const params = e.reasonParams?.key
+					? { ...e.reasonParams, key: dialKeyLabel(String(e.reasonParams.key)) }
+					: e.reasonParams;
+				celebrations.push({
+					type: 'xp-gain',
+					title: e.reason,
+					titleKey: e.reasonKey,
+					titleParams: params,
+					xpGained: e.amount,
+					timestamp: new Date().toISOString(),
+				});
+			}
+		}
+		if (celebrations.length > 0) {
+			pendingCelebrations = celebrations;
 		}
 	}
 
@@ -1276,8 +1388,13 @@
 			awardSessionHabits(sessionResult);
 		}
 
+		// The results screen's dial. Built for the normal drill here; a Coach
+		// session builds it once at the end, over all its blocks.
+		if (!coachMode) buildResultDial(sessionResult.chordTimings ?? []);
+
 		// Refresh dashboard stats
 		dashStats = computeStats(loadHistory());
+		setupDial = buildKeyDial(loadHistory(), DIAL_THRESHOLD_MS);
 
 		// Adaptive teaser: the free user just felt the coaching — convert now.
 		if (sessionWasAdaptive) {
@@ -1623,6 +1740,7 @@
 	// ─── Ear Training Mode Logic ─────────────────────────────────
 
 	function startEarTraining() {
+		historyBeforeSession = loadHistory();
 		generateChords();
 		currentIdx = 0;
 		playPhase = 'playing';
@@ -1720,6 +1838,9 @@
 				midi: { enabled: inputActive, accuracy: earTrainingTotal > 0 ? Math.round((earTrainingCorrect / earTrainingTotal) * 100) : 0 },
 			});
 			streak = recordPracticeDay();
+			// Ear training awards no habit XP (it never has), but the dial still
+			// reflects the timings it just recorded.
+			buildResultDial([...chordTimings]);
 		}
 	}
 
@@ -2002,6 +2123,9 @@
 
 		// Load dashboard stats
 		dashStats = computeStats(loadHistory());
+		// The dial on the setup screen and in Insights. localStorage is only
+		// readable after mount, so it starts empty and fills in here.
+		setupDial = buildKeyDial(loadHistory(), DIAL_THRESHOLD_MS);
 
 		// ─── Habit Engine init ───────────────────────────────────
 		habitProfile = loadHabitProfile();
@@ -2226,12 +2350,53 @@
 							onstartcoach={startCoachSession}
 							coachAnnouncement={coachAnnouncement()}
 						/>
+
+						<!-- The dial, quietly, UNDER the start button: a glance at where
+						     you stand, deliberately small and time-less so it never
+						     competes with the primary action above it. Hidden until
+						     there is real history — an empty ring here says nothing. -->
+						{#if setupFluentCount.played > 0}
+							<div class="flex items-center gap-3.5 rounded-[var(--radius)] border border-[var(--border)]/45 bg-[var(--bg-muted)]/25 px-3.5 py-3">
+								<KeyClock
+									dial={setupDial}
+									thresholdMs={DIAL_THRESHOLD_MS}
+									size={72}
+									showTimes={false}
+									{notationSystem}
+								/>
+								<div class="min-w-0">
+									<div class="text-xs font-semibold uppercase tracking-[0.06em] text-(--text-muted)">{t('clock.setup_title')}</div>
+									<p class="mt-0.5 text-sm text-(--text)">
+										{setupFluentCount.fluent > 0
+											? t('clock.fluent_count', { count: setupFluentCount.fluent })
+											: t('clock.fluent_none')}
+									</p>
+								</div>
+							</div>
+						{/if}
 					</section>
 
 					<!-- ③ Insights (toggle) -->
 					{#if showInsights}
 						<section in:fade={{ duration: 180 }} class="flex flex-col gap-3">
 							<h2 class="text-sm font-semibold uppercase tracking-[0.06em] text-(--text-muted)">{t('settings.your_progress')}</h2>
+							<!-- The dial is the graphical form of the weak-spot analysis
+							     below it, so it heads the panel: shape first, then the
+							     named chords underneath. -->
+							<div class="flex flex-col items-center gap-2.5 rounded-[var(--radius-lg)] border border-[var(--border)]/45 bg-[var(--bg-muted)]/25 p-4 sm:p-5">
+								<div class="text-xs font-semibold uppercase tracking-[0.06em] text-(--text-muted)">{t('clock.insights_title')}</div>
+								<KeyClock
+									dial={setupDial}
+									thresholdMs={DIAL_THRESHOLD_MS}
+									size={236}
+									{notationSystem}
+								/>
+								<p class="text-sm text-(--text-muted)">
+									{setupFluentCount.fluent > 0
+										? t('clock.fluent_count', { count: setupFluentCount.fluent })
+										: t('clock.fluent_none')}
+								</p>
+							</div>
 							<ProgressDashboard onstart={startGame} onupgrade={() => openUpgrade('advanced-stats', false)} />
 						</section>
 					{/if}
@@ -3408,6 +3573,10 @@
 				onreset={resetToSetup}
 				candrillweak={hasWeakSpots()}
 				ondrillweak={startWeakDrill}
+				dial={resultDial}
+				dialHighlight={resultDialHighlight}
+				dialProgress={resultDialProgress}
+				dialThresholdMs={DIAL_THRESHOLD_MS}
 			/>
 			</div>
 		{/if}
