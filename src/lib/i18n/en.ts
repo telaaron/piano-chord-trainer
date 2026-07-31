@@ -1863,10 +1863,10 @@ export const en = {
     institut_note: 'per year, by invoice — tell us your size and we quote',
     student_title: 'Studying?',
     student_desc: 'Students get 50% off Studio, for as long as you study. Enter this code at checkout:',
-    feat_one_session_day: 'One coached session a day',
+    feat_one_session_day: 'Coached practice, unlimited',
     feat_free_practice: 'Unlimited free practice',
     feat_history_7d: 'Last 7 days of progress',
-    feat_unlimited_sessions: 'Coached sessions — as many as you like',
+    feat_unlimited_sessions: 'Adaptive coaching that follows you for months',
     feat_togo_full: 'All seven To-Go disciplines',
     feat_full_history: 'Your full history, forever',
     feat_everything_studio: 'Everything in Studio',
@@ -1947,11 +1947,22 @@ export const en = {
     faq_guarantee_a: 'If you\'re not happy for any reason, email info@jazzchords.app within 30 days of your first payment and we refund you in full. We\'re confident in the product, so the risk is ours.',
   },
 
+  sync_offer: {
+    title: 'Keep this.',
+    desc: 'Your practice so far lives in this browser only. Clear it, or pick up your tablet tomorrow, and it starts from zero. An account keeps it — free, and no card involved.',
+    point_devices: 'Practise on any device, same progress',
+    point_history: 'Your history and streak survive a cleared browser',
+    point_streak: 'Pick up tomorrow exactly where you stopped',
+    cta: 'Create a free account',
+    note: 'Free forever. This is not the paid plan.',
+    later: 'Not now',
+  },
+
   upgrade: {
     // generic
     eyebrow: 'Studio feature',
     points_title: 'Studio unlocks',
-    point_sessions: 'Practise as often as you like — no daily limit',
+    point_sessions: 'Your whole history, on every device',
     point_adaptive: 'Adaptive coaching — drills your weakest keys automatically',
     point_custom: 'Custom progressions — practice any tune, any changes',
     point_stats: 'Advanced stats — trends, weak-spot analysis, personal bests',

@@ -60,7 +60,7 @@ Das kostenlose Angebot bleibt **bewusst stark** — es ist unser einziger funkti
 
 | Enthalten | Grenze |
 |---|---|
-| Coach / Auto-Modus | **1 Session pro Tag** |
+| Coach / Auto-Modus | **unbegrenzt** (siehe Stufe-B-Korrektur unten) |
 | Alle 4 Kurse (Intervals, Shell, Scale Degrees, Ultimate Plan) | vollständig |
 | Alle 16 Akkordtypen, alle 9 Voicings | vollständig |
 | Alle Progressionsmodi (ii-V-I, Quartenzirkel, Turnaround) | vollständig |
@@ -71,7 +71,7 @@ Das kostenlose Angebot bleibt **bewusst stark** — es ist unser einziger funkti
 | Metronom, Audio, DE/EN, Notationssysteme | vollständig |
 | Kein Konto nötig | ja |
 
-> **Die entscheidende Grenze ist „1 Coach-Session pro Tag".** Sie ist die einzige, die ein motivierter Nutzer *täglich* spürt — und sie bestraft niemanden, der wenig übt. Wer einmal am Tag übt, merkt nie, dass es eine Grenze gibt. Wer zweimal will, ist genau der Nutzer, der zahlen sollte. Freies Üben bleibt **unbegrenzt**, damit die Grenze nie wie eine Sperre wirkt, sondern wie ein Angebot.
+> ⚠️ **Überholt (31.07.2026).** Ursprünglich war „1 Coach-Session pro Tag" als die entscheidende Grenze gedacht. Sie ist zurückgenommen — siehe **Stufe-B-Korrektur** weiter unten. Kurz: Ein Tageslimit diszipliniert Leute, die zu oft wiederkommen, und wir hatten noch nie einen zweiten Tag. Die Grenze ist auf 90 Tage ausgesetzt; bezahlt wird Tiefe, nicht Menge.
 
 ---
 
@@ -81,7 +81,7 @@ Das kostenlose Angebot bleibt **bewusst stark** — es ist unser einziger funkti
 
 | Zusätzlich zu „Übung" | Warum das Geld wert ist |
 |---|---|
-| **Unbegrenzte Coach-Sessions** | Der Hauptgrund. Direkt spürbar, täglich. |
+| ~~Unbegrenzte Coach-Sessions~~ | ⚠️ Entfallen — Coaching ist im Gratistarif unbegrenzt. Der Hauptgrund ist jetzt der vollständige Verlauf + Sync. |
 | **To-Go vollständig** (alle 7: + sing, time, lick, progression) | Üben in Bahn/Pause ohne Klavier — der Alltagsnutzen, der Gewohnheit trägt |
 | **Vollständiger Verlauf** (statt 7 Tage) | Fortschritt über Monate sichtbar |
 | **Erweiterte Statistiken** — Schwachstellen, Trends, Tonart-Heatmap | bereits gebaut (`analyzeWeakChords`, `analyzeChordTrends`, `analyzeWeakSpots`) |
@@ -266,6 +266,50 @@ Der alte Pro-Preis (4,99 €, `price_1TdHDXCbwjlRIGJJHSVMEyB3`) bleibt als `STRI
 **Nebenbefund, mitrepariert:** Trial-Dauer und Preis standen an sieben Stellen noch auf „14 Tage / 4,99 € / Karte erforderlich" — darunter die **AGB** (`p_subscriptions`), also ein Rechtstext, der eine nicht mehr zutreffende Abbuchungsmechanik beschrieb. Ebenso beschrieb der Untertitel der Preisseite noch das alte Gating („Voicings und Voice-Leading sind Pro"), obwohl beides längst gratis ist. Alles auf 7 Tage ohne Karte und die neuen Preise gebracht, DE und EN.
 
 **Verifiziert:** `pnpm check` 0 Fehler · `pnpm test` 258/258 (10 neue Tests für Tageslimit und To-Go-Filter) · `pnpm build` erfolgreich · Preisseite und To-Go im Browser geprüft, DE und EN, Umschalter Jahr↔Monat funktioniert (59/290 € ↔ 7,99/29 €), gesperrte To-Go-Zeilen öffnen das Angebot, keine Konsolenfehler.
+
+### Stufe B-Korrektur — das Tageslimit fällt (31.07.2026)
+
+Nach einem Rats-Durchlauf (llm-council, 5 Berater + Peer-Review) und einem
+telemetrisch bestätigten Fehler zurückgenommen:
+
+**Der Fehler.** Die einmalige Kalibrierung — ein Einstufungstest mit genau einem
+Block, ~98 Sekunden, kein Unterricht darin — hat das Tageskontingent verbraucht.
+Ein neuer Nutzer klickte „Jetzt üben", machte den Test und stand sofort vor
+„Das war die Session für heute. Anmelden zum Upgraden", ohne einen einzigen
+Akkord geübt zu haben. In `coach_events` nachweisbar.
+
+**Die Korrektur, in drei Teilen:**
+
+1. **Kalibrierung zählt nie.** `recordCoachSessionStart({ kind })` ignoriert
+   `calibrate`. Ein Einstufungstest ist in jeder Produktkategorie gratis.
+2. **Kein Mengenlimit mehr, 90 Tage lang** (`FREE_LIMITS.unlimitedDays = 90`).
+   Ein Tageslimit ist ein Instrument gegen Leute, die zu oft wiederkommen — und
+   kein Gerät ist je an einem zweiten Tag zurückgekehrt. Bei dieser Größe ist
+   der entgangene Umsatz kleiner als die Chance, dass jemand eine Gewohnheit
+   bildet. Bezahlt wird Tiefe, nie Menge.
+3. **Konto als Angebot statt als Wand.** Anonymer Fortschritt liegt
+   ausschließlich in localStorage (`cloud-sync.ts` verweigert ohne Session) —
+   ein geleerter Browser oder ein zweites Gerät verlieren alles. Nach der ersten
+   *echten* Session (nie nach der Kalibrierung, nie zweimal) erscheint
+   `SyncOfferSheet`: kein Preis, kein Schloss, „Dauerhaft gratis. Das ist nicht
+   der Bezahltarif." Das behebt die Amnesie und öffnet den einzigen Kanal, über
+   den jemand an Tag 2 zurückkommen kann.
+
+**Nebenbefund:** Die Preisseite bewarb „Eine betreute Session pro Tag" als
+Gratis-Grenze und „so viele du willst" als Studio-Vorteil — beides nicht mehr
+zutreffend. Auf Tiefe umgeschrieben (DE + EN).
+
+**Messung.** `session_start` trägt jetzt `deviceDayIndex` (Tage seit
+Erstkontakt des Geräts, verschieden vom Coach-eigenen `dayIndex`). Ohne das
+bleibt „ist jemand an Tag 2 wiedergekommen?" unbeantwortbar — die Frage, auf der
+die ganze Entscheidung ruht.
+
+**Abbruchkriterium.** Nach 90 Tagen und ≥200 Geräten mit `first_chord_played`:
+Liegt D7 unter 15 %, war das Limit nie das Problem, sondern der Coach an Tag 1.
+Werden die 200 Geräte nicht erreicht, ist es Vertrieb — dann wurde 90 Tage an
+der falschen Datei gearbeitet.
+
+---
 
 ### Stufe C — Lehrpult (nach den ersten 10 Studio-Kunden)
 | # | Aufgabe | Aufwand |

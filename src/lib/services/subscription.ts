@@ -133,7 +133,15 @@ export const FEATURE_GATES: Record<string, SubscriptionTier> = {
  * numbers are defined so they can be tuned without hunting through the UI.
  */
 export const FREE_LIMITS = {
-	/** Coach sessions per calendar day on the free tier. */
+	/**
+	 * Days from a device's first visit during which the free tier has NO
+	 * session limit at all. At 90 this covers every user we currently have —
+	 * which is the point. A daily cap restrains people who return too often,
+	 * and we have not yet had a single device come back on a second day.
+	 * Revisit once D7 is measurable, not before.
+	 */
+	unlimitedDays: 90,
+	/** Coach sessions per calendar day once `unlimitedDays` has elapsed. */
 	coachSessionsPerDay: 1,
 	/** Days of practice history visible on the free tier. */
 	historyDays: 7,

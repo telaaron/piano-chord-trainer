@@ -6,9 +6,10 @@
 	import QuickStart from '$lib/components/QuickStart.svelte';
 	import { Icon } from '$lib/components/ui';
 	import UpgradeSheet from '$lib/components/UpgradeSheet.svelte';
+	import SyncOfferSheet from '$lib/components/SyncOfferSheet.svelte';
 	import ProBadge from '$lib/components/ProBadge.svelte';
 	import { canUse, showLock, canStartCoachSession } from '$lib/services/subscription-store.svelte';
-	import { recordCoachSessionStart } from '$lib/services/usage-limit';
+	import { recordCoachSessionStart, deviceDayIndex } from '$lib/services/usage-limit';
 	import { hasUsedTeaser, markTeaserUsed } from '$lib/utils/teaser';
 	import { toggleLightDark, isLightActive } from '$lib/services/theme';
 	import { Sun, Moon, Eye, Settings, TabletSmartphone, Piano, RefreshCw, Ear, Volume2, VolumeX, Music, Target, Check, X, CornerDownLeft, ArrowDown, Play, Pause, RotateCcw, ArrowLeft } from 'lucide-svelte';
@@ -348,6 +349,10 @@
 	let upgradeOpen = $state(false);
 	let upgradeFeature = $state('adaptive-difficulty');
 	let upgradeTeaser = $state(false);
+
+	/** The one-time "your progress lives only here" offer. Free, not a paywall. */
+	let syncOfferOpen = $state(false);
+	const SYNC_OFFER_KEY = 'chord-trainer-sync-offer-shown';
 	/** Tracks whether the just-finished session was an adaptive (Pro) drill. */
 	let sessionWasAdaptive = $state(false);
 
@@ -1044,9 +1049,14 @@
 			blocks: plan.blocks.map((b) => b.kind),
 			frontierUnitId: plan.frontierUnitId,
 			dayIndex: state.dayIndex,
+			// Days since this DEVICE first ran the app — distinct from the coach's
+			// own dayIndex, which only counts days the coach was actually used.
+			// This is the one that answers "did anyone come back on day 2?".
+			deviceDayIndex: deviceDayIndex(),
 		});
-		// Spend the daily allowance only now that a block is really starting.
-		recordCoachSessionStart();
+		// Spend the daily allowance only now that a block is really starting —
+		// and never for calibration, which is a placement test, not practice.
+		recordCoachSessionStart({ kind: plan.blocks[0]?.kind });
 		startCoachBlock(0);
 	}
 
@@ -1188,6 +1198,31 @@
 		buildResultDial(allTimings);
 
 		screen = 'coach-feedback';
+		maybeOfferSync(coachPlan.blocks[0]?.kind);
+	}
+
+	/**
+	 * Offer an account once, after a real session — never after calibration.
+	 *
+	 * Anonymous progress lives only in localStorage, so a cleared browser or a
+	 * second device silently loses everything. That is worth saying plainly at
+	 * the one moment the user has something to lose, and it opens the only
+	 * channel that can bring them back tomorrow. Shown once per device: a
+	 * second ask stops being an offer and starts being a wall.
+	 */
+	function maybeOfferSync(firstBlockKind?: string) {
+		if (firstBlockKind === 'calibrate') return; // no real practice yet
+		if (getAuthState().user) return; // already has an account
+		if (typeof localStorage === 'undefined') return;
+		try {
+			if (localStorage.getItem(SYNC_OFFER_KEY)) return;
+			localStorage.setItem(SYNC_OFFER_KEY, '1');
+		} catch {
+			return; // no storage, no way to remember — rather ask never than twice
+		}
+		// After the feedback screen has painted, so it lands on top of a result
+		// rather than interrupting the moment the last chord is graded.
+		setTimeout(() => (syncOfferOpen = true), 1200);
 	}
 
 	/** Feedback valve: biases the controller. Only 'tooHard' is user-triggered now
@@ -3732,6 +3767,7 @@
 {/if}
 
 <UpgradeSheet bind:open={upgradeOpen} feature={upgradeFeature} teaserMode={upgradeTeaser} />
+<SyncOfferSheet bind:open={syncOfferOpen} />
 
 <style>
 	/* ── The session, as a printed page ───────────────────────────
