@@ -9,6 +9,7 @@
 	import { getSupabase } from '$lib/services/supabase';
 	import ToastContainer from '$lib/components/ToastContainer.svelte';
 	import { browser } from '$app/environment';
+	import { initAnalytics } from '$lib/services/analytics';
 
 	let { children } = $props();
 	const isTrainPage = $derived(page.url.pathname.startsWith('/train'));
@@ -42,6 +43,13 @@
 		toggleLightDark();
 		themeIsLight = isLightActive();
 	}
+
+	// Page views. Not on /embed: that route runs inside someone else's page,
+	// where their visitors are not ours to measure.
+	$effect(() => {
+		if (!browser || isEmbedRoute) return;
+		initAnalytics();
+	});
 
 	$effect(() => {
 		if (!browser) return;

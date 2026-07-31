@@ -61,7 +61,7 @@ Direkt aus der Produktionsdatenbank (Supabase `chpoqghvlojwyunoplab`, abgefragt 
 
 *(Anmerkung zur Datenqualität: 2 der 17 `session_end`-Events melden `completedBlocks` 39/41 bei `totalBlocks` 3 — ein Zählfehler in der Instrumentierung, der vor der Auswertung in Phase 1 zu fixen ist.)*
 
-> ⚠️ **Datenlücke:** Es gibt **kein Web-Analytics** (kein Plausible/GA/Posthog). Wir wissen nicht, wie viele Besucher die Seite hat, woher sie kommen und wo sie abspringen. Wir kennen nur die, die schon im Trainer waren. Das ist Blindflug beim Marketing und wird in Woche 1 behoben.
+> ✅ **Datenlücke geschlossen (31.07.2026).** Bis dahin gab es **kein Web-Analytics** — wir kannten nur die, die schon im Trainer waren. Jetzt messen zwei getrennte Systeme: **Vercel Analytics** die Besucherseite (wer kommt, woher, welche Seiten) und die bestehende **Supabase-Telemetrie** den Trichter. Nicht Plausible, wie ursprünglich geplant: Vercel braucht keinen Account, keinen Server und keine dritte Partei in der Datenschutzerklärung — und die behauptete ohnehin schon, wir würden es nutzen. Der Wechsel zu Plausible Cloud ist eine halbe Stunde, sobald Traffic da ist und Tiefe fehlt.
 
 ---
 
@@ -152,9 +152,9 @@ Die Reihenfolge folgt direkt aus Erkenntnis (c): **die Schwelle zuerst, das Coac
 
 | # | Maßnahme | Warum | Aufwand |
 |---|---|---|---|
-| 1.1 | **Web-Analytics einbauen** (Plausible, ~9 €/Monat, DSGVO-konform, kein Cookie-Banner) | Wir fliegen blind. Ohne Funnel-Daten ist jede Marketing-Ausgabe geraten. **Muss zuerst passieren.** | 2 h |
+| 1.1 | ✅ **Web-Analytics** — Vercel Analytics statt Plausible (0 €, kein Account, kein Cookie-Banner), verdrahtet in `src/lib/services/analytics.ts`, respektiert den bestehenden Telemetrie-Opt-out und läuft nicht auf `/embed` | erledigt |
 | 1.2 | **Die Schwelle „Start → erster Akkord" reparieren** | **Der größte Einzelhebel.** 4 von 5 Abbrüchen passieren bei `atChord: 0`. Selbst durchspielen mit und ohne MIDI-Gerät, und die Frage beantworten: Was sieht jemand, der gerade auf „Start" gedrückt hat, und weiß er, was er tun soll? | 1–2 Tage |
-| 1.3 | **Ein Telemetrie-Event `first_chord_played` ergänzen** | Wir können die Schwelle aktuell nur indirekt messen. Mit dem Event wird sie zur überwachbaren Kennzahl. Gleichzeitig den `completedBlocks`-Zählfehler fixen. | 0,5 Tag |
+| 1.3 | ✅ **`first_chord_played`** in `beginTimer()` — der einzige Punkt, an dem wirklich gespielt wird. Views `v_coach_threshold` (Schwellen-Rate pro Tag) und `v_coach_threshold_by_input` (nach Eingabegerät) sind deployed. Der `completedBlocks`-Zählfehler steht noch aus. | teilweise |
 | 1.4 | **Kein-Keyboard-Pfad prominent machen** | Die Seite verspricht „works with or without a keyboard". Wenn der Abbruch am fehlenden MIDI-Gerät liegt, muss der tastaturlose Einstieg der sichtbare Default sein, nicht die Ausweichoption. | 0,5 Tag |
 | 1.5 | **Auto-Modus: Einstieg härter kalibrieren** | Daten sagen „zu leicht", nicht „zu schwer". Einstiegslevel anheben, Frühpromotion beschleunigen. **Nach 1.2**, nicht davor. | 1 Tag |
 | 1.6 | **Rückkehr-Anlass schaffen** | Der einzige Grund wiederzukommen ist aktuell Eigenmotivation. E-Mail-Reminder (opt-in) oder iOS-Push. Größter Hebel für D7 — aber erst sinnvoll, wenn Tag 1 funktioniert. | 2 Tage |
@@ -237,7 +237,7 @@ Die laufenden Kosten sind mit ~22 €/Monat vernachlässigbar. Die eigentliche I
 
 Nicht mehr als fünf Dinge, in dieser Reihenfolge:
 
-1. **Plausible einbauen** — ohne Messung ist alles Weitere Meinung. (2 h)
+1. ~~Analytics einbauen~~ ✅ erledigt (Vercel Analytics + `first_chord_played`).
 2. **Die Schwelle selbst durchspielen** — einmal mit MIDI-Keyboard, einmal ohne, einmal auf dem Handy. Auf „Start" drücken und ehrlich beobachten: Ist in den ersten 10 Sekunden klar, was zu tun ist? **Hier liegt die Antwort auf „Auto-Modus nicht nutzerfreundlich" — nicht im Algorithmus.** (2 h)
 3. **Was in 2. auffällt, sofort reparieren.** (1–2 Tage)
 4. **`first_chord_played`-Event + `completedBlocks`-Zählfehler.** (0,5 Tag)

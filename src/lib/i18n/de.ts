@@ -1044,7 +1044,7 @@ export const de = {
     p_midi: 'Wenn du die Erlaubnis erteilst, greift die App über die Web MIDI API auf deine MIDI-Geräte zu. MIDI-Daten (Note On/Off Events) werden <strong>vollständig in deinem Browser</strong> verarbeitet und niemals übertragen.',
     
     h_analytics: '1.3 Analytics',
-    p_analytics: 'Wir nutzen <strong>Vercel Analytics</strong>, um anonyme, aggregierte Nutzungsdaten zu sammeln: Seitenaufrufe, Land, Browsertyp und Gerätetyp. Es werden keine personenbezogenen Daten und keine Cookies verwendet. Vercel Analytics ist DSGVO-konform.',
+    p_analytics: 'Wir messen zwei Dinge, beides ohne Cookies und ohne Werbenetzwerk. <strong>Vercel Analytics</strong> zählt Seitenaufrufe samt Land, Browser- und Gerätetyp, damit wir sehen, wie Leute auf die Seite finden; es setzt kein Cookie und speichert keine IP-Adresse, sondern bildet einen kurzlebigen Hash aus der Anfrage. Davon getrennt sendet der Trainer <strong>anonyme Coach-Telemetrie</strong> an unsere eigene Supabase-Datenbank — welche Übungen gespielt wurden, wie lange sie gedauert haben, wo eine Session abgebrochen wurde — gekennzeichnet nur durch eine zufällige Geräte-ID, die nicht mit deinem Namen oder deiner E-Mail verknüpft ist. Wir nutzen sie, damit der Trainer besser unterrichtet. Du kannst die Telemetrie jederzeit unter Account &rarr; Datenschutz abschalten, auch ohne Konto; der Schalter gilt ab dem nächsten Besuch auch für die Seitenaufruf-Messung.',
     // Die Coach-Telemetrie war in dieser Erklärung nicht beschrieben, obwohl
     // sie eine dauerhafte Geräte-ID speichert und Ereignisse überträgt.
     h_coach_data: '1.4 Übungsdaten zur Verbesserung des Coaches',

@@ -708,6 +708,22 @@
 		now = startTime;
 		chordStartTime = startTime;
 
+		// The threshold that matters. Four of five recorded drop-outs happen at
+		// `atChord: 0` — after a session starts but before anything is played —
+		// and until now that gap was invisible: we could see people arriving and
+		// people quitting, but not whether they ever got a note out. Fired once
+		// per block, so 'first_chord_played' vs 'session_start' is the crossing
+		// rate, and the payload says which input they had when they crossed
+		// (the leading suspect is a MIDI device that never connected).
+		if (coachMode) {
+			trackCoachEvent('first_chord_played', {
+				kind: coachPlan?.blocks[coachBlockIdx]?.kind,
+				blockIdx: coachBlockIdx,
+				input: inputMode,
+				msSinceSessionStart: coachSessionStartedAt ? Date.now() - coachSessionStartedAt : undefined,
+			});
+		}
+
 		timerHandle = setInterval(() => {
 			if (screen === 'playing' && !paused) now = Date.now();
 		}, 100);
@@ -939,6 +955,7 @@
 	//
 	// Telemetry hook points:
 	//   startCoachSession()  → trackCoachEvent('session_start', …)
+	//   beginTimer() (first real interaction of a block) → trackCoachEvent('first_chord_played', …)
 	//   applyCoachBlockResult() (per block) → trackCoachEvent('block_result', …) [+ 'calibration_result' on first calibration]
 	//   finishCoachSession() → trackCoachEvent('session_end' + 'coach_decision', …)
 	//   applyCoachFeedback() → trackCoachEvent('feedback_valve', …)

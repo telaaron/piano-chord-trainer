@@ -18,6 +18,7 @@ Aus der Roadmap („Erfolgsmetriken"). Das und nur das ist die Messlatte für de
 
 | Metrik | Definition | Ziel-Richtung | View |
 |---|---|---|---|
+| **Schwellen-Rate** | Anteil `session_start`, denen ein `first_chord_played` folgt — kam überhaupt ein Ton heraus? | ↑ (Ziel > 90 %) | `v_coach_threshold` |
 | **Time-to-Mastery** | Ø/Median Übungszeit bis eine Skill-Unit `mastered` (= `coach_decision.decision='promoted'`) erreicht | ↓ über Parameter-Iterationen | `v_coach_time_to_mastery` |
 | **Wiederkehr-Rate** | D1/D7-Return anonymer Devices, gemessen ab der ersten Aktivitätswoche (Kohorte) | ↑ | `v_coach_retention` |
 | **Completion-Rate** | Anteil Sessions mit `completedBlocks = totalBlocks` vs. Abbruch mitten im Block (`quit_midblock`) | ↑ (Abbruch im „Neu"-Block = zu schwer) | `v_coach_completion` |
@@ -43,6 +44,7 @@ oben und alle Wochen-Queries unten rückwirkend).
 | event_type | payload |
 |---|---|
 | `session_start` | `{ estMinutes, blocks: ["warmup",...], frontierUnitId, dayIndex }` |
+| `first_chord_played` | `{ kind, blockIdx, input: "none"\|"midi"\|"mic"\|…, msSinceSessionStart? }` |
 | `block_result` | `{ kind, unitId?, chords, avgMs, correctRate?, completed: boolean }` |
 | `session_end` | `{ durationMs, totalChords, avgMs, completedBlocks, totalBlocks, frontierUnitId }` |
 | `coach_decision` | `{ decision: "promoted"\|"held"\|"demoted"\|"placed", unitId }` |
