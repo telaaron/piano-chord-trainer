@@ -1,15 +1,20 @@
-// CoachL10n — localized strings for the Auto-Mode ("Coach") UI (de + en).
+// CoachL10n — localized strings for the whole app UI (de + en).
 //
-// The rest of the iOS app is English-only inline; the Coach is the first feature
-// that ships both languages, so it carries a small self-contained table keyed by
-// the engine's i18n keys (CoachLabelKeys / CoachSayKeys / CoachFeedbackKeys) plus
-// a handful of UI-chrome keys. Texts are content-identical to the web source of
-// truth (src/lib/i18n/{en,de}.ts, `coach:` block + `quickstart.coach_*`).
+// Originally the Coach was the only bilingual feature while the rest of the app
+// was English-only inline. That split showed: on a German device the chrome read
+// "Good afternoon" / "Your progress" next to the coach's "Weiter üben". The UI
+// chrome now goes through this same table, so there is exactly one mechanism and
+// one language decision for the entire app. Keys are the engine's i18n keys
+// (CoachLabelKeys / CoachSayKeys / CoachFeedbackKeys) plus UI-chrome keys, and
+// texts are content-identical to the web source of truth
+// (src/lib/i18n/{en,de}.ts) wherever a matching key exists there.
 //
 // Language selection follows the device's preferred language (de → German, else
 // English), matching how a native app localizes without a String Catalog. Params
 // are interpolated `{name}`-style exactly like the web `t(key, params)` helper,
 // and raw voicing values are localized the same way as web `localizeCoachParams`.
+//
+// Counted nouns do NOT live in these tables — see `plural(_:_:)` below.
 
 import Foundation
 import MusicEngine
@@ -18,6 +23,37 @@ enum CoachL10n {
     /// True when the device's top preferred language is German.
     static var isGerman: Bool {
         (Locale.preferredLanguages.first ?? "en").lowercased().hasPrefix("de")
+    }
+
+    // ─── Plurals ────────────────────────────────────────────
+    // Counted nouns live in Resources/{en,de}.lproj/Localizable.stringsdict
+    // rather than in the tables above, because German and English inflect a
+    // counted noun differently ("1 Tag"/"2 Tage" vs "1 day"/"2 days") and a
+    // `count == 1 ? … : …` at the call site is precisely how "1 days" shipped.
+    // A .stringsdict lets the OS apply the CLDR plural category for the chosen
+    // language to the actual number, so a call site can only pass a count — it
+    // cannot pick a form at all, correctly or otherwise.
+
+    /// The bundle whose language matches `isGerman`. `Locale.preferredLanguages`
+    /// and the bundle's own resolution can disagree (e.g. when the app has no
+    /// de.lproj match for a regional variant), which would let the plural line
+    /// come back English while the surrounding chrome is German. Resolving the
+    /// .lproj explicitly keeps both halves of a sentence in one language.
+    private static let bundle: Bundle = {
+        let lang = isGerman ? "de" : "en"
+        if let path = Bundle.main.path(forResource: lang, ofType: "lproj"),
+           let b = Bundle(path: path) { return b }
+        return .main
+    }()
+
+    /// Localize a counted noun/sentence, e.g. `plural("count.days", 1)` → "1 Tag".
+    static func plural(_ key: String, _ count: Int) -> String {
+        String(format: bundle.localizedString(forKey: key, value: nil, table: nil), count)
+    }
+
+    /// Two-argument plural (the week line: N days + a minutes goal).
+    static func plural(_ key: String, _ a: Int, _ b: Int) -> String {
+        String(format: bundle.localizedString(forKey: key, value: nil, table: nil), a, b)
     }
 
     // ─── Interpolation ──────────────────────────────────────
@@ -95,6 +131,30 @@ enum CoachL10n {
 
     /// Short "done" confirmation for a finished block (transition screen).
     static func blockDone(_ kind: BlockKind) -> String { t("coach.done.\(kind.rawValue)") }
+
+    // ─── Engine label localization ──────────────────────────
+    // MusicEngine's VOICING_LABELS / PROGRESSION_LABELS are English constants
+    // that ParityTests pins 1:1 against the web engine, so they must not be
+    // translated in place. The UI therefore localizes them here on the way out,
+    // mirroring how the web renders `settings.voicing_*` / `settings.progression_*`
+    // instead of the engine's own English constants.
+
+    /// Localized display name for a voicing (falls back to the engine constant).
+    static func voicing(_ v: VoicingType) -> String {
+        (isGerman ? deVoicings : enVoicings)[v] ?? VOICING_LABELS[v] ?? v.rawValue
+    }
+
+    /// Localized display name for a progression mode.
+    static func progression(_ m: ProgressionMode) -> String {
+        t("settings.progression.\(m.rawValue)")
+    }
+
+    /// Greeting for the Today hero, chosen by hour of day.
+    static func greeting(hour: Int) -> String {
+        if hour < 12 { return t("settings.greeting_morning") }
+        if hour < 18 { return t("settings.greeting_afternoon") }
+        return t("settings.greeting_evening")
+    }
 
     // ─── To-Go keys (practice away from the piano) ──────────
     // Engine-supplied keys (togo.prompt/tap/lick/card/say.*) arrive via
@@ -231,6 +291,160 @@ enum CoachL10n {
         "settings.privacy": "Anonymous Usage Data",
         "settings.privacy_desc": "Helps us improve the practice coach — fully anonymous, no personal data, and you can turn it off anytime.",
         "settings.privacy_toggle_label": "Share anonymous usage data",
+
+        // ── App chrome (web keys noted where one exists) ──
+        // Today.
+        "settings.greeting_morning": "Good morning",
+        "settings.greeting_afternoon": "Good afternoon",
+        "settings.greeting_evening": "Good evening",
+        "settings.your_progress": "Your progress",
+        "ui.level": "Level",
+        "ui.streak": "Streak",
+        "ui.sessions": "Sessions",
+        "embed.stat_avg": "Avg / chord",
+        "ui.start": "Start",
+        "settings.suggested": "Suggested",
+        "quickstart.weakspots_title": "Weak spots",
+        "results.drill_weak": "Drill your weak spots",
+        "ui.slowest_chords": "Your slowest chords",
+        // "{voicing} · {roots} — your slowest chords"
+        "ui.slowest_chords_detail": "{voicing} · {roots} — your slowest chords",
+        // Daily motivation (web habit.motivation_*; streak-at-risk is a plural entry).
+        "habit.motivation_not_started": "Ready for your {minutes}-minute practice?",
+        "habit.motivation_keep_going": "Nice start — {remaining} min to today's goal.",
+        "habit.motivation_almost": "Almost there — {remaining} min to go.",
+        "habit.motivation_goal_reached": "Daily goal reached.",
+        "habit.motivation_extra": "Extra credit — {practiced} min today.",
+        // Tabs / navigation.
+        "nav.today": "Today",
+        "nav.practice": "Practice",
+        "nav.learn": "Learn",
+        "nav.progress": "Progress",
+        "settings.open_settings": "Settings",
+        "ui.close": "Close",
+        "ui.done": "Done",
+        "ui.next": "Next",
+        "ui.finish": "Finish",
+        "ui.check": "Check",
+        "ui.continue": "Continue",
+        // Settings screen.
+        "settings.notation": "Notation",
+        "settings.notation_system": "System",
+        "settings.notation_system_international": "International",
+        "settings.notation_system_german": "German (H/B)",
+        "settings.chord_notation_title": "Style",
+        "settings.notation_standard": "Standard",
+        "settings.notation_symbols": "Symbols (Δ7)",
+        "settings.notation_short": "Short",
+        "settings.accidentals": "Accidentals",
+        "settings.accidentals_both": "Both",
+        "settings.accidentals_sharps": "Sharps",
+        "settings.accidentals_flats": "Flats",
+        "settings.sound": "Sound",
+        "settings.instrument": "Instrument",
+        "settings.midi": "MIDI",
+        "settings.connect_bluetooth": "Connect Bluetooth keyboard",
+        "settings.midi_footer": "Hardware MIDI works in the trainer (set Input → MIDI). Microphone recognition and more settings arrive soon.",
+        "sound.grand-piano": "Grand Piano",
+        "sound.electric-piano": "Electric Piano",
+        "sound.vibraphone": "Vibraphone",
+        "sound.organ": "Organ",
+        "sound.synth-pad": "Synth Pad",
+        // Trainer setup.
+        "nav.trainer": "Trainer",
+        "settings.difficulty": "Difficulty",
+        "settings.difficulty_beginner": "Beginner",
+        "settings.difficulty_intermediate": "Intermediate",
+        "settings.difficulty_advanced": "Advanced",
+        "results.voicing": "Voicing",
+        "settings.progression_mode": "Progression",
+        "settings.display_mode": "Reveal",
+        "settings.display_mode_always": "Always",
+        "settings.display_mode_verify": "On reveal",
+        "settings.display_mode_off": "Off",
+        "settings.input_mode": "Input",
+        "settings.input_mode_none": "Tap",
+        "settings.input_mode_midi": "MIDI",
+        "settings.input_mode_mic": "Mic",
+        "settings.mic_hint": "Play chords into your mic — clear, sustained voicings work best.",
+        "ui.audio": "Audio",
+        "settings.ear_training_toggle": "Ear training (guess by ear)",
+        "settings.in_time_toggle": "In-time (metronome advances)",
+        "ui.tempo": "Tempo",
+        "ui.ear_training_start": "Start ear training",
+        "settings.start_training": "Start drill",
+        // Progression modes (web settings.progression_*).
+        "settings.progression.random": "Random",
+        "settings.progression.2-5-1": "ii-V-I",
+        "settings.progression.1-6-2-5": "Turnaround (I-vi-ii-V)",
+        "settings.progression.cycle-of-4ths": "Cycle of 4ths",
+        "settings.progression.3-6-2-5": "iii-vi-ii-V",
+        "settings.progression.1-4-5": "I-IV-V",
+        "settings.progression.diatonic": "Diatonic",
+        "settings.progression.custom": "Custom",
+        // Trainer play + results.
+        "ui.tap_build": "Build the chord, then Check",
+        "ui.show_me_chord": "Show me the chord",
+        "ui.show_me": "Show me",
+        "ui.next_chord": "Next chord",
+        "ui.correct": "Correct",
+        "ui.not_quite": "Not quite",
+        "ui.playing_in_time": "Playing in time · {bpm} BPM",
+        "ui.play_on_keyboard": "Play it on your keyboard",
+        "ui.connect_midi": "Connect a MIDI keyboard",
+        "ui.play_listening": "Play it — listening…",
+        "results.nice_work": "Nice work",
+        "results.stat_avg": "avg / chord",
+        "results.stat_chords": "chords",
+        "results.stat_total": "total",
+        "results.again_same": "Again (same session)",
+        "results.again": "Again",
+        // Progress screen.
+        "ui.insights_empty_title": "No sessions yet",
+        "ui.insights_empty_desc": "Play your first drill and your speed, streaks, and weak spots will show up here.",
+        "ui.speed_trend": "Speed trend",
+        "ui.seconds_per_chord": "s / chord",
+        "ui.personal_bests": "Personal bests",
+        "ui.stat_level": "level",
+        "ui.stat_streak": "streak",
+        "ui.stat_avg": "avg",
+        "ui.stat_sessions": "sessions",
+        "ui.avg_suffix": "{seconds}s avg",
+        // Practice screen.
+        "ui.custom_progression": "Custom progression",
+        "ui.custom_progression_desc": "Type any chord sequence",
+        "ui.free_practice": "Free practice",
+        "ui.free_practice_desc": "Your own settings",
+        "ui.start_typing_suggestion": "Type a progression",
+        "ui.progression_input_placeholder": "e.g. Dm7 | G7 | CMaj7",
+        "ui.no_valid_chords": "No chords recognized yet — try forms like Dm7, B♭Maj7, F♯7.",
+        "ui.standards": "Standards",
+        "nav.custom": "Custom",
+        // Learn / lesson player.
+        "learn.step_theory": "Theory",
+        "learn.step_practice": "Practice",
+        "learn.step_challenge": "Challenge",
+        "learn.hear_it": "Hear it",
+        "learn.tap_continue": "Tap continue when you've got it.",
+        "learn.done_practicing": "Done practicing",
+        "learn.finish_lesson": "Finish lesson",
+        "learn.challenge_beat": "Challenge · beat {seconds}s/chord",
+        // Ear training.
+        "ui.what_chord": "What chord is this?",
+        "ui.listen_again": "Play again",
+        // Onboarding.
+        "onboarding.tagline": "Build muscle memory for jazz piano voicings — fast, focused, and measurable.",
+        "habit.onboard_daily": "Daily goal",
+        "habit.onboard_time_title": "How long do you want to practice each day?",
+        "habit.onboard_when_title": "When do you practice?",
+        "habit.onboard_morning": "Morning",
+        "habit.onboard_afternoon": "Afternoon",
+        "habit.onboard_evening": "Evening",
+        "habit.onboard_start": "Start practicing",
+        // Plan level names (web learn.level_*).
+        "learn.level_beginner": "Beginner",
+        "learn.level_intermediate": "Intermediate",
+        "learn.level_advanced": "Advanced",
 
         // ── To-Go (content-identical to web i18n `togo:` block) ──
         "togo.entry": "Practice without a piano",
@@ -379,6 +593,159 @@ enum CoachL10n {
         "settings.privacy": "Anonyme Nutzungsdaten",
         "settings.privacy_desc": "Hilft uns, den Übungs-Coach zu verbessern — komplett anonym, ohne Personendaten, jederzeit abschaltbar.",
         "settings.privacy_toggle_label": "Anonyme Nutzungsdaten teilen",
+
+        // ── App-Chrome (Web-Wording, wo es einen Schlüssel gibt) ──
+        // Heute.
+        "settings.greeting_morning": "Guten Morgen",
+        "settings.greeting_afternoon": "Guten Tag",
+        "settings.greeting_evening": "Guten Abend",
+        "settings.your_progress": "Dein Fortschritt",
+        "ui.level": "Level",
+        "ui.streak": "Serie",
+        "ui.sessions": "Sessions",
+        "embed.stat_avg": "Ø / Akkord",
+        "ui.start": "Start",
+        "settings.suggested": "Empfohlen",
+        "quickstart.weakspots_title": "Schwachstellen",
+        "results.drill_weak": "Deine Schwachstellen üben",
+        "ui.slowest_chords": "Deine langsamsten Akkorde",
+        "ui.slowest_chords_detail": "{voicing} · {roots} — deine langsamsten Akkorde",
+        // Tagesmotivation (Web habit.motivation_*; Streak-Warnung ist ein Plural-Eintrag).
+        "habit.motivation_not_started": "Bereit für deine {minutes} Minuten?",
+        "habit.motivation_keep_going": "Guter Start — noch {remaining} Min bis zum Tagesziel.",
+        "habit.motivation_almost": "Fast da — noch {remaining} Min.",
+        "habit.motivation_goal_reached": "Tagesziel geschafft.",
+        "habit.motivation_extra": "Bonus — {practiced} Min heute.",
+        // Tabs / Navigation.
+        "nav.today": "Heute",
+        "nav.practice": "Üben",
+        "nav.learn": "Lernen",
+        "nav.progress": "Fortschritt",
+        "settings.open_settings": "Einstellungen",
+        "ui.close": "Schließen",
+        "ui.done": "Fertig",
+        "ui.next": "Weiter",
+        "ui.finish": "Abschließen",
+        "ui.check": "Prüfen",
+        "ui.continue": "Weiter",
+        // Einstellungen.
+        "settings.notation": "Notation",
+        "settings.notation_system": "System",
+        "settings.notation_system_international": "International",
+        "settings.notation_system_german": "Deutsch (H/B)",
+        "settings.chord_notation_title": "Schreibweise",
+        "settings.notation_standard": "Standard",
+        "settings.notation_symbols": "Symbole (Δ7)",
+        "settings.notation_short": "Kurz",
+        "settings.accidentals": "Vorzeichen",
+        "settings.accidentals_both": "Beide",
+        "settings.accidentals_sharps": "Kreuze",
+        "settings.accidentals_flats": "Be",
+        "settings.sound": "Klang",
+        "settings.instrument": "Instrument",
+        "settings.midi": "MIDI",
+        "settings.connect_bluetooth": "Bluetooth-Keyboard verbinden",
+        "settings.midi_footer": "Hardware-MIDI funktioniert im Trainer (Eingabe → MIDI). Mikrofon-Erkennung und weitere Einstellungen kommen bald.",
+        "sound.grand-piano": "Flügel",
+        "sound.electric-piano": "E-Piano",
+        "sound.vibraphone": "Vibraphon",
+        "sound.organ": "Orgel",
+        "sound.synth-pad": "Synth-Pad",
+        // Trainer-Einrichtung.
+        "nav.trainer": "Trainer",
+        "settings.difficulty": "Schwierigkeit",
+        "settings.difficulty_beginner": "Anfänger",
+        "settings.difficulty_intermediate": "Fortgeschritten",
+        "settings.difficulty_advanced": "Profi",
+        "results.voicing": "Voicing",
+        "settings.progression_mode": "Akkordfolge",
+        "settings.display_mode": "Anzeige",
+        "settings.display_mode_always": "Immer",
+        "settings.display_mode_verify": "Beim Aufdecken",
+        "settings.display_mode_off": "Aus",
+        "settings.input_mode": "Eingabe",
+        "settings.input_mode_none": "Tippen",
+        "settings.input_mode_midi": "MIDI",
+        "settings.input_mode_mic": "Mikro",
+        "settings.mic_hint": "Spiel die Akkorde ins Mikro — klare, gehaltene Voicings klappen am besten.",
+        "ui.audio": "Audio",
+        "settings.ear_training_toggle": "Gehörtraining (nach Gehör raten)",
+        "settings.in_time_toggle": "In-Time (Metronom schaltet weiter)",
+        "ui.tempo": "Tempo",
+        "ui.ear_training_start": "Gehörtraining starten",
+        "settings.start_training": "Training starten",
+        // Akkordfolgen (Web settings.progression_*).
+        "settings.progression.random": "Zufall",
+        "settings.progression.2-5-1": "ii-V-I",
+        "settings.progression.1-6-2-5": "Turnaround (I-vi-ii-V)",
+        "settings.progression.cycle-of-4ths": "Quartenzirkel",
+        "settings.progression.3-6-2-5": "iii-vi-ii-V",
+        "settings.progression.1-4-5": "I-IV-V",
+        "settings.progression.diatonic": "Diatonisch",
+        "settings.progression.custom": "Eigene",
+        // Trainer-Lauf + Ergebnis.
+        "ui.tap_build": "Bau den Akkord, dann Prüfen",
+        "ui.show_me_chord": "Zeig mir den Akkord",
+        "ui.show_me": "Zeig mir",
+        "ui.next_chord": "Nächster Akkord",
+        "ui.correct": "Richtig",
+        "ui.not_quite": "Nicht ganz",
+        "ui.playing_in_time": "Im Takt · {bpm} BPM",
+        "ui.play_on_keyboard": "Spiel ihn auf deinem Keyboard",
+        "ui.connect_midi": "MIDI-Keyboard verbinden",
+        "ui.play_listening": "Spiel ihn — ich höre zu …",
+        "results.nice_work": "Gute Arbeit",
+        "results.stat_avg": "Ø / Akkord",
+        "results.stat_chords": "Akkorde",
+        "results.stat_total": "gesamt",
+        "results.again_same": "Nochmal (gleiche Session)",
+        "results.again": "Nochmal",
+        // Fortschritt.
+        "ui.insights_empty_title": "Noch keine Sessions",
+        "ui.insights_empty_desc": "Spiel dein erstes Training — danach siehst du hier Tempo, Serien und Schwachstellen.",
+        "ui.speed_trend": "Tempo-Verlauf",
+        "ui.seconds_per_chord": "s / Akkord",
+        "ui.personal_bests": "Persönliche Bestzeiten",
+        "ui.stat_level": "Level",
+        "ui.stat_streak": "Serie",
+        "ui.stat_avg": "Ø",
+        "ui.stat_sessions": "Sessions",
+        "ui.avg_suffix": "Ø {seconds}s",
+        // Üben.
+        "ui.custom_progression": "Eigene Akkordfolge",
+        "ui.custom_progression_desc": "Beliebige Akkordfolge eintippen",
+        "ui.free_practice": "Freies Üben",
+        "ui.free_practice_desc": "Deine eigenen Einstellungen",
+        "ui.start_typing_suggestion": "Tippe eine Akkordfolge",
+        "ui.progression_input_placeholder": "z. B. Dm7 | G7 | CMaj7",
+        "ui.no_valid_chords": "Noch keine Akkorde erkannt — probier Formen wie Dm7, B♭Maj7, F♯7.",
+        "ui.standards": "Standards",
+        "nav.custom": "Eigene",
+        // Lernen / Lektion.
+        "learn.step_theory": "Theorie",
+        "learn.step_practice": "Üben",
+        "learn.step_challenge": "Challenge",
+        "learn.hear_it": "Anhören",
+        "learn.tap_continue": "Tippe auf Weiter, wenn du es hast.",
+        "learn.done_practicing": "Üben beendet",
+        "learn.finish_lesson": "Lektion abschließen",
+        "learn.challenge_beat": "Challenge · unter {seconds}s/Akkord",
+        // Gehörtraining.
+        "ui.what_chord": "Welcher Akkord ist das?",
+        "ui.listen_again": "Nochmal hören",
+        // Onboarding.
+        "onboarding.tagline": "Bau dir Muskelgedächtnis für Jazz-Piano-Voicings — schnell, fokussiert und messbar.",
+        "habit.onboard_daily": "Tagesziel",
+        "habit.onboard_time_title": "Wie lange willst du täglich üben?",
+        "habit.onboard_when_title": "Wann übst du?",
+        "habit.onboard_morning": "Morgens",
+        "habit.onboard_afternoon": "Nachmittags",
+        "habit.onboard_evening": "Abends",
+        "habit.onboard_start": "Üben starten",
+        // Level-Namen (Web learn.level_*).
+        "learn.level_beginner": "Einsteiger",
+        "learn.level_intermediate": "Fortgeschritten",
+        "learn.level_advanced": "Profi",
 
         // ── To-Go (inhaltsgleich zum Web-i18n-Block `togo:`) ──
         "togo.entry": "Ohne Klavier üben",

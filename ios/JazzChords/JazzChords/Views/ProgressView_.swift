@@ -20,8 +20,8 @@ struct ProgressView_: View {
             if history.isEmpty {
                 EmptyStateView(
                     systemImage: "chart.line.uptrend.xyaxis",
-                    title: "No sessions yet",
-                    message: "Play your first drill and your speed, streaks, and weak spots will show up here.",
+                    title: CoachL10n.t("ui.insights_empty_title"),
+                    message: CoachL10n.t("ui.insights_empty_desc"),
                     artName: "empty"
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -29,7 +29,7 @@ struct ProgressView_: View {
                 content
             }
         }
-        .navigationTitle("Progress")
+        .navigationTitle(CoachL10n.t("nav.progress"))
         .screenBackground()
         .onAppear { habits.reload(); refresh += 1 }
         .refreshable { habits.reload(); refresh += 1 }
@@ -56,10 +56,10 @@ struct ProgressView_: View {
 
     private var statsHeader: some View {
         HStack(spacing: Theme.space3) {
-            metric("\(habits.levelInfo.level)", "level")
-            metric("\(streak.current)", "streak")
-            metric(String(format: "%.1fs", stats.overallAvgMs / 1000), "avg")
-            metric("\(stats.totalSessions)", "sessions")
+            metric("\(habits.levelInfo.level)", CoachL10n.t("ui.stat_level"))
+            metric("\(streak.current)", CoachL10n.t("ui.stat_streak"))
+            metric(String(format: "%.1fs", stats.overallAvgMs / 1000), CoachL10n.t("ui.stat_avg"))
+            metric("\(stats.totalSessions)", CoachL10n.t("ui.stat_sessions"))
         }
     }
 
@@ -79,7 +79,7 @@ struct ProgressView_: View {
     private var trendChart: some View {
         let recent = Array(history.prefix(12).reversed())
         return VStack(alignment: .leading, spacing: Theme.space2) {
-            SectionHeader(text: "Speed trend")
+            SectionHeader(text: CoachL10n.t("ui.speed_trend"))
             Chart {
                 ForEach(Array(recent.enumerated()), id: \.offset) { idx, s in
                     LineMark(x: .value("Session", idx), y: .value("Avg s", s.avgMs / 1000))
@@ -90,7 +90,7 @@ struct ProgressView_: View {
                 }
             }
             .frame(height: 160)
-            .chartYAxisLabel("s / chord")
+            .chartYAxisLabel(CoachL10n.t("ui.seconds_per_chord"))
         }
     }
 
@@ -99,11 +99,12 @@ struct ProgressView_: View {
         let spots = analyzeWeakSpots(history, 5)
         if !spots.isEmpty {
             VStack(alignment: .leading, spacing: Theme.space2) {
-                SectionHeader(text: "Weak spots")
+                SectionHeader(text: CoachL10n.t("quickstart.weakspots_title"))
                 ForEach(Array(spots.enumerated()), id: \.offset) { _, spot in
                     Button { drillSpot = spot } label: {
                         HStack {
-                            Text("\(spot.root) \(VOICING_LABELS[spot.voicing] ?? spot.voicing.rawValue)")
+                            // Root is typeset (D♭, not "Db"); voicing name is localized.
+                            Text("\(Notation.root(spot.root)) \(CoachL10n.voicing(spot.voicing))")
                                 .foregroundStyle(palette.text)
                             Spacer()
                             Text(String(format: "%.1fs", spot.avgMs / 1000))
@@ -126,14 +127,14 @@ struct ProgressView_: View {
         let pbs = stats.personalBests.values.sorted { $0.avgMs < $1.avgMs }.prefix(3)
         if !pbs.isEmpty {
             VStack(alignment: .leading, spacing: Theme.space2) {
-                SectionHeader(text: "Personal bests")
+                SectionHeader(text: CoachL10n.t("ui.personal_bests"))
                 ForEach(Array(pbs.enumerated()), id: \.offset) { _, pb in
                     HStack {
                         Image(systemName: "trophy.fill").foregroundStyle(palette.accentGold)
-                        Text(String(format: "%.1fs avg", pb.avgMs / 1000))
+                        Text(CoachL10n.t("ui.avg_suffix", ["seconds": String(format: "%.1f", pb.avgMs / 1000)]))
                             .foregroundStyle(palette.text)
                         Spacer()
-                        Text("\(pb.totalChords) chords")
+                        Text(CoachL10n.plural("count.chords", pb.totalChords))
                             .font(.caption).foregroundStyle(palette.textDim)
                     }
                     .padding(Theme.space3)

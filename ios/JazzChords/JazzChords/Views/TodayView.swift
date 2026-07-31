@@ -31,10 +31,7 @@ struct TodayView: View {
     }
 
     private var greeting: String {
-        let h = Calendar.current.component(.hour, from: Date())
-        if h < 12 { return "Good morning" }
-        if h < 18 { return "Good afternoon" }
-        return "Good evening"
+        CoachL10n.greeting(hour: Calendar.current.component(.hour, from: Date()))
     }
 
     /// Localized coach announcement for the hero ("Today: warm up, …"). Previews
@@ -49,7 +46,7 @@ struct TodayView: View {
         ScrollView {
             if isPad { iPadDashboard } else { phoneStack }
         }
-        .navigationTitle("Today")
+        .navigationTitle(CoachL10n.t("nav.today"))
         .navigationBarTitleDisplayMode(.inline)
         .screenBackground()
         .refreshable { habits.reload(); refreshToken += 1 }
@@ -189,11 +186,12 @@ struct TodayView: View {
     private var statsPanel: some View {
         VStack(alignment: .leading, spacing: Theme.space4) {
             let stats = computeStats(history)
-            SectionHeader(text: "Your progress")
-            statRow("Level", "\(habits.levelInfo.level) · \(habits.levelInfo.title)")
-            statRow("Streak", "\(streak.current) days")
-            statRow("Sessions", "\(stats.totalSessions)")
-            statRow("Avg / chord", stats.totalSessions > 0 ? String(format: "%.1fs", stats.overallAvgMs / 1000) : "—")
+            SectionHeader(text: CoachL10n.t("settings.your_progress"))
+            statRow(CoachL10n.t("ui.level"), "\(habits.levelInfo.level) · \(habits.levelInfo.title)")
+            // Counted noun → .stringsdict, so this reads "1 Tag" / "2 Tage", never "1 days".
+            statRow(CoachL10n.t("ui.streak"), CoachL10n.plural("count.days", streak.current))
+            statRow(CoachL10n.t("ui.sessions"), "\(stats.totalSessions)")
+            statRow(CoachL10n.t("embed.stat_avg"), stats.totalSessions > 0 ? String(format: "%.1fs", stats.overallAvgMs / 1000) : "—")
             Divider().overlay(palette.border)
             weekStrip
         }
@@ -247,7 +245,7 @@ struct TodayView: View {
                         .frame(width: 14, height: 14)
                 }
             }
-            Text("\(dots.filter { $0 }.count)/5 this week · \(habits.profile.dailyGoalMinutes) min/day goal")
+            Text(CoachL10n.plural("today.week_dots", dots.filter { $0 }.count, habits.profile.dailyGoalMinutes))
                 .font(.caption)
                 .foregroundStyle(palette.textDim)
         }
@@ -264,7 +262,7 @@ struct TodayView: View {
                             .foregroundStyle(palette.primary)
                             .symbolRenderingMode(.hierarchical)
                     }
-                    Text("SUGGESTED")
+                    Text(CoachL10n.t("settings.suggested").uppercased())
                         .font(.caption2.weight(.semibold)).tracking(1.5)
                         .foregroundStyle(palette.primary)
                     Spacer()
@@ -276,7 +274,7 @@ struct TodayView: View {
                     .font(.subheadline)
                     .foregroundStyle(palette.textMuted)
                 Button { startSuggested = true } label: {
-                    Text("Start")
+                    Text(CoachL10n.t("ui.start"))
                         .font(.body.weight(.semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space3)
@@ -302,19 +300,19 @@ struct TodayView: View {
                                 .foregroundStyle(palette.accentRed)
                                 .symbolRenderingMode(.hierarchical)
                         }
-                        Text("WEAK SPOTS")
+                        Text(CoachL10n.t("quickstart.weakspots_title").uppercased())
                             .font(.caption2.weight(.semibold)).tracking(1.5)
                             .foregroundStyle(palette.accentRed)
                         Spacer()
                     }
-                    Text("Drill your weak spots")
+                    Text(CoachL10n.t("results.drill_weak"))
                         .font(Display.headline(24))
                         .foregroundStyle(palette.text)
                     Text(weakDrillSubtitle(plan))
                         .font(.subheadline)
                         .foregroundStyle(palette.textMuted)
                     Button { startWeakDrill = true } label: {
-                        Text("Start")
+                        Text(CoachL10n.t("ui.start"))
                             .font(.body.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space3)
@@ -327,12 +325,13 @@ struct TodayView: View {
         }
     }
 
-    /// "Shell · Db, F#, B — your slowest chords"
+    /// "Shell Voicing · D♭, F♯, B — deine langsamsten Akkorde"
     private func weakDrillSubtitle(_ plan: PracticePlan) -> String {
-        let v = VOICING_LABELS[plan.settings.voicing] ?? ""
-        let roots = (plan.focusRoots ?? []).joined(separator: ", ")
-        if roots.isEmpty { return "Your slowest chords" }
-        return "\(v) · \(roots) — your slowest chords"
+        let v = CoachL10n.voicing(plan.settings.voicing)
+        // Root names are typeset, not raw engine strings: ♭/♯ must be real Unicode.
+        let roots = (plan.focusRoots ?? []).map(Notation.root).joined(separator: ", ")
+        if roots.isEmpty { return CoachL10n.t("ui.slowest_chords") }
+        return CoachL10n.t("ui.slowest_chords_detail", ["voicing": v, "roots": roots])
     }
 
     @ViewBuilder
@@ -386,19 +385,25 @@ struct TodayView: View {
 
     private func planTitle(_ id: String) -> String { Strings.planName(id) }
     private func planSubtitle(_ plan: PracticePlan) -> String {
-        let prog = PROGRESSION_LABELS[plan.settings.progressionMode] ?? ""
-        let v = VOICING_LABELS[plan.settings.voicing] ?? ""
-        return "\(v) · \(prog) · \(plan.settings.totalChords) chords"
+        let prog = CoachL10n.progression(plan.settings.progressionMode)
+        let v = CoachL10n.voicing(plan.settings.voicing)
+        // "N chords" is a counted noun — plural form comes from the .stringsdict.
+        let chords = CoachL10n.plural("count.chords", plan.settings.totalChords)
+        return "\(v) · \(prog) · \(chords)"
     }
-    /// Minimal motivation copy (the engine returns i18n keys + params).
+    /// Motivation copy (the engine returns i18n keys + params).
     private func motivationText(_ m: DailyMotivation) -> String {
+        func param(_ k: String) -> String { m.messageParams[k] ?? "" }
         switch m.type {
-        case .streakAtRisk: return "Your \(m.messageParams["days"] ?? "")-day streak is at risk — a quick session keeps it alive."
-        case .notStarted: return "Ready for your \(m.messageParams["minutes"] ?? "")-minute practice?"
-        case .justStarted: return "Nice start — \(m.messageParams["remaining"] ?? "") min to today's goal."
-        case .almostThere: return "Almost there — \(m.messageParams["remaining"] ?? "") min to go."
-        case .goalReached: return "Daily goal reached."
-        case .extraCredit: return "Extra credit — \(m.messageParams["practiced"] ?? "") min today."
+        // Whole-sentence plural: German recasts around the count ("Serie von 1 Tag"),
+        // so the count cannot just be spliced into a fixed template.
+        case .streakAtRisk:
+            return CoachL10n.plural("motivation.streak_at_risk", Int(param("days")) ?? 0)
+        case .notStarted: return CoachL10n.t("habit.motivation_not_started", ["minutes": param("minutes")])
+        case .justStarted: return CoachL10n.t("habit.motivation_keep_going", ["remaining": param("remaining")])
+        case .almostThere: return CoachL10n.t("habit.motivation_almost", ["remaining": param("remaining")])
+        case .goalReached: return CoachL10n.t("habit.motivation_goal_reached")
+        case .extraCredit: return CoachL10n.t("habit.motivation_extra", ["practiced": param("practiced")])
         }
     }
 }

@@ -18,10 +18,10 @@ struct CustomProgressionView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.space4) {
-                Text("Type a progression")
+                Text(CoachL10n.t("ui.start_typing_suggestion"))
                     .font(Display.headline(20)).foregroundStyle(palette.text)
 
-                TextField("e.g. Dm7 | G7 | CMaj7", text: $raw, axis: .vertical)
+                TextField(CoachL10n.t("ui.progression_input_placeholder"), text: $raw, axis: .vertical)
                     .lineLimit(2...4)
                     .padding(Theme.space3)
                     .glassCard()
@@ -36,7 +36,7 @@ struct CustomProgressionView: View {
                         store.startCustom(parsed)
                         launch = true
                     } label: {
-                        Text("Drill \(parsed.count) chords")
+                        Text(CoachL10n.plural("trainer.drill_chords", parsed.count))
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space4)
@@ -44,11 +44,11 @@ struct CustomProgressionView: View {
                             .foregroundStyle(palette.primaryText)
                     }
                 } else if !raw.isEmpty {
-                    Text("No chords recognized yet — try forms like Dm7, BbMaj7, F#7.")
+                    Text(CoachL10n.t("ui.no_valid_chords"))
                         .font(.footnote).foregroundStyle(palette.textDim)
                 }
 
-                Text("Standards")
+                Text(CoachL10n.t("ui.standards"))
                     .font(Display.headline(18)).foregroundStyle(palette.text)
                     .padding(.top, Theme.space2)
                 ForEach(PROGRESSION_PRESETS, id: \.name) { preset in
@@ -69,10 +69,10 @@ struct CustomProgressionView: View {
             }
             .padding(Theme.space4)
         }
-        .navigationTitle("Custom")
+        .navigationTitle(CoachL10n.t("nav.custom"))
         .navigationBarTitleDisplayMode(.inline)
         .screenBackground()
-        .toolbar { ToolbarItem(placement: .topBarLeading) { Button("Close") { dismiss() } } }
+        .toolbar { ToolbarItem(placement: .topBarLeading) { Button(CoachL10n.t("ui.close")) { dismiss() } } }
         .fullScreenCover(isPresented: $launch) {
             NavigationStack {
                 Group {

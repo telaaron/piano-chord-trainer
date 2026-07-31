@@ -18,10 +18,10 @@ struct EarTrainingView: View {
             // Prompt / reveal
             VStack(spacing: Theme.space2) {
                 if store.earRevealed, let d = store.currentData {
-                    Text(convertChordNotation(d.chord, store.notationSystem))
+                    Text(Notation.chord(d.chord, store.notationSystem))
                         .font(Display.chord(56))
                         .foregroundStyle(store.earResult == true ? palette.accentGreen : palette.text)
-                    Text(store.earResult == true ? "Correct" : "Not quite")
+                    Text(CoachL10n.t(store.earResult == true ? "ui.correct" : "ui.not_quite"))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(store.earResult == true ? palette.accentGreen : palette.accentRed)
                 } else {
@@ -29,11 +29,11 @@ struct EarTrainingView: View {
                         .font(.system(size: 44))
                         .foregroundStyle(palette.primary)
                         .symbolRenderingMode(.hierarchical)
-                    Text("What chord is this?")
+                    Text(CoachL10n.t("ui.what_chord"))
                         .font(Display.headline(20))
                         .foregroundStyle(palette.text)
                     Button { store.earPlayChord() } label: {
-                        Label("Play again", systemImage: "speaker.wave.2.fill")
+                        Label(CoachL10n.t("ui.listen_again"), systemImage: "speaker.wave.2.fill")
                     }.tint(palette.primary)
                 }
             }
@@ -53,11 +53,11 @@ struct EarTrainingView: View {
 
             // Action
             if store.earRevealed {
-                primaryButton(store.currentIdx >= store.actualTotalChords - 1 ? "Finish" : "Next") {
+                primaryButton(CoachL10n.t(store.currentIdx >= store.actualTotalChords - 1 ? "ui.finish" : "ui.next")) {
                     store.earNext()
                 }
             } else {
-                primaryButton("Check", disabled: store.earGuess.isEmpty) {
+                primaryButton(CoachL10n.t("ui.check"), disabled: store.earGuess.isEmpty) {
                     UISelectionFeedbackGenerator().selectionChanged()
                     store.earCheck()
                 }

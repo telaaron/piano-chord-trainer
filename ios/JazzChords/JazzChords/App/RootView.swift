@@ -9,10 +9,10 @@ enum AppSection: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .today: return "Today"
-        case .practice: return "Practice"
-        case .learn: return "Learn"
-        case .progress: return "Progress"
+        case .today: return CoachL10n.t("nav.today")
+        case .practice: return CoachL10n.t("nav.practice")
+        case .learn: return CoachL10n.t("nav.learn")
+        case .progress: return CoachL10n.t("nav.progress")
         }
     }
 
@@ -85,7 +85,7 @@ struct RootView: View {
     private var settingsToolbarItem: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button { showSettings = true } label: { Image(systemName: "gearshape") }
-                .accessibilityLabel("Settings")
+                .accessibilityLabel(CoachL10n.t("settings.open_settings"))
         }
     }
 

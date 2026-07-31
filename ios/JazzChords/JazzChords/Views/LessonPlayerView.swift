@@ -47,7 +47,7 @@ struct LessonPlayerView: View {
         .navigationTitle(lessonTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) { Button("Close") { dismiss() } }
+            ToolbarItem(placement: .topBarLeading) { Button(CoachL10n.t("ui.close")) { dismiss() } }
         }
     }
 
@@ -59,9 +59,11 @@ struct LessonPlayerView: View {
         case .theory(let t):
             theoryView(t)
         case .practice(let p):
-            poolDrillView(chords: poolChords(p), label: "Practice")
+            poolDrillView(chords: poolChords(p), label: CoachL10n.t("learn.step_practice"))
         case .challenge(let c):
-            poolDrillView(chords: challengeChords(c), label: "Challenge · beat \(Int(c.masteryThresholdMs / 1000))s/chord")
+            poolDrillView(chords: challengeChords(c),
+                          label: CoachL10n.t("learn.challenge_beat",
+                                             ["seconds": String(Int(c.masteryThresholdMs / 1000))]))
         }
     }
 
@@ -69,30 +71,30 @@ struct LessonPlayerView: View {
 
     private func theoryView(_ t: TheoryStep) -> some View {
         VStack(spacing: Theme.space4) {
-            Text("Theory")
+            Text(CoachL10n.t("learn.step_theory"))
                 .font(.caption.weight(.semibold)).tracking(1)
                 .foregroundStyle(palette.primary)
             if let chord = t.exampleChord {
                 let data = chordWithNotes(root: chord.root, quality: chord.quality, voicing: chord.voicing)
-                Text(data.chord)
+                Text(Notation.chord(data.chord))
                     .font(Display.chord(50))
                     .foregroundStyle(palette.text)
                 PianoKeyboard(chordData: data, accidentalPref: .both, showVoicing: true)
                 Button { AudioEngine.shared.playChord(data.voicing) } label: {
-                    Label("Hear it", systemImage: "speaker.wave.2.fill")
+                    Label(CoachL10n.t("learn.hear_it"), systemImage: "speaker.wave.2.fill")
                 }.tint(palette.primary)
             } else if let iv = t.exampleInterval {
-                Text("\(iv.root) → \(iv.target)")
+                Text("\(Notation.root(iv.root)) → \(Notation.root(iv.target))")
                     .font(.system(size: 44, weight: .heavy, design: .rounded))
                     .foregroundStyle(palette.text)
                 Text(iv.label).foregroundStyle(palette.textMuted)
                 Button {
                     AudioEngine.shared.playNote(iv.root, octave: 4)
                     AudioEngine.shared.playNote(iv.target, octave: 4)
-                } label: { Label("Hear it", systemImage: "speaker.wave.2.fill") }
+                } label: { Label(CoachL10n.t("learn.hear_it"), systemImage: "speaker.wave.2.fill") }
                     .tint(palette.primary)
             }
-            Text("Tap continue when you've got it.")
+            Text(CoachL10n.t("learn.tap_continue"))
                 .font(.footnote).foregroundStyle(palette.textDim)
         }
     }
@@ -106,7 +108,7 @@ struct LessonPlayerView: View {
             Text("\(min(poolIdx + 1, chords.count)) / \(chords.count)")
                 .font(.caption.monospacedDigit()).foregroundStyle(palette.textDim)
             if let data {
-                Text(data.chord)
+                Text(Notation.chord(data.chord))
                     .font(.system(size: 52, weight: .heavy, design: .rounded))
                     .foregroundStyle(palette.text)
                 PianoKeyboard(chordData: data, accidentalPref: .both, showVoicing: true)
@@ -134,13 +136,13 @@ struct LessonPlayerView: View {
 
     private var buttonLabel: String {
         switch currentStep {
-        case .theory: return "Continue"
+        case .theory: return CoachL10n.t("ui.continue")
         case .practice(let p):
             let n = poolChords(p).count
-            return poolIdx >= n - 1 ? "Done practicing" : "Next"
+            return CoachL10n.t(poolIdx >= n - 1 ? "learn.done_practicing" : "ui.next")
         case .challenge(let c):
             let n = challengeChords(c).count
-            return poolIdx >= n - 1 ? "Finish lesson" : "Next"
+            return CoachL10n.t(poolIdx >= n - 1 ? "learn.finish_lesson" : "ui.next")
         }
     }
 

@@ -15,7 +15,7 @@ struct LevelBadge: View {
             .background(palette.primary)
             .clipShape(Circle())
             .overlay(Circle().stroke(palette.accentAmber.opacity(0.5), lineWidth: 1))
-            .accessibilityLabel("Level \(level)")
+            .accessibilityLabel("\(CoachL10n.t("ui.level")) \(level)")
     }
 }
 

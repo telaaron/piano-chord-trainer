@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Plural rules for counted nouns (English).
+
+  Why a .stringsdict and not a Swift table: German and English disagree on how a
+  count inflects its noun ("1 Tag"/"2 Tage" vs "1 day"/"2 days"), and a Swift
+  singular/plural ternary at the call site is exactly the bug this file exists to
+  kill ("1 days"). A .stringsdict hands the decision to the OS, which applies the
+  CLDR plural category for the *device* language to the *actual* count, so a call
+  site can only ever pass a number — it cannot pick the wrong form. Both locales
+  need only `one` and `other`; the file is still the correct home for them because
+  it keeps the choice declarative and per-language.
+
+  Lookup goes through CoachL10n.plural(key:count:), which forces the same
+  bundle/language CoachL10n.isGerman already selected, so the chrome and the
+  Coach never disagree about which language the app is in.
+-->
+<plist version="1.0">
+<dict>
+	<key>count.days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld day</string>
+			<key>other</key>
+			<string>%ld days</string>
+		</dict>
+	</dict>
+	<key>count.sessions</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld session</string>
+			<key>other</key>
+			<string>%ld sessions</string>
+		</dict>
+	</dict>
+	<key>count.chords</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld chord</string>
+			<key>other</key>
+			<string>%ld chords</string>
+		</dict>
+	</dict>
+	<key>count.minutes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld minute</string>
+			<key>other</key>
+			<string>%ld minutes</string>
+		</dict>
+	</dict>
+	<key>count.lessons</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld lesson</string>
+			<key>other</key>
+			<string>%ld lessons</string>
+		</dict>
+	</dict>
+	<key>count.steps</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld step</string>
+			<key>other</key>
+			<string>%ld steps</string>
+		</dict>
+	</dict>
+	<!-- Composed sentences whose whole phrasing depends on the count. German
+	     inflects more than the noun ("Deine 1-Tage-Serie" reads wrong), so the
+	     entire line is a plural entry rather than a noun spliced into a template. -->
+	<key>motivation.streak_at_risk</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>Your %ld-day streak is at risk — a quick session keeps it alive.</string>
+			<key>other</key>
+			<string>Your %ld-day streak is at risk — a quick session keeps it alive.</string>
+		</dict>
+	</dict>
+	<key>today.week_dots</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@days@ · %2$ld min/day goal</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld/5 day this week</string>
+			<key>other</key>
+			<string>%ld/5 days this week</string>
+		</dict>
+	</dict>
+	<key>trainer.drill_chords</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>Drill %ld chord</string>
+			<key>other</key>
+			<string>Drill %ld chords</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Pluralregeln für gezählte Substantive (Deutsch). Siehe en.lproj für die
+  Begründung der Mechanik; hier zählt vor allem: „1 Tag" vs. „2 Tage" — genau der
+  Fall, den ein `count == 1 ? … : …` an der Aufrufstelle falsch macht.
+
+  Deutsch flektiert mehr als nur das Substantiv, deshalb sind die zusammen-
+  gesetzten Sätze (Streak-Warnung, Wochenzeile) komplett als Plural-Eintrag
+  hinterlegt statt ein Wort in eine Schablone zu schieben.
+-->
+<plist version="1.0">
+<dict>
+	<key>count.days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Tag</string>
+			<key>other</key>
+			<string>%ld Tage</string>
+		</dict>
+	</dict>
+	<key>count.sessions</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Session</string>
+			<key>other</key>
+			<string>%ld Sessions</string>
+		</dict>
+	</dict>
+	<key>count.chords</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Akkord</string>
+			<key>other</key>
+			<string>%ld Akkorde</string>
+		</dict>
+	</dict>
+	<key>count.minutes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Minute</string>
+			<key>other</key>
+			<string>%ld Minuten</string>
+		</dict>
+	</dict>
+	<key>count.lessons</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Lektion</string>
+			<key>other</key>
+			<string>%ld Lektionen</string>
+		</dict>
+	</dict>
+	<key>count.steps</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Schritt</string>
+			<key>other</key>
+			<string>%ld Schritte</string>
+		</dict>
+	</dict>
+	<!-- „Deine 1-Tage-Serie" wäre falsch; Singular bekommt daher eine eigene
+	     Formulierung, nicht nur ein anderes Substantiv. -->
+	<key>motivation.streak_at_risk</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>Deine Serie von %ld Tag steht auf dem Spiel — eine kurze Session hält sie am Leben.</string>
+			<key>other</key>
+			<string>Deine Serie von %ld Tagen steht auf dem Spiel — eine kurze Session hält sie am Leben.</string>
+		</dict>
+	</dict>
+	<key>today.week_dots</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@days@ · %2$ld Min/Tag Ziel</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld/5 Tag diese Woche</string>
+			<key>other</key>
+			<string>%ld/5 Tage diese Woche</string>
+		</dict>
+	</dict>
+	<key>trainer.drill_chords</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@v@</string>
+		<key>v</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld Akkord üben</string>
+			<key>other</key>
+			<string>%ld Akkorde üben</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

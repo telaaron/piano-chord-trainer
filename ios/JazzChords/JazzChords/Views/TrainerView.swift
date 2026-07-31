@@ -205,58 +205,58 @@ struct TrainerSetupView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.space5) {
-                pickerRow("Difficulty") {
+                pickerRow(CoachL10n.t("settings.difficulty")) {
                     Picker("", selection: $store.difficulty) {
-                        Text("Beginner").tag(Difficulty.beginner)
-                        Text("Intermediate").tag(Difficulty.intermediate)
-                        Text("Advanced").tag(Difficulty.advanced)
+                        Text(CoachL10n.t("settings.difficulty_beginner")).tag(Difficulty.beginner)
+                        Text(CoachL10n.t("settings.difficulty_intermediate")).tag(Difficulty.intermediate)
+                        Text(CoachL10n.t("settings.difficulty_advanced")).tag(Difficulty.advanced)
                     }.pickerStyle(.segmented)
                 }
-                pickerRow("Voicing") {
+                pickerRow(CoachL10n.t("results.voicing")) {
                     Picker("", selection: $store.voicing) {
                         ForEach(VoicingType.allCases, id: \.self) { v in
-                            Text(VOICING_LABELS[v] ?? v.rawValue).tag(v)
+                            Text(CoachL10n.voicing(v)).tag(v)
                         }
                     }
                 }
-                pickerRow("Progression") {
+                pickerRow(CoachL10n.t("settings.progression_mode")) {
                     Picker("", selection: $store.progressionMode) {
                         ForEach(ProgressionMode.allCases, id: \.self) { m in
-                            Text(PROGRESSION_LABELS[m] ?? m.rawValue).tag(m)
+                            Text(CoachL10n.progression(m)).tag(m)
                         }
                     }
                 }
-                pickerRow("Reveal") {
+                pickerRow(CoachL10n.t("settings.display_mode")) {
                     Picker("", selection: $store.displayMode) {
-                        Text("Always").tag(DisplayMode.always)
-                        Text("On reveal").tag(DisplayMode.verify)
-                        Text("Off").tag(DisplayMode.off)
+                        Text(CoachL10n.t("settings.display_mode_always")).tag(DisplayMode.always)
+                        Text(CoachL10n.t("settings.display_mode_verify")).tag(DisplayMode.verify)
+                        Text(CoachL10n.t("settings.display_mode_off")).tag(DisplayMode.off)
                     }.pickerStyle(.segmented)
                 }
-                pickerRow("Input") {
+                pickerRow(CoachL10n.t("settings.input_mode")) {
                     Picker("", selection: $store.inputMode) {
-                        Text("Tap").tag(TrainerStore.InputMode.none)
-                        Text("MIDI").tag(TrainerStore.InputMode.midi)
-                        Text("Mic").tag(TrainerStore.InputMode.microphone)
+                        Text(CoachL10n.t("settings.input_mode_none")).tag(TrainerStore.InputMode.none)
+                        Text(CoachL10n.t("settings.input_mode_midi")).tag(TrainerStore.InputMode.midi)
+                        Text(CoachL10n.t("settings.input_mode_mic")).tag(TrainerStore.InputMode.microphone)
                     }.pickerStyle(.segmented)
                 }
                 if store.inputMode == .microphone {
-                    Text("Play chords into your mic — clear, sustained voicings work best.")
+                    Text(CoachL10n.t("settings.mic_hint"))
                         .font(.footnote).foregroundStyle(palette.textDim)
                 }
 
-                Toggle("Audio", isOn: $store.audioEnabled)
+                Toggle(CoachL10n.t("ui.audio"), isOn: $store.audioEnabled)
                     .tint(palette.primary)
                     .foregroundStyle(palette.text)
-                Toggle("Ear training (guess by ear)", isOn: $store.isEarTraining)
+                Toggle(CoachL10n.t("settings.ear_training_toggle"), isOn: $store.isEarTraining)
                     .tint(palette.primary)
                     .foregroundStyle(palette.text)
-                Toggle("In-time (metronome advances)", isOn: $store.inTimeMode)
+                Toggle(CoachL10n.t("settings.in_time_toggle"), isOn: $store.inTimeMode)
                     .tint(palette.primary)
                     .foregroundStyle(palette.text)
                 if store.inTimeMode {
                     HStack {
-                        Text("Tempo").font(.subheadline).foregroundStyle(palette.textMuted)
+                        Text(CoachL10n.t("ui.tempo")).font(.subheadline).foregroundStyle(palette.textMuted)
                         Slider(value: Binding(get: { Double(store.metronomeBpm) }, set: { store.metronomeBpm = Int($0) }), in: 40...200, step: 5)
                             .tint(palette.primary)
                         Text("\(store.metronomeBpm)").font(.caption.monospacedDigit()).foregroundStyle(palette.text).frame(width: 36)
@@ -266,7 +266,7 @@ struct TrainerSetupView: View {
                 Button {
                     store.startSession()
                 } label: {
-                    Text(store.isEarTraining ? "Start ear training" : "Start drill")
+                    Text(CoachL10n.t(store.isEarTraining ? "ui.ear_training_start" : "settings.start_training"))
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space4)
@@ -277,11 +277,11 @@ struct TrainerSetupView: View {
             }
             .padding(Theme.space4)
         }
-        .navigationTitle("Trainer")
+        .navigationTitle(CoachL10n.t("nav.trainer"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Close") { onClose() }
+                Button(CoachL10n.t("ui.close")) { onClose() }
             }
         }
     }
@@ -366,7 +366,7 @@ struct TrainerPlayingView: View {
             // to know from a name like E♭9), with a one-line what-notes hint.
             if store.coachMode {
                 VStack(spacing: 2) {
-                    Text((VOICING_LABELS[store.voicing] ?? "").uppercased())
+                    Text(CoachL10n.voicing(store.voicing).uppercased())
                         .font(.caption.weight(.bold)).tracking(1.2)
                         .foregroundStyle(palette.primary)
                         .padding(.vertical, 4).padding(.horizontal, Theme.space3)
@@ -387,18 +387,18 @@ struct TrainerPlayingView: View {
             if store.shouldShowVoicing, let d = store.currentData {
                 if let r = store.tapResult {
                     // Reveal after a tap-guess: show whether the built chord was right.
-                    Label(r ? "Correct" : "Not quite", systemImage: r ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    Label(CoachL10n.t(r ? "ui.correct" : "ui.not_quite"), systemImage: r ? "checkmark.circle.fill" : "xmark.circle.fill")
                         .font((isPad ? Font.body : Font.caption).weight(.semibold))
                         .foregroundStyle(r ? palette.accentGreen : palette.accentRed)
                 }
-                Text(VOICING_LABELS[store.voicing]?.uppercased() ?? "")
+                Text(CoachL10n.voicing(store.voicing).uppercased())
                     .font((isPad ? Font.body : Font.caption).weight(.semibold)).tracking(1.5)
                     .foregroundStyle(palette.primary)
                 Text(formatVoicing(d, store.voicing, store.notationSystem))
                     .font(.system(isPad ? .title3 : .body, design: .monospaced))
                     .foregroundStyle(palette.textMuted)
             } else if store.isTapGuessMode {
-                Text("Build the chord, then Check")
+                Text(CoachL10n.t("ui.tap_build"))
                     .font((isPad ? Font.body : Font.caption).weight(.medium))
                     .foregroundStyle(palette.textDim)
             }
@@ -441,7 +441,7 @@ struct TrainerPlayingView: View {
             // Metronome drives advancement; show a calm in-time indicator.
             HStack(spacing: Theme.space2) {
                 Image(systemName: "metronome.fill").foregroundStyle(palette.primary)
-                Text("Playing in time · \(store.metronomeBpm) BPM")
+                Text(CoachL10n.t("ui.playing_in_time", ["bpm": String(store.metronomeBpm)]))
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(palette.textMuted)
             }
@@ -474,7 +474,7 @@ struct TrainerPlayingView: View {
                 // beginners who don't yet recognise a name like E♭9.
                 if store.isTapGuessMode, store.playPhase != .verifying, !store.tapGuess.isEmpty {
                     Button { store.revealTapGuess() } label: {
-                        Text("Show me the chord")
+                        Text(CoachL10n.t("ui.show_me_chord"))
                             .font(.footnote.weight(.medium))
                             .foregroundStyle(palette.accentAmber)
                     }
@@ -484,19 +484,20 @@ struct TrainerPlayingView: View {
     }
 
     private var displayedChord: String {
-        convertChordNotation(store.currentChord, store.notationSystem)
+        // Typeset: the big chord name shows real ♭/♯ glyphs, never "b"/"#".
+        Notation.chord(store.currentChord, store.notationSystem)
     }
     private var nextLabel: String {
         // Tap-guess: the primary action reveals + grades before advancing.
-        if store.isTapGuessMode { return store.tapGuess.isEmpty ? "Show me" : "Check" }
-        if store.currentIdx >= store.actualTotalChords - 1 { return "Finish" }
-        return "Next chord"
+        if store.isTapGuessMode { return CoachL10n.t(store.tapGuess.isEmpty ? "ui.show_me" : "ui.check") }
+        if store.currentIdx >= store.actualTotalChords - 1 { return CoachL10n.t("ui.finish") }
+        return CoachL10n.t("ui.next_chord")
     }
     private var inputStatus: String {
         if store.inputMode == .midi {
-            return MIDIInput.shared.connected ? "Play it on your keyboard" : "Connect a MIDI keyboard"
+            return CoachL10n.t(MIDIInput.shared.connected ? "ui.play_on_keyboard" : "ui.connect_midi")
         }
-        return "Play it — listening…"
+        return CoachL10n.t("ui.play_listening")
     }
 }
 
@@ -524,15 +525,15 @@ struct TrainerFinishedView: View {
     private var content: some View {
         VStack(spacing: Theme.space5) {
             Spacer()
-            Text("Nice work")
+            Text(CoachL10n.t("results.nice_work"))
                 .font(Display.title(34))
                 .foregroundStyle(palette.text)
 
             if let r = store.lastResult {
                 HStack(spacing: Theme.space3) {
-                    statCard(value: String(format: "%.1fs", r.avgMs / 1000), label: "avg / chord")
-                    statCard(value: "\(r.totalChords)", label: "chords")
-                    statCard(value: String(format: "%.0fs", r.elapsedMs / 1000), label: "total")
+                    statCard(value: String(format: "%.1fs", r.avgMs / 1000), label: CoachL10n.t("results.stat_avg"))
+                    statCard(value: "\(r.totalChords)", label: CoachL10n.t("results.stat_chords"))
+                    statCard(value: String(format: "%.0fs", r.elapsedMs / 1000), label: CoachL10n.t("results.stat_total"))
                 }
             }
 
@@ -542,7 +543,7 @@ struct TrainerFinishedView: View {
                 if store.canDrillWeakSpots {
                     // Peak-motivation moment: drill the chords you were slowest at.
                     Button { store.startWeakDrill() } label: {
-                        Label("Drill your weak spots", systemImage: "target")
+                        Label(CoachL10n.t("results.drill_weak"), systemImage: "target")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space4)
@@ -551,7 +552,7 @@ struct TrainerFinishedView: View {
                             .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                     }
                     Button { store.restart() } label: {
-                        Text("Again (same session)")
+                        Text(CoachL10n.t("results.again_same"))
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space4)
@@ -560,7 +561,7 @@ struct TrainerFinishedView: View {
                     }
                 } else {
                     Button { store.restart() } label: {
-                        Text("Again")
+                        Text(CoachL10n.t("results.again"))
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space4)
@@ -570,7 +571,7 @@ struct TrainerFinishedView: View {
                     }
                 }
                 Button { onClose() } label: {
-                    Text("Done")
+                    Text(CoachL10n.t("ui.done"))
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space4)

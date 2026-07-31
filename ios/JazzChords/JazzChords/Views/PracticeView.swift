@@ -37,7 +37,7 @@ struct PracticeView: View {
             .frame(maxWidth: 900)
             .frame(maxWidth: .infinity)
         }
-        .navigationTitle("Practice")
+        .navigationTitle(CoachL10n.t("nav.practice"))
         .screenBackground()
         .fullScreenCover(item: $activePlan) { plan in
             NavigationStack { TrainerView(plan: plan) }
@@ -55,8 +55,8 @@ struct PracticeView: View {
             HStack(spacing: Theme.space3) {
                 Image(systemName: "text.badge.plus").font(.title3).foregroundStyle(palette.primary)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Custom progression").font(Display.headline(17)).foregroundStyle(palette.text)
-                    Text("Type any chord sequence").font(.caption).foregroundStyle(palette.textMuted)
+                    Text(CoachL10n.t("ui.custom_progression")).font(Display.headline(17)).foregroundStyle(palette.text)
+                    Text(CoachL10n.t("ui.custom_progression_desc")).font(.caption).foregroundStyle(palette.textMuted)
                 }
                 Spacer()
                 Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.textDim)
@@ -74,8 +74,8 @@ struct PracticeView: View {
                     .font(.title3)
                     .foregroundStyle(palette.primary)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Free practice").font(Display.headline(17)).foregroundStyle(palette.text)
-                    Text("Your own settings").font(.caption).foregroundStyle(palette.textMuted)
+                    Text(CoachL10n.t("ui.free_practice")).font(Display.headline(17)).foregroundStyle(palette.text)
+                    Text(CoachL10n.t("ui.free_practice_desc")).font(.caption).foregroundStyle(palette.textMuted)
                 }
                 Spacer()
                 Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.textDim)

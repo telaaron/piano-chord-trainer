@@ -18,37 +18,37 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Notation") {
-                Picker("System", selection: $notationSystem) {
-                    Text("International").tag(NotationSystem.international)
-                    Text("German (H/B)").tag(NotationSystem.german)
+            Section(CoachL10n.t("settings.notation")) {
+                Picker(CoachL10n.t("settings.notation_system"), selection: $notationSystem) {
+                    Text(CoachL10n.t("settings.notation_system_international")).tag(NotationSystem.international)
+                    Text(CoachL10n.t("settings.notation_system_german")).tag(NotationSystem.german)
                 }
-                Picker("Style", selection: $notationStyle) {
-                    Text("Standard").tag(NotationStyle.standard)
-                    Text("Symbols (Δ7)").tag(NotationStyle.symbols)
-                    Text("Short").tag(NotationStyle.short)
+                Picker(CoachL10n.t("settings.chord_notation_title"), selection: $notationStyle) {
+                    Text(CoachL10n.t("settings.notation_standard")).tag(NotationStyle.standard)
+                    Text(CoachL10n.t("settings.notation_symbols")).tag(NotationStyle.symbols)
+                    Text(CoachL10n.t("settings.notation_short")).tag(NotationStyle.short)
                 }
-                Picker("Accidentals", selection: $accidentals) {
-                    Text("Both").tag(AccidentalPreference.both)
-                    Text("Sharps").tag(AccidentalPreference.sharps)
-                    Text("Flats").tag(AccidentalPreference.flats)
+                Picker(CoachL10n.t("settings.accidentals"), selection: $accidentals) {
+                    Text(CoachL10n.t("settings.accidentals_both")).tag(AccidentalPreference.both)
+                    Text(CoachL10n.t("settings.accidentals_sharps")).tag(AccidentalPreference.sharps)
+                    Text(CoachL10n.t("settings.accidentals_flats")).tag(AccidentalPreference.flats)
                 }
             }
 
-            Section("Sound") {
-                Picker("Instrument", selection: $soundPreset) {
+            Section(CoachL10n.t("settings.sound")) {
+                Picker(CoachL10n.t("settings.instrument"), selection: $soundPreset) {
                     ForEach(soundPresets, id: \.self) { p in
                         Text(presetLabel(p)).tag(p)
                     }
                 }
             }
 
-            Section("MIDI") {
+            Section(CoachL10n.t("settings.midi")) {
                 Button {
                     MIDIInput.shared.start()
                     showBluetooth = true
                 } label: {
-                    Label("Connect Bluetooth keyboard", systemImage: "pianokeys")
+                    Label(CoachL10n.t("settings.connect_bluetooth"), systemImage: "pianokeys")
                 }
                 if !MIDIInput.shared.devices.isEmpty {
                     ForEach(MIDIInput.shared.devices) { d in
@@ -69,7 +69,7 @@ struct SettingsView: View {
             }
 
             Section {
-                Text("Hardware MIDI works in the trainer (set Input → MIDI). Microphone recognition and more settings arrive soon.")
+                Text(CoachL10n.t("settings.midi_footer"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -77,16 +77,15 @@ struct SettingsView: View {
         // Manual UIKit present (.formSheet) — CABTMIDICentralViewController crashes
         // if loaded at a zero-frame, which a SwiftUI sheet causes.
         .background(BluetoothMIDIPresenter(isPresented: $showBluetooth))
-        .navigationTitle("Settings")
+        .navigationTitle(CoachL10n.t("settings.open_settings"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Done") { dismiss() }
+                Button(CoachL10n.t("ui.done")) { dismiss() }
             }
         }
     }
 
-    private func presetLabel(_ id: String) -> String {
-        id.split(separator: "-").map { $0.capitalized }.joined(separator: " ")
-    }
+    /// Instrument names are translated ("Flügel"), not id-humanized.
+    private func presetLabel(_ id: String) -> String { CoachL10n.t("sound.\(id)") }
 }

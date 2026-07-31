@@ -34,7 +34,7 @@ struct LearnView: View {
                 .readableWidth()
             }
         }
-        .navigationTitle("Learn")
+        .navigationTitle(CoachL10n.t("nav.learn"))
         .screenBackground()
     }
 
@@ -53,7 +53,8 @@ struct LearnView: View {
                     Text(courseName(course.id))
                         .font(Display.headline(18))
                         .foregroundStyle(palette.text)
-                    Text("\(lessonCount(course)) lessons · \(course.level.rawValue)")
+                    // Counted noun + localized level name (was the raw enum value).
+                    Text("\(CoachL10n.plural("count.lessons", lessonCount(course))) · \(Strings.level(course.level))")
                         .font(.caption)
                         .foregroundStyle(palette.textMuted)
                     if pct > 0 {
@@ -92,7 +93,7 @@ struct CourseDetailView: View {
                                 Text(lessonTitle(lesson.id))
                                     .foregroundStyle(palette.text)
                                 Spacer()
-                                Text("\(lesson.steps.count) steps")
+                                Text(CoachL10n.plural("count.steps", lesson.steps.count))
                                     .font(.caption)
                                     .foregroundStyle(palette.textDim)
                             }
