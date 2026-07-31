@@ -9,6 +9,7 @@
 	import { getSupabase } from '$lib/services/supabase';
 	import { toastSuccess, toastError, toastInfo } from '$lib/services/toast';
 	import { isTelemetryEnabled, setTelemetryEnabled } from '$lib/services/telemetry';
+	import { resetEverything } from '$lib/services/reset';
 	import { goto } from '$app/navigation';
 	import { PartyPopper } from 'lucide-svelte';
 	import type { AuthState } from '$lib/services/auth';
@@ -26,6 +27,10 @@
 	let savingName = $state(false);
 	let telemetryEnabled = $state(isTelemetryEnabled());
 
+	/* Factory reset — two-step, because it cannot be undone. */
+	let showResetConfirm = $state(false);
+	let resetting = $state(false);
+
 	// ─── Progress: the dial, at a size you can actually read ───
 	/** The coach's mastery threshold — the same one the trainer diffs against. */
 	const DIAL_THRESHOLD_MS = 2000;
@@ -38,6 +43,27 @@
 	});
 	const fluentCount = $derived(dial.filter((d) => d.fluent).length);
 	const playedCount = $derived(dial.filter((d) => d.count > 0).length);
+
+	/**
+	 * Wipe every trace of practice on this device and reload into a first-run app.
+	 *
+	 * A hard reload rather than resetting component state by hand: stores read
+	 * localStorage once at mount, so clearing underneath a live page leaves the
+	 * old numbers on screen and looks like the reset silently failed.
+	 */
+	async function handleReset() {
+		resetting = true;
+		try {
+			await resetEverything();
+			// location.assign, not goto: a client-side navigation keeps the very
+			// module state the reset is meant to clear.
+			location.assign('/');
+		} catch {
+			resetting = false;
+			showResetConfirm = false;
+			toastError(t('account.reset_failed'));
+		}
+	}
 
 	function handleTelemetryToggle() {
 		telemetryEnabled = !telemetryEnabled;
@@ -267,6 +293,33 @@
 				{/if}
 			</section>
 		{/if}
+
+		<!-- Factory reset — outside the signed-in branch on purpose: the players
+		     most likely to want a clean slate are the ones practising without an
+		     account, and the danger zone above is only rendered when signed in. -->
+		<section class="panel panel-danger">
+			<h2 class="panel-title is-danger">{t('account.reset_title')}</h2>
+			<p class="note-body">{t('account.reset_desc')}</p>
+			{#if !showResetConfirm}
+				<div class="btn-row">
+					<button onclick={() => (showResetConfirm = true)} class="btn-danger btn-sm">
+						{t('account.reset_cta')}
+					</button>
+				</div>
+			{:else}
+				<div class="confirm" role="alert">
+					<p class="err-text">{t('account.reset_confirm')}</p>
+					<div class="btn-row">
+						<button onclick={handleReset} disabled={resetting} class="btn-danger-solid btn-sm">
+							{resetting ? t('account.reset_running') : t('account.reset_yes')}
+						</button>
+						<button onclick={() => (showResetConfirm = false)} disabled={resetting} class="btn-rule btn-sm">
+							{t('account.reset_cancel')}
+						</button>
+					</div>
+				</div>
+			{/if}
+		</section>
 
 		<!-- Privacy / Telemetry -->
 		<section class="panel">

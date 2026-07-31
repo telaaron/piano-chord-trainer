@@ -1831,6 +1831,15 @@ export const en = {
     delete_confirm: 'This will permanently delete your account and all associated data. This action cannot be undone.',
     delete_yes: 'Yes, delete my account',
     delete_cancel: 'Cancel',
+    reset_title: 'Start over',
+    reset_desc:
+      'Erases everything this device remembers — sessions, times, streak, level, settings and cached files — and opens the app as a first-time visitor sees it. Your account and anything synced to the cloud stay untouched.',
+    reset_cta: 'Reset this device',
+    reset_confirm: 'This erases all practice data on this device. It cannot be undone.',
+    reset_yes: 'Yes, erase everything',
+    reset_running: 'Erasing…',
+    reset_cancel: 'Cancel',
+    reset_failed: 'Could not reset. Your data is unchanged.',
   },
 
   // ─── Pricing ──────────────────────────────────────

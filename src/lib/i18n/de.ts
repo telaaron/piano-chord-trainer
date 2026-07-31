@@ -1846,6 +1846,15 @@ export const de = {
     delete_confirm: 'Das löscht deinen Account und alle zugehörigen Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.',
     delete_yes: 'Ja, Account löschen',
     delete_cancel: 'Abbrechen',
+    reset_title: 'Von vorn anfangen',
+    reset_desc:
+      'Löscht alles, was dieses Gerät sich gemerkt hat — Sitzungen, Zeiten, Serie, Level, Einstellungen und zwischengespeicherte Dateien — und öffnet die App so, wie sie beim allerersten Besuch aussieht. Dein Account und alles, was in der Cloud liegt, bleiben unberührt.',
+    reset_cta: 'Dieses Gerät zurücksetzen',
+    reset_confirm: 'Das löscht alle Übungsdaten auf diesem Gerät. Es lässt sich nicht rückgängig machen.',
+    reset_yes: 'Ja, alles löschen',
+    reset_running: 'Wird gelöscht…',
+    reset_cancel: 'Abbrechen',
+    reset_failed: 'Zurücksetzen fehlgeschlagen. Deine Daten sind unverändert.',
   },
 
   // ─── Pricing ──────────────────────────────────────
