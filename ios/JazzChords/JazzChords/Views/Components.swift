@@ -103,18 +103,21 @@ struct HeroGradient: View {
                     .resizable()
                     .scaledToFill()
             } else {
+                // Night pressroom, matching the web hero. Deliberately dark in
+                // both schemes: this panel always carries light text over it, so
+                // it does not follow the active palette the way surfaces do.
                 LinearGradient(
-                    colors: [Color(hex: "1a1530"), Color(hex: "120e26"), Color(hex: "0c0a18")],
+                    colors: [Color(hex: "1c2735"), Color(hex: "151d29"), Color(hex: "0e141d")],
                     startPoint: .top, endPoint: .bottom
                 )
                 RadialGradient(
-                    colors: [Color(hex: "f5a623").opacity(0.28), .clear],
+                    colors: [Palette.dark.stamp.opacity(0.28), .clear],
                     center: .init(x: 0.82, y: 0.2), startRadius: 4, endRadius: height * 1.4
                 )
             }
             // Scrim for text legibility.
             LinearGradient(
-                colors: [.clear, Color(hex: "0c0a18").opacity(0.75)],
+                colors: [.clear, Color(hex: "0e141d").opacity(0.75)],
                 startPoint: .center, endPoint: .bottom
             )
         }

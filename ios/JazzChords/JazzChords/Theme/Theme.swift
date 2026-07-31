@@ -1,6 +1,15 @@
 // Theme — maps the web app's design tokens (src/app.css) 1:1 to SwiftUI Colors.
-// Midnight Indigo dark + lavender light. Resolves against the active color scheme
-// so a single token set drives both modes, matching the web behavior.
+//
+// The press palette: ink on paper. Dark is a night pressroom (deep slate-navy),
+// light is warm newsprint — NOT white, so it reads as paper rather than a blank
+// screen. Stamp red is the publisher's stamp and the teacher's red pencil;
+// copyist blue is the second ink, for annotation and structure. Amber survives
+// from the old palette but is now reserved for one thing: live/active state.
+//
+// Values are copied verbatim from src/app.css (`:root` = dark,
+// `[data-theme="light"]` = light) so the two platforms cannot drift apart.
+// Where the light block omits a token it inherits `:root`, and that inheritance
+// is reproduced here explicitly — see `stamp`.
 
 import SwiftUI
 
@@ -40,6 +49,13 @@ struct Palette {
     let primary: Color
     let primaryHover: Color
     let primaryText: Color
+    /// Copyist blue — the second ink. Annotation, analysis, structure.
+    let inkBlue: Color
+    /// The publisher's stamp. Reserved for live/active state; constant across
+    /// schemes because the light block inherits it from `:root`.
+    let stamp: Color
+    let stampHover: Color
+    let stampInk: Color
     let accentGold: Color
     let accentAmber: Color
     let accentRed: Color
@@ -56,31 +72,36 @@ struct Palette {
     let keyBlackActive: Color
     let keyRootDot: Color
 
-    /// Midnight Indigo — dark (jazz club at night). From :root in app.css.
+    /// Night pressroom — dark. Verbatim from `:root` in app.css.
     static let dark = Palette(
-        bg: Color(hex: "0c0a18"), bgCard: Color(hex: "16132a"), bgCardHover: Color(hex: "1f1b3a"),
-        bgMuted: Color(hex: "211d40"), border: Color(hex: "2d2952"), borderHover: Color(hex: "423c6e"),
-        text: Color(hex: "f1eff8"), textMuted: Color(hex: "a9a3c6"), textDim: Color(hex: "6f6992"),
-        primary: Color(hex: "f5a623"), primaryHover: Color(hex: "ffb840"), primaryText: Color(hex: "1a1206"),
-        accentGold: Color(hex: "e8b04b"), accentAmber: Color(hex: "ffb84d"),
-        accentRed: Color(hex: "e0436b"), accentGreen: Color(hex: "3fd09a"),
+        bg: Color(hex: "0e141d"), bgCard: Color(hex: "151d29"), bgCardHover: Color(hex: "1c2735"),
+        bgMuted: Color(hex: "1a2431"), border: Color(hex: "26323f"), borderHover: Color(hex: "38485a"),
+        text: Color(hex: "eef1f4"), textMuted: Color(hex: "a3b0bf"), textDim: Color(hex: "71808f"),
+        primary: Color(hex: "e2685c"), primaryHover: Color(hex: "ee7d71"), primaryText: Color(hex: "14090a"),
+        inkBlue: Color(hex: "7ba7d4"),
+        stamp: Color(hex: "f5a623"), stampHover: Color(hex: "ffb840"), stampInk: Color(hex: "14090a"),
+        accentGold: Color(hex: "e8b04b"), accentAmber: Color(hex: "f5a623"),
+        accentRed: Color(hex: "e2685c"), accentGreen: Color(hex: "3fd09a"),
         success: Color(hex: "4ade80"), warning: Color(hex: "f59e0b"), danger: Color(hex: "ef4444"),
         xp: Color(hex: "fb923c"),
         keyWhite: Color(hex: "f5f4fa"), keyWhiteActive: Color(hex: "e8b04b"), keyWhiteBorder: Color(hex: "c9c6da"),
-        keyBlack: Color(hex: "161329"), keyBlackActive: Color(hex: "ffb84d"), keyRootDot: Color(hex: "e8b04b"))
+        keyBlack: Color(hex: "161329"), keyBlackActive: Color(hex: "f5a623"), keyRootDot: Color(hex: "e8b04b"))
 
-    /// Daytime indigo — light. From [data-theme="light"] in app.css.
+    /// Warm newsprint — light. Verbatim from `[data-theme="light"]` in app.css.
+    /// Note `bg` is paper, not white; the stamp trio is inherited from `:root`.
     static let light = Palette(
-        bg: Color(hex: "f4f3fa"), bgCard: Color(hex: "ffffff"), bgCardHover: Color(hex: "eeecf8"),
-        bgMuted: Color(hex: "e6e3f4"), border: Color(hex: "ddd9ee"), borderHover: Color(hex: "c2bce0"),
-        text: Color(hex: "1a1730"), textMuted: Color(hex: "5a5478"), textDim: Color(hex: "8a84a8"),
-        primary: Color(hex: "c77f12"), primaryHover: Color(hex: "ad6c08"), primaryText: Color(hex: "ffffff"),
-        accentGold: Color(hex: "a87d1a"), accentAmber: Color(hex: "c77f12"),
-        accentRed: Color(hex: "c5345e"), accentGreen: Color(hex: "18936a"),
+        bg: Color(hex: "ecefe9"), bgCard: Color(hex: "fbfcf9"), bgCardHover: Color(hex: "f2f4ee"),
+        bgMuted: Color(hex: "e2e6de"), border: Color(hex: "d2d8cd"), borderHover: Color(hex: "b4bdad"),
+        text: Color(hex: "131a26"), textMuted: Color(hex: "4a5563"), textDim: Color(hex: "6b7684"),
+        primary: Color(hex: "b0302a"), primaryHover: Color(hex: "96231e"), primaryText: Color(hex: "ffffff"),
+        inkBlue: Color(hex: "2c5985"),
+        stamp: Color(hex: "f5a623"), stampHover: Color(hex: "ffb840"), stampInk: Color(hex: "14090a"),
+        accentGold: Color(hex: "8f5a05"), accentAmber: Color(hex: "8f5a05"),
+        accentRed: Color(hex: "b0302a"), accentGreen: Color(hex: "18936a"),
         success: Color(hex: "18936a"), warning: Color(hex: "b87708"), danger: Color(hex: "d23b34"),
-        xp: Color(hex: "c77f12"),
-        keyWhite: Color(hex: "ffffff"), keyWhiteActive: Color(hex: "c77f12"), keyWhiteBorder: Color(hex: "d6d2e8"),
-        keyBlack: Color(hex: "221d3a"), keyBlackActive: Color(hex: "c77f12"), keyRootDot: Color(hex: "a87d1a"))
+        xp: Color(hex: "8f5a05"),
+        keyWhite: Color(hex: "ffffff"), keyWhiteActive: Color(hex: "d9a441"), keyWhiteBorder: Color(hex: "cdd3c8"),
+        keyBlack: Color(hex: "131a26"), keyBlackActive: Color(hex: "8f5a05"), keyRootDot: Color(hex: "b0302a"))
 }
 
 /// Environment-aware theme. Inject via `.environment(\.theme, …)` or read the
