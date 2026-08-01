@@ -515,6 +515,50 @@ final class CoachParityTests: XCTestCase {
         XCTAssertEqual(tallies, [EarTally(unitId: "a", attempts: 2, correct: 1)])
     }
 
+    // Scoring used to filter timings by ROOT only, so a session of Maj7 chords
+    // counted as evidence for the 7 and m7 units in the same keys — the player
+    // was credited with qualities they never played. Mirrors coach.test.ts.
+    func testAQualityOnlyScoresAgainstUnitsOfThatSameQuality() {
+        let state = calibratedState()
+        let ladder = buildSkillLadder()
+        let frontier = ladder[0]
+
+        let timings = (0..<12).map { i in
+            qTiming(frontier.keys[i % frontier.keys.count], frontier.quality, 800, true)
+        }
+        let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        let next = applySessionToCoach(state, plan, session(timings, voicing: frontier.voicing),
+                                       DEFAULT_COACH_PARAMS, now: 1000)
+
+        let masteredIds = next.unitStates.compactMap { (k, v) in v.state == .mastered ? k : nil }
+        let prefix = "\(frontier.voicing.rawValue)|\(frontier.quality)|"
+        XCTAssertTrue(masteredIds.contains { $0.hasPrefix(prefix) })
+        // No other quality may be mastered — none of them was played.
+        XCTAssertTrue(masteredIds.allSatisfy { $0.hasPrefix(prefix) })
+    }
+
+    // The ladder spells the tritone 'F#' but the app generates 'Gb', so exact
+    // string matching made one key in twelve unscoreable.
+    func testAGbAttemptCountsTowardAnAllTierUnitSpelledFSharp() {
+        let ladder = buildSkillLadder()
+        guard let allTierUnit = ladder.first(where: { $0.keys.contains("F#") }) else {
+            return XCTFail("no unit covers the tritone key")
+        }
+
+        var state = calibratedState()
+        for u in ladder where u.voicing == allTierUnit.voicing
+            && u.quality == allTierUnit.quality && u.keyTier != .all {
+            state.unitStates[u.id] = UnitProgress(state: .mastered, bestAvgMs: 800, holds: 0)
+        }
+
+        let gb = (0..<12).map { _ in qTiming("Gb", allTierUnit.quality, 800, true) }
+        let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
+        let next = applySessionToCoach(state, plan, session(gb, voicing: allTierUnit.voicing),
+                                       DEFAULT_COACH_PARAMS, now: 1000)
+
+        XCTAssertNotNil(next.unitStates[allTierUnit.id])
+    }
+
     func testReportsBothFacetsForTheProgressDisplay() {
         var state = calibratedState()
         let ladder = buildSkillLadder()

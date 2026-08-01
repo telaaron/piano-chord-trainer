@@ -635,6 +635,89 @@ describe('correct === undefined (legacy sessions)', () => {
 		const next = applySessionToCoach(state, plan, session(timings, frontier.voicing), DEFAULT_COACH_PARAMS, 1000);
 		expect(next.unitStates[frontier.id].state).not.toBe('mastered');
 	});
+
+	// Scoring used to filter timings by ROOT only, so a session of Maj7 chords
+	// counted as evidence for the 7 and m7 units in the same keys — the player
+	// was credited with qualities they never played.
+	it('a quality only scores against units of that same quality', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		const frontier = ladder[0];
+
+		// A flawless, excellent-speed session of the frontier's own quality.
+		const timings = Array.from({ length: 12 }, (_, i) =>
+			qTiming(frontier.keys[i % frontier.keys.length], frontier.quality, 800, true),
+		);
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const next = applySessionToCoach(state, plan, session(timings, frontier.voicing), DEFAULT_COACH_PARAMS, 1000);
+
+		const masteredIds = Object.entries(next.unitStates)
+			.filter(([, u]) => u.state === 'mastered')
+			.map(([id]) => id);
+
+		// The played quality may be mastered...
+		expect(masteredIds.some((id) => id.startsWith(`${frontier.voicing}|${frontier.quality}|`))).toBe(true);
+		// ...but no OTHER quality may be, since none of them was played.
+		const otherQualities = masteredIds.filter(
+			(id) => !id.startsWith(`${frontier.voicing}|${frontier.quality}|`),
+		);
+		expect(otherQualities).toEqual([]);
+	});
+
+	it('does not credit a unit when the session contains only other qualities', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		const frontier = ladder[0];
+		const otherQuality = ladder.find((u) => u.quality !== frontier.quality)?.quality;
+		expect(otherQuality).toBeDefined();
+
+		// Perfect play — but of a quality the frontier unit is not about.
+		const timings = Array.from({ length: 12 }, (_, i) =>
+			qTiming(frontier.keys[i % frontier.keys.length], otherQuality!, 800, true),
+		);
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const next = applySessionToCoach(state, plan, session(timings, frontier.voicing), DEFAULT_COACH_PARAMS, 1000);
+
+		expect(next.unitStates[frontier.id]?.state).not.toBe('mastered');
+	});
+});
+
+// ─── F# / Gb: the tritone key must be scoreable ─────────────
+
+describe('enharmonic key matching', () => {
+	// The coach ladder spells the tritone 'F#', but the coach forces flats when
+	// generating, so the player is shown 'Gb'. Scoring by exact string dropped
+	// every one of those timings: one key in twelve was unscoreable.
+	it('a Gb attempt counts toward an all-tier unit spelled F#', () => {
+		const ladder = buildSkillLadder();
+		const allTierUnit = ladder.find((u) => u.keys.includes('F#'));
+		expect(allTierUnit).toBeDefined();
+
+		// Reach the all-tier unit directly: master its easy and med siblings, so
+		// the frontier sits on the rung that actually contains the tritone.
+		const state = calibratedState();
+		for (const u of ladder) {
+			if (u.voicing !== allTierUnit!.voicing || u.quality !== allTierUnit!.quality) continue;
+			if (u.keyTier === 'all') continue;
+			state.unitStates[u.id] = { state: 'mastered', bestAvgMs: 800, holds: 0 };
+		}
+
+		// A flawless session played entirely in the tritone key, spelled the way
+		// the app actually generates it (flats), against a rung spelled 'F#'.
+		const gbTimings = Array.from({ length: 12 }, () => qTiming('Gb', allTierUnit!.quality, 800, true));
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const next = applySessionToCoach(
+			state,
+			plan,
+			session(gbTimings, allTierUnit!.voicing),
+			DEFAULT_COACH_PARAMS,
+			1000,
+		);
+
+		// Before the fix the Gb timings were filtered out by exact-string
+		// matching, so this unit gained no evidence whatsoever.
+		expect(next.unitStates[allTierUnit!.id]).toBeDefined();
+	});
 });
 
 // ─── teacherFeedback ────────────────────────────────────────

@@ -622,14 +622,61 @@ interface UnitSessionStats {
  * When `correct` is present it gates a "good" attempt; when undefined only
  * timing matters (back-compat with older sessions).
  */
+/**
+ * Enharmonic spellings of the same pitch, so a key set written one way still
+ * matches a timing written the other.
+ *
+ * The ladder spells the tritone `F#` (ALL_KEYS), but the coach forces flats when
+ * it generates chords, so the player is actually shown `Gb`. Exact string
+ * matching dropped every one of those attempts: one key in twelve could never be
+ * scored, no matter how well it was played. The other pairs are listed too — the
+ * app can be set to sharps manually, and the same trap applies there.
+ */
+const ENHARMONIC: Record<string, string> = {
+	'F#': 'Gb', Gb: 'F#',
+	'C#': 'Db', Db: 'C#',
+	'D#': 'Eb', Eb: 'D#',
+	'G#': 'Ab', Ab: 'G#',
+	'A#': 'Bb', Bb: 'A#',
+};
+
+/** Does `root` name a key in `keySet`, under either spelling? */
+function keyMatches(keySet: Set<string>, root: string): boolean {
+	if (keySet.has(root)) return true;
+	const alt = ENHARMONIC[root];
+	return alt !== undefined && keySet.has(alt);
+}
+
+/**
+ * Every quality the curriculum ladder actually teaches. Used to tell "this chord
+ * belongs to a different unit" apart from "this chord name is not one we can
+ * read" — only the former may be filtered out of a unit's evidence.
+ */
+const CURRICULUM_QUALITIES: Set<string> = new Set(CALIBRATION_QUALITIES);
+
 function scoreSessionForUnit(
 	timings: ChordTiming[],
 	unit: SkillUnit,
 	params: CoachParams,
 ): UnitSessionStats {
-	// Only count timings whose root belongs to this unit's key set.
+	// Count a timing only if BOTH its key and its quality belong to this unit.
+	//
+	// Filtering by root alone credited a unit for chords of a different quality:
+	// a flawless session of Maj7 counted as evidence for the 7 and m7 units in
+	// the same keys, so the climb mastered qualities the player never touched.
+	//
+	// A timing whose quality is not one the curriculum knows still counts on key
+	// alone. Older sessions stored chord names this parser cannot resolve, and
+	// dropping them would silently discard the practice history of anyone who
+	// played before this change — the filter must exclude only qualities it can
+	// positively identify as belonging to a *different* unit.
 	const keySet = new Set(unit.keys);
-	const relevant = timings.filter((t) => keySet.has(t.root));
+	const relevant = timings.filter((t) => {
+		if (!keyMatches(keySet, t.root)) return false;
+		const q = qualityOfChord(t.chord);
+		if (!CURRICULUM_QUALITIES.has(q)) return true; // unknown → don't judge
+		return q === unit.quality;
+	});
 	const window = relevant.slice(-params.masteryWindow);
 
 	let underThreshold = 0;

@@ -707,6 +707,33 @@ private struct UnitSessionStats {
     let good: Int
 }
 
+/// Enharmonic spellings of the same pitch, so a key set written one way still
+/// matches a timing written the other.
+///
+/// The ladder spells the tritone `F#`, but the coach forces flats when it
+/// generates chords, so the player is actually shown `Gb`. Exact string matching
+/// dropped every one of those attempts: one key in twelve could never be scored,
+/// no matter how well it was played.
+private let ENHARMONIC: [String: String] = [
+    "F#": "Gb", "Gb": "F#",
+    "C#": "Db", "Db": "C#",
+    "D#": "Eb", "Eb": "D#",
+    "G#": "Ab", "Ab": "G#",
+    "A#": "Bb", "Bb": "A#",
+]
+
+/// Does `root` name a key in `keySet`, under either spelling?
+private func keyMatches(_ keySet: Set<String>, _ root: String) -> Bool {
+    if keySet.contains(root) { return true }
+    guard let alt = ENHARMONIC[root] else { return false }
+    return keySet.contains(alt)
+}
+
+/// Every quality the curriculum ladder actually teaches. Used to tell "this
+/// chord belongs to a different unit" apart from "this chord name is not one we
+/// can read" — only the former may be filtered out of a unit's evidence.
+private let CURRICULUM_QUALITIES: Set<String> = Set(CALIBRATION_QUALITIES)
+
 /// Score a session's timings against the mastery threshold for a given unit.
 /// When `correct` is present it gates a "good" attempt; when nil only
 /// timing matters (back-compat with older sessions).
@@ -715,9 +742,22 @@ private func scoreSessionForUnit(
     _ unit: SkillUnit,
     _ params: CoachParams
 ) -> UnitSessionStats {
-    // Only count timings whose root belongs to this unit's key set.
+    // Count a timing only if BOTH its key and its quality belong to this unit.
+    //
+    // Filtering by root alone credited a unit for chords of a different quality:
+    // a flawless session of Maj7 counted as evidence for the 7 and m7 units in
+    // the same keys, so the climb mastered qualities the player never touched.
+    //
+    // A quality the curriculum does not know still counts on key alone — older
+    // sessions stored chord names this parser cannot resolve, and dropping them
+    // would silently discard that practice history.
     let keySet = Set(unit.keys)
-    let relevant = timings.filter { keySet.contains($0.root) }
+    let relevant = timings.filter { t in
+        guard keyMatches(keySet, t.root) else { return false }
+        let q = qualityOfChord(t.chord)
+        guard CURRICULUM_QUALITIES.contains(q) else { return true }
+        return q == unit.quality
+    }
     let window = Array(relevant.suffix(params.masteryWindow))
 
     var underThreshold = 0
