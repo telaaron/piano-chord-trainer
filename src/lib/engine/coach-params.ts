@@ -36,6 +36,19 @@ export interface CoachParams {
 	/** Consecutive holds on the frontier before a (single-step) demotion kicks in. */
 	demotionAfterHolds: number;
 	/**
+	 * Multiplier applied to `masteryThresholdMs` when judging the one-time
+	 * calibration drill.
+	 *
+	 * Live telemetry over 11 calibrations: the drill averages 7632 ms per chord,
+	 * while ordinary blocks average 410–1743 ms — the same players, four times
+	 * slower. That is the drill's design, not their playing: it runs on
+	 * `advanced` with random qualities nobody has practised yet, in verify mode,
+	 * as the very first thing a new player ever does. Judging it against the
+	 * steady-state mastery bar placed flawless players at zero: one owner run
+	 * came in at 6577 ms with a 100% correct rate and was placed nowhere.
+	 */
+	calibrationThresholdFactor: number;
+	/**
 	 * Sessions stuck on one rung before the coach eases it instead of repeating.
 	 *
 	 * Without this a player who kept just missing the bar saw the same session
@@ -88,6 +101,12 @@ export const DEFAULT_COACH_PARAMS: CoachParams = {
 	masteryWindow: 20,
 	promotionRatio: 0.8,
 	demotionAfterHolds: 2,
+	// 4× → an 8000 ms calibration still places. Chosen from measured data, not
+	// taste: calibrations average 7632 ms against 410–1743 ms for ordinary
+	// blocks, so anything tighter fails players who are simply reading a chord
+	// they have never seen. Someone genuinely lost still misses it — the
+	// correctness gate (promotionRatio) is unchanged.
+	calibrationThresholdFactor: 4,
 	// Six sessions on one rung is roughly a week of daily practice. Long enough
 	// that it is not luck, short enough that nobody spends a fortnight there.
 	easeAfterStuckSessions: 6,

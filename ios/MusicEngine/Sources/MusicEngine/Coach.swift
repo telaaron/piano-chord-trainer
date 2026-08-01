@@ -930,19 +930,34 @@ private func placeByCalibration(
     let calVoicing = ladder.first?.voicing
 
     // Walk the qualities easy→hard. A quality is "solid" when the player was fast
-    // and (where known) correct on it. Place every unit of each solid quality as
-    // mastered — CONTIGUOUS: the first non-solid quality stops the walk, so we
-    // never place a hard quality the player skipped past by luck. A pro who's
-    // solid up to 13 gets placed there; a beginner stops after Maj7 (or nothing).
+    // and mostly correct on it. Place every unit of each solid quality as mastered
+    // — CONTIGUOUS: a quality the player demonstrably STRUGGLED with stops the
+    // walk, so we never place a hard quality they skipped past by luck.
+    //
+    // Untested ≠ failed. The drill samples chords, so it cannot cover every
+    // quality; treating "no data" as a stop meant a perfect run placed NOTHING
+    // whenever the sample happened to miss the very first quality — which, at 12
+    // chords over 15 qualities, was a coin flip (~44%).
     for quality in CALIBRATION_QUALITIES {
-        guard let qt = byQuality[quality], !qt.isEmpty else { break }
-        let avg = qt.reduce(0.0) { $0 + $1.durationMs } / Double(qt.count)
-        let fast = avg <= params.masteryThresholdMs
-        let clean = qt.allSatisfy { $0.correct != false }
-        if !fast || !clean { break } // first shaky quality → placement stops here.
+        guard let qt = byQuality[quality], !qt.isEmpty else { continue }
+
+        // Median, not mean: one 8-second fumble must not wipe out an otherwise
+        // fluent quality.
+        let sorted = qt.map(\.durationMs).sorted()
+        let mid = sorted.count / 2
+        let median = sorted.count % 2 == 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+        // Calibration gets its own bar — see calibrationThresholdFactor.
+        let fast = median <= params.masteryThresholdMs * params.calibrationThresholdFactor
+
+        // Same error budget the rest of the controller uses, rather than
+        // demanding a spotless run.
+        let correctCount = qt.filter { $0.correct != false }.count
+        let clean = Double(correctCount) / Double(qt.count) >= params.promotionRatio
+
+        if !fast || !clean { break } // first quality they actually struggled with
 
         for unit in ladder where unit.quality == quality && unit.voicing == calVoicing {
-            state.unitStates[unit.id] = UnitProgress(state: .mastered, bestAvgMs: avg, holds: 0)
+            state.unitStates[unit.id] = UnitProgress(state: .mastered, bestAvgMs: median, holds: 0)
         }
     }
 }

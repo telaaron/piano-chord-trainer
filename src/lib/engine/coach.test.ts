@@ -272,7 +272,7 @@ describe('adaptive calibration placement', () => {
 		const timings = [
 			qTiming('C', 'Maj7', 1000, true),
 			qTiming('F', 'Maj7', 1100, true),
-			qTiming('C', '7', 5000, true),
+			qTiming("C", "7", 12000, true),
 		];
 		const next = applySessionToCoach(state, plan, session(timings, 'root'), DEFAULT_COACH_PARAMS, 1000);
 		expect(next.calibrated).toBe(true);
@@ -293,7 +293,7 @@ describe('adaptive calibration placement', () => {
 			qTiming('C', 'Maj7', 800, true),
 			qTiming('C', '7', 900, true),
 			qTiming('C', 'm7', 850, true),
-			qTiming('C', '6', 4000, true),
+			qTiming("C", "6", 12000, true),
 		];
 		const next = applySessionToCoach(state, plan, session(timings, 'root'), DEFAULT_COACH_PARAMS, 1000);
 		const ladder = buildSkillLadder();
@@ -308,7 +308,7 @@ describe('adaptive calibration placement', () => {
 		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
 		const timings = [
 			qTiming('C', 'Maj7', 800, true),
-			qTiming('C', '7', 5000, true), // shaky
+			qTiming("C", "7", 12000, true), // shaky
 			qTiming('C', 'm7', 800, true), // fast but should NOT be placed (gap)
 		];
 		const next = applySessionToCoach(state, plan, session(timings, 'root'), DEFAULT_COACH_PARAMS, 1000);
@@ -492,7 +492,7 @@ describe('calibration placement', () => {
 	it('slow calibration stays at the bottom rung', () => {
 		const state = createInitialCoachState();
 		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
-		const timings = ['C', 'F', 'Bb', 'Eb'].map((k) => qTiming(k, 'Maj7', 5000, true));
+		const timings = ["C", "F", "Bb", "Eb"].map((k) => qTiming(k, "Maj7", 12000, true));
 		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
 		expect(next.calibrated).toBe(true);
 		expect(next.frontierIndex).toBe(0);
@@ -540,6 +540,34 @@ describe('calibration placement', () => {
 
 		const mastered = Object.values(next.unitStates).filter((u) => u.state === 'mastered');
 		expect(mastered.length).toBeGreaterThan(0);
+	});
+
+	// Reproduces a real reported run, from telemetry: 12 chords, 100% correct,
+	// 6577 ms average — placed at zero. The drill runs on `advanced` with random
+	// unpractised qualities in verify mode, and across 11 recorded calibrations
+	// averages 7632 ms against 410–1743 ms for ordinary blocks. Judging it by the
+	// steady-state bar meant a flawless first run counted for nothing.
+	it('places a flawless but unhurried calibration (real telemetry: 6577ms, 100% correct)', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const timings = ['C', 'F', 'Bb', 'Eb', 'Ab', 'Db'].map((k) => qTiming(k, 'Maj7', 6577, true));
+
+		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const mastered = Object.values(next.unitStates).filter((u) => u.state === 'mastered');
+		expect(mastered.length).toBeGreaterThan(0);
+	});
+
+	it('still refuses to place a calibration that is genuinely lost', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// Wrong far more often than right — speed allowance must not rescue this.
+		const timings = ['C', 'F', 'Bb', 'Eb', 'Ab', 'Db'].map((k) => qTiming(k, 'Maj7', 6000, false));
+
+		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const mastered = Object.values(next.unitStates).filter((u) => u.state === 'mastered');
+		expect(mastered.length).toBe(0);
 	});
 
 	it('a single slow fumble does not sink a fast quality (median, not mean)', () => {

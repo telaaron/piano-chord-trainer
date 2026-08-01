@@ -52,6 +52,12 @@ public struct CoachParams: Sendable, Equatable, Codable {
     public var promotionRatio: Double
     /// Consecutive holds on the frontier before a (single-step) demotion kicks in.
     public var demotionAfterHolds: Int
+    /// Multiplier on masteryThresholdMs when judging the one-time calibration.
+    /// Telemetry: calibrations average 7632ms vs 410–1743ms for ordinary blocks —
+    /// same players, four times slower, because the drill is unpractised
+    /// qualities in verify mode. Judging it by the steady-state bar placed
+    /// flawless players at zero.
+    public var calibrationThresholdFactor: Double
     /// Sessions stuck on one rung before the coach eases it instead of repeating.
     /// Without this a struggling player saw the identical session every day.
     public var easeAfterStuckSessions: Int
@@ -88,7 +94,8 @@ public struct CoachParams: Sendable, Equatable, Codable {
     public var reviewQualityCap: Int
 
     public init(masteryThresholdMs: Double, masteryWindow: Int, promotionRatio: Double,
-                demotionAfterHolds: Int, easeAfterStuckSessions: Int = 6,
+                demotionAfterHolds: Int, calibrationThresholdFactor: Double = 4,
+                easeAfterStuckSessions: Int = 6,
                 blockMix: BlockMix, shortSessionCutoffMin: Int,
                 weights: CoachWeights, calibrationChords: Int, feedbackBiasStep: Double,
                 feedbackBiasClamp: Double, srsLapseDemotes: Bool, chordsPerMinute: Double,
@@ -98,6 +105,7 @@ public struct CoachParams: Sendable, Equatable, Codable {
         self.masteryWindow = masteryWindow
         self.promotionRatio = promotionRatio
         self.demotionAfterHolds = demotionAfterHolds
+        self.calibrationThresholdFactor = calibrationThresholdFactor
         self.easeAfterStuckSessions = easeAfterStuckSessions
         self.blockMix = blockMix
         self.shortSessionCutoffMin = shortSessionCutoffMin
@@ -120,6 +128,7 @@ public let DEFAULT_COACH_PARAMS = CoachParams(
     masteryWindow: 20,
     promotionRatio: 0.8,
     demotionAfterHolds: 2,
+    calibrationThresholdFactor: 4,
     easeAfterStuckSessions: 6,
     blockMix: BlockMix(warmup: 0.15, review: 0.2, focus: 0.25, new: 0.25, apply: 0.15),
     shortSessionCutoffMin: 8,

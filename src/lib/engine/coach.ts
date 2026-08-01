@@ -888,7 +888,10 @@ function placeByCalibration(
 		const mid = Math.floor(sorted.length / 2);
 		const median =
 			sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-		const fast = median <= params.masteryThresholdMs;
+		// Calibration gets its own bar — see calibrationThresholdFactor. Judging a
+		// first-ever drill of unpractised qualities against the steady-state
+		// mastery threshold placed flawless players at zero.
+		const fast = median <= params.masteryThresholdMs * params.calibrationThresholdFactor;
 
 		// Allow the same error budget the rest of the controller uses for
 		// promotion, rather than demanding a spotless run: "almost no mistakes"
