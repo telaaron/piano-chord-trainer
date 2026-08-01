@@ -52,6 +52,23 @@ export interface UnitProgress {
 	lastTrainedAt?: number;
 	/** Consecutive holds (missed the threshold) on this unit while it was the frontier. */
 	holds: number;
+	/**
+	 * Total sessions spent stuck on this unit, across demotions.
+	 *
+	 * `holds` resets whenever a demotion fires, which meant a player who kept
+	 * just missing the bar cycled 0→1→0 forever: the frontier never moved and
+	 * the session was byte-identical every day. This counter does not reset, so
+	 * the coach can tell "missed it twice" from "has been stuck here all week"
+	 * and ease the rung instead of repeating it.
+	 */
+	stuckSessions?: number;
+	/**
+	 * This rung was granted because the player was stuck on it, not because they
+	 * met the speed bar. Such a rung is never knocked back by a later demotion —
+	 * they already showed they cannot pass it on speed, and returning them to it
+	 * just restarts the loop the easing exists to break.
+	 */
+	eased?: boolean;
 }
 
 export interface CoachState {
@@ -772,6 +789,8 @@ export function applySessionToCoach(
 			if (ratio >= params.promotionRatio) {
 				prog.state = 'mastered';
 				prog.holds = 0;
+				prog.stuckSessions = 0; // cleared by success, not carried forward
+				prog.eased = false; // earned on merit this time
 				next.unitStates[unit.id] = prog;
 				// Only keep climbing past the plan frontier when the pass was
 				// excellent — otherwise stop after the one planned promotion.
@@ -785,6 +804,22 @@ export function applySessionToCoach(
 				if (firstStep) {
 					prog.state = prog.state === 'locked' ? 'learning' : prog.state;
 					prog.holds = (prog.holds ?? 0) + 1;
+					// Unlike `holds`, this survives demotion — see UnitProgress.
+					prog.stuckSessions = (prog.stuckSessions ?? 0) + 1;
+
+					// Stuck long enough that repeating the identical block teaches
+					// nothing: grant the rung on the work already shown and move
+					// on. Without this the player cycled here forever, because
+					// demotion keeps resetting `holds` before it can escalate.
+					if (prog.stuckSessions >= params.easeAfterStuckSessions) {
+						prog.state = 'mastered';
+						prog.holds = 0;
+						prog.stuckSessions = 0;
+						prog.eased = true;
+						next.unitStates[unit.id] = prog;
+						break;
+					}
+
 					next.unitStates[unit.id] = prog;
 					if (prog.holds >= params.demotionAfterHolds) {
 						demoteOneStep(ladder, next, unit.index, params);
@@ -910,9 +945,14 @@ function demoteOneStep(
 		frontier.keyTier === 'all' ? 'med' : frontier.keyTier === 'med' ? 'easy' : null;
 	if (lowerTier) {
 		const lowerId = `${base}|${lowerTier}`;
-		if (state.unitStates[lowerId]?.state === 'mastered') {
+		const lower = state.unitStates[lowerId];
+		// A rung the coach granted because the player was stuck on it must not be
+		// knocked back — that is exactly the saw-tooth that put them on the same
+		// rung again two sessions later. They already proved they cannot pass it
+		// on speed; sending them back only restarts the loop.
+		if (lower?.state === 'mastered' && !lower.eased) {
 			state.unitStates[lowerId] = {
-				...state.unitStates[lowerId],
+				...lower,
 				state: 'practicing',
 				holds: 0,
 			};

@@ -52,6 +52,9 @@ public struct CoachParams: Sendable, Equatable, Codable {
     public var promotionRatio: Double
     /// Consecutive holds on the frontier before a (single-step) demotion kicks in.
     public var demotionAfterHolds: Int
+    /// Sessions stuck on one rung before the coach eases it instead of repeating.
+    /// Without this a struggling player saw the identical session every day.
+    public var easeAfterStuckSessions: Int
     /// Relative block sizes for a full session.
     public var blockMix: BlockMix
     /// Sessions shorter than this (minutes) drop warmup/apply and only run review/focus/new.
@@ -85,7 +88,8 @@ public struct CoachParams: Sendable, Equatable, Codable {
     public var reviewQualityCap: Int
 
     public init(masteryThresholdMs: Double, masteryWindow: Int, promotionRatio: Double,
-                demotionAfterHolds: Int, blockMix: BlockMix, shortSessionCutoffMin: Int,
+                demotionAfterHolds: Int, easeAfterStuckSessions: Int = 6,
+                blockMix: BlockMix, shortSessionCutoffMin: Int,
                 weights: CoachWeights, calibrationChords: Int, feedbackBiasStep: Double,
                 feedbackBiasClamp: Double, srsLapseDemotes: Bool, chordsPerMinute: Double,
                 minBlockChords: Int, maxBlockChords: Int, excellentFactor: Double,
@@ -94,6 +98,7 @@ public struct CoachParams: Sendable, Equatable, Codable {
         self.masteryWindow = masteryWindow
         self.promotionRatio = promotionRatio
         self.demotionAfterHolds = demotionAfterHolds
+        self.easeAfterStuckSessions = easeAfterStuckSessions
         self.blockMix = blockMix
         self.shortSessionCutoffMin = shortSessionCutoffMin
         self.weights = weights
@@ -115,6 +120,7 @@ public let DEFAULT_COACH_PARAMS = CoachParams(
     masteryWindow: 20,
     promotionRatio: 0.8,
     demotionAfterHolds: 2,
+    easeAfterStuckSessions: 6,
     blockMix: BlockMix(warmup: 0.15, review: 0.2, focus: 0.25, new: 0.25, apply: 0.15),
     shortSessionCutoffMin: 8,
     weights: CoachWeights(weak: 4.0, new: 2.5, strong: 0.3, focus: 10.0),

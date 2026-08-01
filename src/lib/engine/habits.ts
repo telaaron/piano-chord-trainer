@@ -12,7 +12,19 @@ export const XP_STREAK_DAY = 5;
 export const XP_STREAK_7_BONUS = 50;
 export const XP_STREAK_14_BONUS = 100;
 export const XP_STREAK_30_BONUS = 200;
-export const XP_GOAL_COMPLETED = 25;
+/**
+ * Completing a weekly goal — "practise 3 days", "master a new voicing".
+ *
+ * This used to pay 25, the same as merely touching twelve keys once, while a
+ * week of ordinary practice piles up XP in the four figures. A goal that takes
+ * days to earn must not be worth less than a good afternoon, or the number
+ * stops meaning anything: the player reads "+25" next to "1336 this week" and
+ * correctly concludes the goal was pointless.
+ *
+ * Priced against a week rather than a session: roughly what four days of
+ * practice yield, so finishing a goal is visibly the best thing on the board.
+ */
+export const XP_GOAL_COMPLETED = 120;
 export const XP_NEW_VOICING = 15;
 export const XP_LONG_SESSION = 10; // > 5 min
 export const XP_DEDICATED = 20; // 3+ sessions in one day

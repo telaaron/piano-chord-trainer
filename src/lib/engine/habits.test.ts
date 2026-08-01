@@ -12,6 +12,7 @@ import {
 	createDefaultProfile,
 	migrateToHabitProfile,
 	XP_SESSION_COMPLETE,
+	XP_GOAL_COMPLETED,
 	XP_PERSONAL_BEST,
 	XP_STREAK_DAY,
 	XP_STREAK_7_BONUS,
@@ -217,6 +218,53 @@ describe('calculateSessionXP', () => {
 		const fcEvent = events.find((e) => e.reasonKey === 'habit.xp_full_circle');
 		expect(fcEvent).toBeDefined();
 		expect(fcEvent?.amount).toBe(XP_FULL_CIRCLE);
+	});
+});
+
+describe('XP economy — a goal must outweigh a session', () => {
+	// The owner read "+25 for practising 3 days" next to "1336 XP this week" and
+	// concluded the goal was pointless. He was right: a reward that takes days to
+	// earn cannot be worth less than a single afternoon, or the number stops
+	// carrying meaning. These pin the ratio so it cannot quietly invert again.
+	const session = {
+		id: 'x',
+		timestamp: Date.now(),
+		elapsedMs: 600_000,
+		totalChords: 40,
+		avgMs: 1500,
+		settings: {
+			difficulty: 'beginner' as const,
+			notation: 'standard' as const,
+			voicing: 'shell' as const,
+			displayMode: 'always' as const,
+			accidentals: 'sharps' as const,
+			progressionMode: 'random' as const,
+		},
+		midi: { enabled: true, accuracy: 97 },
+	};
+
+	it('a weekly goal beats a single strong session by a clear margin', () => {
+		const events = calculateSessionXP(
+			session,
+			{ current: 5, best: 5, lastDate: '' },
+			createDefaultProfile(),
+		);
+		const oneGoodSession = sumXP(events);
+		expect(XP_GOAL_COMPLETED).toBeGreaterThan(oneGoodSession);
+	});
+
+	it('a weekly goal is worth more than several ordinary sessions', () => {
+		// Four quiet days of practice should still not out-earn the goal that
+		// those same four days exist to encourage.
+		const quiet = { ...session, elapsedMs: 120_000, totalChords: 12, midi: { enabled: false, accuracy: 0 } };
+		const perDay = sumXP(
+			calculateSessionXP(quiet, { current: 2, best: 2, lastDate: '' }, createDefaultProfile()),
+		);
+		expect(XP_GOAL_COMPLETED).toBeGreaterThanOrEqual(perDay * 3);
+	});
+
+	it('is worth several plain sessions', () => {
+		expect(XP_GOAL_COMPLETED).toBeGreaterThan(XP_SESSION_COMPLETE * 4);
 	});
 });
 

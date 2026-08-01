@@ -35,6 +35,17 @@ export interface CoachParams {
 	promotionRatio: number;
 	/** Consecutive holds on the frontier before a (single-step) demotion kicks in. */
 	demotionAfterHolds: number;
+	/**
+	 * Sessions stuck on one rung before the coach eases it instead of repeating.
+	 *
+	 * Without this a player who kept just missing the bar saw the same session
+	 * every single day: `holds` reset on each demotion, so the escalation never
+	 * fired and the frontier never moved. Past this many sessions the rung is
+	 * granted on the evidence the player *has* shown — they have demonstrably
+	 * put in the work, and drilling the identical block a seventh time teaches
+	 * nothing.
+	 */
+	easeAfterStuckSessions: number;
 	/** Relative block sizes for a full session. */
 	blockMix: BlockMix;
 	/** Sessions shorter than this (minutes) drop warmup/apply and only run review/focus/new. */
@@ -77,6 +88,9 @@ export const DEFAULT_COACH_PARAMS: CoachParams = {
 	masteryWindow: 20,
 	promotionRatio: 0.8,
 	demotionAfterHolds: 2,
+	// Six sessions on one rung is roughly a week of daily practice. Long enough
+	// that it is not luck, short enough that nobody spends a fortnight there.
+	easeAfterStuckSessions: 6,
 	blockMix: {
 		warmup: 0.15,
 		review: 0.2,

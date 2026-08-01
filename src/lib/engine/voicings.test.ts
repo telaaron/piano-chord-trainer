@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getChordNotes, getVoicingNotes } from './voicings';
+import { getChordNotes, getVoicingNotes, isShellVoicing } from './voicings';
 
 // ── getChordNotes ─────────────────────────────────────────────────────────────
 
@@ -113,5 +113,21 @@ describe('getVoicingNotes — edge cases', () => {
 		const notes = ['C', 'E', 'G'];
 		const result = getVoicingNotes(notes, 'inversion-3');
 		expect(result).toHaveLength(3);
+	});
+});
+
+describe('isShellVoicing — which drills refuse extra notes', () => {
+	// Shell and half-shell are three-note reductions on purpose. Tolerating an
+	// added fifth marks the drill passed for the very habit it exists to break,
+	// so these two match strictly while fuller voicings stay lenient.
+	it('covers both shell forms', () => {
+		expect(isShellVoicing('shell')).toBe(true);
+		expect(isShellVoicing('half-shell')).toBe(true);
+	});
+
+	it('leaves fuller voicings lenient', () => {
+		for (const v of ['root', 'full', 'rootless-a', 'rootless-b', 'inversion-1', 'inversion-2', 'inversion-3']) {
+			expect(isShellVoicing(v)).toBe(false);
+		}
 	});
 });

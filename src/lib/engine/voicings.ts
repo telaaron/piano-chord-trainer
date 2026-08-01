@@ -149,6 +149,18 @@ const GENERIC_INTERVAL: Record<number, string> = {
  *
  * Example: G9 shell voicing [G, B, F] → ['R', '3', '♭7']
  */
+/**
+ * Voicings whose whole exercise is playing *only* the named notes.
+ *
+ * Shell and half-shell are deliberately three-note reductions — root, third,
+ * seventh. Accepting an added fifth there passes the drill for exactly the habit
+ * it exists to break, so these are matched strictly while fuller voicings still
+ * tolerate octave doublings and extensions.
+ */
+export function isShellVoicing(voicing: string): boolean {
+	return voicing === 'shell' || voicing === 'half-shell';
+}
+
 export function getVoicingIntervalLabels(
 	voicingNotes: string[],
 	root: string,

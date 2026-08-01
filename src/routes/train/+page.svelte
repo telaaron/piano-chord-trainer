@@ -46,6 +46,7 @@
 		getNotePool,
 		getChordNotes,
 		getVoicingNotes,
+		isShellVoicing,
 		formatVoicing,
 		displayToQuality,
 		convertChordNotation,
@@ -1570,7 +1571,11 @@
 	 */
 	function handleActiveNotesInput(
 		activeNotes: Set<number>,
-		service: { checkChordLenient: (notes: string[]) => ChordMatchResult; checkChordWithBass: (notes: string[], bass: string) => ChordMatchResult },
+		service: {
+			checkChord: (notes: string[]) => ChordMatchResult;
+			checkChordLenient: (notes: string[]) => ChordMatchResult;
+			checkChordWithBass: (notes: string[], bass: string) => ChordMatchResult;
+		},
 	) {
 		if (!currentData) return;
 
@@ -1582,9 +1587,17 @@
 		}
 
 		// ── Standard / Guided mode validation ──
+		//
+		// Leniency (extra notes tolerated) exists for players who double octaves
+		// or add extensions on full voicings. Shell voicings are the opposite
+		// exercise: the whole point is to play ONLY root, third and seventh, so
+		// tolerating a fifth there marks the drill passed for the very habit it
+		// is meant to break.
 		let result: ChordMatchResult;
 		if (voicing.startsWith('inversion-') && currentData.voicing.length > 0) {
 			result = service.checkChordWithBass(currentData.voicing, currentData.voicing[0]);
+		} else if (isShellVoicing(voicing)) {
+			result = service.checkChord(currentData.voicing);
 		} else {
 			result = service.checkChordLenient(currentData.voicing);
 		}

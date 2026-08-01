@@ -682,6 +682,104 @@ describe('correct === undefined (legacy sessions)', () => {
 	});
 });
 
+// ─── The mediocre player must not loop forever ──────────────
+
+describe('escalation when a player is stuck', () => {
+	// A player who kept just missing the bar saw a byte-identical session every
+	// day: two holds triggered a demotion, the demotion reset `holds` to 0, so
+	// the counter could never reach 2 twice running and the frontier never moved.
+	it('a stuck rung is eventually granted instead of repeating forever', () => {
+		let state = calibratedState();
+		const ladder = buildSkillLadder();
+		const frontier = ladder[0];
+
+		// Mediocre but honest practice: too slow to pass, every session the same.
+		// Run well past the ease threshold — the point is that the player does
+		// not spend an unbounded number of days on one rung.
+		const days = DEFAULT_COACH_PARAMS.easeAfterStuckSessions + 2;
+		for (let day = 0; day < days; day++) {
+			const f = ladder[state.frontierIndex];
+			const timings = Array.from({ length: 12 }, (_, i) =>
+				qTiming(f.keys[i % f.keys.length], f.quality, 2500, true),
+			);
+			const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, day);
+			state = applySessionToCoach(
+				state,
+				plan,
+				session(timings, f.voicing),
+				DEFAULT_COACH_PARAMS,
+				1000 * (day + 1),
+			);
+		}
+
+		// The opening rung must have been credited at some point along the way —
+		// before the fix it never was, no matter how many days went by.
+		expect(state.unitStates[frontier.id]?.state).toBe('mastered');
+	});
+
+	it('does not saw-tooth: progress made is never handed back', () => {
+		// The loop had a second half. Even once a rung was finally credited, the
+		// next demotion knocked it straight back down, so the player returned to
+		// a rung they had already cleared and started over. Measured over ten
+		// mediocre sessions the frontier went 0…0,1,1,0,0 — forward, then back.
+		let state = calibratedState();
+		const ladder = buildSkillLadder();
+		let high = state.frontierIndex;
+
+		for (let day = 0; day < 12; day++) {
+			const f = ladder[state.frontierIndex];
+			const timings = Array.from({ length: 12 }, (_, i) =>
+				qTiming(f.keys[i % f.keys.length], f.quality, 2500, true),
+			);
+			const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, day);
+			state = applySessionToCoach(state, plan, session(timings, f.voicing), DEFAULT_COACH_PARAMS, 1000 * (day + 1));
+
+			high = Math.max(high, state.frontierIndex);
+			// Once a rung has been cleared the player must not be sent below it.
+			expect(state.frontierIndex).toBeGreaterThanOrEqual(high);
+		}
+
+		// And they must actually have moved somewhere in twelve days.
+		expect(high).toBeGreaterThan(0);
+	});
+
+	it('a single bad session still just holds — no free pass', () => {
+		const state = calibratedState();
+		const ladder = buildSkillLadder();
+		const frontier = ladder[0];
+		const timings = Array.from({ length: 12 }, (_, i) =>
+			qTiming(frontier.keys[i % frontier.keys.length], frontier.quality, 2500, true),
+		);
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const next = applySessionToCoach(state, plan, session(timings, frontier.voicing), DEFAULT_COACH_PARAMS, 1000);
+
+		expect(next.unitStates[frontier.id].state).not.toBe('mastered');
+		expect(next.frontierIndex).toBe(0);
+	});
+
+	it('success clears the stuck counter rather than carrying it forward', () => {
+		let state = calibratedState();
+		const ladder = buildSkillLadder();
+		const frontier = ladder[0];
+
+		// One weak session...
+		const weak = Array.from({ length: 12 }, (_, i) =>
+			qTiming(frontier.keys[i % frontier.keys.length], frontier.quality, 2500, true),
+		);
+		let plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		state = applySessionToCoach(state, plan, session(weak, frontier.voicing), DEFAULT_COACH_PARAMS, 1000);
+		expect(state.unitStates[frontier.id].stuckSessions).toBe(1);
+
+		// ...then a clean one.
+		const strong = Array.from({ length: 12 }, (_, i) =>
+			qTiming(frontier.keys[i % frontier.keys.length], frontier.quality, 900, true),
+		);
+		plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 1);
+		state = applySessionToCoach(state, plan, session(strong, frontier.voicing), DEFAULT_COACH_PARAMS, 2000);
+		expect(state.unitStates[frontier.id].stuckSessions).toBe(0);
+	});
+});
+
 // ─── F# / Gb: the tritone key must be scoreable ─────────────
 
 describe('enharmonic key matching', () => {

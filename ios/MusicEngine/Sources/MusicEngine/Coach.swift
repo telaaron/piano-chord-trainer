@@ -62,12 +62,21 @@ public struct UnitProgress: Sendable, Equatable, Codable {
     public var lastTrainedAt: Double?
     /// Consecutive holds (missed the threshold) on this unit while it was the frontier.
     public var holds: Int
+    /// Total sessions spent stuck on this unit, across demotions. `holds` resets
+    /// on demotion, so it can never escalate on its own; this one does not reset.
+    public var stuckSessions: Int?
+    /// Granted because the player was stuck, not because they met the speed bar.
+    /// Never knocked back by a later demotion — that was the saw-tooth.
+    public var eased: Bool?
 
-    public init(state: UnitState, bestAvgMs: Double? = nil, lastTrainedAt: Double? = nil, holds: Int) {
+    public init(state: UnitState, bestAvgMs: Double? = nil, lastTrainedAt: Double? = nil, holds: Int,
+                stuckSessions: Int? = nil, eased: Bool? = nil) {
         self.state = state
         self.bestAvgMs = bestAvgMs
         self.lastTrainedAt = lastTrainedAt
         self.holds = holds
+        self.stuckSessions = stuckSessions
+        self.eased = eased
     }
 }
 
@@ -845,6 +854,8 @@ public func applySessionToCoach(
             if ratio >= params.promotionRatio {
                 prog.state = .mastered
                 prog.holds = 0
+                prog.stuckSessions = 0 // cleared by success, not carried forward
+                prog.eased = false // earned on merit this time
                 next.unitStates[u.id] = prog
                 // Only keep climbing past the plan frontier when the pass was
                 // excellent — otherwise stop after the one planned promotion.
@@ -859,6 +870,20 @@ public func applySessionToCoach(
                 if firstStep {
                     prog.state = prog.state == .locked ? .learning : prog.state
                     prog.holds = prog.holds + 1
+                    // Unlike `holds`, this survives demotion — see UnitProgress.
+                    prog.stuckSessions = (prog.stuckSessions ?? 0) + 1
+
+                    // Stuck long enough that repeating the identical block teaches
+                    // nothing: grant the rung on the work already shown.
+                    if (prog.stuckSessions ?? 0) >= params.easeAfterStuckSessions {
+                        prog.state = .mastered
+                        prog.holds = 0
+                        prog.stuckSessions = 0
+                        prog.eased = true
+                        next.unitStates[u.id] = prog
+                        break
+                    }
+
                     next.unitStates[u.id] = prog
                     if prog.holds >= params.demotionAfterHolds {
                         demoteOneStep(ladder, &next, u.index, params)
@@ -966,7 +991,10 @@ private func demoteOneStep(
     let lowerTier: KeyTier? = frontier.keyTier == .all ? .med : (frontier.keyTier == .med ? .easy : nil)
     if let lowerTier {
         let lowerId = "\(base)|\(lowerTier.rawValue)"
-        if state.unitStates[lowerId]?.state == .mastered {
+        // A rung granted because the player was stuck must not be knocked back —
+        // that is the saw-tooth that put them on the same rung again days later.
+        if state.unitStates[lowerId]?.state == .mastered,
+           state.unitStates[lowerId]?.eased != true {
             var lower = state.unitStates[lowerId]!
             lower.state = .practicing
             lower.holds = 0
