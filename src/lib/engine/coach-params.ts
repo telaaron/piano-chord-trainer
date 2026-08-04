@@ -49,6 +49,26 @@ export interface CoachParams {
 	 */
 	calibrationThresholdFactor: number;
 	/**
+	 * Attempts a quality needs during calibration before it can be placed.
+	 *
+	 * The drill draws 12 chords across 16 qualities, so a quality frequently gets
+	 * exactly one attempt. Placing all three key-tiers on that single chord is
+	 * how one recorded run turned 12 played chords into 21 "mastered" units. Two
+	 * attempts is the smallest number that is not a coin toss, and still lets a
+	 * strong player be placed several qualities up.
+	 */
+	calibrationMinAttempts: number;
+	/**
+	 * How many qualities from the top of the ladder the calibration drill tests.
+	 *
+	 * Kept small on purpose: `calibrationChords / calibrationQualityCount` is the
+	 * attempts each quality gets, and that has to clear `calibrationMinAttempts`
+	 * for the drill to place anything at all. At 12 chords and 6 qualities every
+	 * quality gets two attempts, and because the drill cannot present anything
+	 * above the sixth there is no gap for the placement walk to skip over.
+	 */
+	calibrationQualityCount: number;
+	/**
 	 * Sessions stuck on one rung before the coach eases it instead of repeating.
 	 *
 	 * Without this a player who kept just missing the bar saw the same session
@@ -107,6 +127,8 @@ export const DEFAULT_COACH_PARAMS: CoachParams = {
 	// they have never seen. Someone genuinely lost still misses it — the
 	// correctness gate (promotionRatio) is unchanged.
 	calibrationThresholdFactor: 4,
+	calibrationMinAttempts: 2,
+	calibrationQualityCount: 6,
 	// Six sessions on one rung is roughly a week of daily practice. Long enough
 	// that it is not luck, short enough that nobody spends a fortnight there.
 	easeAfterStuckSessions: 6,

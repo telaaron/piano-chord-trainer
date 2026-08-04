@@ -269,8 +269,11 @@ final class CoachParityTests: XCTestCase {
     func testAdaptiveCalibrationProPlacedHighContiguous() {
         let state = createInitialCoachState()
         let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
-        let timings = [qTiming("C", "Maj7", 800, true), qTiming("C", "7", 900, true),
-                       qTiming("C", "m7", 850, true), qTiming("C", "6", 12000, true)]
+        // Two attempts per quality: one chord no longer places three key-tiers.
+        let timings = [qTiming("C", "Maj7", 800, true), qTiming("F", "Maj7", 850, true),
+                       qTiming("C", "7", 900, true), qTiming("F", "7", 880, true),
+                       qTiming("C", "m7", 850, true), qTiming("F", "m7", 900, true),
+                       qTiming("C", "6", 12000, true), qTiming("F", "6", 12500, true)]
         let next = applySessionToCoach(state, plan, session(timings, voicing: .root), DEFAULT_COACH_PARAMS, now: 1000)
         let ladder = buildSkillLadder()
         for q in ["Maj7", "7", "m7"] {
@@ -282,7 +285,9 @@ final class CoachParityTests: XCTestCase {
     func testAdaptiveCalibrationStopsAtFirstShaky() {
         let state = createInitialCoachState()
         let plan = buildCoachPlan([], profile(), nil, state, DEFAULT_COACH_PARAMS, now: 0)
-        let timings = [qTiming("C", "Maj7", 800, true), qTiming("C", "7", 12000, true), qTiming("C", "m7", 800, true)]
+        let timings = [qTiming("C", "Maj7", 800, true), qTiming("F", "Maj7", 850, true),
+                       qTiming("C", "7", 12000, true), qTiming("F", "7", 12500, true),
+                       qTiming("C", "m7", 800, true), qTiming("F", "m7", 850, true)]
         let next = applySessionToCoach(state, plan, session(timings, voicing: .root), DEFAULT_COACH_PARAMS, now: 1000)
         let ladder = buildSkillLadder()
         XCTAssertFalse(ladder.filter { $0.quality == "m7" && $0.voicing == .root }.contains { next.unitStates[$0.id]?.state == .mastered })

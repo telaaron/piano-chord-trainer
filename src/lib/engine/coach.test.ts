@@ -6,6 +6,7 @@ import {
 	applyFeedback,
 	teacherFeedback,
 	createInitialCoachState,
+	CALIBRATION_QUALITIES,
 	earFocus,
 	applyEarTallies,
 	tallyEarResults,
@@ -288,12 +289,17 @@ describe('adaptive calibration placement', () => {
 	it('a pro (solid up several qualities) is placed high, contiguous', () => {
 		const state = createInitialCoachState();
 		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
-		// Fast + clean on Maj7, 7, m7; then slow on 6.
+		// Fast + clean on Maj7, 7, m7; then slow on 6. Two attempts per quality:
+		// one chord is no longer enough to place three key-tiers.
 		const timings = [
 			qTiming('C', 'Maj7', 800, true),
+			qTiming('F', 'Maj7', 850, true),
 			qTiming('C', '7', 900, true),
+			qTiming('F', '7', 880, true),
 			qTiming('C', 'm7', 850, true),
-			qTiming("C", "6", 12000, true),
+			qTiming('F', 'm7', 900, true),
+			qTiming('C', '6', 12000, true),
+			qTiming('F', '6', 12500, true),
 		];
 		const next = applySessionToCoach(state, plan, session(timings, 'root'), DEFAULT_COACH_PARAMS, 1000);
 		const ladder = buildSkillLadder();
@@ -502,25 +508,23 @@ describe('calibration placement', () => {
 	// never presents Maj7 at all. Treating that absence as a failure placed a
 	// flawless player at zero — a ~44% coin flip, and the bug behind the
 	// "0 Bausteine" report.
-	it('places a strong player even when the drill never presented Maj7', () => {
+	// The drill can no longer produce a sample that skips the opening quality —
+	// it draws only from the first `calibrationQualityCount` rungs, so coverage
+	// is dense by construction. An earlier version of this test asserted the
+	// opposite (place anyway when Maj7 is missing); that rule is what let a real
+	// run claim mastery of qualities it had never shown. Silence is not evidence.
+	it('the drill only ever asks for the opening qualities of the ladder', () => {
 		const state = createInitialCoachState();
 		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
-		// Fast and clean, but the sample skipped Maj7 entirely.
-		const timings = [
-			...['C', 'F'].map((k) => qTiming(k, '7', 1100, true)),
-			...['D', 'G'].map((k) => qTiming(k, 'm7', 1150, true)),
-		];
-		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+		const block = plan.blocks[0];
 
-		const masteredIds = Object.entries(next.unitStates)
-			.filter(([, u]) => u.state === 'mastered')
-			.map(([id]) => id);
-		// The demonstrated qualities are credited...
-		expect(masteredIds.some((id) => id.includes('7'))).toBe(true);
-		expect(masteredIds.length).toBeGreaterThan(0);
-		// ...while the frontier still points at the untested Maj7, which is
-		// correct: the player never showed it, so the coach must not skip it.
-		// Before the fix, NOTHING was placed here at all.
+		expect(block.kind).toBe('calibrate');
+		expect(block.focusQualities).toEqual(
+			CALIBRATION_QUALITIES.slice(0, DEFAULT_COACH_PARAMS.calibrationQualityCount),
+		);
+		// Dense enough that each quality clears the minimum-attempts bar.
+		const perQuality = DEFAULT_COACH_PARAMS.calibrationChords / (block.focusQualities?.length ?? 1);
+		expect(perQuality).toBeGreaterThanOrEqual(DEFAULT_COACH_PARAMS.calibrationMinAttempts);
 	});
 
 	it('one slip does not veto an otherwise fluent quality', () => {
@@ -556,6 +560,84 @@ describe('calibration placement', () => {
 
 		const mastered = Object.values(next.unitStates).filter((u) => u.state === 'mastered');
 		expect(mastered.length).toBeGreaterThan(0);
+	});
+
+	// From a real reported run: 12 chords, 100% correct, 3708ms — the coach
+	// placed 21 units up to 7b9 (an altered dominant) while never showing m7,
+	// dim7, Maj9, 9, m9 or 6/9, then opened the next session on m7. It claimed
+	// mastery of material it had not tested, and the player noticed immediately.
+	it('does not credit qualities above an untested gap', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// Solid on the first two qualities, then a jump: m7 never appears, but a
+		// much harder quality does.
+		const timings = [
+			qTiming('C', 'Maj7', 1200, true),
+			qTiming('F', 'Maj7', 1300, true),
+			qTiming('C', '7', 1400, true),
+			qTiming('F', '7', 1350, true),
+			qTiming('C', '7b9', 1500, true),
+			qTiming('F', '7b9', 1450, true),
+		];
+		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const ids = Object.entries(next.unitStates)
+			.filter(([, u]) => u.state === 'mastered')
+			.map(([id]) => id);
+
+		expect(ids.some((id) => id.includes('|Maj7|'))).toBe(true);
+		expect(ids.some((id) => id.includes('|7|'))).toBe(true);
+		// m7 was never tested → it and everything above it stay unplaced.
+		expect(ids.some((id) => id.includes('|m7|'))).toBe(false);
+		expect(ids.some((id) => id.includes('|7b9|'))).toBe(false);
+	});
+
+	it('one lucky chord does not master three key tiers', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// A single attempt at the opening quality — fast and correct, but one
+		// chord is not a demonstration.
+		const timings = [qTiming('C', 'Maj7', 900, true)];
+		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const mastered = Object.values(next.unitStates).filter((u) => u.state === 'mastered');
+		expect(mastered.length).toBe(0);
+	});
+
+	it('a 12-chord drill cannot produce 21 mastered units', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		// The real sample: 12 chords spread thin across many qualities.
+		const spread = ['Maj7', '7', '6', 'm6', 'm7b5', '7#9'];
+		const timings = spread.flatMap((q, i) => [
+			qTiming('C', q, 3700, true),
+			...(i < 2 ? [qTiming('F', q, 3700, true)] : []),
+		]);
+		const next = applySessionToCoach(state, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const mastered = Object.values(next.unitStates).filter((u) => u.state === 'mastered');
+		// Only the qualities with real evidence — nowhere near 21.
+		expect(mastered.length).toBeLessThanOrEqual(timings.length);
+		expect(mastered.length).toBeLessThanOrEqual(6);
+	});
+
+	it('reports the placement as one line, not one line per unit', () => {
+		const before = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, before, DEFAULT_COACH_PARAMS, 0);
+		const timings = ['Maj7', '7', 'm7'].flatMap((q) => [
+			qTiming('C', q, 1200, true),
+			qTiming('F', q, 1250, true),
+		]);
+		const after = applySessionToCoach(before, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+
+		const placedUnits = Object.values(after.unitStates).filter((u) => u.state === 'mastered').length;
+		expect(placedUnits).toBeGreaterThan(3); // several units really were placed
+
+		const statements = teacherFeedback(before, after, session(timings), DEFAULT_COACH_PARAMS);
+		// One summary line carrying the count — not one row per unit.
+		expect(statements.filter((s) => s.kind === 'placed')).toHaveLength(0);
+		expect(statements.filter((s) => s.kind === 'calibrated')).toHaveLength(1);
+		expect(statements.length).toBeLessThanOrEqual(3);
 	});
 
 	it('still refuses to place a calibration that is genuinely lost', () => {

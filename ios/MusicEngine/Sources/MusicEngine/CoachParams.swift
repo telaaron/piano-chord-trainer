@@ -52,6 +52,14 @@ public struct CoachParams: Sendable, Equatable, Codable {
     public var promotionRatio: Double
     /// Consecutive holds on the frontier before a (single-step) demotion kicks in.
     public var demotionAfterHolds: Int
+    /// Attempts a quality needs during calibration before it can be placed. One
+    /// lucky chord is not a demonstration: 12 chords over 16 qualities meant most
+    /// got a single attempt, and three key-tiers were placed on it.
+    public var calibrationMinAttempts: Int
+    /// How many qualities from the top of the ladder the drill tests. Keeping it
+    /// small makes the sample dense (12/6 = two attempts each) and leaves no gap
+    /// for the placement walk to skip over.
+    public var calibrationQualityCount: Int
     /// Multiplier on masteryThresholdMs when judging the one-time calibration.
     /// Telemetry: calibrations average 7632ms vs 410–1743ms for ordinary blocks —
     /// same players, four times slower, because the drill is unpractised
@@ -95,6 +103,7 @@ public struct CoachParams: Sendable, Equatable, Codable {
 
     public init(masteryThresholdMs: Double, masteryWindow: Int, promotionRatio: Double,
                 demotionAfterHolds: Int, calibrationThresholdFactor: Double = 4,
+                calibrationMinAttempts: Int = 2, calibrationQualityCount: Int = 6,
                 easeAfterStuckSessions: Int = 6,
                 blockMix: BlockMix, shortSessionCutoffMin: Int,
                 weights: CoachWeights, calibrationChords: Int, feedbackBiasStep: Double,
@@ -106,6 +115,8 @@ public struct CoachParams: Sendable, Equatable, Codable {
         self.promotionRatio = promotionRatio
         self.demotionAfterHolds = demotionAfterHolds
         self.calibrationThresholdFactor = calibrationThresholdFactor
+        self.calibrationMinAttempts = calibrationMinAttempts
+        self.calibrationQualityCount = calibrationQualityCount
         self.easeAfterStuckSessions = easeAfterStuckSessions
         self.blockMix = blockMix
         self.shortSessionCutoffMin = shortSessionCutoffMin
@@ -129,6 +140,8 @@ public let DEFAULT_COACH_PARAMS = CoachParams(
     promotionRatio: 0.8,
     demotionAfterHolds: 2,
     calibrationThresholdFactor: 4,
+    calibrationMinAttempts: 2,
+    calibrationQualityCount: 6,
     easeAfterStuckSessions: 6,
     blockMix: BlockMix(warmup: 0.15, review: 0.2, focus: 0.25, new: 0.25, apply: 0.15),
     shortSessionCutoffMin: 8,

@@ -562,7 +562,7 @@ public func buildCoachPlan(
         let block = CoachBlock(
             kind: .calibrate,
             settings: calSettings,
-            focusQualities: CALIBRATION_QUALITIES,
+            focusQualities: Array(CALIBRATION_QUALITIES.prefix(params.calibrationQualityCount)),
             targetChords: params.calibrationChords,
             labelKey: CoachLabelKeys.calibrate
         )
@@ -939,7 +939,10 @@ private func placeByCalibration(
     // whenever the sample happened to miss the very first quality — which, at 12
     // chords over 15 qualities, was a coin flip (~44%).
     for quality in CALIBRATION_QUALITIES {
-        guard let qt = byQuality[quality], !qt.isEmpty else { continue }
+        // Untested → stop, do not skip ahead. Silence is not evidence.
+        guard let qt = byQuality[quality], !qt.isEmpty else { break }
+        // One lucky chord is not a demonstration.
+        if qt.count < params.calibrationMinAttempts { break }
 
         // Median, not mean: one 8-second fumble must not wipe out an otherwise
         // fluent quality.
@@ -1262,11 +1265,16 @@ public func teacherFeedback(
         if b == a { continue }
 
         if a == .mastered {
-            // Placed vs promoted: placement happens only on the calibration session.
-            let isPlacement = !before.calibrated && after.calibrated
+            // On the calibration session the placement is already one summary
+            // line carrying the count; emitting a row per unit turned a good
+            // result into a wall of twenty-one near-identical lines.
+            if !before.calibrated && after.calibrated {
+                spokenUnitIds.insert(unit.id)
+                continue
+            }
             out.append(TeacherStatement(
-                kind: isPlacement ? .placed : .promoted,
-                key: isPlacement ? CoachFeedbackKeys.placed : CoachFeedbackKeys.promoted,
+                kind: .promoted,
+                key: CoachFeedbackKeys.promoted,
                 params: unitParams(unit)
             ))
             spokenUnitIds.insert(unit.id)

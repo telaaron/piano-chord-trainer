@@ -459,10 +459,19 @@ export function buildCoachPlan(
 	// ── Uncalibrated → calibration drill ──────────────────
 	if (!state.calibrated) {
 		const firstUnit = ladder[0];
-		// The calibration drill climbs difficulty: it presents the ascending
-		// CALIBRATION_QUALITIES so placeByCalibration can read how far up the
-		// player is solid and place them there — a pro is placed high, a beginner
-		// stays low. `advanced` is the widest pool so 'random' can hit them all.
+		// The drill tests the FIRST FEW qualities of the ladder, not all sixteen.
+		//
+		// It used to draw at random across the whole `advanced` pool, which meant
+		// 12 chords spread over 16 qualities: most qualities got one attempt or
+		// none, and the walk either stalled on a gap or hopped over it. A recorded
+		// run placed 21 units up to an altered dominant while never once showing
+		// m7, dim7, Maj9, 9, m9 or 6/9.
+		//
+		// Restricting the pool makes the sample dense enough to mean something —
+		// 12 chords over 6 qualities is two attempts each — and keeps the walk
+		// contiguous by construction: there is nothing above to skip to. A player
+		// who clears all six is placed six qualities up, which is already a
+		// substantial head start; the rest they earn in ordinary sessions.
 		const calSettings: PracticePlanSettings = {
 			difficulty: 'advanced',
 			notation: DEFAULT_NOTATION,
@@ -477,7 +486,7 @@ export function buildCoachPlan(
 			settings: calSettings,
 			// Present the ascending ladder of qualities, not a random spread, so the
 			// placement can find the boundary where the player stops being solid.
-			focusQualities: CALIBRATION_QUALITIES,
+			focusQualities: CALIBRATION_QUALITIES.slice(0, params.calibrationQualityCount),
 			targetChords: params.calibrationChords,
 			labelKey: COACH_LABEL_KEYS.calibrate,
 		};
@@ -880,7 +889,23 @@ function placeByCalibration(
 	// simply skipped: it is neither evidence of mastery nor evidence of struggle.
 	for (const quality of CALIBRATION_QUALITIES) {
 		const qt = byQuality.get(quality);
-		if (!qt || qt.length === 0) continue; // untested → no evidence either way
+
+		// Untested → stop, do not skip ahead.
+		//
+		// An earlier fix turned this into `continue` so a sampling gap could not
+		// veto a flawless run. That overshot: the walk then hopped over untested
+		// qualities and credited everything above them. A real run placed 21 units
+		// up to 7b9 — an altered dominant — while skipping m7, dim7, Maj9, 9, m9
+		// and 6/9 entirely, and then opened the next session on m7. The coach was
+		// telling the player they had mastered material it had never once shown
+		// them. Silence is not evidence, in either direction.
+		if (!qt || qt.length === 0) break;
+
+		// One lucky chord is not a demonstration. With 12 chords spread over 16
+		// qualities the drill often lands a single attempt on a quality; placing
+		// three key-tiers on that is how a 12-chord sample became 21 mastered
+		// units.
+		if (qt.length < params.calibrationMinAttempts) break;
 
 		// Median, not mean: one 8-second fumble (a dropped MIDI note, a sneeze)
 		// must not wipe out an otherwise fluent quality.
@@ -1192,17 +1217,28 @@ export function teacherFeedback(
 	// Per-unit transitions. `tier` is carried so the text can say WHICH key stage
 	// changed — without it "Next goal: Maj7 in Root Position" reads as a
 	// contradiction right after "You already have Maj7 in Root Position".
+	// On the calibration session the placement is already reported as one summary
+	// line ("N building blocks are already in place"), so the per-unit lines are
+	// suppressed. Emitting both turned a good result into a wall of twenty-one
+	// near-identical rows that nobody reads — and which buries the one line that
+	// matters, the next goal.
+	const justCalibrated = !before.calibrated && after.calibrated;
+
 	for (const unit of ladder) {
 		const b = before.unitStates[unit.id]?.state ?? 'locked';
 		const a = after.unitStates[unit.id]?.state ?? 'locked';
 		if (b === a) continue;
 
 		if (a === 'mastered') {
-			// Placed vs promoted: placement happens only on the calibration session.
-			const kind = !before.calibrated && after.calibrated ? 'placed' : 'promoted';
+			if (justCalibrated) {
+				// Counted in the summary above; still mark it spoken so the
+				// "next goal" line does not repeat a unit already covered.
+				spokenUnitIds.add(unit.id);
+				continue;
+			}
 			out.push({
-				kind,
-				key: kind === 'placed' ? COACH_FEEDBACK_KEYS.placed : COACH_FEEDBACK_KEYS.promoted,
+				kind: 'promoted',
+				key: COACH_FEEDBACK_KEYS.promoted,
 				params: unitParams(unit),
 			});
 			spokenUnitIds.add(unit.id);
