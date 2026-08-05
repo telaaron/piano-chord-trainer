@@ -640,6 +640,23 @@ describe('calibration placement', () => {
 		expect(statements.length).toBeLessThanOrEqual(3);
 	});
 
+	// The drill must DEAL evenly, not draw at random. Measured over 20k random
+	// draws of 12 chords across 6 qualities, the opening quality came up short of
+	// the two attempts placement needs 38% of the time — so a flawless run was
+	// placed at nothing roughly every third attempt. A reported run bore this out:
+	// 12 chords, 100% correct, 2048ms, zero units placed.
+	it('the drill can always satisfy its own minimum-attempts rule', () => {
+		const state = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
+		const block = plan.blocks[0];
+		const qualities = block.focusQualities ?? [];
+
+		expect(block.kind).toBe('calibrate');
+		// An even deal gives each quality this many chords.
+		const perQuality = Math.floor(block.targetChords / qualities.length);
+		expect(perQuality).toBeGreaterThanOrEqual(DEFAULT_COACH_PARAMS.calibrationMinAttempts);
+	});
+
 	it('still refuses to place a calibration that is genuinely lost', () => {
 		const state = createInitialCoachState();
 		const plan = buildCoachPlan([], profile(), undefined, state, DEFAULT_COACH_PARAMS, 0);
