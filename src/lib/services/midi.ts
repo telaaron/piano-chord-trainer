@@ -191,13 +191,17 @@ export class MidiService {
 			this.access.onstatechange = (e) => this.handleStateChange(e as MIDIConnectionEvent);
 			this.refreshDeviceList();
 
-			// Restore saved device or auto-select first available
-			if (this._selectedDeviceId && this._devices.find((d) => d.id === this._selectedDeviceId)) {
-				this.selectDevice(this._selectedDeviceId);
-			} else if (this._devices.length > 0) {
-				this.selectDevice(this._devices[0].id);
-			} else {
-				this.setState('connected');
+			// Restore the saved device, but never at the cost of ending up on a
+			// port that sends nothing: if it cannot be attached (unplugged, or a
+			// different keyboard of the two is the live one), fall through to the
+			// first device that can.
+			const savedIsListed =
+				!!this._selectedDeviceId && this._devices.some((d) => d.id === this._selectedDeviceId);
+			const restored = savedIsListed && this.selectDevice(this._selectedDeviceId!);
+
+			if (!restored) {
+				const attached = this._devices.some((d) => this.selectDevice(d.id));
+				if (!attached) this.setState('connected');
 			}
 
 			return true;
@@ -213,22 +217,33 @@ export class MidiService {
 		}
 	}
 
-	/** Select a specific MIDI input device */
-	selectDevice(deviceId: string): void {
+	/**
+	 * Select a specific MIDI input device.
+	 *
+	 * Returns whether a port was actually attached. This used to return void and
+	 * fail silently when the id was not among `access.inputs`: the selection was
+	 * still recorded and persisted, so the app sat listening to a device that
+	 * sends nothing. With two keyboards plugged in, restoring a saved id that
+	 * belonged to the *other* one produced exactly that — keys pressed, no chord
+	 * registered, no hint as to why.
+	 */
+	selectDevice(deviceId: string): boolean {
 		// Detach old listeners
 		this.detachListeners();
-		this._selectedDeviceId = deviceId;
 
-		// Persist selection
+		const input = this.access?.inputs.get(deviceId);
+		if (!input) {
+			// Do NOT record a selection that cannot receive anything, and do not
+			// persist it — otherwise the bad id survives every reload.
+			return false;
+		}
+
+		this._selectedDeviceId = deviceId;
 		try { localStorage.setItem(MIDI_DEVICE_KEY, deviceId); } catch { /* noop */ }
 
-		if (!this.access) return;
-
-		const input = this.access.inputs.get(deviceId);
-		if (input) {
-			input.onmidimessage = (e) => this.handleMessage(e);
-			this.setState('connected');
-		}
+		input.onmidimessage = (e) => this.handleMessage(e);
+		this.setState('connected');
+		return true;
 	}
 
 	/** Hide a device (remove from visible list). Persisted in localStorage. */
@@ -443,11 +458,11 @@ export class MidiService {
 		this._devices = newDevices;
 		this.onDeviceListChange?.(newDevices);
 
-		// If selected device disappeared, try first available
+		// If the selected device disappeared, move to one that can actually
+		// receive — trying each in turn rather than assuming the first works.
 		if (this._selectedDeviceId && !newDevices.find((d) => d.id === this._selectedDeviceId)) {
-			if (newDevices.length > 0) {
-				this.selectDevice(newDevices[0].id);
-			} else {
+			const attached = newDevices.some((d) => this.selectDevice(d.id));
+			if (!attached) {
 				this._selectedDeviceId = null;
 				this.setState('connected'); // API works, just no device
 			}
