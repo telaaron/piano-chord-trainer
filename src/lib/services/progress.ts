@@ -1,7 +1,9 @@
 // Progress tracking – save session history to localStorage
 
 import type { Difficulty, NotationStyle, VoicingType, DisplayMode, AccidentalPreference, ProgressionMode } from '$lib/engine';
+import { qualityOfChordName } from '$lib/engine';
 import { debouncedSync } from './cloud-sync';
+import { buildSkillIndex, rootStanding } from './skill-index';
 
 export interface ChordTiming {
 	/** The displayed chord name */
@@ -16,6 +18,20 @@ export interface ChordTiming {
 	 * consumers must treat `undefined` as "unknown" (fall back to timing only).
 	 */
 	correct?: boolean;
+	/**
+	 * The voicing this chord was played in.
+	 *
+	 * Previously recoverable only from `session.settings.voicing`, i.e. per
+	 * session — which breaks the moment one session mixes voicings, and Coach
+	 * sessions do exactly that (each block may set its own). Without it on the
+	 * record, "how fast is this player at C Maj7 in shell" has no answer, and
+	 * the dial had to average across voicings and call the result a key's speed.
+	 *
+	 * Absent in sessions recorded before this field existed; consumers fall back
+	 * to the session's setting, which is correct for single-voicing sessions and
+	 * the best available guess for older mixed ones.
+	 */
+	voicing?: VoicingType;
 }
 
 export interface SessionResult {
@@ -529,12 +545,23 @@ export const CIRCLE_OF_FIFTHS = [
 export interface KeyDial {
 	/** Root note as stored in the engine, e.g. "Db". */
 	root: string;
-	/** Mean time to find the chord, or null when never played. */
+	/**
+	 * The key's standing: the mean of its WEAKEST voicing, or null when never
+	 * played. Not an average across voicings — that reported three quick
+	 * voicings and one six-second one as a fluent key, which is the opposite of
+	 * what the player needs to see.
+	 */
 	avgMs: number | null;
 	/** Attempts behind avgMs — 0 means untouched. */
 	count: number;
-	/** True once avgMs is at or under the mastery threshold. */
+	/**
+	 * Fluent in EVERY voicing played (speed and accuracy), not on average.
+	 */
 	fluent: boolean;
+	/** Which voicing is holding the key back. */
+	worstVoicing?: VoicingType;
+	/** Per-voicing detail, slowest first — the hover breakdown. */
+	perVoicing?: { voicing: VoicingType; avgMs: number; accuracy: number | null }[];
 }
 
 /**
@@ -548,30 +575,22 @@ export interface KeyDial {
  *
  * @param thresholdMs mastery threshold; defaults to the coach's 2000 ms.
  */
-export function buildKeyDial(history: SessionResult[], thresholdMs = 2000): KeyDial[] {
-	const acc = new Map<string, { totalMs: number; count: number }>();
-
-	for (const session of history) {
-		if (!session.chordTimings) continue;
-		for (const ct of session.chordTimings) {
-			const cur = acc.get(ct.root);
-			if (cur) {
-				cur.totalMs += ct.durationMs;
-				cur.count++;
-			} else {
-				acc.set(ct.root, { totalMs: ct.durationMs, count: 1 });
-			}
-		}
-	}
+export function buildKeyDial(
+	history: SessionResult[],
+	thresholdMs = 2000,
+	unlockedVoicings?: VoicingType[],
+): KeyDial[] {
+	const index = buildSkillIndex(history, qualityOfChordName);
 
 	return CIRCLE_OF_FIFTHS.map((root) => {
-		const d = acc.get(root);
-		const avgMs = d && d.count > 0 ? d.totalMs / d.count : null;
+		const s = rootStanding(index, root, thresholdMs, unlockedVoicings);
 		return {
 			root,
-			avgMs,
-			count: d?.count ?? 0,
-			fluent: avgMs !== null && avgMs <= thresholdMs,
+			avgMs: s.worstAvgMs,
+			count: s.attempts,
+			fluent: s.mastered,
+			...(s.worstVoicing ? { worstVoicing: s.worstVoicing } : {}),
+			...(s.perVoicing.length ? { perVoicing: s.perVoicing } : {}),
 		};
 	});
 }

@@ -10,7 +10,7 @@
 // free of anything that can't cross that boundary.
 
 import type { Difficulty, VoicingType, DisplayMode, NotationStyle } from './chords';
-import { CHORDS_BY_DIFFICULTY, CHORD_NOTATIONS } from './chords';
+import { CHORDS_BY_DIFFICULTY, CHORD_NOTATIONS, qualityOfChordName } from './chords';
 import type { AccidentalPreference } from './notes';
 import type { ProgressionMode } from './progressions';
 import type { SessionResult, ChordTiming, WeakSpot } from '../services/progress';
@@ -699,7 +699,7 @@ function scoreSessionForUnit(
 	const keySet = new Set(unit.keys);
 	const relevant = timings.filter((t) => {
 		if (!keyMatches(keySet, t.root)) return false;
-		const q = qualityOfChord(t.chord);
+		const q = qualityOfChordName(t.chord);
 		if (!CURRICULUM_QUALITIES.has(q)) return true; // unknown → don't judge
 		return q === unit.quality;
 	});
@@ -868,7 +868,7 @@ function placeByCalibration(
 	// (Roots are 1–2 chars: a letter + optional accidental.)
 	const byQuality = new Map<string, ChordTiming[]>();
 	for (const t of timings) {
-		const q = qualityOfChord(t.chord);
+		const q = qualityOfChordName(t.chord);
 		if (!q) continue;
 		(byQuality.get(q) ?? byQuality.set(q, []).get(q)!).push(t);
 	}
@@ -933,25 +933,6 @@ function placeByCalibration(
 	}
 }
 
-// Map every notated quality form (across all notation styles) back to its
-// canonical `display` key, so placement works whatever notation the drill used.
-const NOTATED_TO_DISPLAY: Record<string, string> = (() => {
-	const m: Record<string, string> = {};
-	for (const style of Object.keys(CHORD_NOTATIONS) as NotationStyle[]) {
-		for (const [display, notated] of Object.entries(CHORD_NOTATIONS[style])) {
-			m[notated] = display;
-		}
-	}
-	return m;
-})();
-
-/** Recover a chord's canonical quality display from "<root><notated>", e.g. "EbΔ7" → "Maj7". */
-function qualityOfChord(chord: string): string {
-	// Root = a letter, optionally followed by one accidental (# / b / ♯ / ♭).
-	const m = chord.match(/^[A-G][#b♯♭]?(.*)$/);
-	const notated = m ? m[1] : '';
-	return NOTATED_TO_DISPLAY[notated] ?? notated;
-}
 
 /** Demote: frontier back to 'practicing', drop one key tier if possible. Never more than one step. */
 function demoteOneStep(

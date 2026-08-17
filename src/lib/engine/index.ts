@@ -1,7 +1,7 @@
 export { NOTES_SHARPS, NOTES_FLATS, ENHARMONIC_MAP, getNoteArray, getNotePool, noteToSemitone, getNoteName, usesSharps, convertNoteName, convertChordNotation, getPitchedNote, typesetChordName } from './notes';
 export type { NoteName, AccidentalPreference, NotationSystem } from './notes';
 
-export { CHORDS_BY_DIFFICULTY, CHORD_INTERVALS, CHORD_NOTATIONS, VOICING_LABELS } from './chords';
+export { qualityOfChordName, CHORDS_BY_DIFFICULTY, CHORD_INTERVALS, CHORD_NOTATIONS, VOICING_LABELS } from './chords';
 export type { Difficulty, NotationStyle, VoicingType, DisplayMode, ChordType } from './chords';
 
 export { getChordNotes, getVoicingNotes, getVoicingIntervalLabels, getChordFormula, formatVoicing, displayToQuality, getValidPCSets, isShellVoicing } from './voicings';

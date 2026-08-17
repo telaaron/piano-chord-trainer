@@ -411,6 +411,10 @@
 			chord: data.chord,
 			root: data.root,
 			durationMs,
+			// Stamped per chord, not per session: a Coach session can change
+			// voicing between blocks, so the session-level setting cannot answer
+			// "which voicing was this chord played in".
+			voicing,
 			...(currentChordCorrect !== undefined ? { correct: currentChordCorrect } : {}),
 		});
 	}

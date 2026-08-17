@@ -176,3 +176,69 @@ describe('loadSettings — stored values are policed at the boundary', () => {
 		expect(loadSettings()).toEqual(first);
 	});
 });
+
+describe('the dial reports a key by its WEAKEST voicing', () => {
+	/** One session, one voicing, `count` attempts at a fixed speed. */
+	function voiced(
+		root: string,
+		voicing: string,
+		durationMs: number,
+		count = 3,
+		correct = true,
+	): SessionResult {
+		return {
+			timestamp: 1000,
+			chordTimings: Array.from({ length: count }, () => ({
+				root,
+				chord: `${root}Maj7`,
+				durationMs,
+				voicing,
+				correct,
+			})),
+			settings: { voicing },
+		} as unknown as SessionResult;
+	}
+
+	it('shows the slow voicing, not the flattering average', () => {
+		// Three quick voicings and one disastrous one. Averaging every attempt gave
+		// ~1800ms and painted the key fluent — while one voicing took six seconds.
+		const history = [
+			voiced('C', 'root', 400),
+			voiced('C', 'shell', 450),
+			voiced('C', 'half-shell', 400),
+			voiced('C', 'rootless-a', 6000),
+		];
+		const entry = buildKeyDial(history, 2000).find((d) => d.root === 'C')!;
+
+		expect(entry.avgMs).toBe(6000);
+		expect(entry.worstVoicing).toBe('rootless-a');
+		expect(entry.fluent).toBe(false);
+	});
+
+	it('carries the per-voicing breakdown for the hover detail', () => {
+		const history = [voiced('F', 'root', 1200), voiced('F', 'shell', 3200)];
+		const entry = buildKeyDial(history, 2000).find((d) => d.root === 'F')!;
+
+		// Slowest first, so the hover names the problem before the rest.
+		expect(entry.perVoicing?.map((v) => v.voicing)).toEqual(['shell', 'root']);
+		expect(entry.perVoicing?.[0].avgMs).toBe(3200);
+	});
+
+	it('can ignore voicings the player has not unlocked yet', () => {
+		const history = [voiced('G', 'root', 500), voiced('G', 'rootless-b', 7000)];
+		const all = buildKeyDial(history, 2000).find((d) => d.root === 'G')!;
+		const unlocked = buildKeyDial(history, 2000, ['root']).find((d) => d.root === 'G')!;
+
+		expect(all.fluent).toBe(false);
+		expect(unlocked.fluent).toBe(true);
+	});
+
+	it('does not call a key fluent when it is fast but wrong', () => {
+		// 300ms and every attempt incorrect. Timing alone rated this fluent.
+		const history = [voiced('A', 'root', 300, 3, false)];
+		const entry = buildKeyDial(history, 2000).find((d) => d.root === 'A')!;
+
+		expect(entry.avgMs).toBeLessThan(2000);
+		expect(entry.fluent).toBe(false);
+	});
+});

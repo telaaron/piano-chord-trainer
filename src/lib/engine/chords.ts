@@ -114,3 +114,36 @@ export const VOICING_LABELS: Record<VoicingType, string> = {
 	'inversion-2': '2nd Inversion',
 	'inversion-3': '3rd Inversion',
 };
+
+// ─── Chord name → quality ───────────────────────────────────
+
+/**
+ * Every notated quality form, across all notation styles, mapped back to its
+ * canonical `display` key. Built once from CHORD_NOTATIONS so the two can never
+ * disagree.
+ */
+const NOTATED_TO_DISPLAY: Record<string, string> = (() => {
+	const m: Record<string, string> = {};
+	for (const style of Object.keys(CHORD_NOTATIONS) as NotationStyle[]) {
+		for (const [display, notated] of Object.entries(CHORD_NOTATIONS[style])) {
+			m[notated] = display;
+		}
+	}
+	return m;
+})();
+
+/**
+ * Recover a chord's canonical quality from its displayed name:
+ * "EbΔ7" → "Maj7", "CM7" → "Maj7", "Am7b5" → "m7b5".
+ *
+ * Lives here — the one module with no imports — because both the coach's scoring
+ * and the skill index need it. A second copy is how the two would drift apart,
+ * and a chord that parses differently in two places is a chord the app disagrees
+ * with itself about.
+ */
+export function qualityOfChordName(chord: string): string {
+	// Root = a letter, optionally followed by one accidental (# / b / ♯ / ♭).
+	const m = chord.match(/^[A-G][#b♯♭]?(.*)$/);
+	const notated = m ? m[1] : '';
+	return NOTATED_TO_DISPLAY[notated] ?? notated;
+}
