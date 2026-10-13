@@ -8,6 +8,7 @@
 	import { initSubscriptionStore } from '$lib/services/subscription-store.svelte';
 	import { getSupabase } from '$lib/services/supabase';
 	import ToastContainer from '$lib/components/ToastContainer.svelte';
+	import BrandMark from '$lib/components/BrandMark.svelte';
 	import { browser } from '$app/environment';
 	import { initAnalytics } from '$lib/services/analytics';
 
@@ -114,37 +115,10 @@
 	{#if !isEmbedRoute && !isTrainPage}
 		<nav class="site-nav" class:scrolled={navbarCondensed}>
 			<div class="nav-inner">
-				<!-- Brand lockup — the plate stamp: a copyist's rehearsal box
-				     holding a drawn flat sign. Self-drawn, no emoji, no raster. -->
+				<!-- Brand lockup: the app-icon keys + the serif wordmark. -->
 				<a href="/" class="brand" aria-label="jazzchords.app — home">
 					<span class="brand-mark" aria-hidden="true">
-						<svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-							<!-- The plate box: the rehearsal-letter frame a copyist rules
-							     around a cue. Square, hairline, deliberately not a tile. -->
-							<rect
-								x="1"
-								y="1"
-								width="22"
-								height="22"
-								stroke="currentColor"
-								stroke-width="1.6"
-							/>
-							<!-- A flat sign, inked as strokes so the bowl keeps its counter
-							     at 22px instead of blobbing into a solid triangle. -->
-							<path
-								d="M9 4.5 V18"
-								stroke="currentColor"
-								stroke-width="1.6"
-								stroke-linecap="butt"
-							/>
-							<path
-								d="M9 11.2 C11.6 9 15 10.1 15 12.4 C15 14.6 12.4 16.2 9 18"
-								stroke="currentColor"
-								stroke-width="1.6"
-								stroke-linecap="butt"
-								stroke-linejoin="miter"
-							/>
-						</svg>
+						<BrandMark />
 					</span>
 					<span class="brand-word">
 						<span class="brand-name">jazzchords<span class="brand-tld">.app</span></span>
@@ -243,11 +217,7 @@
 				<!-- Colophon: the imprint line at the foot of the plate -->
 				<div class="foot-brand">
 					<span class="brand-mark foot-mark" aria-hidden="true">
-						<svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-							<rect x="1" y="1" width="22" height="22" stroke="currentColor" stroke-width="1.6" />
-							<path d="M9 4.5 V18" stroke="currentColor" stroke-width="1.6" />
-							<path d="M9 11.2 C11.6 9 15 10.1 15 12.4 C15 14.6 12.4 16.2 9 18" stroke="currentColor" stroke-width="1.6" />
-						</svg>
+						<BrandMark />
 					</span>
 					<div>
 						<p class="foot-name">jazzchords<span class="brand-tld">.app</span></p>
@@ -330,8 +300,8 @@
 	}
 
 	/* ── Brand lockup ──
-	   The plate stamp + the serif wordmark. No tile, no rounded chip —
-	   the mark IS a box, so wrapping it in another one is redundant. */
+	   The app-icon keys + the serif wordmark. No tile around the mark:
+	   the keys carry the brand red on their own. */
 	.brand {
 		display: inline-flex;
 		align-items: center;
@@ -350,7 +320,7 @@
 		color: var(--primary);
 		transition: color 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 	}
-	.brand-mark svg {
+	.brand-mark :global(svg) {
 		display: block;
 		overflow: visible;
 	}
