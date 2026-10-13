@@ -48,6 +48,9 @@
 		<h3>{t('privacy.h_fonts')}</h3>
 		<RichText key="privacy.p_fonts" />
 
+		<h3>{t('privacy.h_ios')}</h3>
+		<RichText key="privacy.p_ios" />
+
 		<h2>{t('privacy.h_no_collect')}</h2>
 		<ul>
 			<li>{t('privacy.li_no_account')}</li>
