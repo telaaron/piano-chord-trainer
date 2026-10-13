@@ -8,6 +8,7 @@
 		getActiveKeyIndices,
 		getKeyboardLayout,
 		isRootIndex,
+		midiToKeyIndex,
 		noteToSemitone,
 		type AccidentalPreference,
 		type OctaveCount,
@@ -58,28 +59,29 @@
 	}: Props = $props();
 
 	// ─── Interactive click flash state ───────────────────────────
-	let flashPCs = $state(new Set<number>());
+	// The flash marks the one key that was pressed. It used to mark the pitch
+	// class, so clicking a C lit up every C on the keyboard.
+	let flashKey = $state<number | null>(null);
 	let flashTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	function flash(chrIdx: number) {
+		flashKey = chrIdx;
+		if (flashTimeout) clearTimeout(flashTimeout);
+		flashTimeout = setTimeout(() => { flashKey = null; }, 200);
+	}
 
 	function handleKeyClick(chrIdx: number, e: MouseEvent) {
 		if (!interactive) return;
 		e.stopPropagation();
 		onKeyClick?.(chrIdx, e.shiftKey);
-		// Brief blue flash for visual feedback
-		const pc = chrIdx % 12;
-		flashPCs = new Set([pc]);
-		if (flashTimeout) clearTimeout(flashTimeout);
-		flashTimeout = setTimeout(() => { flashPCs = new Set(); }, 200);
+		flash(chrIdx);
 	}
 
 	function handleKeyPress(chrIdx: number, e: KeyboardEvent) {
 		if (!interactive || (e.key !== 'Enter' && e.key !== ' ')) return;
 		e.preventDefault();
 		onKeyClick?.(chrIdx, e.shiftKey);
-		const pc = chrIdx % 12;
-		flashPCs = new Set([pc]);
-		if (flashTimeout) clearTimeout(flashTimeout);
-		flashTimeout = setTimeout(() => { flashPCs = new Set(); }, 200);
+		flash(chrIdx);
 	}
 
 	/** Selected/flash color for interactive ear-training mode */
@@ -91,7 +93,7 @@
 				? 'bg-amber-500 border-2 border-amber-300 shadow-[0_0_6px_rgba(245,158,11,0.5)]'
 				: 'bg-amber-200 ring-2 ring-amber-400 ring-inset';
 		}
-		if (flashPCs.has(pc)) {
+		if (flashKey === chrIdx) {
 			return isBlack
 				? 'bg-sky-500 border-2 border-sky-300'
 				: 'bg-sky-200 ring-2 ring-sky-300 ring-inset';
@@ -125,9 +127,8 @@
 		if (!midiEnabled || midiActiveNotes.size === 0) return new Set<number>();
 		const set = new Set<number>();
 		for (const mn of midiActiveNotes) {
-			// Map MIDI note to our keyboard starting at C3 (MIDI 48)
-			const offset = mn - 48;
-			if (offset >= 0 && offset < chromaticCount) set.add(offset);
+			const idx = midiToKeyIndex(mn, chromaticCount);
+			if (idx !== null) set.add(idx);
 		}
 		return set;
 	});

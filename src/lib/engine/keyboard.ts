@@ -15,6 +15,20 @@ export type OctaveCount = keyof typeof OCTAVE_CONFIGS;
 export const WHITE_KEY_COUNT = 14;
 export const CHROMATIC_COUNT = 24;
 
+/** MIDI note of the leftmost key (C3). Key index i is MIDI 48 + i. */
+export const KEYBOARD_START_MIDI = 48;
+
+/** MIDI note for an on-screen key (chromatic index from the left edge). */
+export function keyIndexToMidi(chromaticIndex: number): number {
+	return KEYBOARD_START_MIDI + chromaticIndex;
+}
+
+/** On-screen key for a MIDI note, or null when it falls off the keyboard. */
+export function midiToKeyIndex(midi: number, chromaticCount: number): number | null {
+	const idx = midi - KEYBOARD_START_MIDI;
+	return idx >= 0 && idx < chromaticCount ? idx : null;
+}
+
 /** White key chromatic indices: C=0, D=2, E=4, F=5, G=7, A=9, B=11, then +12 */
 export const WHITE_KEY_CHROMATIC = [0, 2, 4, 5, 7, 9, 11] as const;
 

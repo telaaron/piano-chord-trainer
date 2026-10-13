@@ -7,7 +7,7 @@ export type { Difficulty, NotationStyle, VoicingType, DisplayMode, ChordType } f
 export { getChordNotes, getVoicingNotes, getVoicingIntervalLabels, getChordFormula, formatVoicing, displayToQuality, getValidPCSets, isShellVoicing } from './voicings';
 export type { ChordWithNotes } from './voicings';
 
-export { WHITE_KEY_COUNT, CHROMATIC_COUNT, BLACK_KEYS, WHITE_KEY_CHROMATIC, OCTAVE_CONFIGS, generateBlackKeys, whiteKeyChromaticIndex, getActiveKeyIndices, getKeyboardLayout, isRootIndex, computeSessionOctaves } from './keyboard';
+export { WHITE_KEY_COUNT, CHROMATIC_COUNT, BLACK_KEYS, WHITE_KEY_CHROMATIC, OCTAVE_CONFIGS, generateBlackKeys, whiteKeyChromaticIndex, getActiveKeyIndices, getKeyboardLayout, isRootIndex, computeSessionOctaves, KEYBOARD_START_MIDI, keyIndexToMidi, midiToKeyIndex } from './keyboard';
 export type { OctaveCount, KeyboardLayout } from './keyboard';
 
 export { PROGRESSION_LABELS, PROGRESSION_DESCRIPTIONS, generateProgression, MODE_DEGREE_MAP, parseCustomDegrees, degreesToLabel } from './progressions';

@@ -828,7 +828,7 @@ export const en = {
     results_detail_last: 'Details (last loop)',
     vl_find_inversion: '{voicing} — find the closest inversion',
     vl_free: 'Any voicing — least movement',
-    lesson_click_hint: 'Click keys to play · connect a MIDI keyboard for input',
+    lesson_click_hint: 'No MIDI keyboard? Click the keys. One click holds a note, a second click lets go.',
 
     next_chord: 'Next Chord',
     // Same button as next_chord, on the last chord of the round.
@@ -1250,6 +1250,10 @@ export const en = {
     practice_guided_interval: 'Play the interval — both keys are highlighted.',
     practice_find: 'Find the interval! Only the root is marked — count the semitones.',
     practice_free: 'Now without help! Only the chord name is visible.',
+    practice_guided_click: 'Click the highlighted keys. Once all are held, you move on.',
+    practice_guided_interval_click: 'Click both highlighted keys.',
+    practice_find_click: 'Find the interval! Only the root is marked. Click the root and the target note.',
+    practice_free_click: 'Now without help! Click every note of the chord.',
     practice_hint: 'Show solution',
     practice_correct: 'Correct!',
     practice_streak: '{count}× correct in a row',

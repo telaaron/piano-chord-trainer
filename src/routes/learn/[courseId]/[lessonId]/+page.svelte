@@ -5,11 +5,11 @@
 	import { t } from '$lib/i18n';
 	import { getLesson } from '$lib/courses';
 	import { getLessonProgress, completeStep, recordAttempt, skipLesson } from '$lib/services/course-progress';
-	import { getChordNotes, getVoicingNotes, noteToSemitone, getNoteName, CHORD_NOTATIONS, VOICING_LABELS, getVoicingIntervalLabels } from '$lib/engine';
+	import { getChordNotes, getVoicingNotes, noteToSemitone, getNoteName, keyIndexToMidi, CHORD_NOTATIONS, VOICING_LABELS, getVoicingIntervalLabels } from '$lib/engine';
 	import type { ChordWithNotes } from '$lib/engine';
 	import type { MasteryLevel, TheoryStep, PracticeStep, ChallengeStep, ChordSpec, IntervalSpec } from '$lib/engine/courses';
 	import { MASTERY_THRESHOLD_MS } from '$lib/engine/courses';
-	import { playChord } from '$lib/services/audio';
+	import { playChord, playNote } from '$lib/services/audio';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import { MidiService } from '$lib/services/midi';
 	import type { ChordMatchResult } from '$lib/services/midi';
@@ -37,6 +37,9 @@
 	let midiEnabled = $state(false);
 	let midiActiveNotes = $state<Set<number>>(new Set());
 	let midiMatchResult = $state<ChordMatchResult | null>(null);
+
+	/** Instructions say "play" to keyboard players and "click" to everyone else. */
+	const inputSuffix = $derived(midiEnabled ? '' : '_click');
 
 	// ─── Practice state ───────────────────────────────────────────
 	let practicePhase = $state<'guided' | 'find' | 'free'>('guided');
@@ -348,20 +351,28 @@
 		}
 	}
 
-	// Click-piano fallback for practice
-	function handlePracticeClick(chrIdx: number) {
-		if (!practiceChordData || practicePoolComplete) return;
-		// Toggle note in active set
+	/**
+	 * Click-piano fallback: a click toggles the key in the held set, the way a
+	 * MIDI key is held, and sounds it — without a keyboard, the click is the
+	 * only thing the player hears. The MIDI number must come from the same
+	 * mapping PianoKeyboard draws with, or the key lights up an octave away.
+	 */
+	function toggleClickedKey(chrIdx: number): Set<number> {
 		const newSet = new Set(midiActiveNotes);
-		// We map chrIdx to a MIDI note number (C4 = 60 base, chrIdx 0 = C)
-		const midiNote = 60 + chrIdx;
-		
+		const midiNote = keyIndexToMidi(chrIdx);
 		if (newSet.has(midiNote)) {
 			newSet.delete(midiNote);
 		} else {
 			newSet.add(midiNote);
+			playNote(`${getNoteName(0, midiNote % 12, 'flats')}${Math.floor(midiNote / 12) - 1}`, '4n').catch(() => {});
 		}
-		handlePracticeMidi(newSet);
+		return newSet;
+	}
+
+	// Click-piano fallback for practice
+	function handlePracticeClick(chrIdx: number) {
+		if (!practiceChordData || practicePoolComplete) return;
+		handlePracticeMidi(toggleClickedKey(chrIdx));
 	}
 
 	// ─── Challenge logic ──────────────────────────────────────────
@@ -416,14 +427,7 @@
 	// ─── Click-piano for challenge ────────────────────────────────
 	function handleChallengeClick(chrIdx: number) {
 		if (!challengeChordData || challengeFinished || !challengeStarted) return;
-		const midiNote = 60 + chrIdx;
-		const newSet = new Set(midiActiveNotes);
-		if (newSet.has(midiNote)) {
-			newSet.delete(midiNote);
-		} else {
-			newSet.add(midiNote);
-		}
-		handleChallengeMidi(newSet);
+		handleChallengeMidi(toggleClickedKey(chrIdx));
 	}
 
 	// ─── MIDI note callback dispatch ──────────────────────────────
@@ -677,11 +681,11 @@
 						{#if practicePoolComplete}
 							<span class="done-note"><Check size={15} aria-hidden="true" /> {t('learn.complete')}</span>
 						{:else if practicePhase === 'guided'}
-							{practiceIsInterval ? t('learn.practice_guided_interval') : t('learn.practice_guided')}
+							{t(`learn.practice_guided${practiceIsInterval ? '_interval' : ''}${inputSuffix}`)}
 						{:else if practicePhase === 'find'}
-							{t('learn.practice_find')}
+							{t(`learn.practice_find${inputSuffix}`)}
 						{:else}
-							{t('learn.practice_free')}
+							{t(`learn.practice_free${inputSuffix}`)}
 						{/if}
 					</div>
 

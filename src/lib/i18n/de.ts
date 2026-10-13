@@ -924,7 +924,7 @@ export const de = {
     vl_free: 'Beliebiges Voicing — minimale Bewegung',
 
     // Lesson MIDI hint
-    lesson_click_hint: 'Tasten klicken zum Spielen · MIDI-Keyboard für Eingabe verbinden',
+    lesson_click_hint: 'Kein MIDI-Keyboard? Klick die Tasten an. Ein Klick hält den Ton, ein zweiter lässt ihn los.',
 
     // VL mode labels (GameSettings)
     vl_guided_label: 'Nachspielen',
@@ -1257,6 +1257,10 @@ export const de = {
     practice_guided_interval: 'Spiele das Intervall — beide Tasten sind hervorgehoben.',
     practice_find: 'Finde das Intervall! Nur der Grundton ist markiert — zähle die Halbtöne.',
     practice_free: 'Jetzt ohne Hilfe! Nur der Akkordname ist sichtbar.',
+    practice_guided_click: 'Klick die hervorgehobenen Tasten an. Sobald alle gehalten sind, geht es weiter.',
+    practice_guided_interval_click: 'Klick beide hervorgehobenen Tasten an.',
+    practice_find_click: 'Finde das Intervall! Nur der Grundton ist markiert. Klick Grundton und Zielton an.',
+    practice_free_click: 'Jetzt ohne Hilfe! Klick alle Töne des Akkords an.',
     practice_hint: 'Lösung zeigen',
     practice_correct: 'Richtig!',
     practice_streak: '{count}× richtig in Folge',
