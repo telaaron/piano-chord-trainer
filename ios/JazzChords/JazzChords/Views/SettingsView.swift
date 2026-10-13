@@ -109,6 +109,8 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(palette.bg)
         .task {
             // Notifications may have been revoked in iOS Settings since reminders were turned on.
             await ReminderScheduler.shared.refreshAuthorization()

@@ -38,9 +38,22 @@ final class CoachStore {
 
     // ─── Plan building ──────────────────────────────────────
 
+    /// Today's Coach plan without touching state — safe to call while a view
+    /// renders. (`currentPlan` writes `lastPlan`; called from a view body, that
+    /// write invalidates every observer and the body re-runs forever.)
+    func previewPlan(
+        history: [SessionResult],
+        profile: HabitProfile,
+        courseProgress: CourseProgress? = nil,
+        now: Date = Date()
+    ) -> CoachPlan {
+        buildCoachPlan(history, profile, courseProgress, state, DEFAULT_COACH_PARAMS,
+                       now: now.timeIntervalSince1970 * 1000)
+    }
+
     /// Build today's Coach plan from live history + habit profile + course progress.
     /// Stores the plan into state (lastPlan) so a later `applySession` can compare
-    /// before/after, then persists.
+    /// before/after, then persists. Only call when a session actually starts.
     func currentPlan(
         history: [SessionResult],
         profile: HabitProfile,

@@ -37,7 +37,7 @@ struct TodayView: View {
     /// Localized coach announcement for the hero ("Today: warm up, …"). Previews
     /// today's plan from the persisted CoachState + live history/profile.
     private var coachSay: String {
-        let plan = CoachStore.shared.currentPlan(history: history, profile: habits.profile)
+        let plan = CoachStore.shared.previewPlan(history: history, profile: habits.profile)
         let (sayKey, sayParams) = describeCoachPlan(plan)
         return CoachL10n.t(sayKey, sayParams)
     }
