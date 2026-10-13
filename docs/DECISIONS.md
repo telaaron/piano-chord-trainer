@@ -292,3 +292,12 @@
 ---
 
 *Zuletzt aktualisiert: Oktober 2026*
+
+### Akkordwurzel wie im Leadsheet (keine Doppelvorzeichen)
+
+**Entscheidung (Aaron, 13.10.2026):** Bei gemischten Vorzeichen (`both`) schreibt der Trainer die Wurzel so, dass kein Doppelvorzeichen nötig ist: G#m7b5 statt Abm7b5, Eb7 statt D#7 (`preferredRoot` in `notes.ts` / `Notes.swift`). Feste Kreuz-/b-Einstellung bleibt unangetastet.
+
+**Gruende:**
+- So stehen die Akkorde in Jazz-Leadsheets; Abm7b5 hätte E𝄫 als ♭5
+- Doppelvorzeichen generell einzuschalten hätte rund 45 Akkorde ungewohnt benannt
+- Dabei behoben: Der ♯11 in Maj7#11 wird als Quarte geschrieben (DbMaj7#11 → G), nicht als verminderte Quinte

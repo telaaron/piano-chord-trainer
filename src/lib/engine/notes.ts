@@ -92,22 +92,62 @@ const INTERVAL_TO_LETTER_STEP: Record<number, number> = {
 /** For a few intervals the correct letter depends on the chord context
  *  (e.g. a ♭5 is a *fifth* spelled flat, but a ♯11 is a *fourth* spelled
  *  sharp — same 6 semitones). The caller passes the desired letter step. */
-function spellAt(rootLetterIndex: number, rootSemitone: number, letterStep: number, targetSemitoneFromRoot: number): string {
-	const letterIdx = (rootLetterIndex + letterStep) % 7;
-	const letter = LETTERS[letterIdx];
+function letterOffset(rootLetterIndex: number, rootSemitone: number, letterStep: number, targetSemitoneFromRoot: number) {
+	const letter = LETTERS[(rootLetterIndex + letterStep) % 7];
 	const targetPc = (rootSemitone + targetSemitoneFromRoot) % 12;
-	const naturalPc = LETTER_SEMITONES[letter];
 	// Smallest signed accidental to move from the natural letter pitch to target.
-	let diff = ((targetPc - naturalPc) % 12 + 12) % 12;
+	let diff = ((targetPc - LETTER_SEMITONES[letter]) % 12 + 12) % 12;
 	if (diff > 6) diff -= 12; // prefer flats over many sharps (e.g. -1 not +11)
+	return { letter, targetPc, diff };
+}
+
+function spellAt(rootLetterIndex: number, rootSemitone: number, letterStep: number, targetSemitoneFromRoot: number): string {
+	const { letter, targetPc, diff } = letterOffset(rootLetterIndex, rootSemitone, letterStep, targetSemitoneFromRoot);
 	// Avoid double accidentals (Ebb, F##) — jazz lead-sheets favour the simpler
-	// single-accidental enharmonic (write Eb, not Ebb). Fall back to the plain
-	// flat/sharp name at the target pitch class.
+	// single-accidental enharmonic. Fall back to the plain flat name at the
+	// target pitch class. preferredRoot() keeps generated chords out of this case.
 	if (Math.abs(diff) > 1) {
 		return NOTES_FLATS[targetPc];
 	}
 	const acc = diff > 0 ? '#'.repeat(diff) : 'b'.repeat(-diff);
 	return letter + acc;
+}
+
+/** Letter step (0 = root … 6 = seventh) for each chord tone. */
+function letterSteps(intervals: number[]): number[] {
+	return intervals.map((iv) => {
+		const pc = ((iv % 12) + 12) % 12;
+		// 6 semitones read as a *fifth* (♭5) unless the chord already has a
+		// perfect fifth, in which case it is a ♯11 (a fourth spelled sharp).
+		if (pc === 6) return intervals.some((x) => ((x % 12) + 12) % 12 === 7) ? 3 : 4;
+		return INTERVAL_TO_LETTER_STEP[pc] ?? 0;
+	});
+}
+
+function rootLetterIndexOf(root: string): number {
+	const i = LETTERS.indexOf(root[0].toUpperCase() as (typeof LETTERS)[number]);
+	return i === -1 ? 0 : i;
+}
+
+/** Would spelling this chord on this root need a double accidental (Ebb, F##)? */
+export function needsDoubleAccidental(root: string, intervals: number[]): boolean {
+	const rootSemi = noteToSemitone(root);
+	if (rootSemi === -1) return false;
+	const base = rootLetterIndexOf(root);
+	const steps = letterSteps(intervals);
+	return intervals.some((iv, i) => Math.abs(letterOffset(base, rootSemi, steps[i], iv % 12).diff) > 1);
+}
+
+/**
+ * The root a lead sheet would write for this chord: Abm7b5 → G#m7b5 and
+ * D#7 → Eb7, because the other spelling needs a double accidental (Ebb, F##).
+ * Roots that spell cleanly are returned unchanged.
+ */
+export function preferredRoot(root: string, intervals: number[]): string {
+	if (!needsDoubleAccidental(root, intervals)) return root;
+	const alt = ENHARMONIC_MAP[root];
+	if (alt && alt.length === 2 && !needsDoubleAccidental(alt, intervals)) return alt;
+	return root;
 }
 
 /**
@@ -121,23 +161,9 @@ function spellAt(rootLetterIndex: number, rootSemitone: number, letterStep: numb
 export function spellChordNotes(root: string, intervals: number[]): string[] {
 	const rootSemi = noteToSemitone(root);
 	if (rootSemi === -1) return [];
-	// Determine the root's letter. Prefer the explicit letter in `root`
-	// (e.g. "Db" → D, "F#" → F); fall back to the flat-spelling letter.
-	const rootLetter = root[0].toUpperCase();
-	const rootLetterIndex = LETTERS.indexOf(rootLetter as (typeof LETTERS)[number]);
-	const baseIndex = rootLetterIndex === -1 ? 0 : rootLetterIndex;
-
-	return intervals.map((iv) => {
-		const pc = ((iv % 12) + 12) % 12;
-		let step = INTERVAL_TO_LETTER_STEP[pc] ?? 0;
-		// Diminished 5th (6 semis) inside a chord that has no natural 5th elsewhere
-		// should read as a *fifth* (♭5), not a ♯11. Heuristic: if the chord also
-		// contains a perfect 4th/11th this is a ♯11; otherwise a ♭5.
-		if (pc === 6 && !intervals.some((x) => ((x % 12) + 12) % 12 === 5)) {
-			step = 4; // a fifth
-		}
-		return spellAt(baseIndex, rootSemi, step, iv % 12);
-	});
+	const baseIndex = rootLetterIndexOf(root);
+	const steps = letterSteps(intervals);
+	return intervals.map((iv, i) => spellAt(baseIndex, rootSemi, steps[i], iv % 12));
 }
 
 /** Get note name at a given semitone offset from root */

@@ -96,6 +96,20 @@ private let INTERVAL_TO_LETTER_STEP: [Int: Int] = [
     11: 6,  // 7
 ]
 
+private func letterOffset(
+    _ rootLetterIndex: Int,
+    _ rootSemitone: Int,
+    _ letterStep: Int,
+    _ targetSemitoneFromRoot: Int
+) -> (letter: String, targetPc: Int, diff: Int) {
+    let letter = LETTERS[(rootLetterIndex + letterStep) % 7]
+    let targetPc = (rootSemitone + targetSemitoneFromRoot) % 12
+    // Smallest signed accidental to move from the natural letter pitch to target.
+    var diff = ((targetPc - LETTER_SEMITONES[letter]!) % 12 + 12) % 12
+    if diff > 6 { diff -= 12 } // prefer flats over many sharps (e.g. -1 not +11)
+    return (letter, targetPc, diff)
+}
+
 /// Spell one note at the given letter step, choosing the smallest accidental.
 private func spellAt(
     _ rootLetterIndex: Int,
@@ -103,19 +117,53 @@ private func spellAt(
     _ letterStep: Int,
     _ targetSemitoneFromRoot: Int
 ) -> String {
-    let letterIdx = (rootLetterIndex + letterStep) % 7
-    let letter = LETTERS[letterIdx]
-    let targetPc = (rootSemitone + targetSemitoneFromRoot) % 12
-    let naturalPc = LETTER_SEMITONES[letter]!
-    // Smallest signed accidental to move from the natural letter pitch to target.
-    var diff = ((targetPc - naturalPc) % 12 + 12) % 12
-    if diff > 6 { diff -= 12 } // prefer flats over many sharps (e.g. -1 not +11)
+    let (letter, targetPc, diff) = letterOffset(rootLetterIndex, rootSemitone, letterStep, targetSemitoneFromRoot)
     // Avoid double accidentals (Ebb, F##) — fall back to the plain flat name.
+    // preferredRoot() keeps generated chords out of this case.
     if abs(diff) > 1 {
         return NOTES_FLATS[targetPc]
     }
     let acc = diff > 0 ? String(repeating: "#", count: diff) : String(repeating: "b", count: -diff)
     return letter + acc
+}
+
+/// Letter step (0 = root … 6 = seventh) for each chord tone.
+private func letterSteps(_ intervals: [Int]) -> [Int] {
+    intervals.map { iv in
+        let pc = ((iv % 12) + 12) % 12
+        // 6 semitones read as a *fifth* (♭5) unless the chord already has a
+        // perfect fifth, in which case it is a ♯11 (a fourth spelled sharp).
+        if pc == 6 {
+            return intervals.contains(where: { (($0 % 12) + 12) % 12 == 7 }) ? 3 : 4
+        }
+        return INTERVAL_TO_LETTER_STEP[pc] ?? 0
+    }
+}
+
+private func rootLetterIndexOf(_ root: String) -> Int {
+    LETTERS.firstIndex(of: String(root.prefix(1)).uppercased()) ?? 0
+}
+
+/// Would spelling this chord on this root need a double accidental (Ebb, F##)?
+public func needsDoubleAccidental(_ root: String, _ intervals: [Int]) -> Bool {
+    let rootSemi = noteToSemitone(root)
+    if rootSemi == -1 { return false }
+    let base = rootLetterIndexOf(root)
+    let steps = letterSteps(intervals)
+    return zip(intervals, steps).contains { iv, step in
+        abs(letterOffset(base, rootSemi, step, iv % 12).diff) > 1
+    }
+}
+
+/// The root a lead sheet would write for this chord: Abm7b5 → G#m7b5 and
+/// D#7 → Eb7, because the other spelling needs a double accidental (Ebb, F##).
+/// Roots that spell cleanly are returned unchanged.
+public func preferredRoot(_ root: String, _ intervals: [Int]) -> String {
+    if !needsDoubleAccidental(root, intervals) { return root }
+    if let alt = ENHARMONIC_MAP[root], alt.count == 2, !needsDoubleAccidental(alt, intervals) {
+        return alt
+    }
+    return root
 }
 
 /// Spell a chord's notes with theoretically correct accidentals, so the same
@@ -124,19 +172,10 @@ private func spellAt(
 public func spellChordNotes(_ root: String, _ intervals: [Int]) -> [String] {
     let rootSemi = noteToSemitone(root)
     if rootSemi == -1 { return [] }
-    let rootLetter = String(root.prefix(1)).uppercased()
-    let rootLetterIndex = LETTERS.firstIndex(of: rootLetter)
-    let baseIndex = rootLetterIndex ?? 0
-
-    return intervals.map { iv in
-        let pc = ((iv % 12) + 12) % 12
-        var step = INTERVAL_TO_LETTER_STEP[pc] ?? 0
-        // Diminished 5th (6 semis) inside a chord with no natural 4th/11th reads
-        // as a *fifth* (♭5), not a ♯11.
-        if pc == 6, !intervals.contains(where: { (($0 % 12) + 12) % 12 == 5 }) {
-            step = 4 // a fifth
-        }
-        return spellAt(baseIndex, rootSemi, step, iv % 12)
+    let baseIndex = rootLetterIndexOf(root)
+    let steps = letterSteps(intervals)
+    return zip(intervals, steps).map { iv, step in
+        spellAt(baseIndex, rootSemi, step, iv % 12)
     }
 }
 

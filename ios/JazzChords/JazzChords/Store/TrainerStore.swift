@@ -250,6 +250,12 @@ final class TrainerStore {
             if !filtered.isEmpty { available = filtered }
         }
         let pool = getNotePool(accidentals)
+        // Under mixed accidentals, write the root a lead sheet would: G#m7b5, not
+        // Abm7b5 (whose ♭5 would need Ebb). Fixed flat/sharp settings are honoured.
+        let accidentals = self.accidentals
+        let leadRoot: (String, String) -> String = { root, quality in
+            accidentals == .both ? preferredRoot(root, CHORD_INTERVALS[quality] ?? []) : root
+        }
         var newChords: [String] = []
         var newData: [ChordWithNotes] = []
         var last = ""
@@ -264,16 +270,17 @@ final class TrainerStore {
             var lastDisplay = ""
             for _ in 0..<totalChords {
                 let pick = pickWeightedChord(weighted, lastRoot: lastRoot, lastDisplay: lastDisplay)
+                let root = leadRoot(pick.root, pick.display)
                 let displayQuality = CHORD_NOTATIONS[notation]?[pick.display] ?? pick.display
-                let name = "\(pick.root)\(displayQuality)"
+                let name = "\(root)\(displayQuality)"
                 lastRoot = pick.root; lastDisplay = pick.display
                 newChords.append(name)
-                let notes = getChordNotes(pick.root, pick.display, accidentals)
-                var voicingArr = getVoicingNotes(notes, voicing, pick.root, accidentals)
+                let notes = getChordNotes(root, pick.display, accidentals)
+                var voicingArr = getVoicingNotes(notes, voicing, root, accidentals)
                 if voiceLeadingEnabled, let prev = newData.last {
                     voicingArr = computeVoiceLeadVoicing(prev.voicing, voicingArr, accidentals)
                 }
-                newData.append(ChordWithNotes(chord: name, root: pick.root, type: pick.display, notes: notes, voicing: voicingArr))
+                newData.append(ChordWithNotes(chord: name, root: root, type: pick.display, notes: notes, voicing: voicingArr))
             }
             chords = newChords
             chordsWithNotes = newData
@@ -284,8 +291,8 @@ final class TrainerStore {
             var name = ""
             var attempts = 0
             repeat {
-                let note = pool.randomElement() ?? "C"
                 let ct = available.randomElement() ?? ChordType(name: "maj7", display: "Maj7")
+                let note = leadRoot(pool.randomElement() ?? "C", ct.display)
                 let display = CHORD_NOTATIONS[notation]?[ct.display] ?? ct.display
                 name = "\(note)\(display)"
                 attempts += 1

@@ -44,6 +44,8 @@
 		CHORD_NOTATIONS,
 		PROGRESSION_DESCRIPTIONS,
 		getNotePool,
+		preferredRoot,
+		CHORD_INTERVALS,
 		getChordNotes,
 		getVoicingNotes,
 		isShellVoicing,
@@ -578,6 +580,10 @@
 			if (filtered.length > 0) available = filtered;
 		}
 		const pool = getNotePool(accidentals);
+		// Under mixed accidentals, write the root a lead sheet would: G#m7b5, not
+		// Abm7b5 (whose ♭5 would need Ebb). Fixed flat/sharp settings are honoured.
+		const leadRoot = (root: string, quality: string) =>
+			accidentals === 'both' ? preferredRoot(root, CHORD_INTERVALS[quality] ?? []) : root;
 		const newChords: string[] = [];
 		const newData: ChordWithNotes[] = [];
 		let last = '';
@@ -606,6 +612,7 @@
 						root = pool[(pool.indexOf(root) + 1) % pool.length];
 					}
 					lastRoot = root;
+					root = leadRoot(root, display);
 					const displayQuality = CHORD_NOTATIONS[notation][display] || display;
 					const name = `${root}${displayQuality}`;
 					newChords.push(name);
@@ -630,18 +637,19 @@
 
 			for (let i = 0; i < totalChords; i++) {
 				const pick = pickWeightedChord(weighted, lastRoot, lastDisplay);
+				const root = leadRoot(pick.root, pick.display);
 				const displayQuality = CHORD_NOTATIONS[notation][pick.display] || pick.display;
-				const name = `${pick.root}${displayQuality}`;
+				const name = `${root}${displayQuality}`;
 				lastRoot = pick.root;
 				lastDisplay = pick.display;
 
 				newChords.push(name);
-				const notes = getChordNotes(pick.root, pick.display, accidentals);
-				let voicingArr = getVoicingNotes(notes, voicing, pick.root, accidentals);
+				const notes = getChordNotes(root, pick.display, accidentals);
+				let voicingArr = getVoicingNotes(notes, voicing, root, accidentals);
 				if (voiceLeadingEnabled && newData.length > 0) {
 					voicingArr = computeVoiceLeadVoicing(newData[newData.length - 1].voicing, voicingArr, accidentals);
 				}
-				newData.push({ chord: name, root: pick.root, type: pick.display, notes, voicing: voicingArr });
+				newData.push({ chord: name, root, type: pick.display, notes, voicing: voicingArr });
 			}
 
 			chords = newChords;
@@ -653,8 +661,8 @@
 			let name = '';
 			let attempts = 0;
 			do {
-				const note = pool[Math.floor(Math.random() * pool.length)];
 				const ct = available[Math.floor(Math.random() * available.length)];
+				const note = leadRoot(pool[Math.floor(Math.random() * pool.length)], ct.display);
 				const display = CHORD_NOTATIONS[notation][ct.display] || ct.display;
 				name = `${note}${display}`;
 				attempts++;

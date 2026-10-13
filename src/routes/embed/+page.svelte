@@ -16,6 +16,8 @@
 		type Difficulty,
 		type ProgressionMode,
 		type ChordWithNotes,
+		preferredRoot,
+		CHORD_INTERVALS,
 	} from '$lib/engine';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import ExplainPanel from '$lib/components/ExplainPanel.svelte';
@@ -211,8 +213,9 @@
 				let name = '';
 				let attempts = 0;
 				do {
-					const note = pool[Math.floor(Math.random() * pool.length)];
 					const ct = available[Math.floor(Math.random() * available.length)];
+					// Lead-sheet root: G#m7b5, not Abm7b5 (whose ♭5 would need Ebb).
+					const note = preferredRoot(pool[Math.floor(Math.random() * pool.length)], CHORD_INTERVALS[ct.display] ?? []);
 					const display = CHORD_NOTATIONS['standard'][ct.display] || ct.display;
 					name = `${note}${display}`;
 					attempts++;
