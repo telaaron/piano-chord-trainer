@@ -26,19 +26,27 @@ product announcements by email (GDPR + § 7 UWG). Ask them in the app.
 
 ## Setup status (13.10.2026)
 
-- Done: DOI template id **1** ("JazzChords – Double Opt-in (DE/EN)", active,
-  sender currently admin@must-seen.com, reply-to info@jazzchords.app);
-  Vercel env `BREVO_DOI_TEMPLATE_ID=1` (production + preview).
-- Open: list, API key, domain. The Brevo connector cannot create lists, keys
-  or sender domains, and jazzchords.app DNS is at Cloudflare.
+Live and tested end to end on 13.10.2026 (opt-in on /account, mail, click,
+Brevo list, `confirmed` row in `email_consents`).
+
+- DOI template id **3** ("JazzChords – Double Opt-in (DE/EN) v2", tag `optin`,
+  active, sender id 1, reply-to info@jazzchords.app). Templates 1 and 2 are
+  stale: 1 lacks the `optin` tag, 2 links `{{ params.DOIurl }}`.
+- List id **6** ("JazzChords Updates").
+- Vercel env: `BREVO_DOI_TEMPLATE_ID=3`, `BREVO_LIST_ID=6` (production +
+  preview), `BREVO_API_KEY` (production only, so the toggle shows
+  "not available" on preview deployments).
+- `jazzchords.app` is authenticated in Brevo.
 
 ## Setup (once)
 
 1. Brevo → Senders & Domains: add and authenticate `jazzchords.app` (DNS: DKIM,
    DMARC), sender e.g. `hello@jazzchords.app`.
 2. Brevo → Contacts → Lists: create "JazzChords Updates", note its id.
-3. Brevo → Templates: create a double opt-in template (must contain the
-   `{{ doubleoptin }}` link), note its id.
+3. Brevo → Templates: create a double opt-in template, note its id. It must
+   be active, carry the tag `optin` and link `{{ doubleoptin }}`; without the
+   tag the API answers 400 "An active DOI template does not exist". Send no
+   contact attributes the account does not define.
 4. Vercel env (production): `BREVO_API_KEY`, `BREVO_LIST_ID`,
    `BREVO_DOI_TEMPLATE_ID`. Redeploy.
 5. Apply `supabase/migrations/20261013100000_email_consent.sql`.
