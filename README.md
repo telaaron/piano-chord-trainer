@@ -2,7 +2,7 @@
   <img src="static/favicon/logo-full.webp" alt="Chord Trainer" width="320">
 </div>
 
-# 🎹 Chord Trainer
+# Chord Trainer
 
 **Jazz Piano Voicing Speed Trainer** — Drill chord voicings across all 12 keys with MIDI recognition, smart progressions, and progress tracking.
 
