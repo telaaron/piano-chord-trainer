@@ -1055,7 +1055,7 @@ export const de = {
     
     h_fonts: '1.6 Fonts',
     p_fonts: 'Alle Schriften (Source Serif 4, Inter) liegen auf unserem eigenen Server und werden direkt von <code>jazzchords.app</code> geladen. Es geht dabei keine Anfrage an Google oder einen anderen Dritten, deine IP-Adresse wird also nicht an Font-Anbieter übertragen.',
-    h_ios: '1.6 iOS-App',
+    h_ios: '1.8 iOS-App',
     p_ios: 'Die JazzChords-App für iPhone und iPad braucht kein Konto und speichert deinen Fortschritt nur auf deinem Gerät. Sie sendet dieselben <strong>anonymen Übungsereignisse</strong> wie unter 1.4 beschrieben, mit einer zufälligen Geräte-ID, die beim ersten Start entsteht; du kannst das in der App unter Einstellungen → Anonyme Nutzungsdaten abschalten. Wenn du das <strong>Mikrofon</strong> nutzt, wird der Ton nur auf deinem Gerät ausgewertet und nie aufgenommen, gespeichert oder hochgeladen. Bluetooth dient nur zur Verbindung mit MIDI-Keyboards. Wenn du die tägliche Erinnerung einschaltest, wird sie als lokale Mitteilung auf deinem Gerät geplant; dafür werden keine Daten gesendet.',
     
     h_email_updates: '1.7 E-Mail-Updates',
