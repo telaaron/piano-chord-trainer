@@ -541,7 +541,7 @@ export const de = {
     togo_d3_t: 'Progressionen',
     togo_d3_d: 'Kadenz hören, Form erkennen.',
     togo_d4_t: 'Singen',
-    togo_d4_d: 'Eine Stufe mit der Stimme finden.',
+    togo_d4_d: 'Einen Akkordton mit der Stimme finden.',
     togo_d5_t: 'Time',
     togo_d5_d: 'Den Groove zum Klick mittappen.',
     togo_d6_t: 'Licks',
@@ -924,7 +924,7 @@ export const de = {
     vl_free: 'Beliebiges Voicing — minimale Bewegung',
 
     // Lesson MIDI hint
-    lesson_click_hint: 'Tasten klicken zum Spielen · MIDI-Keyboard für Eingabe verbinden',
+    lesson_click_hint: 'Kein MIDI-Keyboard? Klick die Tasten an. Ein Klick hält den Ton, ein zweiter lässt ihn los.',
 
     // VL mode labels (GameSettings)
     vl_guided_label: 'Nachspielen',
@@ -1257,6 +1257,10 @@ export const de = {
     practice_guided_interval: 'Spiele das Intervall — beide Tasten sind hervorgehoben.',
     practice_find: 'Finde das Intervall! Nur der Grundton ist markiert — zähle die Halbtöne.',
     practice_free: 'Jetzt ohne Hilfe! Nur der Akkordname ist sichtbar.',
+    practice_guided_click: 'Klick die hervorgehobenen Tasten an. Sobald alle gehalten sind, geht es weiter.',
+    practice_guided_interval_click: 'Klick beide hervorgehobenen Tasten an.',
+    practice_find_click: 'Finde das Intervall! Nur der Grundton ist markiert. Klick Grundton und Zielton an.',
+    practice_free_click: 'Jetzt ohne Hilfe! Klick alle Töne des Akkords an.',
     practice_hint: 'Lösung zeigen',
     practice_correct: 'Richtig!',
     practice_streak: '{count}× richtig in Folge',
@@ -2200,7 +2204,7 @@ export const de = {
       interval: 'Zwei Töne — nenne den Abstand.',
       quality: 'Akkord hören, Qualität benennen.',
       progression: 'Kadenz hören, Form erkennen.',
-      sing: 'Eine Stufe mit der Stimme finden.',
+      sing: 'Einen Akkordton mit der Stimme finden.',
       time: 'Den Groove zum Klick mittappen.',
       lick: 'Phrase hören, zurücktippen.',
       theory: 'Stille Karten — geht überall.',
@@ -2233,7 +2237,10 @@ export const de = {
       interval_down: 'Abwärts — wie weit?',
       quality: 'Welche Farbe hat dieser Akkord?',
       progression: 'Welche Form ist das, in {key}?',
-      sing: 'Sing die {degree} über {root}.',
+      // Erst hören, dann singen: der Akkord ist verklungen, bevor das Mikro zuhört.
+      sing_third: 'Hör dir {chord} an. Dann sing seine Terz.',
+      sing_fifth: 'Hör dir {chord} an. Dann sing seine Quinte.',
+      sing_seventh: 'Hör dir {chord} an. Dann sing seine Septime.',
       lick: 'Tippe die {count} Töne zurück.',
     },
     tap: {
@@ -2283,6 +2290,7 @@ export const de = {
     sing_check: 'Ton prüfen',
     sing_level: 'Eingangspegel',
     sing_denied: 'Das Mikrofon blieb zu. Schau in die Browser-Berechtigungen.',
+    sing_failed: 'Das Mikro ist an, aber die Tonerkennung läuft in diesem Browser nicht. Probier es in Chrome.',
 
     // Tappen.
     tap_ready: 'Zähl dich ein, dann tappe mit.',

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fly, fade, scale, slide } from 'svelte/transition';
-	import { t, getLocale, setLocale } from '$lib/i18n';
+	import { t } from '$lib/i18n';
 	import GameSettings from '$lib/components/GameSettings.svelte';
 	import QuickStart from '$lib/components/QuickStart.svelte';
 	import { Icon } from '$lib/components/ui';
@@ -11,8 +11,8 @@
 	import { canUse, showLock, canStartCoachSession } from '$lib/services/subscription-store.svelte';
 	import { recordCoachSessionStart, deviceDayIndex } from '$lib/services/usage-limit';
 	import { hasUsedTeaser, markTeaserUsed } from '$lib/utils/teaser';
-	import { toggleLightDark, isLightActive } from '$lib/services/theme';
-	import { Sun, Moon, Eye, Settings, TabletSmartphone, Piano, RefreshCw, Ear, Volume2, VolumeX, Music, Target, Check, X, CornerDownLeft, ArrowDown, Play, Pause, RotateCcw, ArrowLeft } from 'lucide-svelte';
+	import { setTrainFocus } from '$lib/services/train-focus.svelte';
+	import { Eye, Settings, TabletSmartphone, Piano, RefreshCw, Ear, Volume2, VolumeX, Music, Target, Check, X, CornerDownLeft, ArrowDown, Play, Pause, RotateCcw, ArrowLeft } from 'lucide-svelte';
 	import ChordCard from '$lib/components/ChordCard.svelte';
 	import PianoKeyboard from '$lib/components/PianoKeyboard.svelte';
 	import Results from '$lib/components/Results.svelte';
@@ -374,18 +374,11 @@
 		openUpgrade(feature, false);
 		return false;
 	}
-	let themeIsLight = $state(false);
-	function flipTheme() {
-		toggleLightDark();
-		themeIsLight = isLightActive();
-	}
-
-	/** The global nav is hidden here, so /train carries its own language switch. */
-	function toggleLanguage() {
-		setLocale(getLocale() === 'en' ? 'de' : 'en');
-	}
+	/** A running drill is focus mode: the layout hides the site nav and footer.
+	 *  The start screen stays inside the site's frame. */
 	$effect(() => {
-		themeIsLight = isLightActive();
+		setTrainFocus(screen !== 'setup');
+		return () => setTrainFocus(false);
 	});
 	let currentIdx = $state(0);
 	let chords: string[] = $state([]);
@@ -2347,51 +2340,32 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<main class="train-page flex-1 py-2 sm:py-3 px-3 xl:py-4 xl:px-8">
+<main class="train-page flex-1 py-2 sm:py-3 px-3 xl:py-4 xl:px-8" class:train-focus={screen !== 'setup'}>
 	<div class="w-full max-w-345 mx-auto">
 		<!-- ─────── Setup Screen ─────── -->
 			{#if screen === 'setup'}
-				<div in:fade={{ duration: 200, delay: 80 }} class="mx-auto flex max-w-[1080px] flex-col gap-6 sm:gap-7">
-					<!-- ⓪ Dashboard nav — back to landing + user settings -->
-					<div class="flex items-center justify-between gap-3">
-						<a
-							href="/"
-							class="group inline-flex items-center gap-2 rounded-full py-1.5 pr-3.5 pl-2 text-sm font-medium text-(--text-muted) transition-colors hover:text-(--text)"
-						>
-							<span class="grid h-7 w-7 place-items-center rounded-full border border-[var(--border)] transition-colors group-hover:border-(--primary)">
-								<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-							</span>
-							<span class="text-gradient font-bold">{t('settings.back_to_home')}</span>
-						</a>
-					<div class="flex items-center gap-2">
-						<!-- The global nav is hidden on /train, so the language switch has
-						     to live here — otherwise it is unreachable while practising. -->
-						<button
-							onclick={toggleLanguage}
-							class="grid h-9 min-w-9 place-items-center rounded-full border border-[var(--border)] px-2 text-xs font-semibold tracking-wide text-(--text-muted) transition-colors hover:border-(--primary) hover:text-(--text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
-							title={t('nav.language')}
-							aria-label={t('nav.language')}
-						>
-							{getLocale().toUpperCase()}
-						</button>
-						<button
-							onclick={flipTheme}
-							class="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] text-(--text-muted) transition-colors hover:border-(--primary) hover:text-(--text) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
-							title={t('nav.theme')}
-							aria-label={t('nav.theme')}
-						>
-							{#if themeIsLight}<Moon size={16} />{:else}<Sun size={16} />{/if}
-						</button>
-						<a
-							href="/account"
-							class="inline-flex items-center gap-2 rounded-full border border-[var(--border)] py-1.5 pr-3.5 pl-2.5 text-sm font-medium text-(--text-muted) no-underline transition-colors hover:border-(--primary) hover:text-(--text)"
-							title={t('settings.open_settings')}
-						>
-							<Icon name="settings" size={18} />
-							<span class="hidden sm:inline">{t('settings.open_settings')}</span>
-						</a>
-					</div>
-					</div>
+				<div in:fade={{ duration: 200, delay: 80 }} class="setup-plate mx-auto flex flex-col gap-6 sm:gap-7">
+					<!-- ⓪ Masthead — the same plate head as /learn: mark, title, lede.
+					     Settings sit with it; the site nav above carries brand, theme
+					     and language. -->
+					<header class="setup-mast">
+						<p class="setup-mark"><span aria-hidden="true">II</span>{t('nav.train')}</p>
+						<div class="setup-mast-row">
+							<div class="min-w-0">
+								<h1 id="start-heading" class="setup-h1">{t('settings.start_practicing')}</h1>
+								<p class="setup-lede">{t('settings.start_practicing_sub')}</p>
+							</div>
+							<div class="setup-tools">
+								<button class="setup-tool" onclick={() => (showInsights = !showInsights)}>
+									{showInsights ? t('settings.hide_insights') : t('settings.show_insights')}
+								</button>
+								<a href="/account" class="setup-tool" title={t('settings.open_settings')}>
+									<Icon name="settings" size={16} />
+									<span>{t('settings.open_settings')}</span>
+								</a>
+							</div>
+						</div>
+					</header>
 
 					<!-- ① Progress hero — single source for greeting / streak / level / MIDI -->
 					{#if habitProfile}
@@ -2430,19 +2404,6 @@
 
 					<!-- ② Start practicing — the single primary action zone -->
 					<section aria-labelledby="start-heading" class="flex flex-col gap-3.5">
-						<div class="flex items-end justify-between gap-3">
-							<div>
-								<h1 id="start-heading" class="text-xl sm:text-2xl font-bold text-(--text)">{t('settings.start_practicing')}</h1>
-								<p class="mt-1 text-sm text-(--text-dim)">{t('settings.start_practicing_sub')}</p>
-							</div>
-							<button
-								class="hidden shrink-0 rounded-full border border-[var(--border)] px-3.5 py-1.5 text-sm font-medium text-(--text-muted) transition-colors hover:border-(--primary) hover:text-(--text) sm:inline-flex"
-								onclick={() => (showInsights = !showInsights)}
-							>
-								{showInsights ? t('settings.hide_insights') : t('settings.show_insights')}
-							</button>
-						</div>
-
 						{#if loadHistory().length === 0}
 							<!-- First visit: what this screen is for. A marginal note on a
 							     blue rule — the annotating ink, same as /togo's notice. -->
@@ -3942,8 +3903,9 @@
 		animation: none;
 	}
 
-	/* Ambient page wash — token-based so it flips with the theme. */
-	.train-page {
+	/* Ambient page wash — token-based so it flips with the theme. Drill only:
+	   the start screen sits on the plain site ground like /learn and /togo. */
+	.train-page.train-focus {
 		background:
 			radial-gradient(ellipse 80% 40% at 50% 0%, color-mix(in srgb, var(--primary) 6%, transparent) 0%, transparent 70%),
 			linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 88%, var(--primary)) 35%, var(--bg) 100%);
@@ -3965,6 +3927,92 @@
 	   converted work. Same vocabulary as QuickStart and /togo: hairline boxes,
 	   an ink rule down the left where something is being announced, small-caps
 	   mono for labels and figures, the display serif for anything read. */
+
+	/* ⓪ The plate head — same measure and type scale as /learn's masthead. */
+	.setup-plate {
+		max-width: 46rem;
+		padding: 1.75rem 0.5rem 4rem;
+	}
+	@media (min-width: 40rem) {
+		.setup-plate { padding: 2.75rem 1rem 5rem; }
+	}
+	.setup-mast {
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.setup-mark {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		margin: 0 0 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		font-weight: 600;
+		letter-spacing: 0.19em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+	.setup-mark::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: currentColor;
+		opacity: 0.3;
+	}
+	.setup-mast-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1rem 1.5rem;
+	}
+	.setup-h1 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 6vw, 2.85rem);
+		font-weight: 600;
+		line-height: 1.08;
+		letter-spacing: -0.025em;
+		color: var(--text);
+	}
+	.setup-lede {
+		margin: 0.85rem 0 0;
+		max-width: 46ch;
+		font-size: 1.0625rem;
+		line-height: 1.6;
+		color: var(--text-muted);
+	}
+	.setup-tools {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.setup-tool {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		min-height: 2.25rem;
+		padding: 0 0.85rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: transparent;
+		font-family: inherit;
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--text-muted);
+		text-decoration: none;
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s;
+	}
+	.setup-tool:hover {
+		color: var(--text);
+		border-color: var(--border-hover);
+	}
+	.setup-tool:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
 
 	/* ① Masthead line — greeting, streak tally, MIDI state. */
 	.head-line {

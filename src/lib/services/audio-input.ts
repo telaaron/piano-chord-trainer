@@ -98,6 +98,8 @@ export class AudioInputService {
 
 	// Audio output suppression — prevents mic from detecting its own audio output
 	private _suppressUntil = 0;
+	/** Inference failures in a row — after a few, report 'error' instead of hearing nothing forever. */
+	private analysisFailures = 0;
 
 	// Adaptive level normalization for display (getLevel())
 	// Tracks the recent peak RMS so the meter auto-calibrates to the mic.
@@ -232,8 +234,8 @@ export class AudioInputService {
 			// Start model loading in background
 			this.setState('loading-model');
 			this.loadModel().then((ok) => {
-				if (ok && this._state === 'loading-model') {
-					this.setState('listening');
+				if (this._state === 'loading-model') {
+					this.setState(ok ? 'listening' : 'error');
 				}
 			});
 
@@ -323,8 +325,8 @@ export class AudioInputService {
 	 * Monitors energy and triggers ML inference when sound is present.
 	 */
 	private async analyzeLoop(): Promise<void> {
-		// Don't overlap analyses
-		if (this.isAnalyzing || !this.audioContext) return;
+		// Don't overlap analyses; stop once detection has broken for good.
+		if (this.isAnalyzing || !this.audioContext || this._state === 'error') return;
 
 		// Suppressed — audio playback is active, skip to avoid self-detection
 		if (Date.now() < this._suppressUntil) return;
@@ -372,8 +374,16 @@ export class AudioInputService {
 
 			this._activeNotes = detected;
 			this.onNoteChange?.(this._activeNotes);
+			this.analysisFailures = 0;
 		} catch (err) {
 			console.warn('[AudioInput] Analysis error:', err);
+			// The mic is open and the meter moves, but nothing can be recognised.
+			// Say so: a silent "heard nothing yet" reads as the player's fault.
+			if (++this.analysisFailures >= 2) {
+				this.isAnalyzing = false;
+				this.setState('error');
+				return;
+			}
 		}
 
 		this.isAnalyzing = false;
@@ -580,6 +590,7 @@ export class AudioInputService {
 		this.hadEnergyOnce = false;
 		this.levelPeakRMS = 0.03;
 		this.isAnalyzing = false;
+		this.analysisFailures = 0;
 		this.silenceFrames = 0;
 		this.ringWriteIndex = 0;
 		this.ringBufferFilled = false;

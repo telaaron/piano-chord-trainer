@@ -171,6 +171,8 @@ export class MidiSoundEngine {
 
 	// Samples loading flag
 	private _samplesLoading = false;
+	/** Piano samples failed to load — voice the piano preset with a synth instead of silence. */
+	private _pianoUnavailable = false;
 
 	// Initialization guard
 	private _initPromise: Promise<void> | null = null;
@@ -375,8 +377,19 @@ export class MidiSoundEngine {
 			await ctx.resume();
 		}
 		this.createInstrument();
-		if (this._preset === 'grand-piano' && this._samplesLoading) {
-			await T.loaded();
+		if (this._samplesLoading) {
+			try {
+				await T.loaded();
+			} catch (err) {
+				console.error('[midi-sound] Piano samples unavailable, using synth:', err);
+				this._pianoUnavailable = true;
+				this._samplesLoading = false;
+			}
+		}
+		if (this._pianoUnavailable && this.instrument instanceof T.Sampler) {
+			// The Sampler has no buffers and would stay silent — rebuild as a synth.
+			this.disposeInstrument();
+			this.createInstrument();
 		}
 	}
 
@@ -388,7 +401,8 @@ export class MidiSoundEngine {
 		this.volume = new T.Volume(this._volume).toDestination();
 		this.reverb = new T.Reverb({ decay: 2.0, wet: 0.15 }).connect(this.volume);
 
-		if (this._preset === 'grand-piano') {
+		const preset = this._preset === 'grand-piano' && this._pianoUnavailable ? 'electric-piano' : this._preset;
+		if (preset === 'grand-piano') {
 			this._samplesLoading = true;
 			this.instrument = new T.Sampler({
 				urls: SALAMANDER_SAMPLES,
@@ -398,10 +412,11 @@ export class MidiSoundEngine {
 				onerror: (err: Error) => {
 					console.error('[midi-sound] Failed to load piano samples:', err);
 					this._samplesLoading = false;
+					this._pianoUnavailable = true;
 				},
 			}).connect(this.reverb);
 		} else {
-			const cfg = SYNTH_CONFIGS[this._preset as Exclude<SoundPreset, 'grand-piano'>];
+			const cfg = SYNTH_CONFIGS[preset as Exclude<SoundPreset, 'grand-piano'>];
 			const SynthClass = cfg.synthType === 'FMSynth' ? T.FMSynth : T.Synth;
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const synth = new T.PolySynth(SynthClass as any, cfg.config);

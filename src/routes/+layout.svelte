@@ -11,9 +11,12 @@
 	import BrandMark from '$lib/components/BrandMark.svelte';
 	import { browser } from '$app/environment';
 	import { initAnalytics } from '$lib/services/analytics';
+	import { trainFocus } from '$lib/services/train-focus.svelte';
 
 	let { children } = $props();
-	const isTrainPage = $derived(page.url.pathname.startsWith('/train'));
+	// Only a running drill on /train hides the site chrome; its start screen
+	// stays inside the frame like every other page.
+	const isTrainFocus = $derived(page.url.pathname.startsWith('/train') && trainFocus.active);
 	const isLearnLesson = $derived(/^\/learn\/[^/]+\/[^/]+/.test(page.url.pathname));
 	const isEmbedRoute = $derived(page.url.pathname.startsWith('/embed'));
 
@@ -112,7 +115,7 @@
 
 <div class="min-h-dvh flex flex-col">
 	<!-- Navigation — hidden on embed routes for clean iframe experience -->
-	{#if !isEmbedRoute && !isTrainPage}
+	{#if !isEmbedRoute && !isTrainFocus}
 		<nav class="site-nav" class:scrolled={navbarCondensed}>
 			<div class="nav-inner">
 				<!-- Brand lockup: the app-icon keys + the serif wordmark. -->
@@ -210,8 +213,8 @@
 		{@render children()}
 	</main>
 
-	<!-- Footer (hidden on train page and embed routes for focus) -->
-	{#if !isTrainPage && !isLearnLesson && !isEmbedRoute}
+	<!-- Footer (hidden during a drill and on embed routes for focus) -->
+	{#if !isTrainFocus && !isLearnLesson && !isEmbedRoute}
 		<footer class="site-foot">
 			<div class="foot-inner">
 				<!-- Colophon: the imprint line at the foot of the plate -->

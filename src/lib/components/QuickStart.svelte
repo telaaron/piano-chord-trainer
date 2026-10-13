@@ -114,11 +114,9 @@
 
 <section aria-label={t('quickstart.section_label')} class="qs">
 	{#if onstartcoach}
-		<!-- The one filled action on the whole screen. Amber is the system's
-		     live ink and starting a session is exactly that; the values are
-		     fixed in both themes for the same reason /togo fixes them —
-		     near-black on bright amber measures 9.65:1 either way, and the
-		     invitation to press must not change character on paper. -->
+		<!-- The one filled action on the whole screen, in the site's primary
+		     ink — the same filled button /learn uses for its next step, so the
+		     trainer's start reads as part of the same site. -->
 		<button type="button" onclick={onstartcoach} class="stamp">
 			<Play size={22} fill="currentColor" aria-hidden="true" />
 			<span class="stamp-txt">
@@ -214,15 +212,12 @@
 		width: 100%;
 		min-height: 3.85rem;
 		padding: 0.75rem 1.25rem;
-		/* Fixed values in BOTH themes, for the reason /togo fixes them: the
-		   light theme resolves --accent-amber to the paper-safe ochre #8f5a05,
-		   which turns the one invitation on the screen into a muddy brown slab.
-		   Near-black on bright amber measures 9.65:1 either way, and the
-		   invitation to press must not change character on paper. */
-		border: 1.5px solid var(--stamp);
+		/* The primary filled button, as /learn's .btn-stamp sets it: the
+		   tokens carry their own text colour per theme. */
+		border: 1.5px solid var(--primary);
 		border-radius: var(--radius-sm);
-		background: var(--stamp);
-		color: var(--stamp-ink);
+		background: var(--primary);
+		color: var(--primary-text);
 		font-family: inherit;
 		text-align: left;
 		cursor: pointer;
@@ -230,8 +225,8 @@
 	}
 	.stamp:hover {
 		transform: translateY(-1px);
-		background: var(--stamp-hover);
-		border-color: var(--stamp-hover);
+		background: var(--primary-hover);
+		border-color: var(--primary-hover);
 	}
 	.stamp:active { transform: none; }
 	.stamp:focus-visible {
@@ -239,13 +234,6 @@
 		outline-offset: 2px;
 	}
 	.stamp :global(svg) { flex: none; }
-
-	/* On diazo paper the amber fill separates from the ground at only 1.75:1,
-	   so the button's SHAPE goes soft though its label is fine. An ink edge
-	   gives it back its cut. Dark ground needs none. */
-	:global([data-theme='light']) .stamp {
-		border-color: var(--stamp-ink);
-	}
 
 	.stamp-txt { display: block; min-width: 0; }
 	.stamp-t {

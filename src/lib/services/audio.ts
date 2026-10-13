@@ -106,11 +106,24 @@ const SYNTH_CONFIGS: Record<Exclude<SoundPreset, 'grand-piano'>, SynthPresetConf
 
 // ─── Instrument state ────────────────────────────────────────────────────────
 let instrument: ToneType.PolySynth | ToneType.Sampler | null = null;
+/** Which preset `instrument` was built for — lets us spot a stale piano Sampler. */
+let instrumentPreset: SoundPreset | null = null;
 let currentPreset: SoundPreset = 'grand-piano';
 let reverb: ToneType.Reverb | null = null;
 let started = false;
 let samplesLoading = false;
 let samplesLoadedCallbacks: (() => void)[] = [];
+/**
+ * The piano samples could not be fetched (offline, CDN down, blocked by the
+ * CSP). A Sampler without buffers plays nothing and throws nothing useful, so
+ * once this is set the grand-piano preset is voiced by a synth instead.
+ */
+let pianoUnavailable = false;
+
+/** The preset that actually sounds: the piano falls back to a synth when its samples are missing. */
+function soundingPreset(): SoundPreset {
+	return currentPreset === 'grand-piano' && pianoUnavailable ? 'electric-piano' : currentPreset;
+}
 
 // Track currently sounding notes so we can release only those (fast)
 let activeNotes: string[] = [];
@@ -173,6 +186,7 @@ function createSampler(): ToneType.Sampler {
 		onerror: (err: Error) => {
 			console.error('[audio] Failed to load piano samples:', err);
 			samplesLoading = false;
+			pianoUnavailable = true;
 		},
 	});
 
@@ -182,7 +196,7 @@ function createSampler(): ToneType.Sampler {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function createPolySynth(): ToneType.PolySynth {
 	const T = _tone!;
-	const cfg = SYNTH_CONFIGS[currentPreset as Exclude<SoundPreset, 'grand-piano'>];
+	const cfg = SYNTH_CONFIGS[soundingPreset() as Exclude<SoundPreset, 'grand-piano'>];
 	const SynthClass = cfg.synthType === 'FMSynth' ? T.FMSynth : T.Synth;
 	const synth = new T.PolySynth(SynthClass as any, cfg.config);
 	synth.maxPolyphony = 8;
@@ -193,8 +207,9 @@ function createPolySynth(): ToneType.PolySynth {
 function getInstrument(): ToneType.PolySynth | ToneType.Sampler {
 	if (!instrument) {
 		if (!reverb) reverb = createReverb();
+		instrumentPreset = soundingPreset();
 		instrument =
-			currentPreset === 'grand-piano' ? createSampler() : createPolySynth();
+			instrumentPreset === 'grand-piano' ? createSampler() : createPolySynth();
 		instrument.connect(reverb);
 	}
 	return instrument;
@@ -276,6 +291,31 @@ function notesToToneNames(notes: string[]): string[] {
 // ─── Playback ───────────────────────────────────────────────────────────────
 
 /**
+ * Cold-path setup shared by every playback entry point: load Tone, start the
+ * context, build the instrument and wait for the piano samples. If the samples
+ * fail, swap in the synth so the caller still gets a sound instead of silence.
+ */
+async function prepareInstrument(): Promise<void> {
+	const T = await getTone();
+	await ensureStarted();
+	getInstrument();
+	if (soundingPreset() === 'grand-piano' && samplesLoading) {
+		try {
+			await T.loaded();
+		} catch (err) {
+			console.error('[audio] Piano samples unavailable, using synth:', err);
+			pianoUnavailable = true;
+			samplesLoading = false;
+		}
+	}
+	if (instrumentPreset !== soundingPreset()) {
+		// The broken Sampler is still installed — replace it with the synth.
+		disposeAudio();
+		getInstrument();
+	}
+}
+
+/**
  * SYNCHRONOUS chord trigger — zero async overhead.  Only works after
  * ensureStarted() has been called at least once (which happens on first
  * user interaction via playChord or startMetronome).
@@ -315,18 +355,13 @@ export async function playChord(notes: string[], duration: string = '2n'): Promi
 	const toneNotes = notesToToneNames(notes);
 
 	// ── Hot path: everything ready → fire synchronously ──
-	if (_tone && started && instrument && !samplesLoading) {
+	if (_tone && started && instrument && !samplesLoading && instrumentPreset === soundingPreset()) {
 		triggerChordSync(toneNotes, duration);
 		return;
 	}
 
 	// ── Cold path: first call or samples still loading ──
-	const T = await getTone();
-	await ensureStarted();
-	getInstrument();
-	if (currentPreset === 'grand-piano' && samplesLoading) {
-		await T.loaded();
-	}
+	await prepareInstrument();
 	triggerChordSync(toneNotes, duration);
 }
 
@@ -344,6 +379,7 @@ export async function playChord(notes: string[], duration: string = '2n'): Promi
 export function playChordAtTime(notes: string[], duration: string, time: number): void {
 	if (!_tone || !started || !instrument) return;
 	if (currentPreset === 'grand-piano' && samplesLoading) return;  // skip — can't play yet
+	if (instrumentPreset !== soundingPreset()) return; // stale piano Sampler — the next cold path swaps it
 	const toneNotes = notesToToneNames(notes);
 	triggerChordSync(toneNotes, duration, time);
 }
@@ -353,7 +389,7 @@ export function playChordAtTime(notes: string[], duration: string, time: number)
  */
 export async function playNote(note: string, duration: string = '8n'): Promise<void> {
 	// Hot path
-	if (_tone && started && instrument && !samplesLoading) {
+	if (_tone && started && instrument && !samplesLoading && instrumentPreset === soundingPreset()) {
 		const inst = getInstrument();
 		if ('triggerAttackRelease' in inst) {
 			(inst as ToneType.PolySynth).triggerAttackRelease(note, duration);
@@ -363,12 +399,7 @@ export async function playNote(note: string, duration: string = '8n'): Promise<v
 		return;
 	}
 	// Cold path
-	const T = await getTone();
-	await ensureStarted();
-	getInstrument();
-	if (currentPreset === 'grand-piano' && samplesLoading) {
-		await T.loaded();
-	}
+	await prepareInstrument();
 	const inst = getInstrument();
 	if ('triggerAttackRelease' in inst) {
 		(inst as ToneType.PolySynth).triggerAttackRelease(note, duration);
@@ -385,18 +416,13 @@ export async function playNote(note: string, duration: string = '8n'): Promise<v
 export async function playArpeggio(notes: string[], stepMs = 180, noteDuration = '4n'): Promise<void> {
 	const toneNotes = notesToToneNames(notes);
 	// Ensure audio is warm before the first note so timing is even.
-	await getTone();
-	await ensureStarted();
-	const T = await getTone();
-	if (currentPreset === 'grand-piano' && samplesLoading) {
-		await T.loaded();
-	}
+	await prepareInstrument();
 	const inst = getInstrument();
 	toneNotes.forEach((n, i) => {
 		setTimeout(() => {
-			if ('triggerAttackRelease' in inst) {
-				(inst as ToneType.PolySynth).triggerAttackRelease(n, noteDuration);
-			}
+			// Both PolySynth and Sampler take a single note here. This used to
+			// check for PolySynth only, so with the default piano it was silent.
+			inst.triggerAttackRelease(n, noteDuration);
 		}, i * stepMs);
 	});
 }
@@ -413,6 +439,7 @@ export function disposeAudio(): void {
 	if (instrument) {
 		instrument.dispose();
 		instrument = null;
+		instrumentPreset = null;
 	}
 	if (reverb) {
 		reverb.dispose();
