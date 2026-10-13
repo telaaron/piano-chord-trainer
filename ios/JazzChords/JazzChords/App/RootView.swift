@@ -46,6 +46,9 @@ struct RootView: View {
         .environment(\.palette, Theme.palette(for: scheme))
         .sheet(isPresented: $showSettings) {
             NavigationStack { SettingsView() }
+                .environment(\.palette, Theme.palette(for: scheme))
+                // Opaque: a translucent sheet lets the coloured cards behind bleed through.
+                .presentationBackground(Theme.palette(for: scheme).bg)
                 .presentationDetents(hSize == .regular ? [.large] : [.medium, .large])
         }
         .fullScreenCover(isPresented: $showOnboarding) {

@@ -17,14 +17,15 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: Theme.space6) {
-            Spacer()
+            // The pager fills the screen and centres each page, so the content
+            // sits at eye level instead of under a block of empty space.
             TabView(selection: $page) {
                 welcomePage.tag(0)
                 goalPage.tag(1)
                 timePage.tag(2)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
-            .frame(maxHeight: 460)
+            .frame(maxHeight: .infinity)
 
             Button {
                 if page < 2 { withAnimation { page += 1 } } else { finish() }

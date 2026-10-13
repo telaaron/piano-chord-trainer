@@ -7,6 +7,7 @@ import MusicEngine
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.palette) private var palette
 
     @State private var settings = ProgressStore.loadSettings()
     @State private var showBluetooth = false
@@ -125,6 +126,8 @@ struct SettingsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(CoachL10n.t("ui.done")) { dismiss() }
+                    .fontWeight(.semibold)
+                    .tint(palette.text)
             }
         }
     }
