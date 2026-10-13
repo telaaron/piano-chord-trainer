@@ -1,5 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { brevoConfig, deleteContact } from '$lib/server/brevo';
 
 export const POST: RequestHandler = async ({ locals }) => {
 	const { user } = await locals.safeGetSession();
@@ -9,6 +10,14 @@ export const POST: RequestHandler = async ({ locals }) => {
 	await locals.supabaseAdmin.from('user_data').delete().eq('user_id', user.id);
 	await locals.supabaseAdmin.from('subscriptions').delete().eq('user_id', user.id);
 	await locals.supabaseAdmin.from('profiles').delete().eq('id', user.id);
+
+	// The mailing contact goes with the account (email_consents cascades).
+	const brevo = brevoConfig();
+	if (brevo && user.email) {
+		await deleteContact(brevo, user.email).catch((e) =>
+			console.error('[Account Delete] Brevo contact not removed:', e),
+		);
+	}
 
 	// Delete auth user
 	const { error: authError } = await locals.supabaseAdmin.auth.admin.deleteUser(user.id);
