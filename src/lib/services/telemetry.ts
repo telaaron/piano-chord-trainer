@@ -26,6 +26,15 @@ export interface CoachEventRow {
 }
 
 let queue: CoachEventRow[] = [];
+// The coach session the next events belong to. Without it, a session's
+// events could only be grouped by device + time window, which is how
+// per-block first_chord_played got mistaken for per-session.
+let coachSessionId: string | null = null;
+
+/** Tags every following coach event with this session id; pass null to clear. */
+export function setCoachSessionId(id: string | null): void {
+	coachSessionId = id;
+}
 let flushTimer: ReturnType<typeof setInterval> | null = null;
 let listenersAttached = false;
 
@@ -114,7 +123,7 @@ export function trackCoachEvent(eventType: string, payload: object = {}): void {
 			version: APP_VERSION,
 			cohort: getCohort(deviceId),
 			event_type: eventType,
-			payload,
+			payload: coachSessionId ? { sessionId: coachSessionId, ...payload } : payload,
 		});
 
 		if (queue.length >= FLUSH_BATCH_SIZE) {

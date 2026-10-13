@@ -100,7 +100,7 @@
 	} from '$lib/engine/coach';
 	import { DEFAULT_COACH_PARAMS, type CoachParams } from '$lib/engine/coach-params';
 	import { loadCoachState, saveCoachState } from '$lib/services/coach-state';
-	import { getDeviceId, trackCoachEvent } from '$lib/services/telemetry';
+	import { getDeviceId, setCoachSessionId, trackCoachEvent } from '$lib/services/telemetry';
 	import { getCohort, fetchCoachParams } from '$lib/services/coach-config';
 
 	const VOICING_KEYS: Record<VoicingType, string> = {
@@ -392,6 +392,12 @@
 	let chordsWithNotes: ChordWithNotes[] = $state([]);
 	let startTime = $state(0);
 	let endTime = $state(0);
+	// endGame() runs once per drill/block. In Coach mode the screen stays
+	// 'playing' through the between-block transition, so a late key press or
+	// MIDI match could reach the last chord again and end the block twice —
+	// 57 of 545 session_end events had completedBlocks > totalBlocks, and the
+	// duplicate result was folded into the coach state a second time.
+	let gameEnded = false;
 	let now = $state(0);
 	let timerHandle: ReturnType<typeof setInterval> | null = $state(null);
 	let chordTimings: ChordTiming[] = $state([]);
@@ -684,6 +690,7 @@
 		currentIdx = 0;
 		playPhase = 'playing';
 		screen = 'playing';
+		gameEnded = false;
 		timerStarted = false;
 		paused = false;
 		pauseAccumulated = 0;
@@ -1085,6 +1092,7 @@
 		coachFeedbackGiven = false;
 		coachSessionBlocks = [];
 		coachSessionStartedAt = Date.now();
+		setCoachSessionId(crypto.randomUUID());
 		trackCoachEvent('session_start', {
 			estMinutes: plan.estMinutes,
 			blocks: plan.blocks.map((b) => b.kind),
@@ -1303,7 +1311,7 @@
 	}
 
 	function nextChord() {
-		if (screen !== 'playing' || paused) return;
+		if (screen !== 'playing' || paused || gameEnded) return;
 
 		// Auto-start timer on first interaction if not started
 		if (!timerStarted) {
@@ -1430,6 +1438,8 @@
 	}
 
 	function endGame() {
+		if (gameEnded) return;
+		gameEnded = true;
 		endTime = Date.now();
 		// In Coach mode the block loop decides the next screen (transition or
 		// feedback); a normal drill lands on the results screen.
