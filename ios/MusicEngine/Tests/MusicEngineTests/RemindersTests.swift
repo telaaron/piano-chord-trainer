@@ -73,16 +73,19 @@ final class RemindersTests: XCTestCase {
         let dates = Reminders.fireDates(now: date(2026, 10, 24, 9), time: ReminderTime("19:00")!,
                                         practicedToday: false, days: 3, calendar: berlin)
         XCTAssertEqual(dates.map(hm), ["10-24 19:00", "10-25 19:00", "10-26 19:00"])
-        XCTAssertEqual(dates[2].timeIntervalSince(dates[1]), 25 * 3600)
+        // Clocks go back at 03:00 on the 25th, so the 25-hour day is 24th → 25th.
+        XCTAssertEqual(dates[1].timeIntervalSince(dates[0]), 25 * 3600)
+        XCTAssertEqual(dates[2].timeIntervalSince(dates[1]), 24 * 3600)
     }
 
     func testTimeInDSTGapMovesForward() {
-        // 29 Mar 2026: 02:00–03:00 does not exist in Berlin.
+        // 29 Mar 2026: 02:00–03:00 does not exist in Berlin. Today's 02:30 is
+        // already past at noon, so the window 28th–30th yields the 29th and 30th.
         let dates = Reminders.fireDates(now: date(2026, 3, 28, 12), time: ReminderTime("02:30")!,
-                                        practicedToday: false, days: 2, calendar: berlin)
+                                        practicedToday: false, days: 3, calendar: berlin)
         XCTAssertEqual(dates.count, 2)
         XCTAssertTrue(["03-29 03:00", "03-29 03:30"].contains(hm(dates[0])), hm(dates[0]))
-        XCTAssertTrue(dates.allSatisfy { $0 > date(2026, 3, 28, 12) })
+        XCTAssertEqual(hm(dates[1]), "03-30 02:30")
     }
 
     func testZeroDaysIsEmpty() {
