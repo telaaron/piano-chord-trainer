@@ -43,18 +43,35 @@ export async function initAuth(): Promise<void> {
 	notify({ user, session, loading: false });
 
 	// Listen for auth changes
-	supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+	supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
 		notify({ user: session?.user ?? null, session, loading: false });
+		// First sign-in after ticking the signup opt-in: let the server record it
+		// and send the double opt-in mail. Idempotent, so a repeat is harmless.
+		if (event === 'SIGNED_IN' && session?.user.user_metadata?.email_updates_opt_in) {
+			void fetch('/api/email-consent').catch(() => {});
+		}
 	});
 }
 
-export async function signUp(email: string, password: string): Promise<{ error: AuthError | null }> {
+/**
+ * `emailUpdates` is the unticked-by-default opt-in from the signup form. It
+ * rides in user metadata because the account cannot record anything until the
+ * address is confirmed; /api/email-consent turns it into a consent record and
+ * sends the double opt-in on first sign-in.
+ */
+export async function signUp(
+	email: string,
+	password: string,
+	emailUpdates = false,
+	locale = 'en',
+): Promise<{ error: AuthError | null }> {
 	const supabase = getSupabase();
 	const { error } = await supabase.auth.signUp({
 		email,
 		password,
 		options: {
 			emailRedirectTo: `${window.location.origin}/auth/callback`,
+			data: emailUpdates ? { email_updates_opt_in: true, locale } : undefined,
 		},
 	});
 	return { error };

@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { t } from '$lib/i18n';
+	import { t, getLocale } from '$lib/i18n';
+	import { consentText, type ConsentStatus } from '$lib/consent';
+	import { page } from '$app/state';
 	import KeyClock from '$lib/components/KeyClock.svelte';
 	import { buildKeyDial, loadHistory, loadSettings, type KeyDial } from '$lib/services/progress';
 	import type { NotationSystem } from '$lib/engine';
@@ -26,6 +28,9 @@
 	let displayName = $state('');
 	let savingName = $state(false);
 	let telemetryEnabled = $state(isTelemetryEnabled());
+	let updatesStatus: ConsentStatus = $state('none');
+	let updatesConfigured = $state(true);
+	let updatesBusy = $state(false);
 
 	/* Factory reset — two-step, because it cannot be undone. */
 	let showResetConfirm = $state(false);
@@ -65,6 +70,44 @@
 		}
 	}
 
+	/** Reads the consent state; the server also settles a signup opt-in and Brevo's side. */
+	async function loadUpdatesStatus() {
+		try {
+			const res = await fetch('/api/email-consent');
+			if (!res.ok) return;
+			const body = (await res.json()) as { status: ConsentStatus; configured: boolean };
+			updatesStatus = body.status;
+			updatesConfigured = body.configured;
+			// Landed here from the double opt-in link.
+			if (page.url.searchParams.get('updates') === 'confirmed' && body.status === 'confirmed') {
+				toastSuccess(t('account.updates_confirmed_toast'));
+			}
+		} catch {
+			// The toggle simply stays as it was.
+		}
+	}
+
+	async function handleUpdatesToggle() {
+		const subscribe = updatesStatus === 'none';
+		updatesBusy = true;
+		try {
+			const res = await fetch('/api/email-consent', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ subscribe, source: 'account', locale: getLocale() }),
+			});
+			if (!res.ok) throw new Error(String(res.status));
+			const body = (await res.json()) as { status: ConsentStatus; configured: boolean };
+			updatesStatus = body.status;
+			updatesConfigured = body.configured;
+			if (!subscribe) toastInfo(t('account.updates_unsubscribed'));
+		} catch {
+			toastError(t('account.updates_error'));
+		} finally {
+			updatesBusy = false;
+		}
+	}
+
 	function handleTelemetryToggle() {
 		telemetryEnabled = !telemetryEnabled;
 		setTelemetryEnabled(telemetryEnabled);
@@ -75,6 +118,7 @@
 			auth = s;
 			if (s.user) {
 				sub = await getSubscription();
+				void loadUpdatesStatus();
 				const { data } = await getSupabase().from('profiles').select('display_name').eq('id', s.user.id).single();
 				displayName = data?.display_name ?? '';
 			}
@@ -320,6 +364,31 @@
 				</div>
 			{/if}
 		</section>
+
+		<!-- Product-update email: double opt-in via /api/email-consent -->
+		{#if auth.user}
+			<section class="panel">
+				<h2 class="panel-title">{t('account.updates_title')}</h2>
+				{#if !updatesConfigured && updatesStatus === 'none'}
+					<p class="note-body">{t('account.updates_unavailable')}</p>
+				{:else}
+					<label class="check">
+						<input
+							type="checkbox"
+							checked={updatesStatus !== 'none'}
+							disabled={updatesBusy}
+							onchange={handleUpdatesToggle}
+						/>
+						<span>{consentText(getLocale())}</span>
+					</label>
+					{#if updatesStatus === 'pending'}
+						<p class="note-body">{t('account.updates_pending')}</p>
+					{:else if updatesStatus === 'confirmed'}
+						<p class="note-body">{t('account.updates_confirmed')}</p>
+					{/if}
+				{/if}
+			</section>
+		{/if}
 
 		<!-- Privacy / Telemetry -->
 		<section class="panel">

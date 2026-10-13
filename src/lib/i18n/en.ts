@@ -1020,7 +1020,7 @@ export const en = {
     title: 'Privacy Policy – Chord Trainer',
     meta_desc: 'Privacy Policy for Chord Trainer by Aaron Technologies OÜ. How we handle your data.',
     h1: 'Privacy Policy',
-    last_updated: 'Last updated: February 17, 2026',
+    last_updated: 'Last updated: October 13, 2026',
     intro: 'Chord Trainer ("the App") is a product of <strong>Aaron Technologies OÜ</strong>, registered in Estonia (Registry Code: 17336129, VAT ID: EE102955587). This privacy policy explains how we collect, use, and protect your information.',
     
     h_data_collect: '1. Data We Collect',
@@ -1043,12 +1043,15 @@ export const en = {
     h_coach_data: '1.4 Practice data used to improve the coach',
     p_coach_data: 'To make the practice coach better, we transmit <strong>anonymous events</strong> about your practice sessions: which block you played, average times, and whether you ended a session early. For this we store a random <strong>device ID</strong> in your browser — it contains no name, no email and no IP address, and cannot be traced back to you. With an account, your user ID is sent as well so sessions from the same account can be grouped. You can turn this off at any time <a href="/account" class="underline">in your account settings</a>; transmission stops immediately.',
     
-    h_hosting: '1.4 Hosting',
+    h_hosting: '1.5 Hosting',
     p_hosting: 'The App is hosted on <strong>Vercel</strong> (Vercel Inc., San Francisco, CA). Vercel may collect server logs including IP addresses for security and performance purposes. See <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Vercel\'s Privacy Policy</a>.',
     
-    h_fonts: '1.5 Fonts',
+    h_fonts: '1.6 Fonts',
     p_fonts: 'All fonts (Source Serif 4, Inter) are self-hosted and served directly from <code>jazzchords.app</code>. No request goes to Google or any other third party, so your IP address is never shared with a font provider.',
     
+    h_email_updates: '1.7 Email updates',
+    p_email_updates: 'Only if you explicitly agree (checkbox at signup or in your <a href="/account" class="underline">account settings</a>) do we send you emails about new features, courses and the JazzChords app. The subscription only takes effect after you click the confirmation link in a separate email (double opt-in). To be able to prove your consent we store your email address, the wording you agreed to and when you subscribed, confirmed and unsubscribed. Emails are sent via <strong>Brevo</strong> (Sendinblue SAS, Paris, France) as our processor within the EU. The legal basis is your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time via the link in every email or in your account settings. If you delete your account, we also delete the contact at Brevo.',
+
     h_no_collect: '2. Data We Do NOT Collect',
     li_no_account: 'No account required — accounts are optional and only used for cross-device sync',
     li_no_cookies: 'No tracking cookies (only essential auth cookies if logged in)',
@@ -1065,6 +1068,7 @@ export const en = {
     td_cloudflare_purpose: 'DNS & CDN',
     td_supabase_purpose: 'Authentication & cloud data storage (optional, only with account)',
     td_stripe_purpose: 'Payment processing (only for paid plans)',
+    td_brevo_purpose: 'Sending email updates (only with your consent)',
     td_link: 'Link',
     
     h_rights: '4. Your Rights (GDPR)',
@@ -1825,6 +1829,13 @@ export const en = {
     privacy: 'Anonymous Usage Data',
     privacy_desc: 'Helps us improve the practice coach — fully anonymous, no personal data, and you can turn it off anytime.',
     privacy_toggle_label: 'Share anonymous usage data',
+    updates_title: 'Email updates',
+    updates_pending: 'Almost there: please click the link in the email we sent you.',
+    updates_confirmed: 'You get our updates. Unsubscribe here or via the link in every email.',
+    updates_confirmed_toast: 'Thanks! Your subscription is confirmed.',
+    updates_unsubscribed: 'You are unsubscribed.',
+    updates_unavailable: 'Email updates are not available yet.',
+    updates_error: 'That did not work. Please try again.',
     danger_zone: 'Danger Zone',
     sign_out: 'Sign Out',
     delete_account: 'Delete Account',
