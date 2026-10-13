@@ -38,7 +38,6 @@ export async function sendDoubleOptIn(
 	cfg: BrevoConfig,
 	email: string,
 	redirectionUrl: string,
-	locale: string,
 ): Promise<boolean> {
 	const res = await call(cfg, '/contacts/doubleOptinConfirmation', {
 		method: 'POST',
@@ -47,9 +46,14 @@ export async function sendDoubleOptIn(
 			includeListIds: [cfg.listId],
 			templateId: cfg.doiTemplateId,
 			redirectionUrl,
-			attributes: { LOCALE: locale },
+			// No contact attributes: Brevo can reject the whole request for an
+			// attribute the account has not defined, and LOCALE is not defined.
 		}),
 	});
+	if (!res.ok) {
+		// Without this the failure is invisible: the user waits for a mail that never comes.
+		console.error('[brevo] double opt-in failed:', res.status, await res.text().catch(() => ''));
+	}
 	return res.ok;
 }
 

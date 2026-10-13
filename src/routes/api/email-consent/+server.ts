@@ -53,10 +53,10 @@ async function record(
 	}
 }
 
-async function startOptIn(user: User, origin: string, locale: string): Promise<boolean> {
+async function startOptIn(user: User, origin: string): Promise<boolean> {
 	const cfg = brevoConfig();
 	if (!cfg || !user.email) return false;
-	return sendDoubleOptIn(cfg, user.email, `${origin}/account?updates=confirmed`, locale);
+	return sendDoubleOptIn(cfg, user.email, `${origin}/account?updates=confirmed`);
 }
 
 export const GET: RequestHandler = async ({ locals, url }) => {
@@ -72,7 +72,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 	if (status === null && meta.email_updates_opt_in === true) {
 		const locale = typeof meta.locale === 'string' ? meta.locale : 'en';
 		await record(admin, user, 'pending', 'signup', locale);
-		await startOptIn(user, url.origin, locale);
+		await startOptIn(user, url.origin);
 		status = 'pending';
 	}
 
@@ -112,7 +112,7 @@ export const POST: RequestHandler = async ({ locals, request, url }) => {
 	if (body.subscribe) {
 		if (status === 'confirmed') return json({ status, configured: cfg !== null });
 		await record(admin, user, 'pending', source, locale);
-		const sent = await startOptIn(user, url.origin, locale);
+		const sent = await startOptIn(user, url.origin);
 		return json({ status: 'pending', configured: cfg !== null, sent });
 	}
 
