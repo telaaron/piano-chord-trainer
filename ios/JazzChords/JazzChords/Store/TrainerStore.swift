@@ -493,7 +493,10 @@ final class TrainerStore {
 
         if !timerStarted {
             beginTimer()
-            return
+            // In verify mode the first tap goes on to reveal, so "Show me" never
+            // looks like a dead button. Elsewhere it only starts the clock, so the
+            // first chord isn't skipped (and in-time mode starts its metronome).
+            if inTimeMode || displayMode != .verify { return }
         }
 
         // Verify mode: reveal before advancing. With tap input, grade the built

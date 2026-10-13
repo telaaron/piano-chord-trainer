@@ -19,7 +19,9 @@ struct ReminderOfferCard: View {
         Group {
             switch phase {
             case .hidden:
-                EmptyView()
+                // Not EmptyView: SwiftUI creates no view for it, so the `.task`
+                // below would never run and the offer could never appear.
+                Color.clear.frame(height: 0)
             case .offering:
                 offer
             case .enabled:
