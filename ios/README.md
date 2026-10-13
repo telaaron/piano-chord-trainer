@@ -60,4 +60,6 @@ analysed on device and never stored).
 `Store/TelemetryService.swift`: anonymous per-install UUID, batched inserts into
 Supabase `coach_events` with the publishable anon key (RLS: insert only).
 `version` is `ios-<CFBundleShortVersionString>` in Release, `ios-dev` in Debug,
-so development traffic can be filtered out. Users can opt out in Settings.
+so development traffic can be filtered out. Opt-in: nothing is sent and no
+device ID exists until the user agrees on the last onboarding page or in
+Settings (`coach-telemetry-consent`). Opting out deletes the device ID.

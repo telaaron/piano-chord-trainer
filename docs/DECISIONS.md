@@ -264,6 +264,14 @@
 - Wer eine Woche nicht oeffnet, bekommt danach keine Erinnerungen mehr (kein Dauer-Nerven)
 - Datumslogik in `MusicEngine/Reminders.swift`, getestet inkl. Sommerzeit
 
+### Anonyme Nutzungsdaten nur mit Zustimmung (iOS)
+
+**Entscheidung (Aaron, 13.10.2026):** In der iOS-App ist Telemetrie standardmaessig aus. Die letzte Onboarding-Seite fragt ohne Vorauswahl; ueberspringen zaehlt als Nein. Aenderbar in den Settings, Widerruf loescht die Geraete-ID.
+
+**Gruende:**
+- Die Geraete-ID wird auf dem Geraet gespeichert und ausgelesen (ePrivacy/§ 25 TDDDG), Zustimmung ist der sichere Weg
+- Weniger Daten als im Web, dafuer sauber fuer App-Review und Datenschutzerklaerung
+
 ### Anzeige-Praeferenzen gehoeren dem Nutzer
 
 **Entscheidung:** Notation und Vorzeichen kommen immer aus den Settings; Plaene und Coach-Bloecke ueberschreiben sie nicht mehr.

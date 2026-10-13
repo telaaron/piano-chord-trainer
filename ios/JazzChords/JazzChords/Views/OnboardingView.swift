@@ -1,5 +1,6 @@
 // OnboardingView — first-launch ritual: pick a daily goal + preferred time,
-// then drop into Today. Writes HabitProfile.onboardingDone so it shows once.
+// opt in (or not) to anonymous usage data, then drop into Today. Writes
+// HabitProfile.onboardingDone so it shows once.
 // A calm, paged flow (HIG onboarding), brand amber accent.
 
 import SwiftUI
@@ -12,8 +13,12 @@ struct OnboardingView: View {
     @State private var page = 0
     @State private var goalMinutes = 5
     @State private var preferredTime: TimeOfDay = .evening
+    /// Anonymous usage data is opt-in: nothing is preselected, and skipping the
+    /// choice counts as "no".
+    @State private var shareUsage: Bool?
 
     private let goals = [2, 5, 10, 15, 20]
+    private let lastPage = 3
 
     var body: some View {
         VStack(spacing: Theme.space6) {
@@ -23,14 +28,15 @@ struct OnboardingView: View {
                 welcomePage.tag(0)
                 goalPage.tag(1)
                 timePage.tag(2)
+                usagePage.tag(3)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .frame(maxHeight: .infinity)
 
             Button {
-                if page < 2 { withAnimation { page += 1 } } else { finish() }
+                if page < lastPage { withAnimation { page += 1 } } else { finish() }
             } label: {
-                Text(CoachL10n.t(page < 2 ? "ui.continue" : "habit.onboard_start"))
+                Text(CoachL10n.t(page < lastPage ? "ui.continue" : "habit.onboard_start"))
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Theme.space4)
@@ -94,6 +100,23 @@ struct OnboardingView: View {
         }
     }
 
+    private var usagePage: some View {
+        VStack(spacing: Theme.space5) {
+            Text(CoachL10n.t("onboarding.usage_title"))
+                .font(Display.headline(24)).foregroundStyle(palette.text)
+                .multilineTextAlignment(.center)
+            Text(CoachL10n.t(CoachL10n.privacyDesc))
+                .font(.subheadline).foregroundStyle(palette.textMuted)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Theme.space5)
+            VStack(spacing: Theme.space2) {
+                selectRow(title: CoachL10n.t("onboarding.usage_yes"), selected: shareUsage == true) { shareUsage = true }
+                selectRow(title: CoachL10n.t("onboarding.usage_no"), selected: shareUsage == false) { shareUsage = false }
+            }
+            .padding(.horizontal, Theme.space5)
+        }
+    }
+
     private func selectRow(title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
@@ -113,6 +136,7 @@ struct OnboardingView: View {
     }
 
     private func finish() {
+        TelemetryService.shared.setEnabled(shareUsage == true)
         HabitStore.shared.completeOnboarding(dailyGoalMinutes: goalMinutes, preferredTime: preferredTime)
         onFinish()
     }

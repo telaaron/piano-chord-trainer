@@ -289,7 +289,7 @@ enum CoachL10n {
         "quickstart.coach_hero_sub": "Your coach builds today's session.",
         "quickstart.pick_yourself": "Pick it yourself",
         "settings.privacy": "Anonymous Usage Data",
-        "settings.privacy_desc": "Helps us improve the practice coach — fully anonymous, no personal data, and you can turn it off anytime.",
+        "settings.privacy_desc": "Helps us improve the practice coach — fully anonymous, no personal data, off unless you agree, and you can change it anytime in Settings.",
         "settings.privacy_toggle_label": "Share anonymous usage data",
 
         // ── App chrome (web keys noted where one exists) ──
@@ -437,6 +437,9 @@ enum CoachL10n {
         "habit.onboard_daily": "Daily goal",
         "habit.onboard_time_title": "How long do you want to practice each day?",
         "habit.onboard_when_title": "When do you practice?",
+        "onboarding.usage_title": "Help improve the coach?",
+        "onboarding.usage_yes": "Yes, share anonymously",
+        "onboarding.usage_no": "No, thanks",
         "habit.onboard_morning": "Morning",
         "habit.onboard_afternoon": "Afternoon",
         "habit.onboard_evening": "Evening",
@@ -604,7 +607,7 @@ enum CoachL10n {
         "quickstart.coach_hero_sub": "Dein Coach stellt die Session zusammen.",
         "quickstart.pick_yourself": "Selbst wählen",
         "settings.privacy": "Anonyme Nutzungsdaten",
-        "settings.privacy_desc": "Hilft uns, den Übungs-Coach zu verbessern — komplett anonym, ohne Personendaten, jederzeit abschaltbar.",
+        "settings.privacy_desc": "Hilft uns, den Übungs-Coach zu verbessern — komplett anonym, ohne Personendaten, nur mit deiner Zustimmung und jederzeit in den Einstellungen änderbar.",
         "settings.privacy_toggle_label": "Anonyme Nutzungsdaten teilen",
 
         // ── App-Chrome (Web-Wording, wo es einen Schlüssel gibt) ──
@@ -751,6 +754,9 @@ enum CoachL10n {
         "habit.onboard_daily": "Tagesziel",
         "habit.onboard_time_title": "Wie lange willst du täglich üben?",
         "habit.onboard_when_title": "Wann übst du?",
+        "onboarding.usage_title": "Hilfst du, den Coach zu verbessern?",
+        "onboarding.usage_yes": "Ja, anonym teilen",
+        "onboarding.usage_no": "Nein, danke",
         "habit.onboard_morning": "Morgens",
         "habit.onboard_afternoon": "Nachmittags",
         "habit.onboard_evening": "Abends",
