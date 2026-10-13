@@ -97,10 +97,13 @@
 				body: JSON.stringify({ subscribe, source: 'account', locale: getLocale() }),
 			});
 			if (!res.ok) throw new Error(String(res.status));
-			const body = (await res.json()) as { status: ConsentStatus; configured: boolean };
+			const body = (await res.json()) as { status: ConsentStatus; configured: boolean; sent?: boolean };
 			updatesStatus = body.status;
 			updatesConfigured = body.configured;
-			if (!subscribe) toastInfo(t('account.updates_unsubscribed'));
+			// Consent is recorded, but the mail did not go out: say so instead of
+			// pointing at an inbox that stays empty.
+			if (subscribe && body.sent === false) toastError(t('account.updates_send_failed'));
+			else if (!subscribe) toastInfo(t('account.updates_unsubscribed'));
 			// The confirmation link is the step people miss, so say it loudly.
 			else if (body.status === 'pending')
 				toastSuccess(t('account.updates_check_inbox', { email: auth.user?.email ?? '' }), { duration: 8000 });

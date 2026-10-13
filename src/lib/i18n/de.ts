@@ -1850,6 +1850,7 @@ export const de = {
     updates_check_inbox: 'Fast geschafft: Bestätige den Link in der Mail an {email}.',
     updates_confirmed: 'Du bekommst unsere Updates. Abmelden geht hier oder per Link in jeder Mail.',
     updates_confirmed_toast: 'Danke! Deine Anmeldung ist bestätigt.',
+    updates_send_failed: 'Die Bestätigungsmail konnte nicht gesendet werden. Schalte es aus und wieder an, um es erneut zu versuchen.',
     updates_unsubscribed: 'Du bist abgemeldet.',
     updates_unavailable: 'E-Mail-Updates sind noch nicht verfügbar.',
     updates_error: 'Das hat nicht geklappt. Bitte versuch es noch einmal.',

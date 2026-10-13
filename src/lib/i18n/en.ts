@@ -1835,6 +1835,7 @@ export const en = {
     updates_check_inbox: 'Almost there: confirm the link in the email to {email}.',
     updates_confirmed: 'You get our updates. Unsubscribe here or via the link in every email.',
     updates_confirmed_toast: 'Thanks! Your subscription is confirmed.',
+    updates_send_failed: 'The confirmation email could not be sent. Turn it off and on again to retry.',
     updates_unsubscribed: 'You are unsubscribed.',
     updates_unavailable: 'Email updates are not available yet.',
     updates_error: 'That did not work. Please try again.',
