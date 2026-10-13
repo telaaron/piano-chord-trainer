@@ -541,7 +541,7 @@ export const de = {
     togo_d3_t: 'Progressionen',
     togo_d3_d: 'Kadenz hören, Form erkennen.',
     togo_d4_t: 'Singen',
-    togo_d4_d: 'Eine Stufe mit der Stimme finden.',
+    togo_d4_d: 'Einen Akkordton mit der Stimme finden.',
     togo_d5_t: 'Time',
     togo_d5_d: 'Den Groove zum Klick mittappen.',
     togo_d6_t: 'Licks',
@@ -2204,7 +2204,7 @@ export const de = {
       interval: 'Zwei Töne — nenne den Abstand.',
       quality: 'Akkord hören, Qualität benennen.',
       progression: 'Kadenz hören, Form erkennen.',
-      sing: 'Eine Stufe mit der Stimme finden.',
+      sing: 'Einen Akkordton mit der Stimme finden.',
       time: 'Den Groove zum Klick mittappen.',
       lick: 'Phrase hören, zurücktippen.',
       theory: 'Stille Karten — geht überall.',
@@ -2237,7 +2237,10 @@ export const de = {
       interval_down: 'Abwärts — wie weit?',
       quality: 'Welche Farbe hat dieser Akkord?',
       progression: 'Welche Form ist das, in {key}?',
-      sing: 'Sing die {degree} über {root}.',
+      // Erst hören, dann singen: der Akkord ist verklungen, bevor das Mikro zuhört.
+      sing_third: 'Hör dir {chord} an. Dann sing seine Terz.',
+      sing_fifth: 'Hör dir {chord} an. Dann sing seine Quinte.',
+      sing_seventh: 'Hör dir {chord} an. Dann sing seine Septime.',
       lick: 'Tippe die {count} Töne zurück.',
     },
     tap: {
@@ -2287,6 +2290,7 @@ export const de = {
     sing_check: 'Ton prüfen',
     sing_level: 'Eingangspegel',
     sing_denied: 'Das Mikrofon blieb zu. Schau in die Browser-Berechtigungen.',
+    sing_failed: 'Das Mikro ist an, aber die Tonerkennung läuft in diesem Browser nicht. Probier es in Chrome.',
 
     // Tappen.
     tap_ready: 'Zähl dich ein, dann tappe mit.',

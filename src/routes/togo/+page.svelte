@@ -521,7 +521,7 @@
 					</div>
 				{:else if exercise.input.type === 'sing'}
 					{#if verdict === null}
-						<div class="input-slot"><SingInput onanswer={answerSing} /></div>
+						<div class="input-slot"><SingInput onanswer={answerSing} onstart={silence} /></div>
 					{/if}
 				{:else if exercise.input.type === 'tap'}
 					{#if verdict === null}

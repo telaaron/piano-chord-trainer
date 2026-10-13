@@ -16,9 +16,18 @@
 		onanswer: (sungPitchClasses: number[]) => void;
 		/** Freeze input once the answer is in. */
 		locked?: boolean;
+		/** Called as listening starts, so the page can stop its own playback first. */
+		onstart?: () => void;
 	}
 
-	let { onanswer, locked = false }: Props = $props();
+	let { onanswer, locked = false, onstart }: Props = $props();
+
+	/**
+	 * Ignore the mic this long after it opens. The chord the player just heard
+	 * still rings in the room (release + reverb), and it contains the very
+	 * tone being asked for — without this, speakers answer for the singer.
+	 */
+	const TAIL_MS = 1500;
 
 	const NOTE_NAMES = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
 
@@ -44,6 +53,7 @@
 		if (listening) return;
 		heardSet = new Set();
 		listening = true;
+		onstart?.();
 		mic = new AudioInputService();
 		mic.onConnection((s) => (micState = s));
 		mic.onNotes((notes) => {
@@ -68,6 +78,7 @@
 			listening = false;
 			return;
 		}
+		mic.suppress(TAIL_MS);
 		levelTimer = setInterval(() => {
 			level = mic?.getLevel() ?? 0;
 		}, 80);
@@ -110,7 +121,7 @@
 	{:else}
 		{#if micState === 'denied' || micState === 'unsupported' || micState === 'error'}
 			<p class="rounded-[var(--radius)] border border-[var(--accent-red)]/40 bg-[var(--accent-red)]/10 p-3 text-center text-[var(--text-sm)] text-[var(--text)]">
-				{t('togo.sing_denied')}
+				{micState === 'error' ? t('togo.sing_failed') : t('togo.sing_denied')}
 			</p>
 		{:else}
 			<!-- Input level -->

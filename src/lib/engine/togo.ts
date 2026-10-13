@@ -164,14 +164,26 @@ export const INTERVAL_LADDER: { semitones: number; label: string }[] = [
 	{ semitones: 6, label: 'Tritone' },
 ];
 
-/** Roman-numeral shapes the ear should recognise, easiest first. */
+/**
+ * Roman-numeral shapes the ear should recognise, easiest first.
+ *
+ * Every length (2, 3, 4 chords) has at least `distractors + 1` shapes, because
+ * the wrong options are drawn from the SAME length as the answer. Mixing
+ * lengths let players count the chords and rule options out without listening.
+ */
 export const PROGRESSION_LADDER: { degrees: number[]; label: string }[] = [
-	{ degrees: [0, 4, 0], label: 'I – V – I' },
+	{ degrees: [4, 0], label: 'V – I' },
 	{ degrees: [1, 4, 0], label: 'ii – V – I' },
-	{ degrees: [0, 5, 1, 4], label: 'I – vi – ii – V' },
-	{ degrees: [2, 5, 1, 4], label: 'iii – vi – ii – V' },
-	{ degrees: [0, 3, 4], label: 'I – IV – V' },
 	{ degrees: [3, 0], label: 'IV – I' },
+	{ degrees: [0, 4, 0], label: 'I – V – I' },
+	{ degrees: [0, 5, 1, 4], label: 'I – vi – ii – V' },
+	{ degrees: [1, 4], label: 'ii – V' },
+	{ degrees: [0, 3, 4], label: 'I – IV – V' },
+	{ degrees: [2, 5, 1, 4], label: 'iii – vi – ii – V' },
+	{ degrees: [3, 4, 0], label: 'IV – V – I' },
+	{ degrees: [0, 5], label: 'I – vi' },
+	{ degrees: [1, 4, 0, 5], label: 'ii – V – I – vi' },
+	{ degrees: [0, 3, 1, 4], label: 'I – IV – ii – V' },
 ];
 
 /** Chord quality per major-scale degree — for sounding a progression. */
@@ -179,17 +191,21 @@ const DEGREE_QUALITY = ['Maj7', 'm7', 'm7', 'Maj7', '7', 'm7', 'm7b5'];
 /** Semitone offset of each major-scale degree from the tonic. */
 const DEGREE_SEMITONES = [0, 2, 4, 5, 7, 9, 11];
 
-/** Scale degrees a singer is asked to find over a drone, easiest first. */
-export const SING_LADDER: { semitones: number; label: string }[] = [
-	{ semitones: 0, label: 'Root' },
-	{ semitones: 7, label: '5th' },
-	{ semitones: 4, label: 'Major 3rd' },
-	{ semitones: 3, label: 'Minor 3rd' },
-	{ semitones: 10, label: '♭7' },
-	{ semitones: 2, label: '9th' },
-	{ semitones: 11, label: 'Major 7th' },
-	{ semitones: 6, label: '♯11' },
+/**
+ * Chord tones a singer is asked to pull out of a chord they just heard,
+ * easiest first. `tone` indexes the root-position chord: 1 = 3rd, 2 = 5th,
+ * 3 = 7th. Never the root: over a drone of the root that was singing back
+ * the note you hear, and the mic took the drone itself as the answer.
+ * 3rd and 7th are the guide tones — the notes a jazz ear has to find.
+ */
+export const SING_LADDER: { tone: number; promptKey: string }[] = [
+	{ tone: 2, promptKey: 'togo.prompt.sing_fifth' },
+	{ tone: 1, promptKey: 'togo.prompt.sing_third' },
+	{ tone: 3, promptKey: 'togo.prompt.sing_seventh' },
 ];
+
+/** Chord colours a sing round is built on — the three the drills start with. */
+const SING_QUALITIES = ['Maj7', 'm7', '7'];
 
 /** Rhythm feels, easiest first. `onBeats` are 1-based beats in a 4/4 bar. */
 export const TAP_LADDER: { onBeats: number[]; labelKey: string }[] = [
@@ -497,9 +513,10 @@ export function buildProgressionExercise(
 		return getChordNotes(root, DEGREE_QUALITY[deg % 7], pref);
 	});
 
+	// Wrong options of the same length only — see PROGRESSION_LADDER.
 	const { options, answerIndex } = withDistractors(
 		entry.label,
-		PROGRESSION_LADDER.map((p) => p.label),
+		PROGRESSION_LADDER.filter((p) => p.degrees.length === entry.degrees.length).map((p) => p.label),
 		params.distractors,
 		rng,
 	);
@@ -516,7 +533,7 @@ export function buildProgressionExercise(
 	};
 }
 
-/** Sing a scale degree over a drone; the mic grades the pitch class. */
+/** Hear a chord, then sing one of its tones; the mic grades the pitch class. */
 export function buildSingExercise(
 	rng: Rng,
 	_params: ToGoParams = DEFAULT_TOGO_PARAMS,
@@ -524,19 +541,20 @@ export function buildSingExercise(
 	ladderDepth = SING_LADDER.length,
 ): ToGoExercise {
 	const entry = pick(SING_LADDER.slice(0, Math.max(1, ladderDepth)), rng);
+	const quality = pick(SING_QUALITIES, rng);
 	const root = pick(KEYS_EASY, rng);
-	const rootSt = noteToSemitone(root);
-	const targetPc = (rootSt + entry.semitones) % 12;
+	const notes = getChordNotes(root, quality, pref);
+	const target = notes[entry.tone];
 	return {
-		id: `sing|${root}|${entry.semitones}`,
+		id: `sing|${root}|${quality}|${entry.tone}`,
 		kind: 'sing',
-		play: { type: 'drone', note: root },
-		input: { type: 'sing', targetPitchClass: targetPc },
+		play: { type: 'chord', notes },
+		input: { type: 'sing', targetPitchClass: noteToSemitone(target) },
 		options: [],
 		answerIndex: -1,
-		promptKey: 'togo.prompt.sing',
-		promptParams: { degree: entry.label, root },
-		answerLabel: getNoteName(rootSt, entry.semitones, pref),
+		promptKey: entry.promptKey,
+		promptParams: { chord: `${root}${quality}` },
+		answerLabel: target,
 	};
 }
 

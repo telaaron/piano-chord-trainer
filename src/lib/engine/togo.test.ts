@@ -27,6 +27,15 @@ import {
 import { noteToSemitone } from './notes';
 
 /** Deterministic rng: cycles a fixed sequence so every test is reproducible. */
+/** Many distinct streams, to sweep the builders' random choices. */
+function lcg(seed: number) {
+	let x = seed * 2654435761 % 4294967296;
+	return () => {
+		x = (x * 1664525 + 1013904223) % 4294967296;
+		return x / 4294967296;
+	};
+}
+
 function seeded(seq: number[] = [0.1, 0.5, 0.9, 0.3, 0.7, 0.05, 0.45, 0.85]) {
 	let i = 0;
 	return () => seq[i++ % seq.length];
@@ -142,13 +151,32 @@ describe('exercise builders', () => {
 		if (ex.play.type === 'chords') expect(ex.play.chords).toHaveLength(degrees.length);
 	});
 
-	it('sing: holds a drone and targets a pitch class', () => {
-		const ex = buildSingExercise(seeded());
-		expect(ex.play.type).toBe('drone');
-		expect(ex.input.type).toBe('sing');
-		if (ex.input.type === 'sing') {
-			expect(ex.input.targetPitchClass).toBeGreaterThanOrEqual(0);
-			expect(ex.input.targetPitchClass).toBeLessThan(12);
+	it('sing: sounds a chord and asks for one of its tones, never the root', () => {
+		// Singing the root over a drone of that root is singing back the note
+		// you hear — no ear work, and the mic hears the drone as the answer.
+		for (let seed = 1; seed < 60; seed++) {
+			const ex = buildSingExercise(lcg(seed));
+			expect(ex.play.type).toBe('chord');
+			expect(ex.input.type).toBe('sing');
+			if (ex.play.type !== 'chord' || ex.input.type !== 'sing') continue;
+			const pcs = ex.play.notes.map((n) => noteToSemitone(n));
+			expect(pcs).toContain(ex.input.targetPitchClass);
+			expect(ex.input.targetPitchClass).not.toBe(pcs[0]);
+			expect(ex.promptParams.chord).toBeTruthy();
+		}
+	});
+
+	it('progression: every option has as many chords as the one you hear', () => {
+		// Otherwise a 2-chord cadence among 3- and 4-chord options is solved by
+		// counting, not by listening.
+		const count = (label: string) => label.split('–').length;
+		for (let seed = 1; seed < 60; seed++) {
+			const ex = buildProgressionExercise(lcg(seed));
+			const n = count(ex.answerLabel);
+			if (ex.play.type === 'chords') expect(ex.play.chords).toHaveLength(n);
+			expect(ex.options.every((o) => count(o) === n)).toBe(true);
+			expect(new Set(ex.options).size).toBe(ex.options.length);
+			expect(ex.options.length).toBe(DEFAULT_TOGO_PARAMS.distractors + 1);
 		}
 	});
 
