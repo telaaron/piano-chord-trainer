@@ -243,6 +243,33 @@
 
 ---
 
+## iOS-App v1.0 (Oktober 2026)
+
+### Gratis ohne In-App-Kauf (Empfehlung, Freigabe Aaron offen)
+
+**Entscheidung:** iOS v1.0 erscheint kostenlos, `SubscriptionStore.isPro` bleibt `true`, kein StoreKit.
+
+**Gruende:**
+- Erst messen, ob iOS die Retention hebt (D7 Web ≈ 2 %); Monetarisierung ist Roadmap-Schritt 7
+- Kein Kaufweg in der App → kein Konflikt mit Guideline 3.1.1, die App verlinkt nicht auf den Web-Checkout
+- Gate-Aufrufe bleiben im Code, StoreKit 2 kann ohne Umbau nachgezogen werden
+
+### Taegliche Erinnerung als lokale Notification
+
+**Entscheidung:** `ReminderScheduler` plant 7 Tage voraus lokale Notifications (kein Server, kein APNs), keine Erinnerung an einem Tag mit Uebung. Erlaubnis per Pre-Permission-Karte nach dem ersten abgeschlossenen Drill, nicht im Onboarding.
+
+**Gruende:**
+- Einziger Rueckkehr-Anlass ohne E-Mail-Infrastruktur (Masterplan 1.6)
+- Der System-Dialog erscheint nur einmal; ein „Nicht jetzt“ auf der eigenen Karte verbraucht ihn nicht
+- Wer eine Woche nicht oeffnet, bekommt danach keine Erinnerungen mehr (kein Dauer-Nerven)
+- Datumslogik in `MusicEngine/Reminders.swift`, getestet inkl. Sommerzeit
+
+### Anzeige-Praeferenzen gehoeren dem Nutzer
+
+**Entscheidung:** Notation und Vorzeichen kommen immer aus den Settings; Plaene und Coach-Bloecke ueberschreiben sie nicht mehr.
+
+---
+
 ## Entscheidungen die sich geaendert haben
 
 | Urspruenglich | Jetzt | Warum |
@@ -256,4 +283,4 @@
 
 ---
 
-*Zuletzt aktualisiert: Maerz 2026*
+*Zuletzt aktualisiert: Oktober 2026*
