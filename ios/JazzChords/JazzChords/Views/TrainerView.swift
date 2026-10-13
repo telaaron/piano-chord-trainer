@@ -154,6 +154,8 @@ struct CoachFeedbackView: View {
                     .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
                 }
 
+                ReminderOfferCard()
+
                 Spacer(minLength: Theme.space5)
 
                 VStack(spacing: Theme.space3) {
@@ -536,6 +538,8 @@ struct TrainerFinishedView: View {
                     statCard(value: String(format: "%.0fs", r.elapsedMs / 1000), label: CoachL10n.t("results.stat_total"))
                 }
             }
+
+            ReminderOfferCard()
 
             Spacer()
 

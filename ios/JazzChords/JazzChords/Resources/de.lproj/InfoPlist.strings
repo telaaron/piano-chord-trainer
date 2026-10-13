@@ -1,0 +1,3 @@
+/* Permission prompts (German). */
+"NSMicrophoneUsageDescription" = "JazzChords hört dein Klavier, um die gespielten Akkorde zu erkennen. Der Ton wird nur auf deinem Gerät ausgewertet und nie aufgenommen oder hochgeladen.";
+"NSBluetoothAlwaysUsageDescription" = "JazzChords verbindet sich mit Bluetooth-MIDI-Keyboards, damit du mitspielen kannst.";

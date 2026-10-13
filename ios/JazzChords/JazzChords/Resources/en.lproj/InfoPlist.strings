@@ -1,0 +1,3 @@
+/* Permission prompts (English). */
+"NSMicrophoneUsageDescription" = "JazzChords listens to your piano so it can recognise the chords you play. Audio is analysed on your device and never recorded or uploaded.";
+"NSBluetoothAlwaysUsageDescription" = "JazzChords connects to Bluetooth MIDI keyboards so you can play along.";

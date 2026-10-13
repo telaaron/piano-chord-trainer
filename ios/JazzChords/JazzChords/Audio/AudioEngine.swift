@@ -15,7 +15,7 @@ enum SoundPreset: String, CaseIterable, Sendable {
     case electricPiano = "electric-piano"
     case vibraphone
     case organ
-    case synthPad
+    case synthPad = "synth-pad"
 
     var label: String {
         switch self {

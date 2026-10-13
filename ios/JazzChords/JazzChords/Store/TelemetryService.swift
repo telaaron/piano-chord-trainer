@@ -27,7 +27,15 @@ final class TelemetryService {
         static let url = "https://chpoqghvlojwyunoplab.supabase.co"
         static let anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNocG9xZ2h2bG9qd3l1bm9wbGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzAyODIsImV4cCI6MjA4ODY0NjI4Mn0.r_1JeIDnRpKiTWn74bCHBFUU7kOu4YSPFY9QRjrdPX0"
         static let cohort = "default"
-        static let version = "ios-dev"
+        /// "ios-1.0.0" in release builds, "ios-dev" in debug, so dev traffic can be filtered out.
+        static let version: String = {
+            #if DEBUG
+            return "ios-dev"
+            #else
+            let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+            return "ios-\(v)"
+            #endif
+        }()
     }
 
     private let flushBatchSize = 10

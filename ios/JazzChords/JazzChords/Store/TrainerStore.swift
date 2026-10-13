@@ -120,12 +120,12 @@ final class TrainerStore {
     }
 
     // ─── Apply a practice plan ──────────────────────────────
+    /// Notation style and accidentals are the player's display prefs (Settings);
+    /// plans only carry defaults for them, so they never override the prefs.
     func apply(plan: PracticePlan) {
         difficulty = plan.settings.difficulty
-        notation = plan.settings.notation
         voicing = plan.settings.voicing
         displayMode = plan.settings.displayMode
-        accidentals = plan.settings.accidentals
         progressionMode = plan.settings.progressionMode
         totalChords = plan.settings.totalChords
         voiceLeadingEnabled = (plan.id == "voice-leading-flow")
@@ -815,10 +815,8 @@ final class TrainerStore {
         loadSettings() // notation/notationSystem/accidentals/sound from the user's prefs
         let s = block.settings
         difficulty = s.difficulty
-        notation = s.notation
         voicing = block.focusVoicing.flatMap { VoicingType(rawValue: $0) } ?? s.voicing
         displayMode = s.displayMode
-        accidentals = s.accidentals
         progressionMode = s.progressionMode
         totalChords = block.targetChords > 0 ? block.targetChords : s.totalChords
 

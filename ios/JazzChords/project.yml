@@ -23,7 +23,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: app.jazzchords.trainer
         DEVELOPMENT_TEAM: "3YB2KJCCHV"
         CODE_SIGN_STYLE: Automatic
-        MARKETING_VERSION: "0.1.0"
+        MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: "1"
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_VERSION: "6.0"
@@ -32,10 +32,15 @@ targets:
     info:
       path: JazzChords/Info.plist
       properties:
-        CFBundleDisplayName: jazzchords
-        UILaunchScreen: {}
-        NSMicrophoneUsageDescription: "jazzchords listens to your piano so it can recognise the chords you play."
-        NSBluetoothAlwaysUsageDescription: "jazzchords connects to Bluetooth MIDI keyboards so you can play along."
+        CFBundleDisplayName: JazzChords
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
+        LSApplicationCategoryType: public.app-category.music
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        NSMicrophoneUsageDescription: "JazzChords listens to your piano so it can recognise the chords you play. Audio is analysed on your device and never recorded or uploaded."
+        NSBluetoothAlwaysUsageDescription: "JazzChords connects to Bluetooth MIDI keyboards so you can play along."
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
         UISupportedInterfaceOrientations:
