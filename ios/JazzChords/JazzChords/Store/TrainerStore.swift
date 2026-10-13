@@ -106,20 +106,31 @@ final class TrainerStore {
         displayMode = s.displayMode; accidentals = s.accidentals; notationSystem = s.notationSystem
         totalChords = s.totalChords; progressionMode = s.progressionMode
         audioEnabled = s.audioEnabled
-        soundPreset = SoundPreset(rawValue: s.soundPreset) ?? .grandPiano
+        inputMode = InputMode(rawValue: s.inputMode) ?? .none
+        // "synthPad" was the raw value before it matched the web's "synth-pad".
+        soundPreset = SoundPreset(rawValue: s.soundPreset == "synthPad" ? "synth-pad" : s.soundPreset) ?? .grandPiano
         AudioEngine.shared.setPreset(soundPreset)
     }
 
+    /// Set once the first trainer visit of this launch has looked for a keyboard,
+    /// so a deliberate switch back to touch is not undone on the next visit.
+    private static var didAutoSelectInput = false
+
     /// First-success default: a connected MIDI keyboard is used right away,
-    /// without a trip to the input picker; otherwise the touch keyboard stays.
-    /// Never overrides a deliberate mic choice. Called once per trainer visit.
+    /// without a trip to the input picker; a saved MIDI choice with no keyboard
+    /// attached falls back to touch so the drill stays playable. Never overrides
+    /// a mic choice. Call after `loadSettings()`.
     func autoSelectInput() {
-        guard inputMode == .none else { return }
+        guard inputMode != .microphone else { return }
         MIDIInput.shared.start()
         // iOS can list a "Network Session" source with no instrument behind it.
-        if MIDIInput.shared.devices.contains(where: { !$0.name.hasPrefix("Network Session") }) {
+        let keyboard = MIDIInput.shared.devices.contains { !$0.name.hasPrefix("Network Session") }
+        if inputMode == .midi && !keyboard {
+            inputMode = .none
+        } else if inputMode == .none && keyboard && !Self.didAutoSelectInput {
             inputMode = .midi
         }
+        Self.didAutoSelectInput = true
     }
 
     private func persistSettings() {
@@ -128,6 +139,7 @@ final class TrainerStore {
         s.displayMode = displayMode; s.accidentals = accidentals; s.notationSystem = notationSystem
         s.totalChords = totalChords; s.progressionMode = progressionMode
         s.audioEnabled = audioEnabled; s.soundPreset = soundPreset.rawValue
+        s.inputMode = inputMode.rawValue
         ProgressStore.saveSettings(s)
     }
 

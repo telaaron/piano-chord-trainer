@@ -58,10 +58,13 @@ final class ReminderScheduler {
     /// Returns whether reminders are now on.
     @discardableResult
     func enable(at time: ReminderTime? = nil, source: String = "card") async -> Bool {
+        await refreshAuthorization()
+        // Only a .notDetermined status shows the system dialog; otherwise iOS answers silently.
+        let dialogShown = authorization == .notDetermined
         let granted = (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
         await refreshAuthorization()
         TelemetryService.shared.track(granted ? "reminder_prompt_accepted" : "reminder_prompt_declined",
-                                      ["time": (time ?? self.time).string, "system": true, "source": source])
+                                      ["time": (time ?? self.time).string, "system": dialogShown, "source": source])
         HabitStore.shared.setReminder(enabled: granted, time: (time ?? self.time).string)
         await reschedule()
         return granted
@@ -82,11 +85,24 @@ final class ReminderScheduler {
         await reschedule()
     }
 
+    private var lastReschedule: Task<Void, Never>?
+
     /// Rebuild the pending reminders from the current profile and history.
+    /// Calls are serialized: each waits for the previous one, so a burst (time
+    /// picker scrolling, toggle flips) can never interleave removes and adds.
     func reschedule(now: Date = Date()) async {
-        let pending = await center.pendingNotificationRequests()
-            .map(\.identifier).filter { $0.hasPrefix(Self.idPrefix) }
-        center.removePendingNotificationRequests(withIdentifiers: pending)
+        let previous = lastReschedule
+        let task = Task { @MainActor in
+            await previous?.value
+            await self.rebuild(now: now)
+        }
+        lastReschedule = task
+        await task.value
+    }
+
+    private func rebuild(now: Date) async {
+        // Slot ids are stable ("…-0" … "…-6"), so a re-add replaces rather than duplicates.
+        center.removePendingNotificationRequests(withIdentifiers: (0..<Self.horizonDays).map { Self.idPrefix + "\($0)" })
 
         await refreshAuthorization()
         guard isEnabled, authorization == .authorized || authorization == .provisional else { return }
@@ -96,13 +112,14 @@ final class ReminderScheduler {
         let practiced = Reminders.practicedToday(lastSession: last, now: now, calendar: calendar)
         let dates = Reminders.fireDates(now: now, time: time, practicedToday: practiced,
                                         days: Self.horizonDays, calendar: calendar)
-        // The stored streak is only refreshed on the next session, so it is only
-        // still alive when the last session was today or yesterday.
-        let daysSinceLast = last.flatMap {
-            calendar.dateComponents([.day], from: calendar.startOfDay(for: $0),
-                                    to: calendar.startOfDay(for: now)).day
+        // The stored streak is only refreshed on the next session, so it is still
+        // alive at the first reminder only if the last session was that day or the day before.
+        var daysToFirst: Int?
+        if let last, let first = dates.first {
+            daysToFirst = calendar.dateComponents([.day], from: calendar.startOfDay(for: last),
+                                                  to: calendar.startOfDay(for: first)).day
         }
-        let streak = (daysSinceLast ?? .max) <= 1 ? ProgressStore.loadStreak().current : 0
+        let streak = (daysToFirst ?? .max) <= 1 ? ProgressStore.loadStreak().current : 0
         let minutes = HabitStore.shared.profile.dailyGoalMinutes
 
         for (i, date) in dates.enumerated() {
@@ -118,7 +135,7 @@ final class ReminderScheduler {
 
             let comps = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
             let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
-            let id = Self.idPrefix + ISO8601DateFormatter().string(from: date)
+            let id = Self.idPrefix + "\(i)"
             try? await center.add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
         }
     }

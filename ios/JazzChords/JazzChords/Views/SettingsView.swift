@@ -61,13 +61,14 @@ struct SettingsView: View {
             Section {
                 Toggle(CoachL10n.t("reminder.settings_toggle"), isOn: $reminderOn)
                     .onChange(of: reminderOn) { _, on in
-                        guard on != ReminderScheduler.shared.isEnabled else { return }
                         Task {
                             if on {
                                 let granted = await ReminderScheduler.shared.enable(at: Self.reminderTime(from: reminderTime), source: "settings")
                                 reminderDenied = !granted
                                 if !granted { reminderOn = false }
-                            } else {
+                                // Switched off again while the permission answer was pending.
+                                else if !reminderOn { await ReminderScheduler.shared.disable() }
+                            } else if ReminderScheduler.shared.isEnabled {
                                 await ReminderScheduler.shared.disable()
                             }
                         }
@@ -106,6 +107,11 @@ struct SettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
+        }
+        .task {
+            // Notifications may have been revoked in iOS Settings since reminders were turned on.
+            await ReminderScheduler.shared.refreshAuthorization()
+            reminderDenied = ReminderScheduler.shared.isEnabled && ReminderScheduler.shared.authorization == .denied
         }
         .onChange(of: settings) { _, new in
             ProgressStore.saveSettings(new)
