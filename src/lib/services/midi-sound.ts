@@ -34,7 +34,9 @@ const SALAMANDER_SAMPLES: Record<string, string> = {
 	C5: 'C5.mp3',     'D#5': 'Ds5.mp3', 'F#5': 'Fs5.mp3', A5: 'A5.mp3',
 	C6: 'C6.mp3',
 };
-const SALAMANDER_BASE_URL = 'https://tonejs.github.io/audio/salamander/';
+// Self-hosted (static/audio/piano): no third-party CDN, no CSP exception,
+// and the files come from our own origin and cache.
+const SALAMANDER_BASE_URL = '/audio/piano/';
 
 // ─── Synth configs (mirror of audio.ts presets) ─────────────────────────────
 /* eslint-disable @typescript-eslint/no-explicit-any */
