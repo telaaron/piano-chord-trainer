@@ -14,7 +14,9 @@ import Accelerate
 import MusicEngine
 
 /// A detector turns a mono PCM frame (at `sampleRate`) into MIDI note numbers.
-protocol PitchDetector: AnyObject {
+/// Detectors run only on MicInput's serial analysis queue, one analysis at a
+/// time (`analyzing` gate), so their mutable FFT buffers are never shared.
+protocol PitchDetector: AnyObject, Sendable {
     /// Preferred input sample rate (Hz). The pipeline resamples to this.
     var preferredSampleRate: Double { get }
     /// Detect sounding MIDI notes in the buffer. Empty = silence/none.
@@ -88,7 +90,8 @@ final class MicInput {
             try engine.start()
             state = .listening
             timer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { [weak self] _ in
-                self?.analyzeTick()
+                // Scheduled on the main run loop, so this already runs on the main actor.
+                MainActor.assumeIsolated { self?.analyzeTick() }
             }
         } catch {
             state = .unsupported

@@ -110,6 +110,18 @@ final class TrainerStore {
         AudioEngine.shared.setPreset(soundPreset)
     }
 
+    /// First-success default: a connected MIDI keyboard is used right away,
+    /// without a trip to the input picker; otherwise the touch keyboard stays.
+    /// Never overrides a deliberate mic choice. Called once per trainer visit.
+    func autoSelectInput() {
+        guard inputMode == .none else { return }
+        MIDIInput.shared.start()
+        // iOS can list a "Network Session" source with no instrument behind it.
+        if MIDIInput.shared.devices.contains(where: { !$0.name.hasPrefix("Network Session") }) {
+            inputMode = .midi
+        }
+    }
+
     private func persistSettings() {
         var s = ProgressStore.loadSettings()
         s.difficulty = difficulty; s.notation = notation; s.voicing = voicing

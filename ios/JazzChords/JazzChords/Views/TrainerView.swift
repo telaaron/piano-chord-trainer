@@ -42,6 +42,7 @@ struct TrainerView: View {
         .screenBackground()
         .onAppear {
             store.loadSettings()
+            store.autoSelectInput()
             if coachSession {
                 store.startCoachSession()
             } else if let plan {
