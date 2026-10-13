@@ -102,6 +102,9 @@ struct CourseDetailView: View {
                 }
             }
         }
+        // Same as Settings: hide the grouped-list gray so the app palette shows.
+        .scrollContentBackground(.hidden)
+        .screenBackground()
         .navigationTitle(courseName(course.id))
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(item: $activeLesson) { lesson in

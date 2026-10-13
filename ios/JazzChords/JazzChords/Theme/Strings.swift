@@ -132,7 +132,7 @@ enum Strings {
         // Normalize quality tokens for readability. The ♭/♯ here are real Unicode
         // glyphs, never "b"/"#" — same rule the chord typesetting path follows.
         let replacements: [(String, String)] = [
-            ("maj7#11", "Maj7♯11"), ("m7b5", "m7♭5"), ("7b9", "7♭9"), ("7#9", "7♯9"),
+            ("maj7#11", "Maj7♯11"), ("m7b5", "m7♭5"), ("7b9", "7♭9"), ("7#9", "7♯9"), ("7s9", "7♯9"),
             ("maj9", "Maj9"), ("maj7", "Maj7"), ("dim7", "dim7"), ("m11", "m11"),
             ("69", "6/9"), ("fund", ""), ("shell", "Shell"), ("hshell", "Half-Shell"),
             ("rla", "Rootless A"), ("rlb", "Rootless B"),
@@ -144,10 +144,24 @@ enum Strings {
         var parts = id.split(separator: "-").map(String.init)
         parts = parts.map { token in
             for (k, v) in replacements where token == k { return v }
+            // Chord symbols (m7, m9, 6, 13) and Roman numerals (vi, IV) are
+            // case-sensitive: capitalizing turned "m7" into "M7" (a major 7th).
+            if token.first?.isNumber == true || isMinorSymbol(token) || isRomanNumeral(token) {
+                return token
+            }
             return token.capitalized
         }
         return parts.filter { !$0.isEmpty }.joined(separator: " ").trimmingCharacters(in: .whitespaces)
     }
+
+    private static func isMinorSymbol(_ token: String) -> Bool {
+        token.count > 1 && token.first == "m" && token.dropFirst().first?.isNumber == true
+    }
+
+    private static let romanNumerals: Set<String> = [
+        "i", "ii", "iii", "iv", "v", "vi", "vii", "I", "II", "III", "IV", "V", "VI", "VII",
+    ]
+    private static func isRomanNumeral(_ token: String) -> Bool { romanNumerals.contains(token) }
 
     // MARK: Generic
 
