@@ -1027,7 +1027,7 @@ export const de = {
     title: 'Datenschutz – Chord Trainer',
     meta_desc: 'Datenschutzerklärung für Chord Trainer von Aaron Technologies OÜ. Wie wir deine Daten behandeln.',
     h1: 'Datenschutz',
-    last_updated: 'Zuletzt aktualisiert: 17. Februar 2026',
+    last_updated: 'Zuletzt aktualisiert: 13. Oktober 2026',
     intro: 'Chord Trainer ("die App") ist ein Produkt von <strong>Aaron Technologies OÜ</strong>, registriert in Estland (Registry Code: 17336129, VAT ID: EE102955587). Diese Datenschutzerklärung erklärt, wie wir deine Informationen sammeln, nutzen und schützen.',
     
     h_data_collect: '1. Daten, die wir sammeln',
@@ -1050,14 +1050,17 @@ export const de = {
     h_coach_data: '1.4 Übungsdaten zur Verbesserung des Coaches',
     p_coach_data: 'Damit der Übungs-Coach besser wird, übertragen wir <strong>anonyme Ereignisse</strong> zu deinen Übungssitzungen: welcher Block gespielt wurde, Durchschnittszeiten, ob du eine Session abgebrochen hast. Dazu speichern wir eine zufällige <strong>Geräte-ID</strong> in deinem Browser — sie enthält keinen Namen, keine E-Mail und keine IP-Adresse und lässt sich nicht auf dich zurückführen. Mit Account wird zusätzlich deine Nutzer-ID mitgesendet, damit sich Sitzungen desselben Kontos zuordnen lassen. Du kannst das <a href="/account" class="underline">in deinen Account-Einstellungen</a> jederzeit abschalten; die Übertragung endet dann sofort.',
     
-    h_hosting: '1.4 Hosting',
+    h_hosting: '1.5 Hosting',
     p_hosting: 'Die App wird bei <strong>Vercel</strong> (Vercel Inc., San Francisco, CA) gehostet. Vercel kann Server-Logs inklusive IP-Adressen zu Sicherheits- und Performancezwecken sammeln. Siehe <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Vercels Datenschutzerklärung</a>.',
     
-    h_fonts: '1.5 Fonts',
+    h_fonts: '1.6 Fonts',
     p_fonts: 'Alle Schriften (Source Serif 4, Inter) liegen auf unserem eigenen Server und werden direkt von <code>jazzchords.app</code> geladen. Es geht dabei keine Anfrage an Google oder einen anderen Dritten, deine IP-Adresse wird also nicht an Font-Anbieter übertragen.',
     h_ios: '1.6 iOS-App',
     p_ios: 'Die JazzChords-App für iPhone und iPad braucht kein Konto und speichert deinen Fortschritt nur auf deinem Gerät. Sie sendet dieselben <strong>anonymen Übungsereignisse</strong> wie unter 1.4 beschrieben, mit einer zufälligen Geräte-ID, die beim ersten Start entsteht; du kannst das in der App unter Einstellungen → Anonyme Nutzungsdaten abschalten. Wenn du das <strong>Mikrofon</strong> nutzt, wird der Ton nur auf deinem Gerät ausgewertet und nie aufgenommen, gespeichert oder hochgeladen. Bluetooth dient nur zur Verbindung mit MIDI-Keyboards. Wenn du die tägliche Erinnerung einschaltest, wird sie als lokale Mitteilung auf deinem Gerät geplant; dafür werden keine Daten gesendet.',
     
+    h_email_updates: '1.7 E-Mail-Updates',
+    p_email_updates: 'Nur wenn du ausdrücklich einwilligst (Häkchen bei der Registrierung oder in deinen <a href="/account" class="underline">Account-Einstellungen</a>), schicken wir dir E-Mails zu neuen Funktionen, Kursen und der JazzChords-App. Die Anmeldung wird erst nach Klick auf den Bestätigungslink in einer separaten Mail wirksam (Double-Opt-in). Wir speichern dazu deine E-Mail-Adresse, den Wortlaut der Einwilligung und die Zeitpunkte von Anmeldung, Bestätigung und Abmeldung, um die Einwilligung nachweisen zu können. Der Versand erfolgt über <strong>Brevo</strong> (Sendinblue SAS, Paris, Frankreich) als Auftragsverarbeiter innerhalb der EU. Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit widerrufen: per Link in jeder Mail oder in den Account-Einstellungen. Löschst du deinen Account, löschen wir auch den Kontakt bei Brevo.',
+
     h_no_collect: '2. Daten, die wir NICHT sammeln',
     li_no_account: 'Kein Account erforderlich — Accounts sind optional und dienen nur der geräteübergreifenden Synchronisierung',
     li_no_cookies: 'Keine Tracking-Cookies (nur essenzielle Auth-Cookies bei Anmeldung)',
@@ -1074,6 +1077,7 @@ export const de = {
     td_cloudflare_purpose: 'DNS & CDN',
     td_supabase_purpose: 'Authentifizierung & Cloud-Datenspeicherung (optional, nur mit Account)',
     td_stripe_purpose: 'Zahlungsabwicklung (nur für kostenpflichtige Pläne)',
+    td_brevo_purpose: 'Versand von E-Mail-Updates (nur nach Einwilligung)',
     td_link: 'Link',
     
     h_rights: '4. Deine Rechte (DSGVO)',
@@ -1842,6 +1846,13 @@ export const de = {
     privacy: 'Anonyme Nutzungsdaten',
     privacy_desc: 'Hilft uns, den Übungs-Coach zu verbessern — komplett anonym, ohne Personendaten, jederzeit abschaltbar.',
     privacy_toggle_label: 'Anonyme Nutzungsdaten teilen',
+    updates_title: 'E-Mail-Updates',
+    updates_pending: 'Fast geschafft: Bitte bestätige den Link in der Mail, die wir dir geschickt haben.',
+    updates_confirmed: 'Du bekommst unsere Updates. Abmelden geht hier oder per Link in jeder Mail.',
+    updates_confirmed_toast: 'Danke! Deine Anmeldung ist bestätigt.',
+    updates_unsubscribed: 'Du bist abgemeldet.',
+    updates_unavailable: 'E-Mail-Updates sind noch nicht verfügbar.',
+    updates_error: 'Das hat nicht geklappt. Bitte versuch es noch einmal.',
     danger_zone: 'Gefahrenzone',
     sign_out: 'Abmelden',
     delete_account: 'Account löschen',

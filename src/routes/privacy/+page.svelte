@@ -51,6 +51,9 @@
 		<h3>{t('privacy.h_ios')}</h3>
 		<RichText key="privacy.p_ios" />
 
+		<h3>{t('privacy.h_email_updates')}</h3>
+		<RichText key="privacy.p_email_updates" />
+
 		<h2>{t('privacy.h_no_collect')}</h2>
 		<ul>
 			<li>{t('privacy.li_no_account')}</li>
@@ -88,6 +91,11 @@
 					<td>Stripe</td>
 					<td>{t('privacy.td_stripe_purpose')}</td>
 					<td><a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">{t('privacy.td_link')}</a></td>
+				</tr>
+				<tr>
+					<td>Brevo</td>
+					<td>{t('privacy.td_brevo_purpose')}</td>
+					<td><a href="https://www.brevo.com/legal/privacypolicy/" target="_blank" rel="noopener noreferrer">{t('privacy.td_link')}</a></td>
 				</tr>
 			</tbody>
 		</table>

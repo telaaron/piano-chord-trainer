@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { t } from '$lib/i18n';
+	import { t, getLocale } from '$lib/i18n';
+	import { consentText } from '$lib/consent';
 	import { signIn, signUp, resetPassword } from '$lib/services/auth';
 	import { uploadLocalDataToCloud } from '$lib/services/cloud-sync';
 	import { toastSuccess, toastError } from '$lib/services/toast';
@@ -14,6 +15,7 @@
 	let errorMsg = $state('');
 	let loading = $state(false);
 	let mergeLocal = $state(true);
+	let emailUpdates = $state(false);
 
 	const redirect = $derived(page.url.searchParams.get('redirect') || '/train');
 
@@ -46,7 +48,7 @@
 					loading = false;
 					return;
 				}
-				const { error } = await signUp(email, password);
+				const { error } = await signUp(email, password, emailUpdates, getLocale());
 				if (error) {
 					errorMsg = error.message;
 					loading = false;
@@ -155,6 +157,12 @@
 					<label class="check">
 						<input type="checkbox" bind:checked={mergeLocal} />
 						<span>{t('auth.merge_local_data')}</span>
+					</label>
+
+					<!-- Product-update mail: opt-in, never pre-ticked -->
+					<label class="check">
+						<input type="checkbox" bind:checked={emailUpdates} />
+						<span>{consentText(getLocale())}</span>
 					</label>
 				{/if}
 
