@@ -13,7 +13,7 @@
 	import { isTelemetryEnabled, setTelemetryEnabled } from '$lib/services/telemetry';
 	import { resetEverything } from '$lib/services/reset';
 	import { goto } from '$app/navigation';
-	import { PartyPopper } from 'lucide-svelte';
+	import { MailCheck, PartyPopper } from 'lucide-svelte';
 	import type { AuthState } from '$lib/services/auth';
 	import type { SubscriptionInfo } from '$lib/services/subscription';
 
@@ -101,6 +101,9 @@
 			updatesStatus = body.status;
 			updatesConfigured = body.configured;
 			if (!subscribe) toastInfo(t('account.updates_unsubscribed'));
+			// The confirmation link is the step people miss, so say it loudly.
+			else if (body.status === 'pending')
+				toastSuccess(t('account.updates_check_inbox', { email: auth.user?.email ?? '' }), { duration: 8000 });
 		} catch {
 			toastError(t('account.updates_error'));
 		} finally {
@@ -382,7 +385,13 @@
 						<span>{consentText(getLocale())}</span>
 					</label>
 					{#if updatesStatus === 'pending'}
-						<p class="note-body">{t('account.updates_pending')}</p>
+						<div class="inbox-callout" role="status">
+							<MailCheck size={20} aria-hidden="true" />
+							<div>
+								<p class="inbox-title">{t('account.updates_pending_title')}</p>
+								<p class="note-body">{t('account.updates_pending', { email: auth.user.email ?? '' })}</p>
+							</div>
+						</div>
 					{:else if updatesStatus === 'confirmed'}
 						<p class="note-body">{t('account.updates_confirmed')}</p>
 					{/if}
@@ -485,6 +494,28 @@
 		font-size: 0.88rem;
 		line-height: 1.55;
 		color: var(--text-muted);
+	}
+	/* Pending double opt-in: the one step left is in the inbox, so it gets a
+	   box of its own instead of a grey line under the checkbox. */
+	.inbox-callout {
+		display: flex;
+		gap: 0.75rem;
+		align-items: flex-start;
+		margin-top: 0.75rem;
+		padding: 0.85rem 1rem;
+		border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+		border-left: 3px solid var(--primary);
+		background: color-mix(in srgb, var(--primary) 8%, transparent);
+		color: var(--primary);
+	}
+	.inbox-callout :global(svg) {
+		flex: none;
+		margin-top: 0.1rem;
+	}
+	.inbox-title {
+		font-weight: 600;
+		color: var(--text);
+		margin-bottom: 0.2rem;
 	}
 	/* The dial sits centred in its panel; the count reads as the caption. */
 	.dial-panel {
