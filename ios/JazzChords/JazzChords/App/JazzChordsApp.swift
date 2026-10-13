@@ -30,13 +30,14 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         return true
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
+    // nonisolated: the UN types are not Sendable, so they must not cross into the main actor.
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse) async {
         guard response.notification.request.content.userInfo["reminder"] as? Bool == true else { return }
         await MainActor.run { TelemetryService.shared.track("app_opened_from_reminder") }
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         []
     }
