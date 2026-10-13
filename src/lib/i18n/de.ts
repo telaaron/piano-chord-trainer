@@ -62,6 +62,7 @@ export const de = {
       placed: '{quality} in {voicing} {tier} kannst du schon — übersprungen.',
       nextGoal: 'Nächstes Ziel: {quality} in {voicing} {tier}.',
       calibrated: 'Check fertig — {placed} Bausteine sitzen schon.',
+      calibratedNone: 'Check fertig — jetzt wissen wir, wo wir anfangen. Los geht’s!',
     },
     // Tonarten-Stufen-Zusatz für die fb.*-Texte — liest sich als Klammer.
     tier: {

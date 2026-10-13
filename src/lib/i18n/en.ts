@@ -62,6 +62,7 @@ export const en = {
       placed: 'You already have {quality} in {voicing} {tier} — skipped ahead.',
       nextGoal: 'Next goal: {quality} in {voicing} {tier}.',
       calibrated: 'Check done — {placed} building blocks already in place.',
+      calibratedNone: 'Check done — now we know where to start. Off we go!',
     },
     // Key-stage suffix used in fb.* strings — reads as a parenthetical.
     tier: {

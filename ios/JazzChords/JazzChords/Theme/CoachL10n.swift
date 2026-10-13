@@ -266,6 +266,7 @@ enum CoachL10n {
         "coach.fb.placed": "You already have {quality} in {voicing} {tier} — skipped ahead.",
         "coach.fb.nextGoal": "Next goal: {quality} in {voicing} {tier}.",
         "coach.fb.calibrated": "Check done — {placed} building blocks already in place.",
+        "coach.fb.calibratedNone": "Check done — now we know where to start. Off we go!",
         // Key-stage suffix used in fb.* strings — reads as a parenthetical.
         "coach.tier.easy": "(easy keys)",
         "coach.tier.med": "(more keys)",
@@ -586,6 +587,7 @@ enum CoachL10n {
         "coach.fb.placed": "{quality} in {voicing} {tier} kannst du schon — übersprungen.",
         "coach.fb.nextGoal": "Nächstes Ziel: {quality} in {voicing} {tier}.",
         "coach.fb.calibrated": "Check fertig — {placed} Bausteine sitzen schon.",
+        "coach.fb.calibratedNone": "Check fertig — jetzt wissen wir, wo wir anfangen. Los geht’s!",
         "coach.tier.easy": "(leichte Tonarten)",
         "coach.tier.med": "(mehr Tonarten)",
         "coach.tier.all": "(alle 12 Tonarten)",
