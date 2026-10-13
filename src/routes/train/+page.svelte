@@ -1095,6 +1095,12 @@
 			// own dayIndex, which only counts days the coach was actually used.
 			// This is the one that answers "did anyone come back on day 2?".
 			deviceDayIndex: deviceDayIndex(),
+			// The input the player set up, and whether MIDI was actually live.
+			// first_chord_played only carries input for sessions that crossed,
+			// so without this a MIDI device that never connected could not be
+			// told apart from any other drop-off.
+			input: inputMode,
+			midiState,
 		});
 		// Spend the daily allowance only now that a block is really starting —
 		// and never for calibration, which is a placement test, not practice.
