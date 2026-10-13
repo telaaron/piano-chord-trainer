@@ -24,6 +24,14 @@ Only addresses on the Brevo list, i.e. confirmed double opt-in. Users who
 registered before this existed have **not** consented and must not receive
 product announcements by email (GDPR + § 7 UWG). Ask them in the app.
 
+## Setup status (13.10.2026)
+
+- Done: DOI template id **1** ("JazzChords – Double Opt-in (DE/EN)", active,
+  sender currently admin@must-seen.com, reply-to info@jazzchords.app);
+  Vercel env `BREVO_DOI_TEMPLATE_ID=1` (production + preview).
+- Open: list, API key, domain. The Brevo connector cannot create lists, keys
+  or sender domains, and jazzchords.app DNS is at Cloudflare.
+
 ## Setup (once)
 
 1. Brevo → Senders & Domains: add and authenticate `jazzchords.app` (DNS: DKIM,
