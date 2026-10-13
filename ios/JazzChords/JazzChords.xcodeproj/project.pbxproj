@@ -301,7 +301,7 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					F3CD4A21DB694FBD2D863186 = {
-						DevelopmentTeam = 3YB2KJCCHV;
+						DevelopmentTeam = FDVWAWJYV5;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -425,7 +425,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3YB2KJCCHV;
+				DEVELOPMENT_TEAM = FDVWAWJYV5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				INFOPLIST_FILE = JazzChords/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -567,7 +567,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3YB2KJCCHV;
+				DEVELOPMENT_TEAM = FDVWAWJYV5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				INFOPLIST_FILE = JazzChords/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
