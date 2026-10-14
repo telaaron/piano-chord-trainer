@@ -72,12 +72,19 @@ export const GET: RequestHandler = async ({ locals }) => {
 	const profileMap = new Map((profiles ?? []).map(p => [p.id, p]));
 	const subMap = new Map((subscriptions ?? []).map(s => [s.user_id, s]));
 
-	const enrichedUsers = recentUsers.map(u => ({
-		...u,
-		role: profileMap.get(u.id)?.role ?? 'user',
-		tier: subMap.get(u.id)?.tier ?? 'free',
-		sub_status: subMap.get(u.id)?.status ?? null,
-	}));
+	// A canceled or lapsed subscription keeps its tier column, so the tier only
+	// counts while the status still grants access — the same rule the app uses
+	// (services/subscription.ts). Otherwise expired trials show up as paying Pro.
+	const enrichedUsers = recentUsers.map(u => {
+		const sub = subMap.get(u.id);
+		const live = sub?.status === 'active' || sub?.status === 'trialing';
+		return {
+			...u,
+			role: profileMap.get(u.id)?.role ?? 'user',
+			tier: live ? sub!.tier : 'free',
+			sub_status: sub?.status ?? null,
+		};
+	});
 
 	// Signups per day (last 30 days)
 	const thirtyDaysAgo = new Date();
