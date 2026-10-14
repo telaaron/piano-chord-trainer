@@ -51,6 +51,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	let customerId = profile?.stripe_customer_id;
 
+	// One trial per customer. Trials end by cancelling (no card on file), so
+	// without this check a user can restart checkout every week and keep
+	// Studio free indefinitely — which the live data showed happening.
+	let hadTrial = false;
+	if (customerId) {
+		const prior = await stripe.subscriptions.list({
+			customer: customerId,
+			status: 'all',
+			limit: 100,
+		});
+		hadTrial = prior.data.some((s) => s.trial_start !== null);
+	}
+
 	if (!customerId) {
 		const customer = await stripe.customers.create({
 			email: user.email,
@@ -70,15 +83,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		// Seven days free. Someone who practises daily has felt the value well
 		// inside a week; someone who hasn't returned by day 7 won't by day 14 —
 		// the longer trial only delays the decision.
-		subscription_data: {
-			trial_period_days: 7,
-			// No card on file means Stripe cannot silently charge at trial end.
-			// Cancel instead, and let the app ask for the upgrade in context.
-			trial_settings: {
-				end_behavior: { missing_payment_method: 'cancel' },
-			},
-			metadata: { supabase_user_id: user.id },
-		},
+		// A returning customer who already used their trial pays from day one;
+		// Stripe then collects a card because the first invoice is not zero.
+		subscription_data: hadTrial
+			? { metadata: { supabase_user_id: user.id } }
+			: {
+					trial_period_days: 7,
+					// No card on file means Stripe cannot silently charge at trial end.
+					// Cancel instead, and let the app ask for the upgrade in context.
+					trial_settings: {
+						end_behavior: { missing_payment_method: 'cancel' },
+					},
+					metadata: { supabase_user_id: user.id },
+				},
 		// Deliberately NOT collecting a card up front. The landing page promises
 		// "Free. No signup." — asking for card details in the same product breaks
 		// that promise. At our signup volume every deterred trial start costs more
