@@ -45,15 +45,10 @@ final class MIDIInput {
         started = true
 
         let name = "JazzChords" as CFString
-        MIDIClientCreateWithBlock(name, &client) { [weak self] notification in
-            // Device hot-plug — refresh on the main actor.
-            Task { @MainActor in self?.refreshDevices() }
-        }
+        MIDIClientCreateWithBlock(name, &client, MIDIInput.makeNotifyBlock())
 
         let portName = "JazzChords In" as CFString
-        MIDIInputPortCreateWithProtocol(client, portName, ._1_0, &inPort) { [weak self] eventList, _ in
-            self?.handle(eventList)
-        }
+        MIDIInputPortCreateWithProtocol(client, portName, ._1_0, &inPort, MIDIInput.makeReceiveBlock())
 
         connectAllSources()
         refreshDevices()
@@ -91,11 +86,34 @@ final class MIDIInput {
         offWorkItems.removeAll()
     }
 
+    // MARK: CoreMIDI callbacks
+
+    // CoreMIDI calls both blocks on its own thread. They are built in nonisolated
+    // functions on purpose: a closure written inside this @MainActor class inherits
+    // main-actor isolation, and Swift 6 traps when another thread calls it. That
+    // trap was the crash on "Connect Bluetooth MIDI".
+
+    private nonisolated static func makeNotifyBlock() -> MIDINotifyBlock {
+        return { _ in
+            // Device hot-plug — refresh on the main actor.
+            Task { @MainActor in MIDIInput.shared.refreshDevices() }
+        }
+    }
+
+    private nonisolated static func makeReceiveBlock() -> MIDIReceiveBlock {
+        return { eventList, _ in
+            let messages = parse(eventList)
+            if messages.isEmpty { return }
+            Task { @MainActor in
+                for m in messages { MIDIInput.shared.process(status: m.0, data1: m.1, data2: m.2) }
+            }
+        }
+    }
+
     // MARK: Event parsing (MIDI 1.0 over UMP)
 
-    private nonisolated func handle(_ eventList: UnsafePointer<MIDIEventList>) {
-        // Collect (status, data1, data2) tuples off the realtime callback, then
-        // hop to the main actor to mutate state.
+    /// Collects (status, data1, data2) tuples off the realtime callback.
+    private nonisolated static func parse(_ eventList: UnsafePointer<MIDIEventList>) -> [(UInt8, UInt8, UInt8)] {
         var messages: [(UInt8, UInt8, UInt8)] = []
         var packet = eventList.pointee.packet
         let numPackets = Int(eventList.pointee.numPackets)
@@ -116,10 +134,7 @@ final class MIDIInput {
             }
             packet = MIDIEventPacketNext(&packet).pointee
         }
-        if messages.isEmpty { return }
-        Task { @MainActor [messages] in
-            for m in messages { self.process(status: m.0, data1: m.1, data2: m.2) }
-        }
+        return messages
     }
 
     private func process(status: UInt8, data1: UInt8, data2: UInt8) {

@@ -125,7 +125,7 @@ struct PlanCard: View {
 
             HStack(spacing: 6) {
                 Circle().fill(levelColor).frame(width: 6, height: 6)
-                Text(plan.level.rawValue.capitalized)
+                Text(Strings.level(plan.level))
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(palette.textMuted)
                 Spacer()

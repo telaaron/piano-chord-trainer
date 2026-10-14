@@ -59,11 +59,11 @@ final class MicInput {
         guard state != .listening else { return }
         state = .requesting
         #if os(iOS)
-        AVAudioApplication.requestRecordPermission { [weak self] granted in
-            Task { @MainActor in
-                guard let self else { return }
-                if granted { self.beginCapture() } else { self.state = .denied }
-            }
+        // The async form resumes on the main actor. The completion-handler form ran
+        // a main-actor closure on a background queue, which Swift 6 traps.
+        Task { @MainActor in
+            let granted = await AVAudioApplication.requestRecordPermission()
+            if granted { self.beginCapture() } else { self.state = .denied }
         }
         #else
         beginCapture()
@@ -83,9 +83,7 @@ final class MicInput {
         ring = [Float](repeating: 0, count: Int(nativeRate * 2)) // 2s
         writeIdx = 0; filled = false
 
-        input.installTap(onBus: 0, bufferSize: 4096, format: format) { [weak self] buffer, _ in
-            self?.append(buffer)
-        }
+        input.installTap(onBus: 0, bufferSize: 4096, format: format, block: MicInput.makeTapBlock())
         do {
             try engine.start()
             state = .listening
@@ -115,12 +113,16 @@ final class MicInput {
 
     // MARK: Capture
 
-    private nonisolated func append(_ buffer: AVAudioPCMBuffer) {
-        guard let ch = buffer.floatChannelData?[0] else { return }
-        let n = Int(buffer.frameLength)
-        // Copy to a value array on the audio thread (pointer can't cross actors).
-        let chunk = Array(UnsafeBufferPointer(start: ch, count: n))
-        Task { @MainActor in self.writeRing(chunk) }
+    /// Runs on the audio thread, so it is built outside the main actor (a closure
+    /// written in this @MainActor class would trap there under Swift 6).
+    private nonisolated static func makeTapBlock() -> AVAudioNodeTapBlock {
+        return { buffer, _ in
+            guard let ch = buffer.floatChannelData?[0] else { return }
+            let n = Int(buffer.frameLength)
+            // Copy to a value array on the audio thread (pointer can't cross actors).
+            let chunk = Array(UnsafeBufferPointer(start: ch, count: n))
+            Task { @MainActor in MicInput.shared.writeRing(chunk) }
+        }
     }
 
     private func writeRing(_ data: [Float]) {

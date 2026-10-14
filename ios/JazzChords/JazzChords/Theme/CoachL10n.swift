@@ -151,6 +151,7 @@ enum CoachL10n {
 
     /// Greeting for the Today hero, chosen by hour of day.
     static func greeting(hour: Int) -> String {
+        if hour < 5 { return t("settings.greeting_evening") }   // 00:30 is not "morning"
         if hour < 12 { return t("settings.greeting_morning") }
         if hour < 18 { return t("settings.greeting_afternoon") }
         return t("settings.greeting_evening")

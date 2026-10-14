@@ -59,9 +59,9 @@ struct LessonPlayerView: View {
         case .theory(let t):
             theoryView(t)
         case .practice(let p):
-            poolDrillView(chords: poolChords(p), label: CoachL10n.t("learn.step_practice"))
+            poolDrillView(items: poolItems(p), label: CoachL10n.t("learn.step_practice"))
         case .challenge(let c):
-            poolDrillView(chords: challengeChords(c),
+            poolDrillView(items: challengeChords(c).map(DrillItem.init(chord:)),
                           label: CoachL10n.t("learn.challenge_beat",
                                              ["seconds": String(Int(c.masteryThresholdMs / 1000))]))
         }
@@ -99,25 +99,53 @@ struct LessonPlayerView: View {
         }
     }
 
-    private func poolDrillView(chords: [ChordWithNotes], label: String) -> some View {
-        let data = poolIdx < chords.count ? chords[poolIdx] : chords.last
+    private func poolDrillView(items: [DrillItem], label: String) -> some View {
+        let item = poolIdx < items.count ? items[poolIdx] : items.last
         return VStack(spacing: Theme.space4) {
             Text(label)
                 .font(.caption.weight(.semibold)).tracking(1)
                 .foregroundStyle(palette.primary)
-            Text("\(min(poolIdx + 1, chords.count)) / \(chords.count)")
+            Text("\(min(poolIdx + 1, items.count)) / \(items.count)")
                 .font(.caption.monospacedDigit()).foregroundStyle(palette.textDim)
-            if let data {
-                Text(Notation.chord(data.chord))
+            if let item {
+                Text(item.title)
                     .font(.system(size: 52, weight: .heavy, design: .rounded))
                     .foregroundStyle(palette.text)
-                PianoKeyboard(chordData: data, accidentalPref: .both, showVoicing: true)
+                if let caption = item.caption {
+                    Text(caption).foregroundStyle(palette.textMuted)
+                }
+                PianoKeyboard(chordData: item.data, accidentalPref: .both, showVoicing: true)
             }
         }
     }
 
     // MARK: Pools
 
+    /// One card of a drill: what to show big, an optional caption, and the keys.
+    private struct DrillItem {
+        let title: String
+        let caption: String?
+        let data: ChordWithNotes
+
+        init(chord: ChordWithNotes) {
+            title = Notation.chord(chord.chord); caption = nil; data = chord
+        }
+        init(interval iv: IntervalSpec) {
+            title = "\(Notation.root(iv.root)) → \(Notation.root(iv.target))"
+            caption = iv.label
+            data = ChordWithNotes(chord: title, root: iv.root, type: iv.label,
+                                  notes: [iv.root, iv.target], voicing: [iv.root, iv.target])
+        }
+    }
+
+    /// Interval lessons carry an interval pool instead of a chord pool; showing
+    /// only the chord pool left them at "0 / 0".
+    private func poolItems(_ p: PracticeStep) -> [DrillItem] {
+        if let intervals = p.intervalPool, !intervals.isEmpty {
+            return intervals.map(DrillItem.init(interval:))
+        }
+        return poolChords(p).map(DrillItem.init(chord:))
+    }
     private func poolChords(_ p: PracticeStep) -> [ChordWithNotes] {
         (p.chordPool ?? []).map { chordWithNotes(root: $0.root, quality: $0.quality, voicing: $0.voicing) }
     }
@@ -138,7 +166,7 @@ struct LessonPlayerView: View {
         switch currentStep {
         case .theory: return CoachL10n.t("ui.continue")
         case .practice(let p):
-            let n = poolChords(p).count
+            let n = poolItems(p).count
             return CoachL10n.t(poolIdx >= n - 1 ? "learn.done_practicing" : "ui.next")
         case .challenge(let c):
             let n = challengeChords(c).count
@@ -152,10 +180,10 @@ struct LessonPlayerView: View {
         case .theory:
             nextStep()
         case .practice(let p):
-            let chords = poolChords(p)
-            if poolIdx < chords.count - 1 {
+            let items = poolItems(p)
+            if poolIdx < items.count - 1 {
                 poolIdx += 1
-                AudioEngine.shared.playChord(chords[poolIdx].voicing)
+                AudioEngine.shared.playChord(items[poolIdx].data.voicing)
             } else {
                 nextStep()
             }
@@ -178,8 +206,8 @@ struct LessonPlayerView: View {
             stepIdx += 1
             poolIdx = 0
             // Auto-play first chord of a drill step.
-            if case .practice(let p) = currentStep, let first = poolChords(p).first {
-                AudioEngine.shared.playChord(first.voicing)
+            if case .practice(let p) = currentStep, let first = poolItems(p).first {
+                AudioEngine.shared.playChord(first.data.voicing)
             } else if case .challenge(let c) = currentStep, let first = challengeChords(c).first {
                 AudioEngine.shared.playChord(first.voicing)
             }
