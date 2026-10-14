@@ -193,7 +193,7 @@ struct BluetoothMIDIPresenter: UIViewControllerRepresentable {
 
         func present(from host: UIViewController) {
             guard presented == nil, host.presentedViewController == nil else { return }
-            let bt = CABTMIDICentralViewController()
+            let bt = SafeBTMIDICentralViewController()
             bt.title = "Bluetooth MIDI"
             bt.navigationItem.rightBarButtonItem = UIBarButtonItem(
                 barButtonSystemItem: .done, target: self, action: #selector(done))
@@ -220,5 +220,19 @@ struct BluetoothMIDIPresenter: UIViewControllerRepresentable {
             presented = nil
             parent.isPresented = false
         }
+    }
+}
+
+/// iOS 27: CABTMIDICentralViewController.loadView sizes its table from the
+/// deprecated status-bar height, which now comes back NaN and aborts with
+/// CALayerInvalidGeometry. Build the table ourselves at a finite size instead;
+/// the superclass keeps acting as its data source and delegate.
+final class SafeBTMIDICentralViewController: CABTMIDICentralViewController {
+    override func loadView() {
+        let table = UITableView(frame: CGRect(x: 0, y: 0, width: 400, height: 600), style: .insetGrouped)
+        table.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        table.dataSource = self
+        table.delegate = self
+        tableView = table
     }
 }
