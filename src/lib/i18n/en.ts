@@ -1050,7 +1050,7 @@ export const en = {
     p_fonts: 'All fonts (Source Serif 4, Inter) are self-hosted and served directly from <code>jazzchords.app</code>. No request goes to Google or any other third party, so your IP address is never shared with a font provider.',
     
     h_email_updates: '1.7 Email updates',
-    p_email_updates: 'Only if you explicitly agree (checkbox at signup or in your <a href="/account" class="underline">account settings</a>) do we send you emails about new features, courses and the JazzChords app. The subscription only takes effect after you click the confirmation link in a separate email (double opt-in). To be able to prove your consent we store your email address, the wording you agreed to and when you subscribed, confirmed and unsubscribed. Emails are sent via <strong>Brevo</strong> (Sendinblue SAS, Paris, France) as our processor within the EU. The legal basis is your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time via the link in every email or in your account settings. If you delete your account, we also delete the contact at Brevo.',
+    p_email_updates: 'Only if you explicitly agree (checkbox at signup, in your <a href="/account" class="underline">account settings</a>, or after a session in the trainer, there also without an account) do we send you one exercise per week and occasional emails about new features, courses and the JazzChords app. Without an account we store only your email address for this; it is not linked to the telemetry device ID. The subscription only takes effect after you click the confirmation link in a separate email (double opt-in). To be able to prove your consent we store your email address, the wording you agreed to and when you subscribed, confirmed and unsubscribed. Emails are sent via <strong>Brevo</strong> (Sendinblue SAS, Paris, France) as our processor within the EU. The legal basis is your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time via the link in every email or in your account settings. If you delete your account, we also delete the contact at Brevo.',
 
     h_no_collect: '2. Data We Do NOT Collect',
     li_no_account: 'No account required — accounts are optional and only used for cross-device sync',
@@ -1963,6 +1963,25 @@ export const en = {
     faq_trial_a: 'You get 7 days of full Studio access and we do not ask for a card. When the week is up the trial simply ends — there is nothing to cancel and nothing is charged. If you want to carry on, you add a payment method then.',
     faq_guarantee_q: 'What\'s the money-back guarantee?',
     faq_guarantee_a: 'If you\'re not happy for any reason, email info@jazzchords.app within 30 days of your first payment and we refund you in full. We\'re confident in the product, so the risk is ours.',
+  },
+
+  practice_mail: {
+    title: 'Keep going next week?',
+    desc: 'One 5-minute exercise every Monday, straight to your inbox, with a link that starts right there. No account needed.',
+    email_label: 'Email address',
+    email_placeholder: 'you@example.com',
+    cta: 'Yes, remind me',
+    later: 'Not now',
+    sending: 'Sending …',
+    sent_title: 'Almost there.',
+    sent_desc: 'We sent you an email. Click the confirmation link in it and your first exercise arrives on Monday.',
+    already: 'You are already subscribed. See you on Monday.',
+    close: 'Close',
+    error_email: 'That does not look like an email address.',
+    error_generic: 'That did not work. Please try again later.',
+    confirmed_page_title: 'Confirmed.',
+    confirmed_page_desc: 'From Monday you get a 5-minute exercise every week. Unsubscribe with one click in any email.',
+    confirmed_page_cta: 'Practise a round now',
   },
 
   sync_offer: {

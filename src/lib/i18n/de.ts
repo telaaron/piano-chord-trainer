@@ -1057,7 +1057,7 @@ export const de = {
     p_fonts: 'Alle Schriften (Source Serif 4, Inter) liegen auf unserem eigenen Server und werden direkt von <code>jazzchords.app</code> geladen. Es geht dabei keine Anfrage an Google oder einen anderen Dritten, deine IP-Adresse wird also nicht an Font-Anbieter übertragen.',
     
     h_email_updates: '1.7 E-Mail-Updates',
-    p_email_updates: 'Nur wenn du ausdrücklich einwilligst (Häkchen bei der Registrierung oder in deinen <a href="/account" class="underline">Account-Einstellungen</a>), schicken wir dir E-Mails zu neuen Funktionen, Kursen und der JazzChords-App. Die Anmeldung wird erst nach Klick auf den Bestätigungslink in einer separaten Mail wirksam (Double-Opt-in). Wir speichern dazu deine E-Mail-Adresse, den Wortlaut der Einwilligung und die Zeitpunkte von Anmeldung, Bestätigung und Abmeldung, um die Einwilligung nachweisen zu können. Der Versand erfolgt über <strong>Brevo</strong> (Sendinblue SAS, Paris, Frankreich) als Auftragsverarbeiter innerhalb der EU. Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit widerrufen: per Link in jeder Mail oder in den Account-Einstellungen. Löschst du deinen Account, löschen wir auch den Kontakt bei Brevo.',
+    p_email_updates: 'Nur wenn du ausdrücklich einwilligst (Häkchen bei der Registrierung, in deinen <a href="/account" class="underline">Account-Einstellungen</a> oder nach einer Übung im Trainer, dort auch ohne Konto), schicken wir dir einmal pro Woche eine Übung und gelegentlich E-Mails zu neuen Funktionen, Kursen und der JazzChords-App. Ohne Konto speichern wir dafür nur deine E-Mail-Adresse; sie wird nicht mit der Geräte-ID der Telemetrie verknüpft. Die Anmeldung wird erst nach Klick auf den Bestätigungslink in einer separaten Mail wirksam (Double-Opt-in). Wir speichern dazu deine E-Mail-Adresse, den Wortlaut der Einwilligung und die Zeitpunkte von Anmeldung, Bestätigung und Abmeldung, um die Einwilligung nachweisen zu können. Der Versand erfolgt über <strong>Brevo</strong> (Sendinblue SAS, Paris, Frankreich) als Auftragsverarbeiter innerhalb der EU. Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit widerrufen: per Link in jeder Mail oder in den Account-Einstellungen. Löschst du deinen Account, löschen wir auch den Kontakt bei Brevo.',
 
     h_no_collect: '2. Daten, die wir NICHT sammeln',
     li_no_account: 'Kein Account erforderlich — Accounts sind optional und dienen nur der geräteübergreifenden Synchronisierung',
@@ -1978,6 +1978,25 @@ export const de = {
     faq_trial_a: 'Du bekommst 7 Tage vollen Studio-Zugang — ohne Karte. Nach der Woche endet die Testphase einfach: nichts zu kündigen, nichts abgebucht. Wer weitermachen will, hinterlegt dann eine Zahlungsmethode.',
     faq_guarantee_q: 'Was ist die Geld-zurück-Garantie?',
     faq_guarantee_a: 'Wenn du aus irgendeinem Grund nicht zufrieden bist, schreib innerhalb von 30 Tagen nach deiner ersten Zahlung an info@jazzchords.app — wir erstatten dir den vollen Betrag. Wir sind überzeugt vom Produkt, also tragen wir das Risiko.',
+  },
+
+  practice_mail: {
+    title: 'Nächste Woche weiterüben?',
+    desc: 'Jeden Montag eine Übung für 5 Minuten, direkt in deinem Postfach, mit Link, der genau dort startet. Ohne Konto.',
+    email_label: 'E-Mail-Adresse',
+    email_placeholder: 'du@beispiel.de',
+    cta: 'Ja, erinnere mich',
+    later: 'Jetzt nicht',
+    sending: 'Wird gesendet …',
+    sent_title: 'Fast geschafft.',
+    sent_desc: 'Wir haben dir eine Mail geschickt. Klick dort auf den Bestätigungslink, dann kommt am Montag die erste Übung.',
+    already: 'Du bist schon angemeldet. Montag geht es weiter.',
+    close: 'Schließen',
+    error_email: 'Das sieht nicht nach einer E-Mail-Adresse aus.',
+    error_generic: 'Das hat nicht geklappt. Versuch es später noch einmal.',
+    confirmed_page_title: 'Bestätigt.',
+    confirmed_page_desc: 'Ab Montag kommt jede Woche eine 5-Minuten-Übung. Abmelden kannst du dich mit einem Klick in jeder Mail.',
+    confirmed_page_cta: 'Jetzt eine Runde üben',
   },
 
   sync_offer: {

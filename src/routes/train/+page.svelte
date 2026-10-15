@@ -7,6 +7,8 @@
 	import { Icon } from '$lib/components/ui';
 	import UpgradeSheet from '$lib/components/UpgradeSheet.svelte';
 	import SyncOfferSheet from '$lib/components/SyncOfferSheet.svelte';
+	import PracticeMailSheet from '$lib/components/PracticeMailSheet.svelte';
+	import { nextOffer } from '$lib/services/post-session-offer';
 	import ProBadge from '$lib/components/ProBadge.svelte';
 	import { canUse, showLock, canStartCoachSession } from '$lib/services/subscription-store.svelte';
 	import { recordCoachSessionStart, deviceDayIndex } from '$lib/services/usage-limit';
@@ -353,7 +355,7 @@
 
 	/** The one-time "your progress lives only here" offer. Free, not a paywall. */
 	let syncOfferOpen = $state(false);
-	const SYNC_OFFER_KEY = 'chord-trainer-sync-offer-shown';
+	let practiceMailOpen = $state(false);
 	/** Tracks whether the just-finished session was an adaptive (Pro) drill. */
 	let sessionWasAdaptive = $state(false);
 
@@ -1246,31 +1248,24 @@
 		buildResultDial(allTimings);
 
 		screen = 'coach-feedback';
-		maybeOfferSync(coachPlan.blocks[0]?.kind);
+		maybeOfferAfterSession('coach', coachPlan.blocks[0]?.kind);
 	}
 
 	/**
-	 * Offer an account once, after a real session — never after calibration.
-	 *
-	 * Anonymous progress lives only in localStorage, so a cleared browser or a
-	 * second device silently loses everything. That is worth saying plainly at
-	 * the one moment the user has something to lose, and it opens the only
-	 * channel that can bring them back tomorrow. Shown once per device: a
-	 * second ask stops being an offer and starts being a wall.
+	 * After a real session, ask once for the weekly practice mail, and on a
+	 * later coach session once for a free account — never after calibration.
+	 * Which one, and the once-per-device rule, live in nextOffer().
 	 */
-	function maybeOfferSync(firstBlockKind?: string) {
-		if (firstBlockKind === 'calibrate') return; // no real practice yet
-		if (getAuthState().user) return; // already has an account
-		if (typeof localStorage === 'undefined') return;
-		try {
-			if (localStorage.getItem(SYNC_OFFER_KEY)) return;
-			localStorage.setItem(SYNC_OFFER_KEY, '1');
-		} catch {
-			return; // no storage, no way to remember — rather ask never than twice
-		}
-		// After the feedback screen has painted, so it lands on top of a result
+	function maybeOfferAfterSession(kind: 'coach' | 'drill', firstBlockKind?: string) {
+		const storage = typeof localStorage === 'undefined' ? null : localStorage;
+		const offer = nextOffer(storage, { kind, firstBlockKind, signedIn: !!getAuthState().user });
+		if (!offer) return;
+		// After the result screen has painted, so it lands on top of a result
 		// rather than interrupting the moment the last chord is graded.
-		setTimeout(() => (syncOfferOpen = true), 1200);
+		setTimeout(() => {
+			if (offer === 'mail') practiceMailOpen = true;
+			else syncOfferOpen = true;
+		}, 1200);
 	}
 
 	/** Feedback valve: biases the controller. Only 'tooHard' is user-triggered now
@@ -1497,6 +1492,10 @@
 		// Refresh dashboard stats
 		dashStats = computeStats(loadHistory());
 		setupDial = buildKeyDial(loadHistory(), DIAL_THRESHOLD_MS);
+
+		// First finished drill: ask about the weekly practice mail — unless
+		// the adaptive teaser below claims this moment.
+		if (!coachMode && !sessionWasAdaptive) maybeOfferAfterSession('drill');
 
 		// Adaptive teaser: the free user just felt the coaching — convert now.
 		if (sessionWasAdaptive) {
@@ -3798,6 +3797,7 @@
 
 <UpgradeSheet bind:open={upgradeOpen} feature={upgradeFeature} teaserMode={upgradeTeaser} />
 <SyncOfferSheet bind:open={syncOfferOpen} />
+<PracticeMailSheet bind:open={practiceMailOpen} />
 
 <style>
 	/* ── The session, as a printed page ───────────────────────────
