@@ -129,7 +129,7 @@ struct TodayView: View {
                             ghost: "Δ7") {
             VStack(alignment: .leading, spacing: Theme.space3) {
                 if !chords.isEmpty {
-                    chordRow(chords)
+                    chordRow(chords, sequence: TodayChordPreview.isSequence(for: plan))
                 }
                 Text(coachSay)
                     .font(Display.serif(20, italic: true, relativeTo: .title3))
@@ -142,10 +142,16 @@ struct TodayView: View {
         }
     }
 
-    private func chordRow(_ chords: [ChordWithNotes]) -> some View {
+    private func chordRow(_ chords: [ChordWithNotes], sequence: Bool) -> some View {
         HStack(spacing: Theme.space2) {
+            if !sequence {
+                // Dealt at random when the session starts — examples, not a promise.
+                Text(Strings.forExample)
+                    .font(Display.serif(18, italic: true, relativeTo: .body))
+                    .opacity(0.8)
+            }
             ForEach(Array(chords.enumerated()), id: \.offset) { index, chord in
-                if index > 0 {
+                if sequence, index > 0 {
                     Image(systemName: "arrow.right")
                         .font(.footnote.weight(.semibold))
                         .opacity(0.7)

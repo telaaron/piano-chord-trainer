@@ -16,6 +16,7 @@ struct TrackGroup<Content: View>: View {
 
 struct TrackRow: View {
     @Environment(\.palette) private var palette
+    @Environment(\.dynamicTypeSize) private var typeSize
     var badge: String? = nil
     var number: String? = nil
     let title: String
@@ -39,14 +40,30 @@ struct TrackRow: View {
                     .frame(width: 36, alignment: .leading)
             }
             HStack(spacing: Theme.space2) {
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(palette.ink)
-                Spacer(minLength: Theme.space2)
-                if let meta {
-                    Text(meta)
-                        .font(.subheadline)
-                        .foregroundStyle(palette.inkMuted)
+                if typeSize.isAccessibilitySize {
+                    // Large type: meta wraps under the title instead of squeezing it.
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(.body)
+                            .foregroundStyle(palette.ink)
+                        if let meta {
+                            Text(meta)
+                                .font(.subheadline)
+                                .foregroundStyle(palette.inkMuted)
+                        }
+                    }
+                    .padding(.vertical, Theme.space2)
+                    Spacer(minLength: 0)
+                } else {
+                    Text(title)
+                        .font(.body)
+                        .foregroundStyle(palette.ink)
+                    Spacer(minLength: Theme.space2)
+                    if let meta {
+                        Text(meta)
+                            .font(.subheadline)
+                            .foregroundStyle(palette.inkMuted)
+                    }
                 }
                 if showsChevron {
                     Image(systemName: "chevron.right")

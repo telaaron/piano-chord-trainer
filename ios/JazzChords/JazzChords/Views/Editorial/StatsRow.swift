@@ -11,9 +11,42 @@ struct StatItem: Identifiable {
 
 struct StatsRow: View {
     @Environment(\.palette) private var palette
+    @Environment(\.dynamicTypeSize) private var typeSize
     let items: [StatItem]
 
     var body: some View {
+        if typeSize.isAccessibilitySize {
+            stacked
+        } else {
+            columns
+        }
+    }
+
+    /// Accessibility sizes: one stat per line, value and label side by side.
+    private var stacked: some View {
+        VStack(alignment: .leading, spacing: Theme.space2) {
+            ForEach(items) { item in
+                HStack(alignment: .firstTextBaseline, spacing: Theme.space2) {
+                    Text(item.value)
+                        .font(Display.serif(32))
+                        .foregroundStyle(palette.music)
+                    Text(item.label)
+                        .font(.caption)
+                        .foregroundStyle(palette.inkMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(item.value) \(item.label)")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 14)
+        .overlay(alignment: .top) {
+            Rectangle().fill(palette.ink).frame(height: 1)
+        }
+    }
+
+    private var columns: some View {
         HStack(alignment: .top, spacing: 0) {
             ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                 HStack(spacing: 0) {

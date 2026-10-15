@@ -10,8 +10,7 @@ enum TodayChordPreview {
     /// first block). Progression modes give their first chords; otherwise the
     /// block's focus roots × qualities. Nothing to show → `[]` (row hidden).
     static func chords(for plan: CoachPlan, max: Int = 3) -> [ChordWithNotes] {
-        guard let block = plan.blocks.first(where: { $0.kind == .focus || $0.kind == .new }) ?? plan.blocks.first
-        else { return [] }
+        guard let block = focusBlock(of: plan) else { return [] }
         let s = block.settings
 
         if s.progressionMode != .random && s.progressionMode != .custom {
@@ -33,6 +32,19 @@ enum TodayChordPreview {
             }
         }
         return result
+    }
+
+    /// True when the row is a real succession (a progression block), so arrows
+    /// are honest. Focus/calibration chords are dealt at random at start: show
+    /// them as examples, not as a sequence.
+    static func isSequence(for plan: CoachPlan) -> Bool {
+        guard let block = focusBlock(of: plan) else { return false }
+        let mode = block.settings.progressionMode
+        return mode != .random && mode != .custom
+    }
+
+    private static func focusBlock(of plan: CoachPlan) -> CoachBlock? {
+        plan.blocks.first(where: { $0.kind == .focus || $0.kind == .new }) ?? plan.blocks.first
     }
 
     private static func make(root: String, quality: String, display: String, settings s: PracticePlanSettings) -> ChordWithNotes {

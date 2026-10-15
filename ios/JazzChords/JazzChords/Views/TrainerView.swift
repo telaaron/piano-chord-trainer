@@ -15,19 +15,30 @@ struct TrainerView: View {
     /// When true, launch the Auto-Mode (Coach) session on appear instead of a plan.
     var coachSession = false
 
+    /// × in a session started from Heute/Üben/Fortschritt returns there; only
+    /// free practice (opened on the setup screen) goes back to setup.
+    nonisolated static func closeLeavesTrainer(coachSession: Bool, hasPlan: Bool) -> Bool {
+        coachSession || hasPlan
+    }
+
+    private func closeSession() {
+        store.resetToSetup()
+        if Self.closeLeavesTrainer(coachSession: coachSession, hasPlan: plan != nil) { dismiss() }
+    }
+
     var body: some View {
         Group {
             switch store.screen {
             case .setup: TrainerSetupView(store: store, onClose: { dismiss() })
             case .playing:
                 ZStack {
-                    TrainerPlayingView(store: store, onClose: { store.resetToSetup() })
+                    TrainerPlayingView(store: store, onClose: { closeSession() })
                     // Between-block transition overlay (Coach only).
                     if let t = store.coachTransition {
                         CoachTransitionView(transition: t) { store.advanceCoachBlock() }
                     }
                 }
-            case .earTraining: EarTrainingView(store: store, onClose: { store.resetToSetup() })
+            case .earTraining: EarTrainingView(store: store, onClose: { closeSession() })
             case .finished:
                 // Coach sessions land on a teacher-feedback screen; normal drills on stats.
                 if store.coachShowFeedback {

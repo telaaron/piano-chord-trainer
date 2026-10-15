@@ -48,6 +48,7 @@ struct SettingsHeaderButton: View {
 struct RootView: View {
     @Environment(\.horizontalSizeClass) private var hSize
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var selection: AppSection = .today
     @State private var sidebarSelection: AppSection? = .today
     @State private var chrome = AppChrome()
@@ -55,6 +56,9 @@ struct RootView: View {
     @State private var showOnboarding = !HabitStore.shared.profile.onboardingDone
 
     var body: some View {
+        // Brand faces read the content size from here (see Display.contentSize);
+        // children render after this body, so they see the current value.
+        let _ = (Display.contentSize = UIContentSizeCategory(typeSize))
         Group {
             if hSize == .regular {
                 iPadLayout
@@ -62,6 +66,8 @@ struct RootView: View {
                 iPhoneLayout
             }
         }
+        // Rebuild on a Dynamic Type change so frozen brand fonts re-resolve.
+        .id(typeSize)
         .environment(\.palette, Theme.palette(for: scheme))
         .environment(chrome)
         .tint(Theme.palette(for: scheme).action)

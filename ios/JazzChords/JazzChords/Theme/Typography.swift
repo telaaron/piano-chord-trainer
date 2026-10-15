@@ -49,13 +49,26 @@ enum Display {
         return ct as UIFont
     }
 
-    /// Scale a brand face with Dynamic Type relative to `style`; fall back to
-    /// the system font of that style if the face is missing.
+    /// The Dynamic Type size the brand faces scale to. `Font(UIFont)` is frozen
+    /// at creation and SwiftUI cannot see that it depends on the content size,
+    /// so RootView copies the environment's size here (and rebuilds its content
+    /// when it changes). Main-thread only, like every view body.
+    nonisolated(unsafe) static var contentSize: UIContentSizeCategory = .large
+
+    /// `size` at the default category, scaled like `style` for `category`.
+    static func pointSize(_ size: CGFloat, relativeTo style: UIFont.TextStyle, category: UIContentSizeCategory) -> CGFloat {
+        UIFontMetrics(forTextStyle: style)
+            .scaledValue(for: size, compatibleWith: UITraitCollection(preferredContentSizeCategory: category))
+    }
+
+    /// A brand face at its Dynamic Type size; the cascade is built at the final
+    /// size. Falls back to the system font of `style` if the face is missing.
     private static func scaled(family: String, size: CGFloat, italic: Bool, relativeTo style: UIFont.TextStyle) -> Font {
-        guard let base = uiFont(family: family, size: size, italic: italic) else {
-            return Font(UIFont.preferredFont(forTextStyle: style))
+        let traits = UITraitCollection(preferredContentSizeCategory: contentSize)
+        guard let font = uiFont(family: family, size: pointSize(size, relativeTo: style, category: contentSize), italic: italic) else {
+            return Font(UIFont.preferredFont(forTextStyle: style, compatibleWith: traits))
         }
-        return Font(UIFontMetrics(forTextStyle: style).scaledFont(for: base))
+        return Font(font)
     }
 
     /// Serif for large titles, ledes, stats and course titles. Accidental-safe.
@@ -71,7 +84,7 @@ enum Display {
     /// Small monospaced eyebrow above titles and sections. Callers uppercase
     /// the text and add `.tracking(1)`.
     static func eyebrow(_ size: CGFloat = 12) -> Font {
-        .system(size: size, weight: .medium, design: .monospaced)
+        .system(size: pointSize(size, relativeTo: .caption1, category: contentSize), weight: .medium, design: .monospaced)
     }
 
     /// Large screen titles. Kept so existing call sites compile; now serif.
