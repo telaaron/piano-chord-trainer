@@ -67,12 +67,12 @@ struct ProgressView_: View {
         VStack(spacing: 2) {
             Text(value)
                 .font(.system(.title2, design: .rounded).weight(.bold))
-                .foregroundStyle(palette.primary)
-            Text(label).font(.caption2).foregroundStyle(palette.textDim)
+                .foregroundStyle(palette.action)
+            Text(label).font(.caption2).foregroundStyle(palette.inkMuted)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, Theme.space3)
-        .background(palette.bgCard)
+        .background(palette.group)
         .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
     }
 
@@ -83,10 +83,10 @@ struct ProgressView_: View {
             Chart {
                 ForEach(Array(recent.enumerated()), id: \.offset) { idx, s in
                     LineMark(x: .value("Session", idx), y: .value("Avg s", s.avgMs / 1000))
-                        .foregroundStyle(palette.primary)
+                        .foregroundStyle(palette.action)
                         .interpolationMethod(.catmullRom)
                     PointMark(x: .value("Session", idx), y: .value("Avg s", s.avgMs / 1000))
-                        .foregroundStyle(palette.primary)
+                        .foregroundStyle(palette.action)
                 }
             }
             .frame(height: 160)
@@ -105,15 +105,15 @@ struct ProgressView_: View {
                         HStack {
                             // Root is typeset (D♭, not "Db"); voicing name is localized.
                             Text("\(Notation.root(spot.root)) \(CoachL10n.voicing(spot.voicing))")
-                                .foregroundStyle(palette.text)
+                                .foregroundStyle(palette.ink)
                             Spacer()
                             Text(String(format: "%.1fs", spot.avgMs / 1000))
                                 .font(.system(.body, design: .monospaced))
-                                .foregroundStyle(palette.accentRed)
-                            Image(systemName: "play.circle.fill").foregroundStyle(palette.primary)
+                                .foregroundStyle(palette.action)
+                            Image(systemName: "play.circle.fill").foregroundStyle(palette.action)
                         }
                         .padding(Theme.space3)
-                        .background(palette.bgCard)
+                        .background(palette.group)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                     }
                     .buttonStyle(.plain)
@@ -130,15 +130,15 @@ struct ProgressView_: View {
                 SectionHeader(text: CoachL10n.t("ui.personal_bests"))
                 ForEach(Array(pbs.enumerated()), id: \.offset) { _, pb in
                     HStack {
-                        Image(systemName: "trophy.fill").foregroundStyle(palette.accentGold)
+                        Image(systemName: "trophy.fill").foregroundStyle(palette.music)
                         Text(CoachL10n.t("ui.avg_suffix", ["seconds": String(format: "%.1f", pb.avgMs / 1000)]))
-                            .foregroundStyle(palette.text)
+                            .foregroundStyle(palette.ink)
                         Spacer()
                         Text(CoachL10n.plural("count.chords", pb.totalChords))
-                            .font(.caption).foregroundStyle(palette.textDim)
+                            .font(.caption).foregroundStyle(palette.inkMuted)
                     }
                     .padding(Theme.space3)
-                    .background(palette.bgCard)
+                    .background(palette.group)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                 }
             }

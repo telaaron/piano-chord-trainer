@@ -1,11 +1,11 @@
-// Shared UI building blocks — glass card surface, section header, empty state,
-// hero gradient band, level badge helpers. Visual language: Midnight Indigo +
-// amber, Liquid Glass surfaces, Space Grotesk for headings.
+// Shared UI building blocks — grouped content surface, section header, empty
+// state. Editorial look: content sits on plain inset groups (no glass — glass
+// is for controls only), headings in the serif, eyebrows in SF Mono.
 
 import SwiftUI
 
-/// A glass card surface (Liquid Glass on iOS 26+, material fallback).
-struct CardSurface<Content: View>: View {
+/// A plain inset-group surface for content (radius 22, `group` colour).
+struct GroupSurface<Content: View>: View {
     var padding: CGFloat = Theme.space4
     var tint: Color? = nil
     var content: () -> Content
@@ -20,18 +20,15 @@ struct CardSurface<Content: View>: View {
         content()
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .glassCard(tint: tint)
+            .groupSurface()
     }
 }
 
-/// Section heading — display face, generous weight.
+/// Section heading — SF Mono eyebrow, as in the editorial screens.
 struct SectionHeader: View {
-    @Environment(\.palette) private var palette
     let text: String
     var body: some View {
-        Text(text)
-            .font(Display.headline(19))
-            .foregroundStyle(palette.text)
+        EyebrowText(text)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -61,20 +58,20 @@ struct EmptyStateView: View {
                     .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
             } else {
                 ZStack {
-                    Circle().fill(palette.primary.opacity(0.12)).frame(width: 120, height: 120)
+                    Circle().fill(palette.action.opacity(0.12)).frame(width: 120, height: 120)
                     Image(systemName: systemImage)
                         .font(.system(size: 48, weight: .regular))
-                        .foregroundStyle(palette.primary)
+                        .foregroundStyle(palette.action)
                         .symbolRenderingMode(.hierarchical)
                 }
             }
             Text(title)
                 .font(Display.headline(22))
-                .foregroundStyle(palette.text)
+                .foregroundStyle(palette.ink)
             Text(message)
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(palette.textMuted)
+                .foregroundStyle(palette.inkMuted)
                 .padding(.horizontal, Theme.space6)
         }
         .frame(maxWidth: 380)
@@ -82,49 +79,13 @@ struct EmptyStateView: View {
     }
 }
 
-/// Atmospheric "jazz-club at night" hero band. Uses the rendered art if present
-/// in the bundle; otherwise a code gradient with key-light streaks. A bottom
-/// scrim keeps overlaid text legible.
-struct HeroGradient: View {
-    var height: CGFloat = 168
+/// Plain content surface used by `GroupSurface` and ex-card call sites.
+struct GroupSurfaceModifier: ViewModifier {
+    @Environment(\.palette) private var palette
+    var cornerRadius: CGFloat = Theme.radiusGroup
 
-    private var heroImage: UIImage? {
-        if let url = Bundle.main.url(forResource: "hero2", withExtension: "webp"),
-           let data = try? Data(contentsOf: url) {
-            return UIImage(data: data)
-        }
-        return nil
-    }
-
-    var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            if let img = heroImage {
-                Image(uiImage: img)
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                // Night pressroom, matching the web hero. Deliberately dark in
-                // both schemes: this panel always carries light text over it, so
-                // it does not follow the active palette the way surfaces do.
-                LinearGradient(
-                    colors: [Color(hex: "1c2735"), Color(hex: "151d29"), Color(hex: "0e141d")],
-                    startPoint: .top, endPoint: .bottom
-                )
-                RadialGradient(
-                    colors: [Palette.dark.stamp.opacity(0.28), .clear],
-                    center: .init(x: 0.82, y: 0.2), startRadius: 4, endRadius: height * 1.4
-                )
-            }
-            // Scrim for text legibility.
-            LinearGradient(
-                colors: [.clear, Color(hex: "0e141d").opacity(0.75)],
-                startPoint: .center, endPoint: .bottom
-            )
-        }
-        .frame(height: height)
-        .frame(maxWidth: .infinity)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLg))
+    func body(content: Content) -> some View {
+        content.background(palette.group, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }
 }
 
@@ -138,6 +99,9 @@ struct ScreenBackground: ViewModifier {
 
 extension View {
     func screenBackground() -> some View { modifier(ScreenBackground()) }
+    func groupSurface(cornerRadius: CGFloat = Theme.radiusGroup) -> some View {
+        modifier(GroupSurfaceModifier(cornerRadius: cornerRadius))
+    }
     /// Constrain content to a comfortable reading width, centered (great on iPad).
     func readableWidth(_ max: CGFloat = 640) -> some View {
         frame(maxWidth: max).frame(maxWidth: .infinity)

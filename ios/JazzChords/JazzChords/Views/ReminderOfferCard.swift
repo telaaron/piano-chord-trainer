@@ -28,17 +28,17 @@ struct ReminderOfferCard: View {
                 Label(CoachL10n.t("reminder.offer_enabled", ["time": scheduler.time.string]),
                       systemImage: "bell.badge.fill")
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(palette.accentGreen)
+                    .foregroundStyle(palette.music)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(Theme.space4)
-                    .glassCard()
+                    .groupSurface()
             case .denied:
                 Text(CoachL10n.t("reminder.offer_denied"))
                     .font(.footnote)
-                    .foregroundStyle(palette.textMuted)
+                    .foregroundStyle(palette.inkMuted)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(Theme.space4)
-                    .glassCard()
+                    .groupSurface()
             }
         }
         .task {
@@ -56,15 +56,15 @@ struct ReminderOfferCard: View {
             HStack(alignment: .top, spacing: Theme.space3) {
                 Image(systemName: "bell.fill")
                     .font(.title3)
-                    .foregroundStyle(palette.primary)
+                    .foregroundStyle(palette.action)
                     .symbolRenderingMode(.hierarchical)
                 VStack(alignment: .leading, spacing: Theme.space1) {
                     Text(CoachL10n.t("reminder.offer_title"))
                         .font(.headline)
-                        .foregroundStyle(palette.text)
+                        .foregroundStyle(palette.ink)
                     Text(CoachL10n.t("reminder.offer_body", ["time": scheduler.time.string]))
                         .font(.subheadline)
-                        .foregroundStyle(palette.textMuted)
+                        .foregroundStyle(palette.inkMuted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -81,8 +81,8 @@ struct ReminderOfferCard: View {
                         .font(.subheadline.weight(.semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space3)
-                        .background(palette.primary)
-                        .foregroundStyle(palette.primaryText)
+                        .background(palette.action)
+                        .foregroundStyle(palette.onAction)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                 }
                 .disabled(busy)
@@ -94,12 +94,12 @@ struct ReminderOfferCard: View {
                         .font(.subheadline.weight(.medium))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space3)
-                        .foregroundStyle(palette.textMuted)
+                        .foregroundStyle(palette.inkMuted)
                 }
                 .disabled(busy)
             }
         }
         .padding(Theme.space4)
-        .glassCard()
+        .groupSurface()
     }
 }

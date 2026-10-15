@@ -363,4 +363,10 @@ enum Strings {
     }
     static var hint: String { pick("Hint", "Tipp") }
     static var nextPrefix: String { pick("next:", "nächster:") }
+    static var contents: String { pick("Contents", "Inhalt") }
+    static var done: String { pick("done", "fertig") }
+    static var new: String { pick("new", "neu") }
+    static func xOfY(_ x: Int, _ y: Int) -> String { pick("\(x) of \(y)", "\(x) von \(y)") }
+    static func learnEyebrow(lessons: Int) -> String { pick("Courses · \(lessons) lessons", "Kurse · \(lessons) Lektionen") }
+    static func pathEyebrow(lessons: Int) -> String { pick("The path · \(lessons) lessons", "Der Weg · \(lessons) Lektionen") }
 }

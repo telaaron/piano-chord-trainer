@@ -40,8 +40,8 @@ struct OnboardingView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Theme.space4)
-                    .background(palette.primary)
-                    .foregroundStyle(palette.primaryText)
+                    .background(palette.action)
+                    .foregroundStyle(palette.onAction)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
             }
             .padding(.horizontal, Theme.space4)
@@ -53,19 +53,19 @@ struct OnboardingView: View {
     private var welcomePage: some View {
         VStack(spacing: Theme.space4) {
             ZStack {
-                Circle().fill(palette.primary.opacity(0.12)).frame(width: 132, height: 132)
+                Circle().fill(palette.action.opacity(0.12)).frame(width: 132, height: 132)
                 Image(systemName: "pianokeys")
                     .font(.system(size: 60, weight: .regular))
-                    .foregroundStyle(palette.primary)
+                    .foregroundStyle(palette.action)
                     .symbolRenderingMode(.hierarchical)
             }
             Text("jazzchords")
                 .font(Display.title(38))
-                .foregroundStyle(palette.text)
+                .foregroundStyle(palette.ink)
             Text(CoachL10n.t("onboarding.tagline"))
                 .font(.body)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(palette.textMuted)
+                .foregroundStyle(palette.inkMuted)
                 .padding(.horizontal, Theme.space6)
         }
     }
@@ -73,9 +73,9 @@ struct OnboardingView: View {
     private var goalPage: some View {
         VStack(spacing: Theme.space5) {
             Text(CoachL10n.t("habit.onboard_daily"))
-                .font(Display.headline(24)).foregroundStyle(palette.text)
+                .font(Display.headline(24)).foregroundStyle(palette.ink)
             Text(CoachL10n.t("habit.onboard_time_title"))
-                .font(.subheadline).foregroundStyle(palette.textMuted)
+                .font(.subheadline).foregroundStyle(palette.inkMuted)
                 .multilineTextAlignment(.center)
             VStack(spacing: Theme.space2) {
                 ForEach(goals, id: \.self) { m in
@@ -90,7 +90,7 @@ struct OnboardingView: View {
     private var timePage: some View {
         VStack(spacing: Theme.space5) {
             Text(CoachL10n.t("habit.onboard_when_title"))
-                .font(Display.headline(24)).foregroundStyle(palette.text)
+                .font(Display.headline(24)).foregroundStyle(palette.ink)
             VStack(spacing: Theme.space2) {
                 selectRow(title: CoachL10n.t("habit.onboard_morning"), selected: preferredTime == .morning) { preferredTime = .morning }
                 selectRow(title: CoachL10n.t("habit.onboard_afternoon"), selected: preferredTime == .afternoon) { preferredTime = .afternoon }
@@ -103,10 +103,10 @@ struct OnboardingView: View {
     private var usagePage: some View {
         VStack(spacing: Theme.space5) {
             Text(CoachL10n.t("onboarding.usage_title"))
-                .font(Display.headline(24)).foregroundStyle(palette.text)
+                .font(Display.headline(24)).foregroundStyle(palette.ink)
                 .multilineTextAlignment(.center)
             Text(CoachL10n.t(CoachL10n.privacyDesc))
-                .font(.subheadline).foregroundStyle(palette.textMuted)
+                .font(.subheadline).foregroundStyle(palette.inkMuted)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Theme.space5)
             VStack(spacing: Theme.space2) {
@@ -120,15 +120,15 @@ struct OnboardingView: View {
     private func selectRow(title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
-                Text(title).foregroundStyle(palette.text)
+                Text(title).foregroundStyle(palette.ink)
                 Spacer()
-                if selected { Image(systemName: "checkmark").foregroundStyle(palette.primary) }
+                if selected { Image(systemName: "checkmark").foregroundStyle(palette.action) }
             }
             .padding(Theme.space4)
-            .background(selected ? palette.primary.opacity(0.15) : palette.bgCard)
+            .background(selected ? palette.action.opacity(0.15) : palette.group)
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.radius)
-                    .stroke(selected ? palette.primary : palette.border, lineWidth: selected ? 2 : 1)
+                    .stroke(selected ? palette.action : palette.hairline, lineWidth: selected ? 2 : 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
         }

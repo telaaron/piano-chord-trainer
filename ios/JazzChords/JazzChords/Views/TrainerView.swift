@@ -64,25 +64,25 @@ struct CoachTransitionView: View {
 
     var body: some View {
         ZStack {
-            palette.bg.opacity(0.96).ignoresSafeArea()
+            palette.canvas.opacity(0.96).ignoresSafeArea()
             VStack(spacing: Theme.space5) {
                 Spacer()
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 44, weight: .semibold))
-                    .foregroundStyle(palette.accentGreen)
+                    .foregroundStyle(palette.music)
                     .symbolRenderingMode(.hierarchical)
                 Text(CoachL10n.blockDone(transition.doneKind))
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(palette.textMuted)
+                    .foregroundStyle(palette.inkMuted)
                 Text(CoachL10n.t(transition.nextLabelKey, transition.nextLabelParams))
                     .font(Display.headline(26))
-                    .foregroundStyle(palette.text)
+                    .foregroundStyle(palette.ink)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, Theme.space5)
                 Spacer()
                 Text(CoachL10n.t(CoachL10n.transitionContinue))
                     .font(.callout.weight(.medium))
-                    .foregroundStyle(palette.textDim)
+                    .foregroundStyle(palette.inkMuted)
                     .padding(.bottom, Theme.space5)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -107,7 +107,7 @@ struct CoachFeedbackView: View {
             VStack(alignment: .leading, spacing: Theme.space5) {
                 Text(CoachL10n.t(CoachL10n.feedbackTitle))
                     .font(Display.title(32))
-                    .foregroundStyle(palette.text)
+                    .foregroundStyle(palette.ink)
                     .padding(.top, Theme.space4)
 
                 // Teacher statements (localized).
@@ -116,43 +116,43 @@ struct CoachFeedbackView: View {
                         HStack(alignment: .top, spacing: Theme.space3) {
                             Image(systemName: statementIcon(stmt.kind))
                                 .font(.body.weight(.semibold))
-                                .foregroundStyle(palette.primary)
+                                .foregroundStyle(palette.action)
                                 .symbolRenderingMode(.hierarchical)
                                 .frame(width: 24)
                             Text(CoachL10n.t(stmt.key, stmt.params))
                                 .font(.body)
-                                .foregroundStyle(palette.text)
+                                .foregroundStyle(palette.ink)
                             Spacer(minLength: 0)
                         }
                     }
                 }
                 .padding(Theme.space4)
-                .glassCard()
+                .groupSurface()
 
                 // System-detected verdict — the app never asks "too easy?".
                 if store.coachVerdict == .excellent {
                     Label(CoachL10n.t(CoachL10n.verdictExcellent), systemImage: "checkmark.seal.fill")
                         .font(.subheadline.weight(.medium))
-                        .foregroundStyle(palette.accentGreen)
+                        .foregroundStyle(palette.music)
                         .padding(Theme.space4)
                         .frame(maxWidth: .infinity)
-                        .background(palette.primary.opacity(0.15), in: RoundedRectangle(cornerRadius: Theme.radius))
+                        .background(palette.action.opacity(0.15), in: RoundedRectangle(cornerRadius: Theme.radius))
                 } else if store.coachVerdict == .struggling, !store.coachFeedbackGiven {
                     VStack(alignment: .leading, spacing: Theme.space3) {
                         Text(CoachL10n.t(CoachL10n.verdictStruggling))
                             .font(.subheadline)
-                            .foregroundStyle(palette.textMuted)
+                            .foregroundStyle(palette.inkMuted)
                         Button { store.startEasierAndContinue() } label: {
                             Text(CoachL10n.t(CoachL10n.verdictStartEasier))
                                 .font(.subheadline.weight(.medium))
-                                .foregroundStyle(palette.primary)
+                                .foregroundStyle(palette.action)
                                 .padding(.vertical, Theme.space2).padding(.horizontal, Theme.space3)
-                                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.primary, lineWidth: 2))
+                                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.action, lineWidth: 2))
                         }
                     }
                     .padding(Theme.space4)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.hairline))
                 }
 
                 ReminderOfferCard()
@@ -165,8 +165,8 @@ struct CoachFeedbackView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space4)
-                            .background(palette.primary)
-                            .foregroundStyle(palette.primaryText)
+                            .background(palette.action)
+                            .foregroundStyle(palette.onAction)
                             .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                     }
                     Button { onDone() } label: {
@@ -174,7 +174,7 @@ struct CoachFeedbackView: View {
                             .font(.subheadline.weight(.medium))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space3)
-                            .foregroundStyle(palette.textMuted)
+                            .foregroundStyle(palette.inkMuted)
                     }
                 }
             }
@@ -245,24 +245,24 @@ struct TrainerSetupView: View {
                 }
                 if store.inputMode == .microphone {
                     Text(CoachL10n.t("settings.mic_hint"))
-                        .font(.footnote).foregroundStyle(palette.textDim)
+                        .font(.footnote).foregroundStyle(palette.inkMuted)
                 }
 
                 Toggle(CoachL10n.t("ui.audio"), isOn: $store.audioEnabled)
-                    .tint(palette.primary)
-                    .foregroundStyle(palette.text)
+                    .tint(palette.action)
+                    .foregroundStyle(palette.ink)
                 Toggle(CoachL10n.t("settings.ear_training_toggle"), isOn: $store.isEarTraining)
-                    .tint(palette.primary)
-                    .foregroundStyle(palette.text)
+                    .tint(palette.action)
+                    .foregroundStyle(palette.ink)
                 Toggle(CoachL10n.t("settings.in_time_toggle"), isOn: $store.inTimeMode)
-                    .tint(palette.primary)
-                    .foregroundStyle(palette.text)
+                    .tint(palette.action)
+                    .foregroundStyle(palette.ink)
                 if store.inTimeMode {
                     HStack {
-                        Text(CoachL10n.t("ui.tempo")).font(.subheadline).foregroundStyle(palette.textMuted)
+                        Text(CoachL10n.t("ui.tempo")).font(.subheadline).foregroundStyle(palette.inkMuted)
                         Slider(value: Binding(get: { Double(store.metronomeBpm) }, set: { store.metronomeBpm = Int($0) }), in: 40...200, step: 5)
-                            .tint(palette.primary)
-                        Text("\(store.metronomeBpm)").font(.caption.monospacedDigit()).foregroundStyle(palette.text).frame(width: 36)
+                            .tint(palette.action)
+                        Text("\(store.metronomeBpm)").font(.caption.monospacedDigit()).foregroundStyle(palette.ink).frame(width: 36)
                     }
                 }
 
@@ -273,8 +273,8 @@ struct TrainerSetupView: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space4)
-                        .background(palette.primary)
-                        .foregroundStyle(palette.primaryText)
+                        .background(palette.action)
+                        .foregroundStyle(palette.onAction)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                 }
             }
@@ -291,8 +291,8 @@ struct TrainerSetupView: View {
 
     private func pickerRow<C: View>(_ label: String, @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: Theme.space2) {
-            Text(label).font(.subheadline.weight(.semibold)).foregroundStyle(palette.textMuted)
-            content().tint(palette.primary)
+            Text(label).font(.subheadline.weight(.semibold)).foregroundStyle(palette.inkMuted)
+            content().tint(palette.action)
         }
     }
 }
@@ -459,7 +459,7 @@ struct TrainerPlayingView: View {
     private var inputHint: some View {
         Label(inputStatus, systemImage: store.inputMode == .midi ? "pianokeys.inverse" : "mic.fill")
             .font(.caption)
-            .foregroundStyle(palette.textMuted)
+            .foregroundStyle(palette.inkMuted)
     }
 
     @ViewBuilder

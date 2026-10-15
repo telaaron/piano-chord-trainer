@@ -25,7 +25,7 @@ struct LessonPlayerView: View {
             HStack(spacing: Theme.space2) {
                 ForEach(0..<lesson.steps.count, id: \.self) { i in
                     Capsule()
-                        .fill(i <= stepIdx ? palette.primary : palette.bgMuted)
+                        .fill(i <= stepIdx ? palette.action : palette.hairline)
                         .frame(height: 4)
                 }
             }
@@ -37,8 +37,8 @@ struct LessonPlayerView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Theme.space4)
-                    .background(palette.primary)
-                    .foregroundStyle(palette.primaryText)
+                    .background(palette.action)
+                    .foregroundStyle(palette.onAction)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
             }
         }
@@ -73,29 +73,29 @@ struct LessonPlayerView: View {
         VStack(spacing: Theme.space4) {
             Text(CoachL10n.t("learn.step_theory"))
                 .font(.caption.weight(.semibold)).tracking(1)
-                .foregroundStyle(palette.primary)
+                .foregroundStyle(palette.action)
             if let chord = t.exampleChord {
                 let data = chordWithNotes(root: chord.root, quality: chord.quality, voicing: chord.voicing)
                 Text(Notation.chord(data.chord))
                     .font(Display.chord(50))
-                    .foregroundStyle(palette.text)
+                    .foregroundStyle(palette.ink)
                 PianoKeyboard(chordData: data, accidentalPref: .both, showVoicing: true)
                 Button { AudioEngine.shared.playChord(data.voicing) } label: {
                     Label(CoachL10n.t("learn.hear_it"), systemImage: "speaker.wave.2.fill")
-                }.tint(palette.primary)
+                }.tint(palette.action)
             } else if let iv = t.exampleInterval {
                 Text("\(Notation.root(iv.root)) → \(Notation.root(iv.target))")
-                    .font(.system(size: 44, weight: .heavy, design: .rounded))
-                    .foregroundStyle(palette.text)
-                Text(iv.label).foregroundStyle(palette.textMuted)
+                    .font(Display.serif(44))
+                    .foregroundStyle(palette.ink)
+                Text(iv.label).foregroundStyle(palette.inkMuted)
                 Button {
                     AudioEngine.shared.playNote(iv.root, octave: 4)
                     AudioEngine.shared.playNote(iv.target, octave: 4)
                 } label: { Label(CoachL10n.t("learn.hear_it"), systemImage: "speaker.wave.2.fill") }
-                    .tint(palette.primary)
+                    .tint(palette.action)
             }
             Text(CoachL10n.t("learn.tap_continue"))
-                .font(.footnote).foregroundStyle(palette.textDim)
+                .font(.footnote).foregroundStyle(palette.inkMuted)
         }
     }
 
@@ -104,15 +104,15 @@ struct LessonPlayerView: View {
         return VStack(spacing: Theme.space4) {
             Text(label)
                 .font(.caption.weight(.semibold)).tracking(1)
-                .foregroundStyle(palette.primary)
+                .foregroundStyle(palette.action)
             Text("\(min(poolIdx + 1, items.count)) / \(items.count)")
-                .font(.caption.monospacedDigit()).foregroundStyle(palette.textDim)
+                .font(.caption.monospacedDigit()).foregroundStyle(palette.inkMuted)
             if let item {
                 Text(item.title)
-                    .font(.system(size: 52, weight: .heavy, design: .rounded))
-                    .foregroundStyle(palette.text)
+                    .font(Display.serif(52))
+                    .foregroundStyle(palette.ink)
                 if let caption = item.caption {
-                    Text(caption).foregroundStyle(palette.textMuted)
+                    Text(caption).foregroundStyle(palette.inkMuted)
                 }
                 PianoKeyboard(chordData: item.data, accidentalPref: .both, showVoicing: true)
             }

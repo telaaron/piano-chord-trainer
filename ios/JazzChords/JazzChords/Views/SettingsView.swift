@@ -110,7 +110,7 @@ struct SettingsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(palette.bg)
+        .background(palette.canvas)
         .task {
             // Notifications may have been revoked in iOS Settings since reminders were turned on.
             await ReminderScheduler.shared.refreshAuthorization()
@@ -129,7 +129,7 @@ struct SettingsView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(CoachL10n.t("ui.done")) { dismiss() }
                     .fontWeight(.semibold)
-                    .tint(palette.text)
+                    .tint(palette.ink)
             }
         }
     }

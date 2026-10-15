@@ -53,16 +53,16 @@ struct PracticeView: View {
     private var customButton: some View {
         Button { customOpen = true } label: {
             HStack(spacing: Theme.space3) {
-                Image(systemName: "text.badge.plus").font(.title3).foregroundStyle(palette.primary)
+                Image(systemName: "text.badge.plus").font(.title3).foregroundStyle(palette.action)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(CoachL10n.t("ui.custom_progression")).font(Display.headline(17)).foregroundStyle(palette.text)
-                    Text(CoachL10n.t("ui.custom_progression_desc")).font(.caption).foregroundStyle(palette.textMuted)
+                    Text(CoachL10n.t("ui.custom_progression")).font(Display.headline(17)).foregroundStyle(palette.ink)
+                    Text(CoachL10n.t("ui.custom_progression_desc")).font(.caption).foregroundStyle(palette.inkMuted)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.textDim)
+                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.inkMuted)
             }
             .padding(Theme.space4)
-            .glassCard()
+            .groupSurface()
         }
         .buttonStyle(.plain)
     }
@@ -72,16 +72,16 @@ struct PracticeView: View {
             HStack(spacing: Theme.space3) {
                 Image(systemName: "slider.horizontal.3")
                     .font(.title3)
-                    .foregroundStyle(palette.primary)
+                    .foregroundStyle(palette.action)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(CoachL10n.t("ui.free_practice")).font(Display.headline(17)).foregroundStyle(palette.text)
-                    Text(CoachL10n.t("ui.free_practice_desc")).font(.caption).foregroundStyle(palette.textMuted)
+                    Text(CoachL10n.t("ui.free_practice")).font(Display.headline(17)).foregroundStyle(palette.ink)
+                    Text(CoachL10n.t("ui.free_practice_desc")).font(.caption).foregroundStyle(palette.inkMuted)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.textDim)
+                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.inkMuted)
             }
             .padding(Theme.space4)
-            .glassCard()
+            .groupSurface()
         }
         .buttonStyle(.plain)
     }
@@ -95,9 +95,9 @@ struct PlanCard: View {
     /// Level dot color — the only chromatic cue beyond the amber accent.
     private var levelColor: Color {
         switch plan.level {
-        case .beginner: return palette.accentGreen
-        case .intermediate: return palette.primary
-        case .advanced: return palette.accentRed
+        case .beginner: return palette.music
+        case .intermediate: return palette.action
+        case .advanced: return palette.action
         }
     }
 
@@ -106,18 +106,18 @@ struct PlanCard: View {
             // Amber icon — single consistent accent across all cards.
             Image(systemName: AppIcons.plan(plan.id))
                 .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(palette.primary)
+                .foregroundStyle(palette.action)
                 .symbolRenderingMode(.hierarchical)
                 .frame(height: 28)
 
             Text(Strings.planName(plan.id))
                 .font(Display.headline(18))
-                .foregroundStyle(palette.text)
+                .foregroundStyle(palette.ink)
                 .lineLimit(1)
 
             Text(Strings.planTagline(plan.id))
                 .font(.caption)
-                .foregroundStyle(palette.textMuted)
+                .foregroundStyle(palette.inkMuted)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -127,16 +127,16 @@ struct PlanCard: View {
                 Circle().fill(levelColor).frame(width: 6, height: 6)
                 Text(Strings.level(plan.level))
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(palette.textMuted)
+                    .foregroundStyle(palette.inkMuted)
                 Spacer()
                 Image(systemName: "music.note").font(.system(size: 9))
                 Text("\(plan.settings.totalChords)").font(.caption2.weight(.medium))
             }
-            .foregroundStyle(palette.textDim)
+            .foregroundStyle(palette.inkMuted)
         }
         .frame(maxWidth: .infinity, minHeight: 152, alignment: .topLeading)
         .padding(Theme.space4)
-        .glassCard()
+        .groupSurface()
     }
 
 }
