@@ -1,8 +1,15 @@
-// Today — live daily-habit home. Greeting + level + streak + weekly dots,
-// suggested plan, and a motivational nudge, all from persisted data.
+// Today — the daily home in the editorial layout: eyebrow + serif title, the one
+// red feature block (today's coach session with its chords), stats as
+// typography, then "Side B" tracklist for picking a session yourself.
 
 import SwiftUI
 import MusicEngine
+
+/// Identifiable wrapper so a chord can drive `.sheet(item:)`.
+struct PreviewChord: Identifiable {
+    let chord: ChordWithNotes
+    var id: String { chord.chord }
+}
 
 struct TodayView: View {
     @Environment(\.palette) private var palette
@@ -13,6 +20,7 @@ struct TodayView: View {
     @State private var startCoach = false
     @State private var startToGo = false
     @State private var refreshToken = 0
+    @State private var previewChord: PreviewChord?
 
     private var isPad: Bool { hSize == .regular }
 
@@ -36,9 +44,12 @@ struct TodayView: View {
 
     /// Localized coach announcement for the hero ("Today: warm up, …"). Previews
     /// today's plan from the persisted CoachState + live history/profile.
+    private var coachPlan: CoachPlan {
+        CoachStore.shared.previewPlan(history: history, profile: habits.profile)
+    }
+
     private var coachSay: String {
-        let plan = CoachStore.shared.previewPlan(history: history, profile: habits.profile)
-        let (sayKey, sayParams) = describeCoachPlan(plan)
+        let (sayKey, sayParams) = describeCoachPlan(coachPlan)
         return CoachL10n.t(sayKey, sayParams)
     }
 
@@ -46,11 +57,13 @@ struct TodayView: View {
         ScrollView {
             if isPad { iPadDashboard } else { phoneStack }
         }
-        .navigationTitle(CoachL10n.t("nav.today"))
-        .navigationBarTitleDisplayMode(.inline)
         .screenBackground()
         .refreshable { habits.reload(); refreshToken += 1 }
         .onAppear { habits.reload(); refreshToken += 1 }
+        .sheet(item: $previewChord) { item in
+            ChordPreviewSheet(chord: item.chord)
+                .environment(\.palette, palette)
+        }
         .fullScreenCover(isPresented: $startSuggested, onDismiss: { habits.reload(); refreshToken += 1 }) {
             NavigationStack { TrainerView(plan: suggested) }
         }
@@ -65,74 +78,33 @@ struct TodayView: View {
         }
     }
 
-    /// "Practice without a piano" — the To-Go entry point (ear / time / theory).
-    private var toGoCard: some View {
-        Button { startToGo = true } label: {
-            HStack(spacing: Theme.space3) {
-                ZStack {
-                    Circle().fill(palette.primary.opacity(0.16)).frame(width: 40, height: 40)
-                    Image(systemName: "headphones")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(palette.primary)
-                        .symbolRenderingMode(.hierarchical)
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(CoachL10n.t(CoachL10n.ToGo.entry))
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(palette.text)
-                    Text(CoachL10n.t(CoachL10n.ToGo.startSub))
-                        .font(.caption)
-                        .foregroundStyle(palette.textDim)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(palette.textDim)
-            }
-            .padding(Theme.space3)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .glassCard()
-        }
-        .buttonStyle(.plain)
-    }
-
     private var phoneStack: some View {
         VStack(alignment: .leading, spacing: Theme.space5) {
-            hero
-            weekStrip
-            coachHero
-            pickYourselfSection {
-                suggestedCard
-                if weakDrillPlan != nil { weakDrillCard }
-                toGoCard
-            }
-            motivationCard
+            header
+            feature
+            stats
+            sideB
+            motivationLine
         }
         .padding(.horizontal, Theme.space4)
-        .padding(.bottom, Theme.space5)
+        .padding(.top, Theme.space3)
+        .padding(.bottom, Theme.space6)
         .readableWidth()
         .id(refreshToken)
     }
 
-    // iPad: full-width hero, then the coach hero, then a two-column dashboard.
+    // iPad: header and feature full width, then Side B next to the stats column.
     private var iPadDashboard: some View {
         VStack(alignment: .leading, spacing: Theme.space5) {
-            hero
-            coachHero
-            HStack(alignment: .top, spacing: Theme.space5) {
-                VStack(spacing: Theme.space5) {
-                    pickYourselfSection {
-                        suggestedCard
-                        if weakDrillPlan != nil { weakDrillCard }
-                        toGoCard
-                    }
-                    motivationCard
+            header
+            feature
+            HStack(alignment: .top, spacing: Theme.space6) {
+                sideB.frame(maxWidth: .infinity)
+                VStack(alignment: .leading, spacing: Theme.space5) {
+                    stats
+                    motivationLine
                 }
-                .frame(maxWidth: .infinity)
-                statsPanel
-                    .frame(width: 320)
+                .frame(width: 340)
             }
         }
         .padding(Theme.space6)
@@ -141,188 +113,125 @@ struct TodayView: View {
         .id(refreshToken)
     }
 
-    /// The dominant Auto-Mode entry point: one big "Keep practicing" button with
-    /// the coach's announcement underneath (localized, incl. voicing names).
-    private var coachHero: some View {
-        Button { startCoach = true } label: {
-            HStack(spacing: Theme.space4) {
-                ZStack {
-                    Circle().fill(palette.primaryText.opacity(0.18)).frame(width: 52, height: 52)
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(palette.primaryText)
-                }
-                VStack(alignment: .leading, spacing: Theme.space1) {
-                    Text(CoachL10n.t(CoachL10n.heroTitle))
-                        .font(Display.headline(24))
-                        .foregroundStyle(palette.primaryText)
-                    Text(coachSay)
-                        .font(.subheadline)
-                        .foregroundStyle(palette.primaryText.opacity(0.85))
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(Theme.space4)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
-        }
-        .buttonStyle(.plain)
-    }
-
-    /// Wraps the manual-choice cards under a "Pick it yourself" section divider.
-    @ViewBuilder
-    private func pickYourselfSection<C: View>(@ViewBuilder _ content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: Theme.space4) {
-            Text(CoachL10n.t(CoachL10n.pickYourself).uppercased())
-                .font(.caption2.weight(.semibold)).tracking(1.5)
-                .foregroundStyle(palette.textDim)
-            content()
+    private var header: some View {
+        EditorialHeader(eyebrow: Strings.todayEyebrow(date: Date(), session: history.count + 1),
+                        title: CoachL10n.t("nav.today")) {
+            SettingsHeaderButton()
         }
     }
 
-    /// Right-hand stats panel (iPad): level, streak, weekly goal, quick stats.
-    private var statsPanel: some View {
-        VStack(alignment: .leading, spacing: Theme.space4) {
-            let stats = computeStats(history)
-            SectionHeader(text: CoachL10n.t("settings.your_progress"))
-            statRow(CoachL10n.t("ui.level"), "\(habits.levelInfo.level) · \(habits.levelInfo.title)")
-            // Counted noun → .stringsdict, so this reads "1 Tag" / "2 Tage", never "1 days".
-            statRow(CoachL10n.t("ui.streak"), CoachL10n.plural("count.days", streak.current))
-            statRow(CoachL10n.t("ui.sessions"), "\(stats.totalSessions)")
-            statRow(CoachL10n.t("embed.stat_avg"), stats.totalSessions > 0 ? String(format: "%.1fs", stats.overallAvgMs / 1000) : "—")
-            Divider().overlay(palette.border)
-            weekStrip
-        }
-        .padding(Theme.space5)
-        .glassCard()
-    }
-
-    private func statRow(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label).font(.subheadline).foregroundStyle(palette.textMuted)
-            Spacer()
-            Text(value).font(.subheadline.weight(.semibold)).foregroundStyle(palette.text)
-        }
-    }
-
-    /// Hero band: atmospheric gradient with the greeting + level + streak on top.
-    private var hero: some View {
-        ZStack(alignment: .bottomLeading) {
-            HeroGradient(height: 168)
+    /// The one red block: today's coach session. Tapping a chord previews it.
+    private var feature: some View {
+        let plan = coachPlan
+        let chords = TodayChordPreview.chords(for: plan)
+        let total = plan.blocks.reduce(0) { $0 + $1.targetChords }
+        return FeatureBlock(eyebrow: Strings.todayFeatureEyebrow(minutes: plan.estMinutes, chords: total),
+                            ghost: "Δ7") {
             VStack(alignment: .leading, spacing: Theme.space3) {
-                Text(greeting)
-                    .font(Display.title(32))
-                    .foregroundStyle(.white)
-                HStack(spacing: Theme.space2) {
-                    LevelBadge(level: habits.levelInfo.level)
-                    Text(habits.levelInfo.title)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.white.opacity(0.82))
-                    Spacer()
-                    if streak.current > 0 {
-                        Label("\(streak.current)", systemImage: "flame.fill")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(palette.primary)
-                    }
+                if !chords.isEmpty {
+                    chordRow(chords)
                 }
-                ProgressView(value: Double(habits.levelInfo.progressPercent), total: 100)
-                    .tint(palette.primary)
+                Text(coachSay)
+                    .font(Display.serif(20, italic: true, relativeTo: .title3))
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(Theme.space4)
+        } action: {
+            PrimaryCapsule(title: Strings.keepPracticing, systemImage: "play.fill", inverted: true) {
+                startCoach = true
+            }
         }
-        .padding(.top, Theme.space2)
     }
 
-    private var weekStrip: some View {
+    private func chordRow(_ chords: [ChordWithNotes]) -> some View {
+        HStack(spacing: Theme.space2) {
+            ForEach(Array(chords.enumerated()), id: \.offset) { index, chord in
+                if index > 0 {
+                    Image(systemName: "arrow.right")
+                        .font(.footnote.weight(.semibold))
+                        .opacity(0.7)
+                        .accessibilityHidden(true)
+                }
+                Button { previewChord = PreviewChord(chord: chord) } label: {
+                    Text(Notation.chord(chord.chord))
+                        .font(Display.chord(30, relativeTo: .title2))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .padding(.horizontal, Theme.space2)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .strokeBorder(palette.onAction.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint(Strings.chordPreviewHint)
+            }
+        }
+    }
+
+    private var stats: some View {
+        let s = computeStats(history)
+        return StatsRow(items: [
+            StatItem(value: "\(streak.current)", label: Strings.statDaysInRow),
+            StatItem(value: s.totalSessions > 0 ? Strings.seconds(s.overallAvgMs / 1000) : "—", label: Strings.statPerChord),
+            StatItem(value: "\(s.totalSessions)", label: Strings.statSessions),
+        ])
+    }
+
+    /// "Side B": pick a session yourself — suggested plan, weak spots, To-Go.
+    private var sideB: some View {
+        VStack(alignment: .leading, spacing: Theme.space2) {
+            EyebrowText(Strings.sideB)
+                .padding(.leading, Theme.space4)
+            TrackGroup {
+                Button { startSuggested = true } label: {
+                    TrackRow(badge: Strings.voicingBadge(suggested.settings.voicing),
+                             title: planTitle(suggested.id), meta: planMeta(suggested), showsDivider: true)
+                }
+                .buttonStyle(.plain)
+                if let plan = weakDrillPlan {
+                    Button { startWeakDrill = true } label: {
+                        TrackRow(badge: plan.focusRoots?.first.map(Notation.root) ?? "?",
+                                 title: CoachL10n.t("results.drill_weak"), meta: weakDrillMeta(plan), showsDivider: true)
+                    }
+                    .buttonStyle(.plain)
+                }
+                Button { startToGo = true } label: {
+                    TrackRow(badge: "♪", title: CoachL10n.t(CoachL10n.ToGo.entry), meta: nil)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    /// Week dots and the daily nudge, set as one quiet line instead of a card.
+    private var motivationLine: some View {
+        let m = getDailyMotivation(habits.profile, streak)
         let dots = weekDots()
-        return VStack(alignment: .leading, spacing: Theme.space2) {
-            HStack(spacing: Theme.space2) {
+        return HStack(alignment: .firstTextBaseline, spacing: Theme.space3) {
+            HStack(spacing: 4) {
                 ForEach(0..<7, id: \.self) { i in
                     Circle()
-                        .fill(dots[i] ? palette.primary : palette.bgMuted)
-                        .frame(width: 14, height: 14)
+                        .fill(dots[i] ? palette.music : palette.hairline)
+                        .frame(width: 8, height: 8)
                 }
             }
-            Text(CoachL10n.plural("today.week_dots", dots.filter { $0 }.count, habits.profile.dailyGoalMinutes))
-                .font(.caption)
-                .foregroundStyle(palette.textDim)
+            .accessibilityHidden(true)
+            Label {
+                Text(motivationText(m))
+            } icon: {
+                Image(systemName: motivationIcon(m.type))
+            }
+            .font(.subheadline)
+            .foregroundStyle(palette.inkMuted)
         }
     }
 
-    private var suggestedCard: some View {
-        CardSurface {
-            VStack(alignment: .leading, spacing: Theme.space3) {
-                HStack(spacing: Theme.space2) {
-                    ZStack {
-                        Circle().fill(palette.primary.opacity(0.16)).frame(width: 40, height: 40)
-                        Image(systemName: AppIcons.plan(suggested.id))
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(palette.primary)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    Text(CoachL10n.t("settings.suggested").uppercased())
-                        .font(.caption2.weight(.semibold)).tracking(1.5)
-                        .foregroundStyle(palette.primary)
-                    Spacer()
-                }
-                Text(planTitle(suggested.id))
-                    .font(Display.headline(24))
-                    .foregroundStyle(palette.text)
-                Text(planSubtitle(suggested))
-                    .font(.subheadline)
-                    .foregroundStyle(palette.textMuted)
-                Button { startSuggested = true } label: {
-                    Text(CoachL10n.t("ui.start"))
-                        .font(.body.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Theme.space3)
-                        .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
-                        .foregroundStyle(palette.primaryText)
-                }
-                .padding(.top, Theme.space1)
-            }
-        }
+    private func planMeta(_ plan: PracticePlan) -> String {
+        CoachL10n.plural("count.chords", plan.settings.totalChords)
     }
 
-    /// Weakness-aware card: drill the chords you're slowest at (focused + answer-hidden).
-    @ViewBuilder
-    private var weakDrillCard: some View {
-        if let plan = weakDrillPlan {
-            CardSurface {
-                VStack(alignment: .leading, spacing: Theme.space3) {
-                    HStack(spacing: Theme.space2) {
-                        ZStack {
-                            Circle().fill(palette.accentRed.opacity(0.16)).frame(width: 40, height: 40)
-                            Image(systemName: "target")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(palette.accentRed)
-                                .symbolRenderingMode(.hierarchical)
-                        }
-                        Text(CoachL10n.t("quickstart.weakspots_title").uppercased())
-                            .font(.caption2.weight(.semibold)).tracking(1.5)
-                            .foregroundStyle(palette.accentRed)
-                        Spacer()
-                    }
-                    Text(CoachL10n.t("results.drill_weak"))
-                        .font(Display.headline(24))
-                        .foregroundStyle(palette.text)
-                    Text(weakDrillSubtitle(plan))
-                        .font(.subheadline)
-                        .foregroundStyle(palette.textMuted)
-                    Button { startWeakDrill = true } label: {
-                        Text(CoachL10n.t("ui.start"))
-                            .font(.body.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, Theme.space3)
-                            .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
-                            .foregroundStyle(palette.primaryText)
-                    }
-                    .padding(.top, Theme.space1)
-                }
-            }
-        }
+    private func weakDrillMeta(_ plan: PracticePlan) -> String {
+        CoachL10n.voicing(plan.settings.voicing)
     }
 
     /// "Shell Voicing · D♭, F♯, B — deine langsamsten Akkorde"
@@ -332,23 +241,6 @@ struct TodayView: View {
         let roots = (plan.focusRoots ?? []).map(Notation.root).joined(separator: ", ")
         if roots.isEmpty { return CoachL10n.t("ui.slowest_chords") }
         return CoachL10n.t("ui.slowest_chords_detail", ["voicing": v, "roots": roots])
-    }
-
-    @ViewBuilder
-    private var motivationCard: some View {
-        let m = getDailyMotivation(habits.profile, streak)
-        HStack(spacing: Theme.space3) {
-            Image(systemName: motivationIcon(m.type))
-                .font(.title3)
-                .foregroundStyle(palette.primary)
-                .symbolRenderingMode(.hierarchical)
-            Text(motivationText(m))
-                .font(.subheadline)
-                .foregroundStyle(palette.textMuted)
-            Spacer()
-        }
-        .padding(Theme.space4)
-        .glassCard()
     }
 
     private func motivationIcon(_ t: MotivationType) -> String {

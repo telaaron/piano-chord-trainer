@@ -323,4 +323,42 @@ enum Strings {
         if let next { parts.append(pick("next \(next)", "danach \(next)")) }
         return parts.joined(separator: ", ")
     }
+    static var listen: String { pick("Listen", "Anhören") }
+    static var keepPracticing: String { pick("Keep practicing", "Weiter üben") }
+    static var chordPreviewHint: String { pick("Shows how to play it", "Zeigt den Griff") }
+    static var sideB: String { pick("Side B · Pick it yourself", "Seite B · Selbst wählen") }
+    static var statDaysInRow: String { pick("days in a row", "Tage in Folge") }
+    static var statPerChord: String { pick("per chord", "pro Akkord") }
+    static var statSessions: String { pick("sessions", "Sessions") }
+
+    /// "1,8 s" / "1.8 s" — locale decimal separator.
+    static func seconds(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(1)).locale(CoachL10n.isGerman ? Locale(identifier: "de_DE") : Locale(identifier: "en_US"))) + " s"
+    }
+
+    /// "DO · 15. OKT / SESSION 7" (uppercased by EyebrowText).
+    static func todayEyebrow(date: Date, session: Int) -> String {
+        let locale = Locale(identifier: CoachL10n.isGerman ? "de_DE" : "en_US")
+        let day = date.formatted(.dateTime.weekday(.abbreviated).locale(locale)).replacingOccurrences(of: ".", with: "")
+        let dm = date.formatted(.dateTime.day().month(.abbreviated).locale(locale))
+        return "\(day) · \(dm) / Session \(session)"
+    }
+
+    /// "HEUTE DRAN · 5 MIN · 24 AKKORDE".
+    static func todayFeatureEyebrow(minutes: Int, chords: Int) -> String {
+        pick("Up today · \(minutes) min · \(chords) chords", "Heute dran · \(minutes) Min · \(chords) Akkorde")
+    }
+
+    /// Short Kalam badge for a voicing in a tracklist row.
+    static func voicingBadge(_ v: VoicingType) -> String {
+        switch v {
+        case .root: return "R"
+        case .shell: return "1·3·7"
+        case .halfShell: return "½"
+        case .full: return "Δ7"
+        case .rootlessA: return "A"
+        case .rootlessB: return "B"
+        default: return "♪"
+        }
+    }
 }

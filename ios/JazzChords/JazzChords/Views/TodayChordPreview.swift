@@ -1,0 +1,68 @@
+// The chord row on Heute: which chords today's coach plan is about, and a small
+// sheet that shows a chord's voicing on the keyboard without starting a session.
+// Chords are representative (sessions draw their keys at start), not a replay.
+
+import SwiftUI
+import MusicEngine
+
+enum TodayChordPreview {
+    /// Up to `max` chords for the plan's focus block (`.focus`/`.new`, else the
+    /// first block). Progression modes give their first chords; otherwise the
+    /// block's focus roots × qualities. Nothing to show → `[]` (row hidden).
+    static func chords(for plan: CoachPlan, max: Int = 3) -> [ChordWithNotes] {
+        guard let block = plan.blocks.first(where: { $0.kind == .focus || $0.kind == .new }) ?? plan.blocks.first
+        else { return [] }
+        let s = block.settings
+
+        if s.progressionMode != .random && s.progressionMode != .custom {
+            let progression = generateProgression(s.progressionMode, s.accidentals, s.notation, max)
+            return progression.chords.prefix(max).map {
+                make(root: $0.root, quality: $0.quality, display: $0.display, settings: s)
+            }
+        }
+
+        guard let qualities = block.focusQualities, !qualities.isEmpty else { return [] }
+        let roots = block.focusRoots?.isEmpty == false ? block.focusRoots! : ["C"]
+        var result: [ChordWithNotes] = []
+        for root in roots {
+            for display in qualities {
+                let quality = displayToQuality(display, s.notation)
+                let suffix = CHORD_NOTATIONS[s.notation]?[quality] ?? display
+                result.append(make(root: root, quality: quality, display: root + suffix, settings: s))
+                if result.count == max { return result }
+            }
+        }
+        return result
+    }
+
+    private static func make(root: String, quality: String, display: String, settings s: PracticePlanSettings) -> ChordWithNotes {
+        let notes = getChordNotes(root, quality, s.accidentals)
+        let voicing = getVoicingNotes(notes, s.voicing, root, s.accidentals)
+        return ChordWithNotes(chord: display, root: root, type: quality, notes: notes, voicing: voicing)
+    }
+}
+
+/// Bottom sheet: the chord in Real Book handwriting, its voicing on the
+/// keyboard, and a play button. No session, no telemetry.
+struct ChordPreviewSheet: View {
+    @Environment(\.palette) private var palette
+    let chord: ChordWithNotes
+
+    var body: some View {
+        VStack(spacing: Theme.space4) {
+            Text(Notation.chord(chord.chord))
+                .font(Display.chord(44, relativeTo: .title))
+                .foregroundStyle(palette.ink)
+            PianoKeyboard(chordData: chord, showVoicing: true, maxHeight: 120)
+            PrimaryCapsule(title: Strings.listen, systemImage: "speaker.wave.2.fill") {
+                AudioEngine.shared.playChord(chord.voicing)
+            }
+            .padding(.horizontal, Theme.space4)
+        }
+        .padding(.vertical, Theme.space5)
+        .frame(maxWidth: .infinity)
+        .background(palette.canvas.ignoresSafeArea())
+        .presentationDetents([.height(320)])
+        .presentationDragIndicator(.visible)
+    }
+}
