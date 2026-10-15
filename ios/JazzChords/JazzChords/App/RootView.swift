@@ -109,20 +109,14 @@ struct RootView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, Theme.space4)
             }
-            .toolbar { settingsToolbarItem }
         } detail: {
             NavigationStack {
                 sectionView(sidebarSelection ?? .today)
-                    .toolbar(.hidden, for: .navigationBar)
+                    // Keep the bar (it carries the sidebar toggle) but empty and
+                    // transparent; the EditorialHeader has the title and settings.
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbarBackground(.hidden, for: .navigationBar)
             }
-        }
-    }
-
-    @ToolbarContentBuilder
-    private var settingsToolbarItem: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button { chrome.showSettings = true } label: { Image(systemName: "gearshape") }
-                .accessibilityLabel(CoachL10n.t("settings.open_settings"))
         }
     }
 

@@ -388,7 +388,7 @@ struct TrainerPlayingView: View {
     }
 
     private var gridHeld: Set<Int> {
-        store.isTapGuessMode ? Set(store.tapGuess.map { 60 + $0 }) : store.heldNotes
+        FunctionGrid.held(inputActive: store.inputActive, heldNotes: store.heldNotes, tapGuess: store.tapGuess)
     }
 
     private var chordBlock: some View {
@@ -396,13 +396,22 @@ struct TrainerPlayingView: View {
             Text(CoachL10n.voicing(store.voicing))
                 .font(Display.serif(isPad ? 26 : 22, italic: true, relativeTo: .title3))
                 .foregroundStyle(palette.inkMuted)
-            Text(displayedChord)
-                .font(Display.chord(chordFontSize))
-                .foregroundStyle(palette.ink)
-                .contentTransition(.numericText())
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
-            if (store.shouldShowVoicing || store.inputActive), let d = store.currentData {
+            // Kalam's line box is ~1.6 em, so a 148 pt chord needs ~236 pt of
+            // height. Step down when the screen (iPhone SE, XXL type) is short
+            // instead of squeezing the keyboard.
+            ViewThatFits(in: .vertical) {
+                ForEach([chordFontSize, chordFontSize * 0.75, chordFontSize * 0.55], id: \.self) { size in
+                    Text(displayedChord)
+                        .font(Display.chord(size))
+                        .foregroundStyle(palette.ink)
+                        .contentTransition(.numericText())
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
+                }
+            }
+            // Only once the voicing may be seen — in Verify/Off the grid would
+            // give the answer away before the attempt.
+            if store.shouldShowVoicing, let d = store.currentData {
                 FunctionGrid(tones: FunctionGrid.tones(
                     voicingNotes: d.voicing.map(Notation.root),
                     labels: getVoicingIntervalLabels(d.voicing, d.root, d.type).map(Strings.intervalFunction),
@@ -447,6 +456,8 @@ struct TrainerPlayingView: View {
                 )
                 // Edge to edge on iPhone portrait (the stack is padded).
                 .padding(.horizontal, (isPad || isLandscape) ? 0 : -Theme.space4)
+                // The keyboard is the input; the chord gives way first.
+                .layoutPriority(1)
                 if let next = chordName(at: store.currentIdx + 1) {
                     (Text(Strings.nextPrefix) + Text(" ") + Text(next).font(Display.chord(19, relativeTo: .body)).foregroundStyle(palette.music))
                         .font(Display.serif(17, italic: true, relativeTo: .body))

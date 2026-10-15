@@ -51,7 +51,7 @@ struct ChordPreviewSheet: View {
     var body: some View {
         VStack(spacing: Theme.space4) {
             Text(Notation.chord(chord.chord))
-                .font(Display.chord(44, relativeTo: .title))
+                .font(Display.chord(44, relativeTo: .title1))
                 .foregroundStyle(palette.ink)
             PianoKeyboard(chordData: chord, showVoicing: true, maxHeight: 120)
             PrimaryCapsule(title: Strings.listen, systemImage: "speaker.wave.2.fill") {

@@ -8,10 +8,12 @@ import MusicEngine
 enum ToneState: Equatable { case ok, missing, open }
 
 struct FunctionTone: Identifiable, Equatable {
+    /// Position in the voicing — a voicing may repeat a note.
+    let index: Int
     let note: String
     let function: String
     let state: ToneState
-    var id: String { note + function }
+    var id: Int { index }
 }
 
 struct FunctionGrid: View {
@@ -20,19 +22,26 @@ struct FunctionGrid: View {
 
     /// Derive tone states. `held` are MIDI note numbers; a tone is `.ok` when
     /// its pitch class is held. Before a result is shown everything is `.open`.
-    static func tones(voicingNotes: [String], labels: [String], held: Set<Int>, showResult: Bool) -> [FunctionTone] {
+    nonisolated static func tones(voicingNotes: [String], labels: [String], held: Set<Int>, showResult: Bool) -> [FunctionTone] {
         let heldPCs = Set(held.map { (($0 % 12) + 12) % 12 })
         return voicingNotes.enumerated().map { i, note in
             let function = i < labels.count ? labels[i] : ""
-            guard showResult else { return FunctionTone(note: note, function: function, state: .open) }
+            guard showResult else { return FunctionTone(index: i, note: note, function: function, state: .open) }
             let pc = noteToSemitone(asciiAccidentals(note))
             let state: ToneState = pc >= 0 && heldPCs.contains(pc) ? .ok : .missing
-            return FunctionTone(note: note, function: function, state: state)
+            return FunctionTone(index: i, note: note, function: function, state: state)
         }
     }
 
+    /// The notes the grid judges: live input when MIDI/mic is on, otherwise the
+    /// tap-guess (pitch classes, placed at C4). The guess survives grading,
+    /// when the store has already left tap mode.
+    nonisolated static func held(inputActive: Bool, heldNotes: Set<Int>, tapGuess: Set<Int>) -> Set<Int> {
+        inputActive ? heldNotes : Set(tapGuess.map { 60 + $0 })
+    }
+
     /// MusicEngine spells notes with ASCII accidentals ("Eb"); display text uses ♭/♯.
-    private static func asciiAccidentals(_ note: String) -> String {
+    nonisolated private static func asciiAccidentals(_ note: String) -> String {
         note.replacingOccurrences(of: "♭", with: "b").replacingOccurrences(of: "♯", with: "#")
     }
 

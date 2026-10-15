@@ -144,23 +144,25 @@ struct PianoKeyboard: View {
         case held(correct: Bool)
     }
 
-    /// What a key shows. `held` are chromatic indices (C3 = 0), `expected` pitch
-    /// classes. Live input wins; then the tap-guess selection; then a voicing
-    /// key — marked missing after a wrong attempt when it was not played.
-    static func role(chrIdx: Int, active: Bool, held: Set<Int>, expected: Set<Int>,
-                     selected: Bool, showInput: Bool, showMissing: Bool) -> KeyRole {
+    /// What a key shows. `held` are chromatic indices (C3 = 0), `expected` and
+    /// `played` pitch classes. Live input wins; then the tap-guess selection;
+    /// then a voicing key — marked missing after a wrong attempt only when its
+    /// pitch class was not part of the attempt (`played`).
+    nonisolated static func role(chrIdx: Int, active: Bool, held: Set<Int>, expected: Set<Int>,
+                                 selected: Bool, showInput: Bool, showMissing: Bool,
+                                 played: Set<Int> = []) -> KeyRole {
         if showInput, held.contains(chrIdx) {
             return .held(correct: expected.contains(chrIdx % 12))
         }
         if selected { return .selected }
         if active {
-            return showMissing ? .missing : .voicing
+            return showMissing && !played.contains(chrIdx % 12) ? .missing : .voicing
         }
         return .idle
     }
 
     /// Gold for played, expected and selected keys; red for a wrong held key.
-    static func fill(for role: KeyRole, isBlack: Bool, palette: Palette) -> Color {
+    nonisolated static func fill(for role: KeyRole, isBlack: Bool, palette: Palette) -> Color {
         switch role {
         case .held(correct: false): return palette.action
         case .held(correct: true), .voicing, .selected: return palette.musicFill
@@ -171,7 +173,8 @@ struct PianoKeyboard: View {
     private func role(_ chrIdx: Int, active: Bool) -> KeyRole {
         Self.role(chrIdx: chrIdx, active: active, held: heldKeyIndices, expected: expectedPitchClasses,
                   selected: interactive && selectedPitchClasses.contains(chrIdx % 12),
-                  showInput: showInput, showMissing: showMissing)
+                  showInput: showInput, showMissing: showMissing,
+                  played: selectedPitchClasses.union(heldKeyIndices.map { $0 % 12 }))
     }
 
     private func fill(_ chrIdx: Int, role: KeyRole, isBlack: Bool) -> Color {

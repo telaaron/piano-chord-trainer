@@ -42,7 +42,7 @@ struct LearnView: View {
         return FeatureBlock(eyebrow: Strings.pathEyebrow(lessons: total), ghost: "Δ7") {
             VStack(alignment: .leading, spacing: Theme.space3) {
                 Text(courseName(featured.id))
-                    .font(Display.serif(34, relativeTo: .title))
+                    .font(Display.serif(34, relativeTo: .title1))
                     .multilineTextAlignment(.leading)
                 HStack(spacing: Theme.space2) {
                     ProgressView(value: Double(done), total: Double(max(total, 1)))

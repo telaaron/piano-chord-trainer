@@ -57,7 +57,7 @@ struct PracticeView: View {
         return FeatureBlock(eyebrow: CoachL10n.t("settings.suggested"), ghost: Strings.voicingBadge(plan.settings.voicing)) {
             VStack(alignment: .leading, spacing: Theme.space2) {
                 Text(Strings.planName(plan.id))
-                    .font(Display.serif(30, relativeTo: .title))
+                    .font(Display.serif(30, relativeTo: .title1))
                 Text(Strings.planTagline(plan.id))
                     .font(Display.serif(18, italic: true, relativeTo: .body))
                     .fixedSize(horizontal: false, vertical: true)

@@ -19,7 +19,8 @@ struct LeadSheetStrip: View {
             Rectangle().fill(palette.inkMuted).frame(width: 2, height: 33)
                 .frame(maxHeight: .infinity, alignment: .bottom)
         }
-        .frame(height: 72)
+        // Sized by content: Kalam's tall line box overflows any fixed height.
+        .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Strings.leadSheetLabel(previous: previous, current: current, next: next))
     }
