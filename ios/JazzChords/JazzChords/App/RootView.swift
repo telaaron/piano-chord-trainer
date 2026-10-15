@@ -26,12 +26,31 @@ enum AppSection: String, CaseIterable, Identifiable {
     }
 }
 
+/// Shared chrome state: any tab-root screen can open Settings from its own
+/// header button (the navigation bar is hidden there in the editorial design).
+@MainActor @Observable
+final class AppChrome {
+    var showSettings = false
+}
+
+/// The glass settings button every tab-root header carries.
+struct SettingsHeaderButton: View {
+    @Environment(AppChrome.self) private var chrome
+
+    var body: some View {
+        GlassCircleButton(systemImage: "slider.horizontal.3",
+                          label: CoachL10n.t("settings.open_settings")) {
+            chrome.showSettings = true
+        }
+    }
+}
+
 struct RootView: View {
     @Environment(\.horizontalSizeClass) private var hSize
     @Environment(\.colorScheme) private var scheme
     @State private var selection: AppSection = .today
     @State private var sidebarSelection: AppSection? = .today
-    @State private var showSettings = false
+    @State private var chrome = AppChrome()
     @State private var habits = HabitStore.shared
     @State private var showOnboarding = !HabitStore.shared.profile.onboardingDone
 
@@ -44,11 +63,13 @@ struct RootView: View {
             }
         }
         .environment(\.palette, Theme.palette(for: scheme))
-        .sheet(isPresented: $showSettings) {
+        .environment(chrome)
+        .tint(Theme.palette(for: scheme).action)
+        .sheet(isPresented: $chrome.showSettings) {
             NavigationStack { SettingsView() }
                 .environment(\.palette, Theme.palette(for: scheme))
-                // Opaque: a translucent sheet lets the coloured cards behind bleed through.
-                .presentationBackground(Theme.palette(for: scheme).bg)
+                // Opaque: a translucent sheet lets the content behind bleed through.
+                .presentationBackground(Theme.palette(for: scheme).canvas)
                 .presentationDetents(hSize == .regular ? [.large] : [.medium, .large])
         }
         .fullScreenCover(isPresented: $showOnboarding) {
@@ -63,7 +84,8 @@ struct RootView: View {
             ForEach(AppSection.allCases) { section in
                 NavigationStack {
                     sectionView(section)
-                        .toolbar { settingsToolbarItem }
+                        // Tab roots carry their own EditorialHeader + settings button.
+                        .toolbar(.hidden, for: .navigationBar)
                 }
                 .tabItem { Label(section.title, systemImage: section.systemImage) }
                 .tag(section)
@@ -77,17 +99,29 @@ struct RootView: View {
             List(AppSection.allCases, selection: $sidebarSelection) { section in
                 Label(section.title, systemImage: section.systemImage).tag(section)
             }
-            .navigationTitle("jazzchords")
+            .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+            .background(Theme.palette(for: scheme).canvas)
+            .safeAreaInset(edge: .top) {
+                Text("JazzChords")
+                    .font(Display.serif(28))
+                    .foregroundStyle(Theme.palette(for: scheme).ink)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, Theme.space4)
+            }
             .toolbar { settingsToolbarItem }
         } detail: {
-            NavigationStack { sectionView(sidebarSelection ?? .today) }
+            NavigationStack {
+                sectionView(sidebarSelection ?? .today)
+                    .toolbar(.hidden, for: .navigationBar)
+            }
         }
     }
 
     @ToolbarContentBuilder
     private var settingsToolbarItem: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            Button { showSettings = true } label: { Image(systemName: "gearshape") }
+            Button { chrome.showSettings = true } label: { Image(systemName: "gearshape") }
                 .accessibilityLabel(CoachL10n.t("settings.open_settings"))
         }
     }

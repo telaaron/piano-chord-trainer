@@ -132,7 +132,7 @@ struct HeroGradient: View {
 struct ScreenBackground: ViewModifier {
     @Environment(\.palette) private var palette
     func body(content: Content) -> some View {
-        content.background(palette.bg.ignoresSafeArea())
+        content.background(palette.canvas.ignoresSafeArea())
     }
 }
 
