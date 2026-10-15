@@ -59,3 +59,31 @@ targets:
           - InstrumentSerif-Regular.ttf
           - InstrumentSerif-Italic.ttf
           - Kalam-Bold.ttf
+
+  JazzChordsTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: JazzChordsTests
+    dependencies:
+      - target: JazzChords
+      - package: MusicEngine
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "6.0"
+        DEVELOPMENT_TEAM: "FDVWAWJYV5"
+        CODE_SIGN_STYLE: Automatic
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/JazzChords.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JazzChords
+        BUNDLE_LOADER: $(TEST_HOST)
+
+schemes:
+  JazzChords:
+    build:
+      targets:
+        JazzChords: all
+        JazzChordsTests: [test]
+    test:
+      targets:
+        - JazzChordsTests
