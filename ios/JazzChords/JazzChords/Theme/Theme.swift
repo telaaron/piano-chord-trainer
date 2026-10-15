@@ -71,6 +71,28 @@ struct Palette {
     let keyBlack: Color
     let keyBlackActive: Color
     let keyRootDot: Color
+    // ── Editorial roles (spec §3.1). Views use these; the fields above are
+    // legacy and disappear once every screen has moved over.
+    /// Screen background — night blue / paper.
+    let canvas: Color
+    /// Primary text and the rule under titles.
+    let ink: Color
+    /// Secondary text and eyebrows.
+    let inkMuted: Color
+    /// Dividers and staff lines.
+    let hairline: Color
+    /// Inset-grouped list background.
+    let group: Color
+    /// Red: act or error — primary button, feature block, active tab, missing note.
+    let action: Color
+    /// Text on `action`.
+    let onAction: Color
+    /// Gold: music, success, progress — stats, chord badges, "done".
+    let music: Color
+    /// Gold fill for played keys and progress bars.
+    let musicFill: Color
+    /// Bed behind the edge-to-edge keyboard.
+    let keyBed: Color
 
     /// Night pressroom — dark. Verbatim from `:root` in app.css.
     static let dark = Palette(
@@ -85,7 +107,11 @@ struct Palette {
         success: Color(hex: "4ade80"), warning: Color(hex: "f59e0b"), danger: Color(hex: "ef4444"),
         xp: Color(hex: "fb923c"),
         keyWhite: Color(hex: "f5f4fa"), keyWhiteActive: Color(hex: "e8b04b"), keyWhiteBorder: Color(hex: "c9c6da"),
-        keyBlack: Color(hex: "161329"), keyBlackActive: Color(hex: "f5a623"), keyRootDot: Color(hex: "e8b04b"))
+        keyBlack: Color(hex: "161329"), keyBlackActive: Color(hex: "f5a623"), keyRootDot: Color(hex: "e8b04b"),
+        canvas: Color(hex: "0E141D"), ink: Color(hex: "F2E8D5"), inkMuted: Color(hex: "9AA6B8"),
+        hairline: Color(hex: "2A3443"), group: Color(hex: "151D29"),
+        action: Color(hex: "E06A5C"), onAction: Color(hex: "0E141D"),
+        music: Color(hex: "E8B04B"), musicFill: Color(hex: "E8B04B"), keyBed: Color(hex: "070A0F"))
 
     /// Warm newsprint — light. Verbatim from `[data-theme="light"]` in app.css.
     /// Note `bg` is paper, not white; the stamp trio is inherited from `:root`.
@@ -101,7 +127,11 @@ struct Palette {
         success: Color(hex: "18936a"), warning: Color(hex: "b87708"), danger: Color(hex: "d23b34"),
         xp: Color(hex: "8f5a05"),
         keyWhite: Color(hex: "ffffff"), keyWhiteActive: Color(hex: "d9a441"), keyWhiteBorder: Color(hex: "cdd3c8"),
-        keyBlack: Color(hex: "131a26"), keyBlackActive: Color(hex: "8f5a05"), keyRootDot: Color(hex: "b0302a"))
+        keyBlack: Color(hex: "131a26"), keyBlackActive: Color(hex: "8f5a05"), keyRootDot: Color(hex: "b0302a"),
+        canvas: Color(hex: "F6F2EA"), ink: Color(hex: "1A1916"), inkMuted: Color(hex: "77716A"),
+        hairline: Color(hex: "CFC7B8"), group: Color(hex: "FFFFFF"),
+        action: Color(hex: "B0302A"), onAction: Color(hex: "FFF8EF"),
+        music: Color(hex: "8F5A05"), musicFill: Color(hex: "E2A93B"), keyBed: Color(hex: "1A1916"))
 }
 
 /// Environment-aware theme. Inject via `.environment(\.theme, …)` or read the
@@ -124,6 +154,10 @@ struct Theme {
     static let radiusSm: CGFloat = 6
     static let radius: CGFloat = 10
     static let radiusLg: CGFloat = 14
+    /// Inset-grouped lists.
+    static let radiusGroup: CGFloat = 22
+    /// The one red feature block per screen.
+    static let radiusFeature: CGFloat = 26
 
     // Minimum touch target (WCAG 2.2 / HIG).
     static let tapMin: CGFloat = 44
