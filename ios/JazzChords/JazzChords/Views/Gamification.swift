@@ -10,11 +10,11 @@ struct LevelBadge: View {
     var body: some View {
         Text("\(level)")
             .font(.caption.weight(.bold).monospacedDigit())
-            .foregroundStyle(palette.onAction)
+            // Level is progress → gold; dark numerals read on the gold fill in both modes.
+            .foregroundStyle(palette.keyBed)
             .frame(width: 26, height: 26)
-            .background(palette.action)
+            .background(palette.musicFill)
             .clipShape(Circle())
-            .overlay(Circle().stroke(palette.music.opacity(0.5), lineWidth: 1))
             .accessibilityLabel("\(CoachL10n.t("ui.level")) \(level)")
     }
 }

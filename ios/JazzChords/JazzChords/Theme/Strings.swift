@@ -330,6 +330,8 @@ enum Strings {
     static var statDaysInRow: String { pick("days in a row", "Tage in Folge") }
     static var statPerChord: String { pick("per chord", "pro Akkord") }
     static var statSessions: String { pick("sessions", "Sessions") }
+    /// "LEVEL 4 · DEIN WEG" (uppercased by EyebrowText).
+    static func progressEyebrow(level: Int) -> String { pick("Level \(level) · Your path", "Level \(level) · Dein Weg") }
 
     /// "1,8 s" / "1.8 s" — locale decimal separator.
     static func seconds(_ value: Double) -> String {
@@ -369,4 +371,6 @@ enum Strings {
     static func xOfY(_ x: Int, _ y: Int) -> String { pick("\(x) of \(y)", "\(x) von \(y)") }
     static func learnEyebrow(lessons: Int) -> String { pick("Courses · \(lessons) lessons", "Kurse · \(lessons) Lektionen") }
     static func pathEyebrow(lessons: Int) -> String { pick("The path · \(lessons) lessons", "Der Weg · \(lessons) Lektionen") }
+    static var ownWay: String { pick("Your own way", "Auf eigene Faust") }
+    static func plansEyebrow(_ n: Int) -> String { pick("\(n) plans", "\(n) Pläne") }
 }
