@@ -10,6 +10,7 @@
 		0058405D38BADB52F20169A1 /* ReminderScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4158EA884A0F284C0C36D8D /* ReminderScheduler.swift */; };
 		041450E2866996B225A35323 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12BE9B7FC3E12658EBF8BA6 /* Typography.swift */; };
 		04C58489DBA3E4BFFD5351E4 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7702795829A5ABB75729E310 /* Glass.swift */; };
+		0CA036CCCDD858D91EBC3A5C /* InstrumentSerif-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 78C2EE358E9CFA654D2F2E21 /* InstrumentSerif-OFL.txt */; };
 		1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */; };
 		1EC940AA3236C56C0FF91A77 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1685C6DE212DD795F90740BA /* InfoPlist.strings */; };
 		21D4BDA670AEFD9E1A87107A /* Notation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C53F75A1AB2D782B54B280 /* Notation.swift */; };
@@ -39,8 +40,10 @@
 		A6999155E26580513FD8D700 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD8D24429AD88D4ED75C2AE /* RootView.swift */; };
 		A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */; };
 		AD5A7B000FC5B7CA7F366F1F /* CoachStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C852F0D60A3A9FBF128789 /* CoachStore.swift */; };
+		AEA93FB098E753D331685C28 /* Kalam-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = E039ED39986DDDA333F4D6C2 /* Kalam-OFL.txt */; };
 		B0219DF12B3E321CF940F1D5 /* CustomProgressionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887C32789B9783323292BC6B /* CustomProgressionView.swift */; };
 		B10E5BD29AA3FB6F57933192 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C022B402A4004283821D49C9 /* OnboardingView.swift */; };
+		B3BD0950C1E780EFD7CC8693 /* InstrumentSerif-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F9BA5D75F259CC5D39A10793 /* InstrumentSerif-Regular.ttf */; };
 		BC1E914F9CC499A172CCE224 /* TelemetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EB1C9D8B9F62A7944F811D /* TelemetryService.swift */; };
 		BF3E706C3D4C6FC323CE8299 /* hero2.webp in Resources */ = {isa = PBXBuildFile; fileRef = 32B429969FAC364D67B4C639 /* hero2.webp */; };
 		C1B65C3383F51906621CFFA8 /* SpaceGrotesk-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CA78E9CF43C91692A7405A8B /* SpaceGrotesk-SemiBold.ttf */; };
@@ -51,10 +54,12 @@
 		D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A447E61D3336037E3D5865BD /* LearnView.swift */; };
 		DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C107A882B6475FA011F238FB /* AudioEngine.swift */; };
 		E352E9914FC497422B8FE8E4 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EED3F6CD3AAF7D0157D6B50D /* Strings.swift */; };
+		E81A861F821A6985049BA872 /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C8027FEE0BDC4EAB32E5794C /* InstrumentSerif-Italic.ttf */; };
 		E9BF5CA9279A55756541DB0C /* SpaceGrotesk-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A041364050AAC6848F00EB4A /* SpaceGrotesk-Bold.ttf */; };
 		ED8216D853408C458EDD0F00 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2AE191D85096C087E5C4054 /* SettingsView.swift */; };
 		F662935F15E14DE990D05F1A /* TrainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCB9663547D5A0E3BF66245 /* TrainerView.swift */; };
 		F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */; };
+		FDD8C1AA96B0189CC66D16A2 /* Kalam-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 400D2A0AC948C26D2FFCDAE2 /* Kalam-Bold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +76,7 @@
 		369DE4A76420DD27F9178626 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3B6FA6254D4E1B61B168536F /* PitchDetectors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetectors.swift; sourceTree = "<group>"; };
 		3C3E965AC4FC3825ACC4C530 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcons.swift; sourceTree = "<group>"; };
+		400D2A0AC948C26D2FFCDAE2 /* Kalam-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kalam-Bold.ttf"; sourceTree = "<group>"; };
 		4189F08D835A7328D8B2A4A2 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		44DDA2D43A556F2895D50C30 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		47EB1C9D8B9F62A7944F811D /* TelemetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryService.swift; sourceTree = "<group>"; };
@@ -81,6 +87,7 @@
 		62FDFB5CD48307EEAA9C55B2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		64EFD7EAE22BAE80FA1C77AC /* ToGoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToGoView.swift; sourceTree = "<group>"; };
 		7702795829A5ABB75729E310 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glass.swift; sourceTree = "<group>"; };
+		78C2EE358E9CFA654D2F2E21 /* InstrumentSerif-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "InstrumentSerif-OFL.txt"; sourceTree = "<group>"; };
 		795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitStore.swift; sourceTree = "<group>"; };
 		7B56736703494CD04E7B1D17 /* TrainerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerStore.swift; sourceTree = "<group>"; };
 		887C32789B9783323292BC6B /* CustomProgressionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomProgressionView.swift; sourceTree = "<group>"; };
@@ -98,10 +105,12 @@
 		C107A882B6475FA011F238FB /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
 		C4158EA884A0F284C0C36D8D /* ReminderScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderScheduler.swift; sourceTree = "<group>"; };
 		C685670A09A9D9D041427E06 /* JazzChordsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzChordsApp.swift; sourceTree = "<group>"; };
+		C8027FEE0BDC4EAB32E5794C /* InstrumentSerif-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Italic.ttf"; sourceTree = "<group>"; };
 		CA78E9CF43C91692A7405A8B /* SpaceGrotesk-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpaceGrotesk-SemiBold.ttf"; sourceTree = "<group>"; };
 		CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView_.swift; sourceTree = "<group>"; };
 		CEA73CE363D55D87924D64F4 /* empty.webp */ = {isa = PBXFileReference; path = empty.webp; sourceTree = "<group>"; };
 		D7F32C4DA0908BF4BB3691E1 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
+		E039ED39986DDDA333F4D6C2 /* Kalam-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Kalam-OFL.txt"; sourceTree = "<group>"; };
 		E3C53F75A1AB2D782B54B280 /* Notation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notation.swift; sourceTree = "<group>"; };
 		E71CABA6FA5E417C7D166B90 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		EA814142A1EAB3935C084DB7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -109,6 +118,7 @@
 		F2AE191D85096C087E5C4054 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonPlayerView.swift; sourceTree = "<group>"; };
 		F7FEDEE711344352652D8123 /* MusicEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MusicEngine; path = ../MusicEngine; sourceTree = SOURCE_ROOT; };
+		F9BA5D75F259CC5D39A10793 /* InstrumentSerif-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Regular.ttf"; sourceTree = "<group>"; };
 		FDACE9F657B8CFF1C4FF3805 /* MicInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicInput.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -207,9 +217,13 @@
 		8F19B4D6E633926A39077232 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				C8027FEE0BDC4EAB32E5794C /* InstrumentSerif-Italic.ttf */,
+				F9BA5D75F259CC5D39A10793 /* InstrumentSerif-Regular.ttf */,
+				400D2A0AC948C26D2FFCDAE2 /* Kalam-Bold.ttf */,
 				A041364050AAC6848F00EB4A /* SpaceGrotesk-Bold.ttf */,
 				B76EAB57089F453D8001EA9C /* SpaceGrotesk-Medium.ttf */,
 				CA78E9CF43C91692A7405A8B /* SpaceGrotesk-SemiBold.ttf */,
+				DB66D8DC70848F926AD4C661 /* Licenses */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -266,6 +280,15 @@
 				7E588BF82FF19B8E0CD0896B /* Packages */,
 				292138CC8484E35853344A59 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		DB66D8DC70848F926AD4C661 /* Licenses */ = {
+			isa = PBXGroup;
+			children = (
+				78C2EE358E9CFA654D2F2E21 /* InstrumentSerif-OFL.txt */,
+				E039ED39986DDDA333F4D6C2 /* Kalam-OFL.txt */,
+			);
+			path = Licenses;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -336,6 +359,11 @@
 			files = (
 				8B783711BA8940D4A03FBE89 /* Assets.xcassets in Resources */,
 				1EC940AA3236C56C0FF91A77 /* InfoPlist.strings in Resources */,
+				E81A861F821A6985049BA872 /* InstrumentSerif-Italic.ttf in Resources */,
+				0CA036CCCDD858D91EBC3A5C /* InstrumentSerif-OFL.txt in Resources */,
+				B3BD0950C1E780EFD7CC8693 /* InstrumentSerif-Regular.ttf in Resources */,
+				FDD8C1AA96B0189CC66D16A2 /* Kalam-Bold.ttf in Resources */,
+				AEA93FB098E753D331685C28 /* Kalam-OFL.txt in Resources */,
 				77B3FD4665E06E306016962E /* Localizable.stringsdict in Resources */,
 				D1E6E5A82F1AA2524B779E2B /* PrivacyInfo.xcprivacy in Resources */,
 				E9BF5CA9279A55756541DB0C /* SpaceGrotesk-Bold.ttf in Resources */,

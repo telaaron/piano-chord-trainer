@@ -56,3 +56,6 @@ targets:
           - SpaceGrotesk-Medium.ttf
           - SpaceGrotesk-SemiBold.ttf
           - SpaceGrotesk-Bold.ttf
+          - InstrumentSerif-Regular.ttf
+          - InstrumentSerif-Italic.ttf
+          - Kalam-Bold.ttf

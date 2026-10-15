@@ -33,6 +33,9 @@
 		<string>SpaceGrotesk-Medium.ttf</string>
 		<string>SpaceGrotesk-SemiBold.ttf</string>
 		<string>SpaceGrotesk-Bold.ttf</string>
+		<string>InstrumentSerif-Regular.ttf</string>
+		<string>InstrumentSerif-Italic.ttf</string>
+		<string>Kalam-Bold.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
