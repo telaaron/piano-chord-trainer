@@ -29,4 +29,20 @@ final class FunctionGridTests: XCTestCase {
         XCTAssertEqual(t.map(\.note), ["D", "F", "C"])
         XCTAssertEqual(t.map(\.function), labels)
     }
+
+    // After a graded tap-guess the store leaves tap mode; the grid must still
+    // judge the guess, not the (empty) live input.
+    func testGridUsesTapGuessWithoutLiveInput() {
+        XCTAssertEqual(FunctionGrid.held(inputActive: false, heldNotes: [], tapGuess: [0, 4]), [60, 64])
+        XCTAssertEqual(FunctionGrid.held(inputActive: true, heldNotes: [62], tapGuess: [0]), [62])
+    }
+
+    func testRepeatedToneHasUniqueIDs() {
+        let tones = FunctionGrid.tones(voicingNotes: ["C", "C"], labels: ["R", "R"], held: [], showResult: false)
+        XCTAssertEqual(Set(tones.map(\.id)).count, 2)
+    }
+
+    func testThirteenthIsNotSixth() {
+        XCTAssertNotEqual(Strings.intervalFunction("13"), Strings.intervalFunction("6"))
+    }
 }

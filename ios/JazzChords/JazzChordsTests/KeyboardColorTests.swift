@@ -43,4 +43,15 @@ final class KeyboardColorTests: XCTestCase {
         XCTAssertEqual(role, .idle)
         XCTAssertEqual(rgb(PianoKeyboard.fill(for: role, isBlack: true, palette: .dark)), rgb(Palette.dark.keyBlack))
     }
+
+    // Wrong tap-guess on C–E–G where E was guessed: E stays gold, only the
+    // unguessed tones are marked missing.
+    func testGuessedVoicingKeyStaysGoldAfterWrongAttempt() {
+        let guessed = PianoKeyboard.role(chrIdx: 16, active: true, held: [], expected: [],
+                                         selected: false, showInput: false, showMissing: true, played: [4])
+        XCTAssertEqual(guessed, .voicing)
+        let unguessed = PianoKeyboard.role(chrIdx: 19, active: true, held: [], expected: [],
+                                           selected: false, showInput: false, showMissing: true, played: [4])
+        XCTAssertEqual(unguessed, .missing)
+    }
 }
