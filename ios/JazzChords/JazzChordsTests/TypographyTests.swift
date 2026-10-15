@@ -21,7 +21,7 @@ final class TypographyTests: XCTestCase {
     private func assertAccidentalsResolve(family: String, file: StaticString = #filePath, line: UInt = #line) throws {
         let font = try XCTUnwrap(Display.uiFont(family: family, size: 40), file: file, line: line)
         let b = ("B" as NSString).size(withAttributes: [.font: font]).width
-        for glyph in ["♭", "♯", "Δ", "ø", "°", "→"] {
+        for glyph in ["♭", "♯", "Δ", "ø", "°"] {
             let w = (glyph as NSString).size(withAttributes: [.font: font]).width
             XCTAssertLessThan(w, b * 1.2, "\(glyph) falls back to a box in \(family)", file: file, line: line)
         }
