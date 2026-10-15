@@ -293,7 +293,7 @@ struct ToGoView: View {
         VStack(spacing: Theme.space1) {
             Text(lastCorrect ? CoachL10n.t(CoachL10n.ToGo.revealCorrect)
                              : CoachL10n.t(CoachL10n.ToGo.revealWrong))
-                .font(.title3.weight(.semibold))
+                .font(Display.serif(28, italic: true, relativeTo: .title2))
                 .foregroundStyle(lastCorrect ? palette.music : palette.action)
             Text(CoachL10n.t(CoachL10n.ToGo.answerWas, ["answer": ex.answerLabel]))
                 .font(.subheadline)
@@ -562,11 +562,10 @@ struct ToGoView: View {
                                action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.title3.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Theme.space4)
+                .font(.body.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 56)
                 .background(disabled ? palette.hairline : palette.action,
-                            in: RoundedRectangle(cornerRadius: Theme.radius))
+                            in: Capsule())
                 .foregroundStyle(disabled ? palette.inkMuted : palette.onAction)
         }
         .disabled(disabled)

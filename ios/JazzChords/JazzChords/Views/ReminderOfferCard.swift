@@ -60,7 +60,7 @@ struct ReminderOfferCard: View {
                     .symbolRenderingMode(.hierarchical)
                 VStack(alignment: .leading, spacing: Theme.space1) {
                     Text(CoachL10n.t("reminder.offer_title"))
-                        .font(.headline)
+                        .font(Display.serif(22, relativeTo: .headline))
                         .foregroundStyle(palette.ink)
                     Text(CoachL10n.t("reminder.offer_body", ["time": scheduler.time.string]))
                         .font(.subheadline)

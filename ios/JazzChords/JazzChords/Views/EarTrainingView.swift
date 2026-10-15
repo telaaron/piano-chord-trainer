@@ -85,10 +85,9 @@ struct EarTrainingView: View {
     private func primaryButton(_ label: String, disabled: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.title3.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Theme.space4)
-                .background(disabled ? palette.hairline : palette.action, in: RoundedRectangle(cornerRadius: Theme.radius))
+                .font(.body.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 56)
+                .background(disabled ? palette.hairline : palette.action, in: Capsule())
                 .foregroundStyle(disabled ? palette.inkMuted : palette.onAction)
         }
         .disabled(disabled)
