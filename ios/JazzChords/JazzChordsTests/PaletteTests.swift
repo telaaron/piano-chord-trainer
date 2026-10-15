@@ -31,7 +31,7 @@ final class PaletteTests: XCTestCase {
         let p = Palette.light
         assertRole(p.canvas, "F6F2EA", "canvas")
         assertRole(p.ink, "1A1916", "ink")
-        assertRole(p.inkMuted, "77716A", "inkMuted")
+        assertRole(p.inkMuted, "736D66", "inkMuted")
         assertRole(p.hairline, "CFC7B8", "hairline")
         assertRole(p.group, "FFFFFF", "group")
         assertRole(p.action, "B0302A", "action")
