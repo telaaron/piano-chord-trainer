@@ -34,7 +34,7 @@ Palette bleibt 1:1 aus `src/app.css`. Neu sind semantische Rollen, die Views aus
 |---|---|---|---|
 | `canvas` | #0E141D | #F6F2EA | Screen-Hintergrund (Nachtblau / Papier) |
 | `ink` | #F2E8D5 | #1A1916 | Haupttext, Haarlinie unter Titeln |
-| `inkMuted` | #9AA6B8 | #77716A | Sekundärtext, Eyebrows |
+| `inkMuted` | #9AA6B8 | #736D66 (AA 4,58:1) | Sekundärtext, Eyebrows |
 | `hairline` | #2A3443 | #CFC7B8 | Trennlinien, Notenlinien |
 | `group` | #151D29 | #FFFFFF | Inset-Grouped-Listen |
 | `action` (Rot) | #E06A5C | #B0302A | Primär-Button, Feature-Block, aktiver Tab, fehlender Ton |

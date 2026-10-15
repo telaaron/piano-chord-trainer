@@ -67,7 +67,7 @@ struct Palette {
     /// Warm paper — light.
     static let light = Palette(
         keyWhite: Color(hex: "ffffff"), keyBlack: Color(hex: "131a26"),
-        canvas: Color(hex: "F6F2EA"), ink: Color(hex: "1A1916"), inkMuted: Color(hex: "77716A"),
+        canvas: Color(hex: "F6F2EA"), ink: Color(hex: "1A1916"), inkMuted: Color(hex: "736D66"),
         hairline: Color(hex: "CFC7B8"), group: Color(hex: "FFFFFF"),
         action: Color(hex: "B0302A"), onAction: Color(hex: "FFF8EF"),
         music: Color(hex: "8F5A05"), musicFill: Color(hex: "E2A93B"), keyBed: Color(hex: "1A1916"))
