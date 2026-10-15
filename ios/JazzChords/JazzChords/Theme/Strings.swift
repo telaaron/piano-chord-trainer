@@ -361,4 +361,6 @@ enum Strings {
         default: return "♪"
         }
     }
+    static var hint: String { pick("Hint", "Tipp") }
+    static var nextPrefix: String { pick("next:", "nächster:") }
 }
