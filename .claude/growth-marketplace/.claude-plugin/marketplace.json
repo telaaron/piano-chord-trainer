@@ -1,0 +1,20 @@
+{
+  "name": "jazzchords-growth",
+  "owner": {
+    "name": "Aaron Technologies O\u00dc"
+  },
+  "metadata": {
+    "description": "Vetted third-party SEO/GEO tooling for JazzChords, pinned to reviewed commits. Bump a sha only after re-reading the diff."
+  },
+  "plugins": [
+    {
+      "name": "claude-seo",
+      "description": "AgriciDaniel/claude-seo v2.4.2 (MIT): technical/on-page/schema/GEO audits. Keyless core; Google APIs optional.",
+      "source": {
+        "source": "github",
+        "repo": "AgriciDaniel/claude-seo",
+        "sha": "4b99de2f7de7e7d5247042e5fb5b4ea9368ef734"
+      }
+    }
+  ]
+}

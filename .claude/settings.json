@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "jazzchords-growth": {
+      "source": {
+        "source": "directory",
+        "path": "./.claude/growth-marketplace"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "claude-seo@jazzchords-growth": true
+  }
+}
