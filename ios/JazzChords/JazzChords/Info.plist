@@ -30,9 +30,6 @@
 	<string>JazzChords listens to your piano so it can recognise the chords you play. Audio is analysed on your device and never recorded or uploaded.</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>SpaceGrotesk-Medium.ttf</string>
-		<string>SpaceGrotesk-SemiBold.ttf</string>
-		<string>SpaceGrotesk-Bold.ttf</string>
 		<string>InstrumentSerif-Regular.ttf</string>
 		<string>InstrumentSerif-Italic.ttf</string>
 		<string>Kalam-Bold.ttf</string>
