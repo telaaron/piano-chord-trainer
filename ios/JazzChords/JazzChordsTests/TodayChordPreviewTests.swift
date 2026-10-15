@@ -43,4 +43,13 @@ final class TodayChordPreviewTests: XCTestCase {
         let block = CoachBlock(kind: .focus, settings: settings(.random), targetChords: 8, labelKey: "x")
         XCTAssertTrue(TodayChordPreview.chords(for: plan([block])).isEmpty)
     }
+
+    // Arrows on Heute promise a sequence; only progression blocks are one.
+    func testProgressionIsSequenceFocusIsNot() {
+        let progression = CoachBlock(kind: .focus, settings: settings(.twoFiveOne), targetChords: 8, labelKey: "x")
+        let focus = CoachBlock(kind: .focus, settings: settings(.random), focusRoots: ["C"],
+                               focusQualities: ["Maj7", "7"], targetChords: 8, labelKey: "x")
+        XCTAssertTrue(TodayChordPreview.isSequence(for: plan([progression])))
+        XCTAssertFalse(TodayChordPreview.isSequence(for: plan([focus])))
+    }
 }

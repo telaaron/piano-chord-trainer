@@ -26,4 +26,11 @@ final class TypographyTests: XCTestCase {
             XCTAssertLessThan(w, b * 1.2, "\(glyph) falls back to a box in \(family)", file: file, line: line)
         }
     }
+
+    // Brand faces follow Dynamic Type: same size at the default category,
+    // clearly larger at accessibility sizes (titles broke into "Auf-wär-men").
+    func testBrandFaceSizeFollowsContentSize() {
+        XCTAssertEqual(Display.pointSize(20, relativeTo: .title3, category: .large), 20, accuracy: 0.5)
+        XCTAssertGreaterThan(Display.pointSize(20, relativeTo: .title3, category: .accessibilityExtraLarge), 26)
+    }
 }
