@@ -297,4 +297,30 @@ enum Strings {
     static func level(_ level: CourseLevel) -> String {
         CoachL10n.t("learn.level_\(level.rawValue)")
     }
+    // ─── Editorial redesign ─────────────────────────────────
+
+    /// Function name for an interval label from `getVoicingIntervalLabels`
+    /// ("R", "♭3", "♭7", "9" …) as shown in the trainer's function grid.
+    static func intervalFunction(_ label: String) -> String {
+        let core = label.replacingOccurrences(of: "♭", with: "").replacingOccurrences(of: "♯", with: "").replacingOccurrences(of: "°", with: "")
+        switch core {
+        case "R": return pick("Root", "Grundton")
+        case "3": return pick("Third", "Terz")
+        case "5": return pick("Fifth", "Quinte")
+        case "6", "13": return pick("Sixth", "Sexte")
+        case "7": return pick("Seventh", "Septime")
+        case "9": return pick("Ninth", "None")
+        case "11": return pick("Eleventh", "Undezime")
+        default: return label
+        }
+    }
+
+    /// VoiceOver label for the trainer's lead sheet strip.
+    static func leadSheetLabel(previous: String?, current: String, next: String?) -> String {
+        var parts: [String] = []
+        if let previous { parts.append(pick("before \(previous)", "vorher \(previous)")) }
+        parts.append(pick("now \(current)", "jetzt \(current)"))
+        if let next { parts.append(pick("next \(next)", "danach \(next)")) }
+        return parts.joined(separator: ", ")
+    }
 }
