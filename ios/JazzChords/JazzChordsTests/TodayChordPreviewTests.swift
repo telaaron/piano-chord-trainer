@@ -52,4 +52,15 @@ final class TodayChordPreviewTests: XCTestCase {
         XCTAssertTrue(TodayChordPreview.isSequence(for: plan([progression])))
         XCTAssertFalse(TodayChordPreview.isSequence(for: plan([focus])))
     }
+
+    // A calibration block has no roots: chords come in random keys, so the row
+    // shows qualities only, not three times C.
+    func testBlockWithoutRootsIsAnyKey() {
+        let calibrate = CoachBlock(kind: .calibrate, settings: settings(.random),
+                                   focusQualities: ["Maj7", "7", "m7"], targetChords: 12, labelKey: "x")
+        let focus = CoachBlock(kind: .focus, settings: settings(.random), focusRoots: ["D"],
+                               focusQualities: ["m7"], targetChords: 8, labelKey: "x")
+        XCTAssertTrue(TodayChordPreview.isAnyKey(for: plan([calibrate])))
+        XCTAssertFalse(TodayChordPreview.isAnyKey(for: plan([focus])))
+    }
 }

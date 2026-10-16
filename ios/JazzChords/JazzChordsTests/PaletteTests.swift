@@ -17,14 +17,19 @@ final class PaletteTests: XCTestCase {
         let p = Palette.dark
         assertRole(p.canvas, "0E141D", "canvas")
         assertRole(p.ink, "F2E8D5", "ink")
-        assertRole(p.inkMuted, "9AA6B8", "inkMuted")
-        assertRole(p.hairline, "2A3443", "hairline")
-        assertRole(p.group, "151D29", "group")
-        assertRole(p.action, "E06A5C", "action")
+        assertRole(p.inkMuted, "B4BCC8", "inkMuted")
+        assertRole(p.hairline, "3A4658", "hairline")
+        assertRole(p.group, "18212E", "group")
+        assertRole(p.action, "F07B6C", "action")
         assertRole(p.onAction, "0E141D", "onAction")
         assertRole(p.music, "E8B04B", "music")
         assertRole(p.musicFill, "E8B04B", "musicFill")
         assertRole(p.keyBed, "070A0F", "keyBed")
+        // Variant E: the feature block is deep oxblood with light type.
+        assertRole(p.feature, "8C2A22", "feature")
+        assertRole(p.onFeature, "F6EDE0", "onFeature")
+        assertRole(p.featureAccent, "F2C46B", "featureAccent")
+        assertRole(p.keyWhite, "ECE6DA", "keyWhite")
     }
 
     func testLightRolesMatchSpec() {
@@ -39,5 +44,8 @@ final class PaletteTests: XCTestCase {
         assertRole(p.music, "8F5A05", "music")
         assertRole(p.musicFill, "E2A93B", "musicFill")
         assertRole(p.keyBed, "1A1916", "keyBed")
+        assertRole(p.feature, "B0302A", "feature")
+        assertRole(p.onFeature, "FFF8EF", "onFeature")
+        assertRole(p.featureAccent, "FFF8EF", "featureAccent")
     }
 }
