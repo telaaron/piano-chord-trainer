@@ -56,4 +56,14 @@ describe('mergeSyncData', () => {
 		const merged = mergeSyncData(local, cloud, { keepLocal: false });
 		expect(merged[H]).toEqual(cloud[H]);
 	});
+
+	it('with preferLocal the device wins plain keys but history is still a union', () => {
+		const merged = mergeSyncData(
+			{ 'chord-trainer-theme': 'light', [H]: [{ id: 'web', timestamp: 2 }] },
+			{ 'chord-trainer-theme': 'dark', [H]: [{ id: 'iphone', timestamp: 1 }] },
+			{ preferLocal: true },
+		);
+		expect(merged['chord-trainer-theme']).toBe('light');
+		expect((merged[H] as { id: string }[]).map((s) => s.id)).toEqual(['web', 'iphone']);
+	});
 });
