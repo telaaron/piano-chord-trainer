@@ -81,9 +81,9 @@ alter table public.email_consents alter column user_id drop not null;
 create index idx_email_consents_email_created on public.email_consents(lower(email), created_at desc);
 
 -- Current state per address: an anonymous opt-in has no user_id to group by,
--- and the address is what Brevo mails anyway.
-drop view public.v_email_consent_current;
-create view public.v_email_consent_current
+-- and the address is what Brevo mails anyway. Same columns as before, so
+-- replace in place (a DROP is held for confirmation by the Supabase tooling).
+create or replace view public.v_email_consent_current
 with (security_invoker = on) as
 select distinct on (lower(email), purpose)
   user_id, email, purpose, status, source, text_version, created_at as since
