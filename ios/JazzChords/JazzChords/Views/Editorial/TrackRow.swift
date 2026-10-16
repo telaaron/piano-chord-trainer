@@ -22,14 +22,20 @@ struct TrackRow: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     var badge: String? = nil
     var number: String? = nil
+    /// SF Symbol shown as an IconTile — what you do (never a chord symbol).
+    var icon: String? = nil
     let title: String
+    /// Plain-language line under the title.
+    var subtitle: String? = nil
     var meta: String? = nil
     var showsDivider: Bool = false
     var showsChevron: Bool = true
 
     var body: some View {
         HStack(spacing: Theme.space3) {
-            if let badge {
+            if let icon {
+                IconTile(systemImage: icon, size: 32)
+            } else if let badge {
                 Text(badge)
                     .font(Display.chord(18, relativeTo: .body))
                     .foregroundStyle(palette.music)
@@ -46,9 +52,7 @@ struct TrackRow: View {
                 if typeSize.isAccessibilitySize {
                     // Large type: meta wraps under the title instead of squeezing it.
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(title)
-                            .font(.body)
-                            .foregroundStyle(palette.ink)
+                        titleBlock
                         if let meta {
                             Text(meta)
                                 .font(.subheadline)
@@ -58,9 +62,7 @@ struct TrackRow: View {
                     .padding(.vertical, Theme.space2)
                     Spacer(minLength: 0)
                 } else {
-                    Text(title)
-                        .font(.body)
-                        .foregroundStyle(palette.ink)
+                    titleBlock
                     Spacer(minLength: Theme.space2)
                     if let meta {
                         Text(meta)
@@ -84,6 +86,25 @@ struct TrackRow: View {
         .padding(.leading, Theme.space4)
         .padding(.trailing, Theme.space4)
         .contentShape(Rectangle())
+    }
+
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(title)
+                .font(.body)
+                .foregroundStyle(palette.ink)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+            if let subtitle {
+                Text(subtitle)
+                    .font(.footnote)
+                    .foregroundStyle(palette.inkMuted)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.vertical, subtitle == nil ? 0 : Theme.space2)
     }
 }
 

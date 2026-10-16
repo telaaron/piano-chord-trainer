@@ -23,6 +23,53 @@ struct SavedSettings: Codable, Equatable {
     var metronomeBpm: Int = 80
 }
 
+// The web writes this same object without the iOS-only fields (and with a
+// string notationSystem), so each field falls back to its default on its own
+// instead of the whole decode failing and resetting everything.
+extension SavedSettings {
+    private enum CodingKeys: String, CodingKey {
+        case difficulty, notation, voicing, displayMode, accidentals, notationSystem, totalChords
+        case progressionMode, inputMode, customDegrees, soundPreset, audioEnabled, metronomeEnabled
+        case metronomeBpm
+    }
+
+    /// `stored` with only the fields that changed from `old` to `new`, so a view
+    /// holding an older copy never writes back values that sync updated meanwhile.
+    static func patched(stored: SavedSettings, old: SavedSettings, new: SavedSettings) -> SavedSettings {
+        let encoder = JSONEncoder()
+        guard let s = try? JSONDecoder().decode(JSONValue.self, from: encoder.encode(stored)).object,
+              let o = try? JSONDecoder().decode(JSONValue.self, from: encoder.encode(old)).object,
+              let n = try? JSONDecoder().decode(JSONValue.self, from: encoder.encode(new)).object,
+              let data = try? encoder.encode(JSONValue.object(s.merging(n.filter { o[$0.key] != $0.value }) { _, changed in changed })),
+              let result = try? JSONDecoder().decode(SavedSettings.self, from: data)
+        else { return new }
+        return result
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        func field<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T {
+            ((try? c.decodeIfPresent(T.self, forKey: key)) ?? nil) ?? fallback
+        }
+        let d = SavedSettings()
+        self.init()
+        difficulty = field(.difficulty, d.difficulty)
+        notation = field(.notation, d.notation)
+        voicing = field(.voicing, d.voicing)
+        displayMode = field(.displayMode, d.displayMode)
+        accidentals = field(.accidentals, d.accidentals)
+        notationSystem = field(.notationSystem, d.notationSystem)
+        totalChords = field(.totalChords, d.totalChords)
+        progressionMode = field(.progressionMode, d.progressionMode)
+        inputMode = field(.inputMode, d.inputMode)
+        customDegrees = field(.customDegrees, d.customDegrees)
+        soundPreset = field(.soundPreset, d.soundPreset)
+        audioEnabled = field(.audioEnabled, d.audioEnabled)
+        metronomeEnabled = field(.metronomeEnabled, d.metronomeEnabled)
+        metronomeBpm = field(.metronomeBpm, d.metronomeBpm)
+    }
+}
+
 /// Tiny JSON-file key/value store under Application Support.
 enum Store {
     private static let dir: URL = {
@@ -42,7 +89,27 @@ enum Store {
     static func save<T: Encodable>(_ value: T, _ key: String) {
         guard let data = try? JSONEncoder().encode(value) else { return }
         try? data.write(to: url(key), options: .atomic)
+        onSave?(key)
     }
+
+    /// The stored JSON as-is, for sync (keeps fields the typed model doesn't know).
+    /// Load for a store that persists the whole value back. `locked` means a
+    /// file exists but doesn't decode (a newer shape, e.g. written by the web):
+    /// the store must not save over it, or the account's data is lost.
+    static func loadGuarded<T: Decodable>(_ type: T.Type, _ key: String) -> (value: T?, locked: Bool) {
+        let value = load(type, key)
+        return (value, value == nil && exists(key))
+    }
+
+    static func exists(_ key: String) -> Bool { FileManager.default.fileExists(atPath: url(key).path) }
+
+    static func loadRaw(_ key: String) -> JSONValue? { load(JSONValue.self, key) }
+
+    static func saveRaw(_ value: JSONValue, _ key: String) { save(value, key) }
+
+    /// Called with the key after every save, so cloud sync knows the device changed.
+    /// Set once at launch, before any store saves.
+    nonisolated(unsafe) static var onSave: ((String) -> Void)?
 }
 
 /// Keys (string-stable, independent of the web's localStorage names).

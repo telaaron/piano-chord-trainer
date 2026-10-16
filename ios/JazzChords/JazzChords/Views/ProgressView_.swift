@@ -18,9 +18,7 @@ struct ProgressView_: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.space5) {
-                EditorialHeader(eyebrow: Strings.progressEyebrow(level: habits.levelInfo.level), title: CoachL10n.t("nav.progress")) {
-                    SettingsHeaderButton()
-                }
+                EditorialHeader(eyebrow: Strings.progressEyebrow(level: habits.levelInfo.level), title: CoachL10n.t("nav.progress"))
                 if history.isEmpty {
                     EmptyStateView(
                         systemImage: "chart.line.uptrend.xyaxis",
@@ -44,6 +42,8 @@ struct ProgressView_: View {
         .screenBackground()
         .onAppear { habits.reload(); refresh += 1 }
         .refreshable { habits.reload(); refresh += 1 }
+        // Account data from another device landed in the stores: show it.
+        .onChange(of: SyncService.shared.revision) { habits.reload(); refresh += 1 }
         .fullScreenCover(item: $drillSpot, onDismiss: { habits.reload(); refresh += 1 }) { spot in
             NavigationStack { TrainerView(plan: drillPlan(for: spot)) }
         }

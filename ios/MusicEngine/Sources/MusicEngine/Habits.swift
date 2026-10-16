@@ -53,6 +53,53 @@ public struct SmartGoal: Sendable, Equatable, Codable {
     public var expiresAt: String?
 }
 
+// The web stores goal params as `Record<string, string | number>` and older
+// profiles lack the newer fields, so decoding is lenient where the web is.
+extension SmartGoal {
+    private enum CodingKeys: String, CodingKey {
+        case id, type, title, titleKey, titleParams, description, descriptionKey, descriptionParams
+        case icon, target, current, xpReward, createdAt, completedAt, expiresAt
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        type = try c.decode(GoalType.self, forKey: .type)
+        title = try c.decode(String.self, forKey: .title)
+        titleKey = try c.decode(String.self, forKey: .titleKey)
+        titleParams = try c.decodeIfPresent(LenientParams.self, forKey: .titleParams)?.values
+        description = try c.decode(String.self, forKey: .description)
+        descriptionKey = try c.decode(String.self, forKey: .descriptionKey)
+        descriptionParams = try c.decodeIfPresent(LenientParams.self, forKey: .descriptionParams)?.values
+        icon = try c.decode(String.self, forKey: .icon)
+        target = try c.decode(Double.self, forKey: .target)
+        current = try c.decode(Double.self, forKey: .current)
+        xpReward = try c.decode(Int.self, forKey: .xpReward)
+        createdAt = try c.decode(String.self, forKey: .createdAt)
+        completedAt = try c.decodeIfPresent(String.self, forKey: .completedAt)
+        expiresAt = try c.decodeIfPresent(String.self, forKey: .expiresAt)
+    }
+}
+
+/// `{ "days": 3, "label": "x" }` → `["days": "3", "label": "x"]`.
+private struct LenientParams: Decodable {
+    let values: [String: String]
+
+    private struct Value: Decodable {
+        let text: String
+        init(from decoder: Decoder) throws {
+            let c = try decoder.singleValueContainer()
+            if let s = try? c.decode(String.self) { text = s }
+            else if let i = try? c.decode(Int.self) { text = String(i) }
+            else { text = String(try c.decode(Double.self)) }
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        values = try decoder.singleValueContainer().decode([String: Value].self).mapValues(\.text)
+    }
+}
+
 public struct ChordReview: Sendable, Equatable, Codable {
     public var chordKey: String
     public var root: String
@@ -664,6 +711,43 @@ private func isGoalMet(_ goal: SmartGoal) -> Bool {
 }
 
 // ─── Default Profile ────────────────────────────────────────
+
+extension HabitProfile {
+    private enum CodingKeys: String, CodingKey {
+        case dailyGoalMinutes, preferredTime, practiceAnchor, totalXP, weeklyXP, weekStart
+        case activeGoals, completedGoals, chordSchedule, notificationsEnabled, notificationTime
+        case lastNotificationDate, onboardingDone, sessionsToday, lastSessionDate, dailyGoalDates
+        case todayPracticeMs
+    }
+
+    /// Missing fields take the default profile's value (the web loads profiles
+    /// the same way: defaults spread under what was stored).
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = createDefaultProfile()
+        func field<T: Decodable>(_ key: CodingKeys, _ fallback: T) throws -> T {
+            try c.decodeIfPresent(T.self, forKey: key) ?? fallback
+        }
+        self.init(
+            dailyGoalMinutes: try field(.dailyGoalMinutes, d.dailyGoalMinutes),
+            preferredTime: try field(.preferredTime, d.preferredTime),
+            practiceAnchor: try field(.practiceAnchor, d.practiceAnchor),
+            totalXP: try field(.totalXP, d.totalXP),
+            weeklyXP: try field(.weeklyXP, d.weeklyXP),
+            weekStart: try field(.weekStart, d.weekStart),
+            activeGoals: try field(.activeGoals, d.activeGoals),
+            completedGoals: try field(.completedGoals, d.completedGoals),
+            chordSchedule: try field(.chordSchedule, d.chordSchedule),
+            notificationsEnabled: try field(.notificationsEnabled, d.notificationsEnabled),
+            notificationTime: try field(.notificationTime, d.notificationTime),
+            lastNotificationDate: try field(.lastNotificationDate, d.lastNotificationDate),
+            onboardingDone: try field(.onboardingDone, d.onboardingDone),
+            sessionsToday: try field(.sessionsToday, d.sessionsToday),
+            lastSessionDate: try field(.lastSessionDate, d.lastSessionDate),
+            dailyGoalDates: try field(.dailyGoalDates, d.dailyGoalDates),
+            todayPracticeMs: try field(.todayPracticeMs, d.todayPracticeMs))
+    }
+}
 
 public func createDefaultProfile() -> HabitProfile {
     HabitProfile(
