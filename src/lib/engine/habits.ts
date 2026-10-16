@@ -898,6 +898,10 @@ export function migrateToHabitProfile(
 	// Retroactive XP: 10 per session
 	profile.totalXP = history.length * XP_SESSION_COMPLETE;
 
+	// Someone who has already practised is past the point the onboarding is
+	// for. Asking them for a daily goal again is the "every login" nag.
+	profile.onboardingDone = history.length > 0;
+
 	// Add streak bonus XP retroactively
 	if (streak.best > 0) {
 		profile.totalXP += streak.best * XP_STREAK_DAY;
@@ -913,6 +917,21 @@ export function migrateToHabitProfile(
 		: '';
 
 	return profile;
+}
+
+/**
+ * Whether the trainer should open the habit onboarding.
+ *
+ * At most once per player, not once per device: any one of these means it
+ * already happened — this device recorded it, the player has practice history,
+ * or their account recorded it on another device.
+ */
+export function needsOnboarding(input: {
+	profileDone: boolean;
+	sessionCount: number;
+	accountDone: boolean;
+}): boolean {
+	return !input.profileDone && input.sessionCount === 0 && !input.accountDone;
 }
 
 // ─── Daily Progress & Motivation ────────────────────────────
