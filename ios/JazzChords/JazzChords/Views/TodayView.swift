@@ -135,6 +135,8 @@ struct TodayView: View {
                 Text(coachSay)
                     .font(Display.serif(20, italic: true, relativeTo: .title3))
                     .fixedSize(horizontal: false, vertical: true)
+                let steps = TodayChordPreview.steps(for: plan)
+                if steps.count > 1 { stepsRow(steps) }
             }
         } action: {
             PrimaryCapsule(title: Strings.keepPracticing, systemImage: "play.fill", inverted: true) {
@@ -175,6 +177,31 @@ struct TodayView: View {
                 Text(Strings.inAllKeys)
                     .font(Display.serif(18, italic: true, relativeTo: .body))
                     .opacity(0.8)
+            }
+        }
+    }
+
+    /// Today's units in order; the first (where "Weiter üben" starts) is lit.
+    private func stepsRow(_ steps: [TodayChordPreview.Step]) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: Theme.space2) { stepItems(steps) }
+            VStack(alignment: .leading, spacing: Theme.space1) { stepItems(steps) }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private func stepItems(_ steps: [TodayChordPreview.Step]) -> some View {
+        ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+            HStack(spacing: 6) {
+                Text("\(index + 1)")
+                    .font(Display.eyebrow(11))
+                    .frame(width: 18, height: 18)
+                    .background(index == 0 ? palette.featureAccent : palette.onFeature.opacity(0.15), in: Circle())
+                    .foregroundStyle(index == 0 ? palette.feature : palette.onFeature)
+                Text("\(Strings.blockKind(step.kind)) \(step.chords)")
+                    .font(.footnote.weight(index == 0 ? .semibold : .regular))
+                    .opacity(index == 0 ? 1 : 0.8)
             }
         }
     }

@@ -50,6 +50,17 @@ enum TodayChordPreview {
         return block.focusRoots?.isEmpty ?? true
     }
 
+    struct Step: Equatable {
+        let kind: BlockKind
+        let chords: Int
+    }
+
+    /// Today's units in session order ("Aufwärmen 4 · Fokus 8 · Neu 6").
+    /// Only today: the coach re-plans after every session.
+    static func steps(for plan: CoachPlan) -> [Step] {
+        plan.blocks.map { Step(kind: $0.kind, chords: $0.targetChords) }
+    }
+
     private static func focusBlock(of plan: CoachPlan) -> CoachBlock? {
         plan.blocks.first(where: { $0.kind == .focus || $0.kind == .new }) ?? plan.blocks.first
     }

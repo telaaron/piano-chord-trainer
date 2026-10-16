@@ -333,6 +333,18 @@ enum Strings {
     static var statSessions: String { pick("sessions", "Sessions") }
     static var forExample: String { pick("e.g.", "z. B.") }
     static var inAllKeys: String { pick("in all keys", "in allen Tonarten") }
+
+    /// Short unit name for the session steps on the Heute card.
+    static func blockKind(_ kind: BlockKind) -> String {
+        switch kind {
+        case .warmup: return pick("Warm-up", "Aufwärmen")
+        case .review: return pick("Review", "Wiederholen")
+        case .focus: return pick("Focus", "Fokus")
+        case .new: return pick("New", "Neu")
+        case .apply: return pick("Apply", "Anwenden")
+        case .calibrate: return pick("Check", "Einstufung")
+        }
+    }
     /// "LEVEL 4 · DEIN WEG" (uppercased by EyebrowText).
     static func progressEyebrow(level: Int) -> String { pick("Level \(level) · Your path", "Level \(level) · Dein Weg") }
 
