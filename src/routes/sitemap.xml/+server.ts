@@ -22,7 +22,7 @@ const STATIC_PAGES: SitemapPage[] = [
 
 // Content pages — one per chord type (Welle 1). They share one template, so
 // they share one date: bump it when the template or src/lib/seo/chords.ts changes.
-const CHORD_PAGES_UPDATED = '2026-07-26';
+const CHORD_PAGES_UPDATED = '2026-10-16';
 const CHORD_PAGES: SitemapPage[] = CHORD_PAGE_SLUGS.map((slug) => ({
 	path: `/chords/${slug}`,
 	priority: 0.8,
