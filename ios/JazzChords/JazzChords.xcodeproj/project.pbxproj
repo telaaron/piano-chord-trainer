@@ -24,10 +24,12 @@
 		3898D326B8AA7B651DA85F69 /* TrainerCloseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B577A5A44A68066B2D1B2 /* TrainerCloseTests.swift */; };
 		44B8C4456407179C239F8054 /* HabitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */; };
 		4628FC298C745E08E8916FCE /* StatsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFFD22673E4CAA738349DE1 /* StatsRow.swift */; };
+		4A4D3A64EA9F4CB613C83914 /* PlanPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F0F016C63DADC1A6C315FF /* PlanPresentation.swift */; };
 		4B82778E6A2032DE544806F7 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DDA2D43A556F2895D50C30 /* Components.swift */; };
 		4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C685670A09A9D9D041427E06 /* JazzChordsApp.swift */; };
 		4D4841FBDDC6BBCC74CBCF62 /* TodayStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AEC21371CDD5FA7DDD1229C /* TodayStage.swift */; };
 		56DD437D723F0218EB5129F6 /* PitchDetectors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6FA6254D4E1B61B168536F /* PitchDetectors.swift */; };
+		5AF7FC0A4E42AC44947C1FE9 /* PlanPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCBFBBBC45BC4F5E9163C3D9 /* PlanPresentationTests.swift */; };
 		62E3FEB9985F1D74611F2DBD /* ToGoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EFD7EAE22BAE80FA1C77AC /* ToGoView.swift */; };
 		644B66D66331A179320C49E2 /* MusicEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 4CC84F324CEA516CFA5C2507 /* MusicEngine */; };
 		652925640B42787CAD52C7BE /* IconTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71DD337D360F891AE5B4A848 /* IconTile.swift */; };
@@ -124,6 +126,7 @@
 		558859E350F645BD0FB4B81E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		56840CFB4B8DE2498845F64C /* LeadSheetStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeadSheetStrip.swift; sourceTree = "<group>"; };
 		5A6FFC23232BA8E2500B99EF /* JazzChords.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = JazzChords.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		61F0F016C63DADC1A6C315FF /* PlanPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanPresentation.swift; sourceTree = "<group>"; };
 		62FDFB5CD48307EEAA9C55B2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		64EFD7EAE22BAE80FA1C77AC /* ToGoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToGoView.swift; sourceTree = "<group>"; };
 		6BAFB2095FACF8748114BDB1 /* TrackRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackRow.swift; sourceTree = "<group>"; };
@@ -171,6 +174,7 @@
 		F9FAF667A155B74E85E6CCF1 /* FunctionGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGrid.swift; sourceTree = "<group>"; };
 		FA216ECDCA4AC52D6F7849E5 /* NewcomerGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewcomerGuide.swift; sourceTree = "<group>"; };
 		FB7B577A5A44A68066B2D1B2 /* TrainerCloseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerCloseTests.swift; sourceTree = "<group>"; };
+		FCBFBBBC45BC4F5E9163C3D9 /* PlanPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanPresentationTests.swift; sourceTree = "<group>"; };
 		FDACE9F657B8CFF1C4FF3805 /* MicInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicInput.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -263,6 +267,7 @@
 				B7F1DA987CF16DFB8EA1F37F /* FunctionGridTests.swift */,
 				2CB92CE1A7659F62D2811B04 /* KeyboardColorTests.swift */,
 				BCCDF2B612FF243D3FD6C286 /* PaletteTests.swift */,
+				FCBFBBBC45BC4F5E9163C3D9 /* PlanPresentationTests.swift */,
 				84A9B25B0CC9832C0C3D4428 /* TodayChordPreviewTests.swift */,
 				524866769797FA9637FCDA99 /* TodayStageTests.swift */,
 				FB7B577A5A44A68066B2D1B2 /* TrainerCloseTests.swift */,
@@ -340,6 +345,7 @@
 				FA216ECDCA4AC52D6F7849E5 /* NewcomerGuide.swift */,
 				C022B402A4004283821D49C9 /* OnboardingView.swift */,
 				2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */,
+				61F0F016C63DADC1A6C315FF /* PlanPresentation.swift */,
 				54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */,
 				CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */,
 				91353C5634DD3FED6F818B0A /* ReminderOfferCard.swift */,
@@ -540,6 +546,7 @@
 				92A76D9E6EE519F76C662164 /* Persistence.swift in Sources */,
 				9A7DCD5EF00F0352F62707ED /* PianoKeyboard.swift in Sources */,
 				56DD437D723F0218EB5129F6 /* PitchDetectors.swift in Sources */,
+				4A4D3A64EA9F4CB613C83914 /* PlanPresentation.swift in Sources */,
 				F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */,
 				A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */,
 				2B1E87FEAFB68A202FB728D7 /* ReminderOfferCard.swift in Sources */,
@@ -572,6 +579,7 @@
 				BDBD98EEEFF2A6C6926B0919 /* FunctionGridTests.swift in Sources */,
 				EC65AEEABC2906DA6A9AB3BB /* KeyboardColorTests.swift in Sources */,
 				976D740101D7A3D52D2440C5 /* PaletteTests.swift in Sources */,
+				5AF7FC0A4E42AC44947C1FE9 /* PlanPresentationTests.swift in Sources */,
 				1A8D3647BAEE51A7EBB667ED /* TodayChordPreviewTests.swift in Sources */,
 				8CEBB1BF13E27BE175EF80B4 /* TodayStageTests.swift in Sources */,
 				3898D326B8AA7B651DA85F69 /* TrainerCloseTests.swift in Sources */,
