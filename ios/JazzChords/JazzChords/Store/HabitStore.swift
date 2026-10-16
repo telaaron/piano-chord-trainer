@@ -49,8 +49,21 @@ final class HabitStore {
 
     // MARK: Load / Save
 
+    /// What to start from: the stored profile, or (first run only) a profile
+    /// migrated from history. A file that exists but can't be read is left
+    /// alone, so a newer shape from the web is never overwritten by a fresh one.
+    static func initialProfile(
+        stored: HabitProfile?, fileExists: Bool, migrate: () -> HabitProfile
+    ) -> (profile: HabitProfile, save: Bool) {
+        if let stored { return (stored, false) }
+        return (migrate(), !fileExists)
+    }
+
     private static func loadProfile() -> HabitProfile {
-        guard var p = Store.load(HabitProfile.self, StoreKey.habitProfile) else {
+        let initial = initialProfile(
+            stored: Store.load(HabitProfile.self, StoreKey.habitProfile),
+            fileExists: Store.exists(StoreKey.habitProfile)
+        ) {
             // First run — migrate from any existing history/streak.
             let history = ProgressStore.loadHistory()
             let streak = ProgressStore.loadStreak()
@@ -58,9 +71,10 @@ final class HabitStore {
             if !history.isEmpty {
                 migrated.activeGoals = generateGoals(migrated, history, streak)
             }
-            Store.save(migrated, StoreKey.habitProfile)
             return migrated
         }
+        if initial.save { Store.save(initial.profile, StoreKey.habitProfile) }
+        var p = initial.profile
 
         let weekStart = weekStartString()
         if p.weekStart != weekStart {

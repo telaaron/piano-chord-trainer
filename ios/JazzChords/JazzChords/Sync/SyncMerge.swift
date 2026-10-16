@@ -9,6 +9,7 @@ enum SyncMerge {
     static let historyKey = "chord-trainer-history"
     static let profileKey = "chord-trainer-habit-profile"
     static let streakKey = "chord-trainer-streak"
+    static let settingsKey = "chord-trainer-settings"
     /// Same cap as the web's services/progress and ProgressStore.
     static let maxHistory = 100
 
@@ -23,6 +24,7 @@ enum SyncMerge {
             case historyKey: out[key] = mergeHistory(l, c)
             case profileKey: out[key] = mergeProfile(l, c)
             case streakKey: out[key] = mergeStreak(l, c)
+            case settingsKey: out[key] = mergeFields(l, c)
             default: out[key] = c
             }
         }
@@ -64,6 +66,13 @@ enum SyncMerge {
         var base = (c["totalXP"]?.number ?? 0) > (l["totalXP"]?.number ?? 0) ? c : l
         base["onboardingDone"] = .bool((l["onboardingDone"]?.bool ?? false) || (c["onboardingDone"]?.bool ?? false))
         return .object(base)
+    }
+
+    /// Account wins field by field, so fields only iOS writes (sound, metronome)
+    /// survive the browser saving its smaller settings object.
+    private static func mergeFields(_ local: JSONValue, _ cloud: JSONValue) -> JSONValue {
+        guard let l = local.object, let c = cloud.object else { return cloud }
+        return .object(l.merging(c) { _, account in account })
     }
 
     private static func mergeStreak(_ local: JSONValue, _ cloud: JSONValue) -> JSONValue {
