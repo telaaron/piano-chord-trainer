@@ -186,10 +186,7 @@
 	section p a, .related a {
 		color: var(--primary); text-decoration: underline; text-underline-offset: 0.15em; text-decoration-thickness: 1px;
 	}
-	.hint { font-size: 0.875rem !important; line-height: 1.6 !important; color: var(--text-dim) !important; }
 
-	.steps { max-width: 64ch; margin: 0 0 1.25rem; padding-left: 1.4rem; font-size: 1.0625rem; line-height: 1.75; color: var(--text-muted); }
-	.steps li { margin-bottom: 0.5rem; }
 
 	.related { padding-top: 2.5rem; margin-top: 2.75rem; border-top: 1px solid var(--border); }
 	.related ul { list-style: none; padding: 0; margin: 0; }
@@ -197,7 +194,6 @@
 	.related li:last-child { border-bottom: 0; }
 
 	@media print {
-		.no-print { display: none !important; }
 		.lesson { padding: 0; max-width: none; }
 	}
 

@@ -2,7 +2,7 @@
 	// The interactive ii-V-I table shared by /learn/ii-v-i-all-keys and its
 	// German twin /de/ii-v-i-alle-tonarten. Pages pass their own copy; the
 	// notes come from the trainer's engine, so both languages show the same voicings.
-	import { ArrowRight, Play, Printer } from 'lucide-svelte';
+	import { ArrowRight, Download, Play, Printer } from 'lucide-svelte';
 	import { buildIIVITable, type IIVIVoicing } from '$lib/seo/ii-v-i-keys';
 
 	interface Props {
@@ -15,10 +15,13 @@
 			listen: string;
 			playAria: (key: string) => string;
 			cta: string;
+			pdf: string;
 		};
+		/** Pre-generated PDF of the printed chart (all three voicings), in static/downloads/ */
+		pdfHref: string;
 	}
 
-	let { voicings, text }: Props = $props();
+	let { voicings, text, pdfHref }: Props = $props();
 
 	// All three tables are tiny and built at prerender time, so the toggle is
 	// instant and every version is in the static HTML.
@@ -58,14 +61,20 @@
 			>
 		{/each}
 	</div>
-	<button type="button" class="ghost" onclick={() => window.print()}>
-		<Printer size={16} aria-hidden="true" />
-		{text.print}
-	</button>
+	<div class="actions">
+		<a class="ghost" href={pdfHref} download>
+			<Download size={16} aria-hidden="true" />
+			{text.pdf}
+		</a>
+		<button type="button" class="ghost" onclick={() => window.print()}>
+			<Printer size={16} aria-hidden="true" />
+			{text.print}
+		</button>
+	</div>
 </div>
 <p class="hint">{hint} {text.notesHint}</p>
 
-<table class="chart">
+<table class="chart screen-only">
 	<thead>
 		<tr>
 			<th scope="col">{text.key}</th>
@@ -105,6 +114,33 @@
 	</tbody>
 </table>
 
+<!-- Print and PDF get all three voicings, one table each. -->
+<div class="print-only">
+	{#each voicings as v (v.id)}
+		<h3 class="print-h">{v.label} <span>{v.hint}</span></h3>
+		<table class="chart">
+			<thead>
+				<tr>
+					<th scope="col">{text.key}</th>
+					<th scope="col"><span class="deg">ii</span></th>
+					<th scope="col"><span class="deg">V</span></th>
+					<th scope="col"><span class="deg">I</span></th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each tables[v.id] as row (row.key)}
+					<tr>
+						<th scope="row" class="key">{row.key}</th>
+						{#each row.chords as ch (ch.degree)}
+							<td><span class="chord">{ch.name}</span><span class="notes">{ch.notes.map(pretty).join(' ')}</span></td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/each}
+</div>
+
 <a class="cta no-print" href="/train">
 	{text.cta}
 	<ArrowRight size={18} aria-hidden="true" />
@@ -122,7 +158,9 @@
 	}
 	.seg button + button { border-left: 1.5px solid var(--border); }
 	.seg button.active { background: var(--primary); color: var(--primary-text); }
+	.actions { display: flex; gap: 0.5rem; }
 	.ghost {
+		text-decoration: none;
 		display: inline-flex; align-items: center; gap: 0.4rem; min-height: var(--tap-min); padding: 0 0.9rem;
 		border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text);
 		font-weight: 600; font-size: 0.875rem; cursor: pointer;
@@ -157,8 +195,16 @@
 
 	.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
+	.print-only { display: none; }
 	@media print {
-		.no-print, .toolbar { display: none !important; }
-		.chart th, .chart td { padding: 0.35rem 0.3rem; }
+		.no-print, .toolbar, .screen-only, .hint { display: none !important; }
+		.print-only { display: block; }
+		.print-h { font-family: var(--font-display); font-size: 1.1rem; margin: 0 0 0.25rem; break-after: avoid; }
+		.print-h span { display: block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 400; color: #555; }
+		.print-only .chart { break-inside: avoid; margin-bottom: 1.25rem; }
+		.print-only .chart + .print-h { break-before: page; }
+		.chart th, .chart td { padding: 0.2rem 0.3rem; }
+		.chord { font-size: 11pt; }
+		.notes { font-size: 8.5pt; margin-top: 0; }
 	}
 </style>

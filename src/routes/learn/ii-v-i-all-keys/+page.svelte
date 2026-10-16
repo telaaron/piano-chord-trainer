@@ -2,9 +2,9 @@
 	import IIVIChart from '$lib/components/seo/IIVIChart.svelte';
 	import type { IIVIVoicing } from '$lib/seo/ii-v-i-keys';
 
-	const title = 'ii-V-I in All 12 Keys: Piano Chart with Shell & Rootless Voicings | jazzchords.app';
+	const title = 'ii-V-I in All 12 Keys: Piano Chart & PDF with Shell and Rootless Voicings | jazzchords.app';
 	const description =
-		'Free ii-V-I chart for all 12 keys with the exact notes for shell and rootless A/B voicings. Hear each key, print it, then drill it with live MIDI feedback.';
+		'Free ii-V-I chart for all 12 keys with the exact notes for shell and rootless A/B voicings. Hear each key, download the free PDF, then drill it with live MIDI feedback.';
 	const canonical = 'https://jazzchords.app/learn/ii-v-i-all-keys';
 
 	const VOICINGS: { id: IIVIVoicing; label: string; hint: string }[] = [
@@ -20,6 +20,7 @@
 		key: 'Key',
 		listen: 'Listen',
 		playAria: (key: string) => `Play ii-V-I in ${key}`,
+		pdf: 'PDF',
 		cta: 'Drill these 12 keys with live feedback',
 	};
 
@@ -85,6 +86,7 @@
 	<header class="masthead">
 		<p class="plate-mark">Chart · free</p>
 		<h1>ii-V-I in All 12 Keys</h1>
+		<p class="print-url">jazzchords.app/learn/ii-v-i-all-keys</p>
 		<p class="lead">
 			Every major ii-V-I with the exact notes to play, in shell and rootless
 			voicings. Tap a key to hear it, print the chart for the piano, then drill
@@ -98,7 +100,7 @@
 			<h2 id="chart-h">The chart</h2>
 		</div>
 
-		<IIVIChart voicings={VOICINGS} text={CHART_TEXT} />
+		<IIVIChart voicings={VOICINGS} text={CHART_TEXT} pdfHref="/downloads/ii-v-i-all-keys.pdf" />
 	</section>
 
 	<section aria-labelledby="how-h">
@@ -131,6 +133,7 @@
 			<li><a href="/learn/rootless-voicings">Rootless voicings: A and B forms</a></li>
 			<li><a href="/learn/jazz-piano-voicings">Jazz piano voicings: the complete guide</a></li>
 			<li><a href="/learn/jazz-voicing-practice-apps">Apps to practice jazz voicings, compared</a></li>
+			<li><a href="/learn/lead-sheets-for-classical-pianists">Lead sheets for classical pianists</a></li>
 			<li><a href="/de/ii-v-i-alle-tonarten" hreflang="de" lang="de">Diese Tabelle auf Deutsch</a></li>
 		</ul>
 	</aside>
@@ -180,8 +183,14 @@
 	.related li { padding: 0.55rem 0; font-size: 0.9375rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
 	.related li:last-child { border-bottom: 0; }
 
+	.print-url { display: none; }
 	@media print {
-		.no-print { display: none !important; }
+		.print-url { display: block; margin: 0.25rem 0 0; font-family: var(--font-mono); font-size: 8pt; color: var(--text-dim); }
+		.no-print, .lead, section:first-of-type .sec-head { display: none !important; }
 		.lesson { padding: 0; max-width: none; }
+		.masthead { padding-bottom: 0.75rem; }
+		h1 { font-size: 22pt; }
+		section { padding-top: 0.75rem; margin-top: 0; }
+		section + section { break-before: page; border-top: 0; }
 	}
 </style>

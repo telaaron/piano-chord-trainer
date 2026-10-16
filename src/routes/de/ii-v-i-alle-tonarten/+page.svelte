@@ -2,9 +2,9 @@
 	import IIVIChart from '$lib/components/seo/IIVIChart.svelte';
 	import type { IIVIVoicing } from '$lib/seo/ii-v-i-keys';
 
-	const title = 'II-V-I in allen 12 Tonarten: Klavier-Tabelle mit Shell- und Rootless-Voicings | jazzchords.app';
+	const title = 'II-V-I in allen 12 Tonarten: Klavier-Tabelle als PDF, mit Shell- und Rootless-Voicings | jazzchords.app';
 	const description =
-		'Kostenlose II-V-I-Tabelle für alle 12 Tonarten mit den genauen Tönen für Shell- und Rootless-Voicings (A/B). Jede Tonart anhören, ausdrucken und mit MIDI-Feedback üben.';
+		'Kostenlose II-V-I-Tabelle für alle 12 Tonarten mit den genauen Tönen für Shell- und Rootless-Voicings (A/B). Jede Tonart anhören, gratis als PDF laden und mit MIDI-Feedback üben.';
 	const canonical = 'https://jazzchords.app/de/ii-v-i-alle-tonarten';
 	const enUrl = 'https://jazzchords.app/learn/ii-v-i-all-keys';
 
@@ -21,6 +21,7 @@
 		key: 'Tonart',
 		listen: 'Anhören',
 		playAria: (key: string) => `II-V-I in ${key} abspielen`,
+		pdf: 'PDF',
 		cta: 'Diese 12 Tonarten mit Live-Feedback üben',
 	};
 
@@ -95,6 +96,7 @@
 	<header class="masthead">
 		<p class="plate-mark">Tabelle · kostenlos</p>
 		<h1>II-V-I in allen 12 Tonarten</h1>
+		<p class="print-url">jazzchords.app/de/ii-v-i-alle-tonarten</p>
 		<p class="lead">
 			Jede Dur-II-V-I mit den genauen Tönen, als Shell- und als Rootless-Voicing.
 			Tonart antippen und anhören, Tabelle fürs Klavier ausdrucken, dann gezielt
@@ -107,7 +109,7 @@
 			<span class="rehearsal" aria-hidden="true">I</span>
 			<h2 id="chart-h">Die Tabelle</h2>
 		</div>
-		<IIVIChart voicings={VOICINGS} text={CHART_TEXT} />
+		<IIVIChart voicings={VOICINGS} text={CHART_TEXT} pdfHref="/downloads/ii-v-i-alle-tonarten.pdf" />
 		<p class="hint">
 			Akkordsymbole und Tonnamen sind international geschrieben, wie in Real Books
 			und Leadsheets: B steht für das deutsche H, B♭ für das deutsche B.
@@ -194,8 +196,14 @@
 	.related li { padding: 0.55rem 0; font-size: 0.9375rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
 	.related li:last-child { border-bottom: 0; }
 
+	.print-url { display: none; }
 	@media print {
-		.no-print { display: none !important; }
+		.print-url { display: block; margin: 0.25rem 0 0; font-family: var(--font-mono); font-size: 8pt; color: var(--text-dim); }
+		.no-print, .lead, section:first-of-type .sec-head { display: none !important; }
 		.lesson { padding: 0; max-width: none; }
+		.masthead { padding-bottom: 0.75rem; }
+		h1 { font-size: 22pt; }
+		section { padding-top: 0.75rem; margin-top: 0; }
+		section + section { break-before: page; border-top: 0; }
 	}
 </style>
