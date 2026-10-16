@@ -191,7 +191,7 @@
 		</nav>
 
 		<!-- Sync banner for non-logged-in users with existing data -->
-		{#if showSyncBanner && !isEmbedRoute}
+		{#if showSyncBanner && !isEmbedRoute && !page.url.pathname.startsWith('/updates')}
 			<div class="sync-banner">
 				<div class="sync-inner">
 					<div class="sync-msg">

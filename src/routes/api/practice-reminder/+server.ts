@@ -60,19 +60,26 @@ export const POST: RequestHandler = async ({ locals, request, url }) => {
 
 	const { user } = await locals.safeGetSession();
 	const locale = typeof body.locale === 'string' ? body.locale.slice(0, 8) : 'en';
-	const { error: err } = await admin.from('email_consents').insert({
-		user_id: user?.id ?? null,
-		email,
-		status: 'pending',
-		source: 'prompt',
-		consent_text: consentText(locale),
-		text_version: CONSENT_TEXT_VERSION,
-	});
-	if (err) {
-		console.error('[practice-reminder] insert failed:', err.message);
+	const { data: inserted, error: err } = await admin
+		.from('email_consents')
+		.insert({
+			user_id: user?.id ?? null,
+			email,
+			status: 'pending',
+			source: 'prompt',
+			consent_text: consentText(locale),
+			text_version: CONSENT_TEXT_VERSION,
+		})
+		.select('id')
+		.single();
+	if (err || !inserted) {
+		console.error('[practice-reminder] insert failed:', err?.message);
 		throw error(500, 'Could not save consent');
 	}
 
-	const sent = await sendDoubleOptIn(cfg, email, `${url.origin}/updates/confirmed`);
+	// The row id comes back on the confirmation link, so the landing page can
+	// record the click against this consent (see updates/confirmed).
+	const redirect = `${url.origin}/updates/confirmed?c=${inserted.id}`;
+	const sent = await sendDoubleOptIn(cfg, email, redirect);
 	return json({ status: 'pending', sent });
 };
