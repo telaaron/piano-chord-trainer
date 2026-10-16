@@ -150,6 +150,18 @@ final class SyncServiceTests: XCTestCase {
         XCTAssertEqual(files["settings"], .object(["totalChords": .number(36)]))
     }
 
+    func testPullKeepsDeviceEditsNotYetUploaded() async {
+        await remote.set(row: ["chord-trainer-settings": .object(["totalChords": .number(20)])], for: "u1")
+        let sync = makeService()
+        _ = await sync.hydrate(userId: "u1")
+        await remote.failUpsert(Boom())
+        files["settings"] = .object(["totalChords": .number(36)])
+        sync.markDirty()
+        await sync.pull()
+        XCTAssertEqual(files["settings"], .object(["totalChords": .number(36)]))
+        XCTAssertTrue(sync.isDirty)
+    }
+
     func testOnlySyncedKeysMarkDirty() {
         XCTAssertTrue(SyncService.isSynced(key: "history"))
         XCTAssertFalse(SyncService.isSynced(key: "plan-history"))

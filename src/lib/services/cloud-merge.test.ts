@@ -66,4 +66,16 @@ describe('mergeSyncData', () => {
 		expect(merged['chord-trainer-theme']).toBe('light');
 		expect((merged[H] as { id: string }[]).map((s) => s.id)).toEqual(['web', 'iphone']);
 	});
+
+	it('with preferLocal the device keeps its profile preferences but takes the higher XP', () => {
+		const merged = mergeSyncData(
+			{ [P]: { totalXP: 10, dailyGoalMinutes: 10, notificationTime: '07:00' } },
+			{ [P]: { totalXP: 500, dailyGoalMinutes: 5, notificationTime: '20:00' } },
+			{ preferLocal: true },
+		);
+		const p = merged[P] as Record<string, unknown>;
+		expect(p.totalXP).toBe(500);
+		expect(p.dailyGoalMinutes).toBe(10);
+		expect(p.notificationTime).toBe('07:00');
+	});
 });

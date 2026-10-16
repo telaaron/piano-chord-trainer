@@ -29,6 +29,22 @@ final class WebCompatTests: XCTestCase {
         XCTAssertEqual(s.totalChords, 12)
     }
 
+    func testGuardedLoadFlagsUnreadableFile() {
+        Store.saveRaw(.string("not a dictionary"), "guarded-load-test")
+        let unreadable = Store.loadGuarded([String: Int].self, "guarded-load-test")
+        XCTAssertNil(unreadable.value)
+        XCTAssertTrue(unreadable.locked)
+
+        Store.saveRaw(.object(["a": .number(1)]), "guarded-load-test")
+        let readable = Store.loadGuarded([String: Int].self, "guarded-load-test")
+        XCTAssertEqual(readable.value, ["a": 1])
+        XCTAssertFalse(readable.locked)
+
+        let missing = Store.loadGuarded([String: Int].self, "guarded-load-missing")
+        XCTAssertNil(missing.value)
+        XCTAssertFalse(missing.locked)
+    }
+
     func testUnreadableStoredProfileIsNotOverwritten() {
         let decision = HabitStore.initialProfile(stored: nil, fileExists: true) { createDefaultProfile() }
         XCTAssertFalse(decision.save)

@@ -101,6 +101,17 @@ final class SyncMergeTests: XCTestCase {
         XCTAssertEqual(ids(merged[H]), ["a", "b"])
     }
 
+    func testPreferLocalKeepsProfilePreferencesButTakesHigherXP() {
+        let local: SyncData = [P: .object(["totalXP": .number(10), "dailyGoalMinutes": .number(10),
+                                           "notificationTime": .string("07:00")])]
+        let cloud: SyncData = [P: .object(["totalXP": .number(500), "dailyGoalMinutes": .number(5),
+                                           "notificationTime": .string("20:00")])]
+        let merged = SyncMerge.merge(local: local, cloud: cloud, preferLocal: true)[P]?.object
+        XCTAssertEqual(merged?["totalXP"], .number(500))
+        XCTAssertEqual(merged?["dailyGoalMinutes"], .number(10))
+        XCTAssertEqual(merged?["notificationTime"], .string("07:00"))
+    }
+
     func testJSONValueRoundTripsThroughJSON() throws {
         let raw = #"{"a":[1,2.5,"x",true,null],"b":{"c":false}}"#.data(using: .utf8)!
         let value = try JSONDecoder().decode(JSONValue.self, from: raw)
