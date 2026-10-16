@@ -634,7 +634,7 @@ export const de = {
 
   educators: {
     title: 'Jazz Piano Voicing Trainer für Musikschulen & Online-Plattformen | Chord Trainer',
-    meta_desc: 'Binde einen professionellen MIDI-Voicing-Trainer in deine Jazz-Bildungsplattform ein — Open Studio, Jazz-Academy, Pianote oder deine eigene Seite. White-Label, MIDI, Fortschrittskontrolle.',
+    meta_desc: 'Binde einen professionellen MIDI-Voicing-Trainer in deine Jazz-Bildungsplattform ein — Open Studio, Jazz-Academy, Pianote oder deine eigene Seite. Einbettbar, MIDI, Drill-Links für Hausaufgaben.',
     badge: 'Für Jazz-Bildungsplattformen, Musikschulen & Privatlehrer',
     hero_h1_gradient: '"Spiel das durch alle 12 Tonarten"',
     hero_h1_b: "Dafür gibt es jetzt ein Tool.",
@@ -656,7 +656,7 @@ export const de = {
     platform_open_studio: 'Ergänzt Live-Sessions & Harmony Games um asynchrone Drills',
     platform_jazz_academy: 'Ergänzt Video-Theorie um praktische Übungen',
     platform_learn_jazz: 'Trainiere Standards, die deine Schüler gerade lernen',
-    platform_private_teachers: 'Hausaufgaben-Drills zuweisen — Fortschritt kontrollieren',
+    platform_private_teachers: 'Übungs-Links mit festen Voicings und Tonarten als Hausaufgabe verschicken',
 
     // What to train
     what_students_train: 'Was Schüler trainieren können',
@@ -674,12 +674,12 @@ export const de = {
     train_metronome: 'Eingebautes Metronom',
 
     integration_title: 'Integrations-Optionen',
-    integration_white_label: 'White-Label Integration',
-    integration_white_label_desc: 'Bette den Trainer direkt in deine Plattform ein — mit deinem Branding. Eigene Farben, Logo und Domain. Deine Schüler verlassen nie deine Seite.',
+    integration_white_label: 'Einbettung in deine Seite',
+    integration_white_label_desc: 'Bette den Trainer per iFrame direkt in deine Seite ein, mit passendem Farbthema. Deine Schüler verlassen deine Seite nicht.',
     integration_trial: 'Kostenlose 30-Tage Testphase',
-    integration_trial_desc: 'Teste mit deinen Mitgliedern ohne Risiko. Volle Funktionalität, MIDI-Support, Fortschrittskontrolle. Sieh dir die Engagement-Metriken an, bevor du dich entscheidest.',
+    integration_trial_desc: 'Teste mit deinen Schülern ohne Risiko. Volle Funktionalität und MIDI-Support.',
     integration_licensing: 'Flexible Lizenzierung',
-    integration_licensing_desc: 'Pauschale monatliche Gebühr oder Umsatzbeteiligung. Eingebaute Analytics, um das Engagement der Mitglieder zu verfolgen.',
+    integration_licensing_desc: 'Pauschale monatliche Gebühr oder Umsatzbeteiligung, je nach Größe.',
     
     how_it_works: 'Wie die Integration funktioniert',
     how_step1: 'Einbetten per iFrame oder Widget',
@@ -687,7 +687,7 @@ export const de = {
     how_step2: 'Übungs-Links teilen',
     how_step2_desc: 'Sende Schülern Direktlinks zu spezifischen Drills (z.B. "Woche 3 - Rootless A über F Blues"). Kein Login nötig.',
     how_step3: 'Fortschritt verfolgen',
-    how_step3_desc: 'Schüler sehen ihren eigenen Verlauf. Optionale LTI-Integration, um Ergebnisse ans LMS zu senden.',
+    how_step3_desc: 'Schüler sehen ihren eigenen Verlauf und ihre Schwachstellen. Eine Lehreransicht mit dem Fortschritt aller Schüler ist in Arbeit.',
 
     see_live_widget: 'Sieh dir das Widget live an',
     cta_title: "Lass uns sprechen",

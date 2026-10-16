@@ -287,6 +287,19 @@ export function createInitialCoachState(): CoachState {
 	};
 }
 
+export type CoachInput = 'none' | 'midi' | 'microphone';
+
+/** Whether the next session should open with the one-time calibration drill. */
+export function needsCalibration(state: CoachState, input: CoachInput, params: CoachParams): boolean {
+	if (state.calibrated) return false;
+	return input !== 'none' || params.calibrateWithoutInput;
+}
+
+/** Mark the player calibrated with nothing placed: practice starts at the first unit. */
+export function skipCalibration(state: CoachState): CoachState {
+	return { ...state, calibrated: true, frontierIndex: 0 };
+}
+
 function unitProgress(state: CoachState, id: string): UnitProgress {
 	return state.unitStates[id] ?? { state: 'locked', holds: 0 };
 }

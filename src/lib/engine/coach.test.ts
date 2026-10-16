@@ -6,6 +6,8 @@ import {
 	applyFeedback,
 	teacherFeedback,
 	createInitialCoachState,
+	needsCalibration,
+	skipCalibration,
 	CALIBRATION_QUALITIES,
 	earFocus,
 	applyEarTallies,
@@ -1071,3 +1073,41 @@ describe('promotion cannot explode across tiers (Bug 1)', () => {
 function computeMastered(s: CoachState): number {
 	return Object.values(s.unitStates).filter((u) => u.state === 'mastered').length;
 }
+
+// ─── Calibration without an input device ────────────────────
+
+describe('needsCalibration / skipCalibration', () => {
+	// 15.10.2026, 60 days of new devices: with MIDI 24 of 35 finished the
+	// 12-chord check, tapping on screen only 19 of 72. Tapping four notes on a
+	// one-octave keyboard measures the screen, not what the player knows, so
+	// touch players start practising and the coach places them as they go.
+	it('asks MIDI and microphone players for the check', () => {
+		const s = createInitialCoachState();
+		expect(needsCalibration(s, 'midi', DEFAULT_COACH_PARAMS)).toBe(true);
+		expect(needsCalibration(s, 'microphone', DEFAULT_COACH_PARAMS)).toBe(true);
+	});
+
+	it('skips it for players without an input device', () => {
+		expect(needsCalibration(createInitialCoachState(), 'none', DEFAULT_COACH_PARAMS)).toBe(false);
+	});
+
+	it('can be switched back on remotely', () => {
+		const params = { ...DEFAULT_COACH_PARAMS, calibrateWithoutInput: true };
+		expect(needsCalibration(createInitialCoachState(), 'none', params)).toBe(true);
+	});
+
+	it('never asks again once calibrated', () => {
+		const s = { ...createInitialCoachState(), calibrated: true };
+		expect(needsCalibration(s, 'midi', DEFAULT_COACH_PARAMS)).toBe(false);
+	});
+
+	it('a skipped check starts real practice at the bottom of the ladder', () => {
+		const s = skipCalibration(createInitialCoachState());
+		expect(s.calibrated).toBe(true);
+		expect(Object.keys(s.unitStates)).toHaveLength(0);
+		const plan = buildCoachPlan([], profile({ dailyGoalMinutes: 5 }), undefined, s, DEFAULT_COACH_PARAMS, 0);
+		expect(plan.blocks.map((b) => b.kind)).not.toContain('calibrate');
+		expect(plan.blocks.length).toBeGreaterThan(0);
+		expect(plan.frontierUnitId).toBe(buildSkillLadder()[0].id);
+	});
+});

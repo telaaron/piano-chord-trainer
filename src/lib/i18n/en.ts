@@ -633,7 +633,7 @@ export const en = {
 
   educators: {
     title: 'Jazz Piano Voicing Trainer for Music Schools & Online Platforms | Chord Trainer',
-    meta_desc: 'Embed a professional MIDI voicing trainer into your jazz education platform — Open Studio, Jazz-Academy, Pianote, Learn Jazz Standards, or your own teaching site. White-label, MIDI, progress tracking.',
+    meta_desc: 'Embed a professional MIDI voicing trainer into your jazz education platform — Open Studio, Jazz-Academy, Pianote, Learn Jazz Standards, or your own teaching site. Embeddable, MIDI, drill links for homework.',
     badge: 'For Jazz Education Platforms, Music Schools & Private Teachers',
     hero_h1_gradient: '"Take it through all 12 keys"',
     hero_h1_b: "Now there's a tool for that.",
@@ -655,7 +655,7 @@ export const en = {
     platform_open_studio: 'Async drill companion to live sessions & Harmony Games',
     platform_jazz_academy: 'Complement video theory lessons with hands-on drill',
     platform_learn_jazz: 'Practice the standards your students are learning',
-    platform_private_teachers: 'Assign drills as homework — track student results',
+    platform_private_teachers: 'Send drill links with fixed voicings and keys as homework',
     
     // What to train
     what_students_train: 'What students can train',
@@ -673,12 +673,12 @@ export const en = {
     train_metronome: 'Built-in metronome',
 
     integration_title: 'Integration Options',
-    integration_white_label: 'White-Label Integration',
-    integration_white_label_desc: 'Embed directly into your platform with your branding. Custom colors, logo, and domain. Your students never leave your site.',
+    integration_white_label: 'Embed in your site',
+    integration_white_label_desc: 'Embed the trainer in your site via iFrame, with a matching colour theme. Your students never leave your site.',
     integration_trial: 'Free 30-Day Trial',
-    integration_trial_desc: 'Test with your members at zero risk. Full functionality, MIDI support, progress tracking. See engagement metrics before committing.',
+    integration_trial_desc: 'Test with your students at zero risk. Full functionality and MIDI support.',
     integration_licensing: 'Flexible Licensing',
-    integration_licensing_desc: 'Flat monthly fee or revenue share. Built-in analytics to track member engagement.',
+    integration_licensing_desc: 'Flat monthly fee or revenue share, depending on size.',
     
     how_it_works: 'How Integration Works',
     how_step1: 'Embed via iframe or Widget',
@@ -686,7 +686,7 @@ export const en = {
     how_step2: 'Share Practice Links',
     how_step2_desc: 'Send students direct links to specific drills (e.g. "Week 3 - Rootless A over F Blues"). No login required.',
     how_step3: 'Track Progress',
-    how_step3_desc: 'Students see their own history. Optional LTI integration to pass grades back to your LMS.',
+    how_step3_desc: 'Students see their own history and weak spots. A teacher view with every student\'s progress is in the works.',
     
     see_live_widget: 'See the embed widget live',
     cta_title: "Let's talk",

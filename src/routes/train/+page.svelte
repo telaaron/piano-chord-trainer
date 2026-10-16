@@ -9,6 +9,7 @@
 	import SyncOfferSheet from '$lib/components/SyncOfferSheet.svelte';
 	import PracticeMailSheet from '$lib/components/PracticeMailSheet.svelte';
 	import { nextOffer } from '$lib/services/post-session-offer';
+	import { getCampaign } from '$lib/services/campaign';
 	import ProBadge from '$lib/components/ProBadge.svelte';
 	import { canUse, showLock, canStartCoachSession } from '$lib/services/subscription-store.svelte';
 	import { recordCoachSessionStart, deviceDayIndex } from '$lib/services/usage-limit';
@@ -92,6 +93,8 @@
 		teacherFeedback,
 		describeCoachPlan,
 		createInitialCoachState,
+		needsCalibration,
+		skipCalibration,
 		buildSkillLadder,
 		type CoachState,
 		type CoachPlan,
@@ -934,6 +937,20 @@
 	}
 
 	/**
+	 * The coach state the next session starts from. A player with no MIDI or
+	 * microphone skips the calibration check and starts practising at the
+	 * first unit (see needsCalibration); the skip is saved with the first
+	 * finished block like any other progress.
+	 */
+	function coachStateForInput(): { state: CoachState; skipped: boolean } {
+		const saved = loadCoachState() ?? createInitialCoachState();
+		if (saved.calibrated || needsCalibration(saved, inputMode, coachParams)) {
+			return { state: saved, skipped: false };
+		}
+		return { state: skipCalibration(saved), skipped: true };
+	}
+
+	/**
 	 * Build today's coach announcement string for the QuickStart hero.
 	 * Uses the persisted CoachState + current history/profile to preview the plan,
 	 * then localizes its say-key. Returns '' if the profile isn't ready yet.
@@ -941,7 +958,7 @@
 	function coachAnnouncement(): string {
 		if (!habitProfile) return '';
 		try {
-			const state = loadCoachState() ?? createInitialCoachState();
+			const state = coachStateForInput().state;
 			const plan = buildCoachPlan(
 				loadHistory(),
 				habitProfile,
@@ -1066,7 +1083,7 @@
 		// endGame, and the dial must be diffed against where the player stood
 		// before block one, not before the last block.
 		historyBeforeSession = loadHistory();
-		const state = loadCoachState() ?? createInitialCoachState();
+		const { state, skipped } = coachStateForInput();
 		const plan = buildCoachPlan(
 			loadHistory(),
 			habitProfile,
@@ -1088,6 +1105,7 @@
 		coachSessionBlocks = [];
 		coachSessionStartedAt = Date.now();
 		setCoachSessionId(crypto.randomUUID());
+		if (skipped) trackCoachEvent('calibration_skipped', { input: inputMode });
 		trackCoachEvent('session_start', {
 			estMinutes: plan.estMinutes,
 			blocks: plan.blocks.map((b) => b.kind),
@@ -1097,6 +1115,8 @@
 			// own dayIndex, which only counts days the coach was actually used.
 			// This is the one that answers "did anyone come back on day 2?".
 			deviceDayIndex: deviceDayIndex(),
+			// Which mail or link brought this visit, if any (utm_* on landing).
+			campaign: getCampaign(typeof sessionStorage === 'undefined' ? null : sessionStorage)?.campaign ?? null,
 			// The input the player set up, and whether MIDI was actually live.
 			// first_chord_played only carries input for sessions that crossed,
 			// so without this a MIDI device that never connected could not be
