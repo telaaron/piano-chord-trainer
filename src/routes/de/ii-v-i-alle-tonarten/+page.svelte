@@ -147,6 +147,7 @@
 		<ul>
 			<li><a href="/de/voicings-linke-hand">Jazz-Voicings für die linke Hand: Shell und Rootless</a></li>
 			<li><a href="/de/jazz-klavier-aufnahmepruefung">Aufnahmeprüfung Jazz-Klavier: Akkorde und Voicings vorbereiten</a></li>
+			<li><a href="/de/leadsheet-spielen-klassik">Leadsheet spielen lernen als klassischer Pianist</a></li>
 			<li><a href="/learn/ii-v-i-all-keys" hreflang="en">This chart in English</a></li>
 		</ul>
 	</aside>

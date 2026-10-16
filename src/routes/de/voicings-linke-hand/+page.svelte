@@ -162,6 +162,8 @@
 		<ul>
 			<li><a href="/de/ii-v-i-alle-tonarten">II-V-I in allen 12 Tonarten (Tabelle)</a></li>
 			<li><a href="/de/jazz-klavier-aufnahmepruefung">Aufnahmeprüfung Jazz-Klavier: Akkorde und Voicings vorbereiten</a></li>
+			<li><a href="/de/leadsheet-spielen-klassik">Leadsheet spielen lernen als klassischer Pianist</a></li>
+			<li><a href="/de/jazz-voicings-app-vergleich">Apps zum Üben von Jazz-Voicings im Vergleich</a></li>
 			<li><a href="/learn/rootless-voicings" hreflang="en">Rootless voicings in depth (English)</a></li>
 		</ul>
 	</aside>

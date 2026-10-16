@@ -148,6 +148,7 @@
 		<ul>
 			<li><a href="/de/voicings-linke-hand">Jazz-Voicings für die linke Hand: Shell und Rootless</a></li>
 			<li><a href="/de/ii-v-i-alle-tonarten">II-V-I in allen 12 Tonarten (Tabelle)</a></li>
+			<li><a href="/de/leadsheet-spielen-klassik">Leadsheet spielen lernen: Akkordsymbole und Septakkorde</a></li>
 		</ul>
 	</aside>
 </article>
