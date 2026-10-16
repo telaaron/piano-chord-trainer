@@ -111,7 +111,7 @@
 		if (p.type === 'chord') {
 			playing = true;
 			try {
-				await playChord(p.notes, '1n');
+				await playChord(p.notes, '1n', { forEar: true });
 			} finally {
 				playing = false;
 			}
@@ -147,7 +147,7 @@
 			// as harmony rather than a run of single notes.
 			playing = true;
 			try {
-				await playChord(p.chords[0], '2n');
+				await playChord(p.chords[0], '2n', { forEar: true });
 			} catch {
 				playing = false;
 				return;
@@ -155,7 +155,7 @@
 			for (let i = 1; i < p.chords.length; i++) {
 				seqTimers.push(
 					setTimeout(() => {
-						playChord(p.chords[i], '2n');
+						playChord(p.chords[i], '2n', { forEar: true });
 						if (i === p.chords.length - 1) playing = false;
 					}, i * p.stepMs),
 				);
@@ -184,9 +184,10 @@
 		// click's activation is still live, and the lazy Tone.js import would
 		// otherwise burn it — leaving the whole session silent.
 		unlockAudio();
-		// To-Go is used on the move: the piano preset streams 17 samples from a
-		// CDN, so use a synthesised voice that needs no network.
-		setSoundPreset('electric-piano');
+		// Piano, not the FM electric piano: its bass carries the root, and the
+		// samples ship with the app (cached), so it needs no third-party network.
+		// Without them the engine falls back to the synth on its own.
+		setSoundPreset('grand-piano');
 		silence();
 		const coach = loadCoachState();
 		const focus = earFocus(coach);
