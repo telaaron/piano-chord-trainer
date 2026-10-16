@@ -21,9 +21,7 @@ struct LearnView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.space5) {
                 EditorialHeader(eyebrow: Strings.learnEyebrow(lessons: totalLessons),
-                                title: CoachL10n.t("nav.learn")) {
-                    SettingsHeaderButton()
-                }
+                                title: CoachL10n.t("nav.learn"))
                 NavigationLink { CourseDetailView(course: featured) } label: { featureBlock }
                     .buttonStyle(.plain)
                 contents

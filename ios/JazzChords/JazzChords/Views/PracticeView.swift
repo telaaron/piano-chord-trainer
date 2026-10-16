@@ -25,9 +25,7 @@ struct PracticeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.space5) {
                 EditorialHeader(eyebrow: Strings.plansEyebrow(PRACTICE_PLANS.count),
-                                title: CoachL10n.t("nav.practice")) {
-                    SettingsHeaderButton()
-                }
+                                title: CoachL10n.t("nav.practice"))
                 featured
                 ForEach(levels, id: \.self) { level in
                     let plans = PRACTICE_PLANS.filter { $0.level == level }

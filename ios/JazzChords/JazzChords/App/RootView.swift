@@ -26,22 +26,19 @@ enum AppSection: String, CaseIterable, Identifiable {
     }
 }
 
-/// Shared chrome state: any tab-root screen can open Settings from its own
-/// header button (the navigation bar is hidden there in the editorial design).
+/// Shared chrome state: Heute opens Settings from its profile circle
+/// (the navigation bar is hidden on tab roots in the editorial design).
 @MainActor @Observable
 final class AppChrome {
     var showSettings = false
 }
 
-/// The glass settings button every tab-root header carries.
-struct SettingsHeaderButton: View {
+/// The one entry to Settings: the profile circle on Heute (spec §1).
+struct SettingsEntryButton: View {
     @Environment(AppChrome.self) private var chrome
 
     var body: some View {
-        GlassCircleButton(systemImage: "slider.horizontal.3",
-                          label: CoachL10n.t("settings.open_settings")) {
-            chrome.showSettings = true
-        }
+        ProfileCircleButton(email: nil) { chrome.showSettings = true }
     }
 }
 
@@ -52,6 +49,7 @@ struct RootView: View {
     @State private var selection: AppSection = .today
     @State private var sidebarSelection: AppSection? = .today
     @State private var chrome = AppChrome()
+    @State private var appearance = AppearanceStore.shared
     @State private var habits = HabitStore.shared
     @State private var showOnboarding = !HabitStore.shared.profile.onboardingDone
 
@@ -76,8 +74,10 @@ struct RootView: View {
                 .environment(\.palette, Theme.palette(for: scheme))
                 // Opaque: a translucent sheet lets the content behind bleed through.
                 .presentationBackground(Theme.palette(for: scheme).canvas)
-                .presentationDetents(hSize == .regular ? [.large] : [.medium, .large])
+                .presentationDetents([.large])
+                .preferredColorScheme(appearance.scheme)
         }
+        .preferredColorScheme(appearance.scheme)
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView { showOnboarding = false }
                 .environment(\.palette, Theme.palette(for: scheme))

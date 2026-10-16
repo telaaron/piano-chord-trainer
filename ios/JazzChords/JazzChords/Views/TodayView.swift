@@ -116,7 +116,7 @@ struct TodayView: View {
     private var header: some View {
         EditorialHeader(eyebrow: Strings.todayEyebrow(date: Date(), session: history.count + 1),
                         title: CoachL10n.t("nav.today")) {
-            SettingsHeaderButton()
+            SettingsEntryButton()
         }
     }
 
