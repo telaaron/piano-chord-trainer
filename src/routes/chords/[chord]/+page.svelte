@@ -10,6 +10,11 @@
 	const notes = $derived(data.notes);
 	const formula = $derived(data.formula);
 	const voicings = $derived(data.voicings);
+	const progression = $derived(data.progression);
+	// Guide tones = 3rd and 7th (index 1 and 3 of the four-note chord). On 6
+	// chords the fourth note is the sixth, so label it as such.
+	const guideTones = $derived(notes.length >= 4 ? [notes[1], notes[3]] : null);
+	const fourthToneLabel = $derived(meta.quality === '6' || meta.quality === 'm6' ? 'sixth' : 'seventh');
 
 	const title = $derived(`${meta.name} Piano Voicings — Notes, Shell & Rootless | jazzchords.app`);
 	const description = $derived(meta.blurb);
@@ -159,12 +164,41 @@
 			<h2 id="ctx-h">Where {meta.name} fits in a ii-V-I</h2>
 		</div>
 		<p>{meta.context}</p>
+		{#if progression}
+			<p>
+				{#if meta.quality === '6'}
+					{meta.name} can stand in for the I chord of {progression.key}:
+				{:else}
+					{meta.name}{progression.enharmonic ? ` (written ${progression.enharmonic} here)` : ''}
+					is the <strong>{progression.role}</strong> chord in {progression.key}:
+				{/if}
+			</p>
+			<ol class="prog">
+				{#each progression.chords as c (c.degree)}
+					<li class:self={c.self}>
+						<span class="degree">{c.degree}</span>
+						{#if c.slug && !c.self}
+							<a class="chord" href={`/chords/${c.slug}`}>{c.name}</a>
+						{:else}
+							<span class="chord">{c.name}</span>
+						{/if}
+					</li>
+				{/each}
+			</ol>
+		{/if}
+		{#if guideTones}
+			<p>
+				The {fourthToneLabel === 'seventh' ? 'guide tones' : 'colour-defining tones'} of {meta.name} are <strong>{guideTones[0]}</strong> (third) and
+				<strong>{guideTones[1]}</strong> ({fourthToneLabel}). Keep them and you keep the chord's
+				sound, which is why shell and rootless voicings are built around them.
+			</p>
+		{/if}
 		<p>
 			The fastest way to internalise {meta.name} is to drill it in context across
 			all 12 keys until the shape is automatic.
 		</p>
-		<a class="text-link" href="/learn/ii-v-i">
-			Practice the full ii-V-I progression
+		<a class="text-link" href="/learn/ii-v-i-all-keys">
+			See the ii-V-I in all 12 keys
 			<ArrowRight size={15} aria-hidden="true" />
 		</a>
 	</section>
@@ -610,4 +644,14 @@
 		background: var(--primary-muted);
 		padding-left: 0.9rem;
 	}
+	/* ── ii-V-I analysis strip (section III) ── */
+	.prog { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; margin: 0 0 1.25rem; }
+	.prog li {
+		display: flex; align-items: baseline; gap: 0.45rem; padding: 0.45rem 0.8rem;
+		border: 1px solid var(--border); border-radius: var(--radius-sm);
+	}
+	.prog li.self { border-color: var(--primary); }
+	.prog .degree { font-family: var(--font-display); font-style: italic; font-weight: 700; color: var(--ink-blue); }
+	.prog .chord { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--text); text-decoration: none; }
+	.prog a.chord:hover { color: var(--primary); }
 </style>
