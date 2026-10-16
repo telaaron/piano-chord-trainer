@@ -920,18 +920,39 @@ export function migrateToHabitProfile(
 }
 
 /**
- * Whether the trainer should open the habit onboarding.
+ * Practice sessions in a history. History stores one entry per BLOCK (a Coach
+ * session is several), so entries less than 30 minutes apart count as one
+ * sitting — what a player means by "a session".
+ */
+export function countPracticeSessions(timestamps: number[], gapMs = 30 * 60_000): number {
+	const sorted = [...timestamps].sort((a, b) => a - b);
+	let count = 0;
+	let last = -Infinity;
+	for (const t of sorted) {
+		if (t - last >= gapMs) count++;
+		last = t;
+	}
+	return count;
+}
+
+/** Sessions a player completes before the trainer asks for a daily goal. */
+export const ONBOARDING_AFTER_SESSIONS = 3;
+
+/**
+ * Whether the trainer should ask for the daily goal (the habit onboarding).
  *
- * At most once per player, not once per device: any one of these means it
- * already happened — this device recorded it, the player has practice history,
- * or their account recorded it on another device.
+ * Once per player, not per device, and not before they have played: asking
+ * for a routine before the first chord is friction exactly where most new
+ * players drop off. So it waits until the third finished session, and any one
+ * of these means it already happened — this device recorded it, or the
+ * player's account recorded it on another device. Skipping counts as done.
  */
 export function needsOnboarding(input: {
 	profileDone: boolean;
 	sessionCount: number;
 	accountDone: boolean;
 }): boolean {
-	return !input.profileDone && input.sessionCount === 0 && !input.accountDone;
+	return !input.profileDone && !input.accountDone && input.sessionCount >= ONBOARDING_AFTER_SESSIONS;
 }
 
 // ─── Daily Progress & Motivation ────────────────────────────

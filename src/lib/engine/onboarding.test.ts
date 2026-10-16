@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { migrateToHabitProfile, needsOnboarding } from './habits';
+import { migrateToHabitProfile, needsOnboarding, countPracticeSessions } from './habits';
 import type { SessionResult } from '../services/progress';
 
 const session = (id: string, timestamp: number): SessionResult =>
@@ -22,18 +22,35 @@ describe('migrateToHabitProfile: onboarding', () => {
 });
 
 describe('needsOnboarding', () => {
-	const fresh = { profileDone: false, sessionCount: 0, accountDone: false };
+	const ready = { profileDone: false, sessionCount: 3, accountDone: false };
 
-	it('shows it to a first-time player', () => {
-		expect(needsOnboarding(fresh)).toBe(true);
+	it('does not ask before the first session', () => {
+		expect(needsOnboarding({ ...ready, sessionCount: 0 })).toBe(false);
 	});
-	it('never again once this device recorded it', () => {
-		expect(needsOnboarding({ ...fresh, profileDone: true })).toBe(false);
+	it('does not ask after one or two sessions', () => {
+		expect(needsOnboarding({ ...ready, sessionCount: 2 })).toBe(false);
 	});
-	it('never to someone who has already practised', () => {
-		expect(needsOnboarding({ ...fresh, sessionCount: 3 })).toBe(false);
+	it('asks once the third session is done', () => {
+		expect(needsOnboarding(ready)).toBe(true);
+		expect(needsOnboarding({ ...ready, sessionCount: 7 })).toBe(true);
+	});
+	it('never again once this device recorded it (answered or skipped)', () => {
+		expect(needsOnboarding({ ...ready, profileDone: true })).toBe(false);
 	});
 	it('never when the account did it on another device', () => {
-		expect(needsOnboarding({ ...fresh, accountDone: true })).toBe(false);
+		expect(needsOnboarding({ ...ready, accountDone: true })).toBe(false);
+	});
+});
+
+describe('countPracticeSessions', () => {
+	const min = 60_000;
+	it('counts the blocks of one sitting as one session', () => {
+		expect(countPracticeSessions([0, 3 * min, 6 * min, 9 * min])).toBe(1);
+	});
+	it('counts sittings at least 30 minutes apart separately, in any order', () => {
+		expect(countPracticeSessions([120 * min, 0, 2 * min, 60 * min])).toBe(3);
+	});
+	it('is zero for no history', () => {
+		expect(countPracticeSessions([])).toBe(0);
 	});
 });

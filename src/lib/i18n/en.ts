@@ -1206,6 +1206,10 @@ export const en = {
     celebration_continue: 'Continue',
 
     // Onboarding
+    onboard_ask_title: 'Three sessions done. Set a daily goal?',
+    onboard_ask_desc: 'A small daily goal helps you keep going. Takes 20 seconds.',
+    onboard_ask_yes: 'Set a daily goal',
+    onboard_ask_later: 'Not now',
     onboard_time_title: 'How much time do you have daily?',
     onboard_time_desc: 'Start small — you can always do more.',
     onboard_when_title: 'When do you like to practice?',
