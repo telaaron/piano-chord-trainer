@@ -68,6 +68,8 @@ struct TodayView: View {
         .screenBackground()
         .refreshable { habits.reload(); refreshToken += 1 }
         .onAppear { habits.reload(); refreshToken += 1 }
+        // Account data from another device landed in the stores: show it.
+        .onChange(of: SyncService.shared.revision) { habits.reload(); refreshToken += 1 }
         .sheet(item: $previewChord) { item in
             ChordPreviewSheet(chord: item.chord)
                 .environment(\.palette, palette)

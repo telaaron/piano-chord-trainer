@@ -42,6 +42,8 @@ struct ProgressView_: View {
         .screenBackground()
         .onAppear { habits.reload(); refresh += 1 }
         .refreshable { habits.reload(); refresh += 1 }
+        // Account data from another device landed in the stores: show it.
+        .onChange(of: SyncService.shared.revision) { habits.reload(); refresh += 1 }
         .fullScreenCover(item: $drillSpot, onDismiss: { habits.reload(); refresh += 1 }) { spot in
             NavigationStack { TrainerView(plan: drillPlan(for: spot)) }
         }

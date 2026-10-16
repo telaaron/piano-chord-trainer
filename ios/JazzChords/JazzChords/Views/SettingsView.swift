@@ -5,6 +5,7 @@
 // All storage keys are unchanged; only the presentation is new.
 
 import SwiftUI
+import AuthenticationServices
 import MusicEngine
 
 struct SettingsView: View {
@@ -12,12 +13,10 @@ struct SettingsView: View {
     @Environment(\.palette) private var palette
     @Environment(\.openURL) private var openURL
 
-    /// Account state and actions; wired by the account layer.
-    var account = AccountCardModel()
-    /// E-mail sign-in; returns an error message to show, or nil on success.
-    var emailSubmit: (String, String, Bool) async -> String? = { _, _, _ in
-        SettingsText.t("Sign-in is not connected yet.", "Die Anmeldung ist noch nicht verbunden.")
-    }
+    @State private var accounts = AccountStore.shared
+    @State private var sync = SyncService.shared
+    /// Raw nonce of the Apple request in flight (its SHA-256 goes to Apple).
+    @State private var appleNonce: String?
 
     @State private var settings = ProgressStore.loadSettings()
     @State private var appearance = AppearanceStore.shared
@@ -33,7 +32,15 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: Theme.space5) {
                 EditorialHeader(title: SettingsText.title)
 
-                AccountCard(model: accountModel)
+                VStack(alignment: .leading, spacing: Theme.space2) {
+                    AccountCard(model: accountModel)
+                    if let message = accounts.error ?? accounts.info {
+                        Text(message)
+                            .font(.footnote)
+                            .foregroundStyle(accounts.error != nil ? palette.action : palette.inkMuted)
+                            .padding(.horizontal, Theme.space4)
+                    }
+                }
 
                 section(SettingsText.practice) {
                     menuRow(icon: "textformat", title: SettingsText.chordNotation,
@@ -196,11 +203,53 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: Account wiring (AccountStore + SyncService)
+
     private var accountModel: AccountCardModel {
-        var m = account
-        let open = m.openEmailSignIn
-        m.openEmailSignIn = { open(); showEmailSignIn = true }
+        var m = AccountCardModel()
+        if let email = accounts.email, accounts.isSignedIn {
+            m.state = .signedIn(email: email, sync: syncLine)
+        }
+        m.configureAppleRequest = { request in
+            let nonce = AccountStore.makeNonce()
+            appleNonce = nonce
+            request.requestedScopes = [.email]
+            request.nonce = AccountStore.sha256(nonce)
+        }
+        m.completeApple = { result in
+            guard case .success(let auth) = result,
+                  let credential = auth.credential as? ASAuthorizationAppleIDCredential,
+                  let tokenData = credential.identityToken,
+                  let idToken = String(data: tokenData, encoding: .utf8),
+                  let nonce = appleNonce else { return }
+            Task { await accounts.signInWithApple(idToken: idToken, nonce: nonce) }
+        }
+        m.openEmailSignIn = { showEmailSignIn = true }
+        m.signOut = { Task { await accounts.signOut() } }
+        m.deleteAccount = { Task { await accounts.deleteAccount() } }
         return m
+    }
+
+    private var syncLine: SyncStatusLine {
+        switch sync.status {
+        case .idle: return .never
+        case .syncing: return .syncing
+        case .synced(let date): return .synced(date)
+        case .offline, .failed: return .offline
+        }
+    }
+
+    /// E-mail sign-in / sign-up; returns the message to show, or nil when done.
+    private func emailSubmit(_ email: String, _ password: String, _ create: Bool) async -> String? {
+        if create {
+            await accounts.signUp(email: email, password: password)
+        } else {
+            await accounts.signIn(email: email, password: password)
+        }
+        if let error = accounts.error { return error }
+        // Sign-up may need e-mail confirmation first: keep the sheet open and say so.
+        if !accounts.isSignedIn, let info = accounts.info { return info }
+        return nil
     }
 
     // MARK: Building blocks
