@@ -46,7 +46,7 @@ struct LearnView: View {
                     .multilineTextAlignment(.leading)
                 HStack(spacing: Theme.space2) {
                     ProgressView(value: Double(done), total: Double(max(total, 1)))
-                        .tint(palette.onAction)
+                        .tint(palette.onFeature)
                         .frame(maxWidth: 110)
                     Text(Strings.xOfY(done, total))
                         .font(.footnote.weight(.medium))

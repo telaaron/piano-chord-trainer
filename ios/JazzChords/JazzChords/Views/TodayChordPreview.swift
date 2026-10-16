@@ -43,6 +43,13 @@ enum TodayChordPreview {
         return mode != .random && mode != .custom
     }
 
+    /// True when the block has no roots: chords are dealt in random keys, so
+    /// the row names qualities only ("Δ7 · 7 · –7"), not a key it won't use.
+    static func isAnyKey(for plan: CoachPlan) -> Bool {
+        guard let block = focusBlock(of: plan), !isSequence(for: plan) else { return false }
+        return block.focusRoots?.isEmpty ?? true
+    }
+
     private static func focusBlock(of plan: CoachPlan) -> CoachBlock? {
         plan.blocks.first(where: { $0.kind == .focus || $0.kind == .new }) ?? plan.blocks.first
     }

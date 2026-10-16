@@ -34,13 +34,18 @@ Palette bleibt 1:1 aus `src/app.css`. Neu sind semantische Rollen, die Views aus
 |---|---|---|---|
 | `canvas` | #0E141D | #F6F2EA | Screen-Hintergrund (Nachtblau / Papier) |
 | `ink` | #F2E8D5 | #1A1916 | Haupttext, Haarlinie unter Titeln |
-| `inkMuted` | #9AA6B8 | #736D66 (AA 4,58:1) | Sekundärtext, Eyebrows |
-| `hairline` | #2A3443 | #CFC7B8 | Trennlinien, Notenlinien |
-| `group` | #151D29 | #FFFFFF | Inset-Grouped-Listen |
-| `action` (Rot) | #E06A5C | #B0302A | Primär-Button, Feature-Block, aktiver Tab, fehlender Ton |
+| `inkMuted` | #B4BCC8 (E) | #736D66 (AA 4,58:1) | Sekundärtext, Eyebrows |
+| `hairline` | #3A4658 (E) | #CFC7B8 | Trennlinien, Notenlinien |
+| `group` | #18212E (E) | #FFFFFF | Inset-Grouped-Listen |
+| `action` (Rot) | #F07B6C (E) | #B0302A | Primär-Button, aktiver Tab, fehlender Ton |
 | `onAction` | #0E141D | #FFF8EF | Text auf Rot |
 | `music` (Gold) | #E8B04B | #8F5A05 | Stats-Zahlen, Akkord-Badges, Kursnummern, „fertig“, nächster Akkord |
 | `musicFill` | #E8B04B | #E2A93B | gespielte Tasten, Fortschrittsbalken |
+| `feature` | #8C2A22 (E) | #B0302A | Feature-Block (dunkel: Ochsenblut statt Koralle) |
+| `onFeature` | #F6EDE0 (E) | #FFF8EF | Text und invertierter Button auf dem Feature-Block |
+| `featureAccent` | #F2C46B (E) | #FFF8EF | Eyebrow auf dem Feature-Block |
+
+Variante E (Aaron, 16.10.): Dunkel mit hellerem Sekundärtext, sichtbaren Haarlinien, abgesetzten Listen (feine Kante), Feature-Block hell auf dunkel, Geister-Akkord 8 %, weiße Tasten #ECE6DA.
 
 **Farbregel:** Rot = tun / Fehler. Gold = Musik / Erfolg / Fortschritt. Nachtblau = Bühne. Genau **ein** roter Feature-Block pro Screen. Kein Grün mehr für „richtig“ im Trainer (Gold ersetzt es); `accentGreen` bleibt nur für bestehende Charts erhalten, falls nötig.
 

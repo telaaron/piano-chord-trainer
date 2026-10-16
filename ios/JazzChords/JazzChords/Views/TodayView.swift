@@ -129,7 +129,8 @@ struct TodayView: View {
                             ghost: "Δ7") {
             VStack(alignment: .leading, spacing: Theme.space3) {
                 if !chords.isEmpty {
-                    chordRow(chords, sequence: TodayChordPreview.isSequence(for: plan))
+                    chordRow(chords, sequence: TodayChordPreview.isSequence(for: plan),
+                             anyKey: TodayChordPreview.isAnyKey(for: plan))
                 }
                 Text(coachSay)
                     .font(Display.serif(20, italic: true, relativeTo: .title3))
@@ -142,9 +143,9 @@ struct TodayView: View {
         }
     }
 
-    private func chordRow(_ chords: [ChordWithNotes], sequence: Bool) -> some View {
+    private func chordRow(_ chords: [ChordWithNotes], sequence: Bool, anyKey: Bool) -> some View {
         HStack(spacing: Theme.space2) {
-            if !sequence {
+            if !sequence && !anyKey {
                 // Dealt at random when the session starts — examples, not a promise.
                 Text(Strings.forExample)
                     .font(Display.serif(18, italic: true, relativeTo: .body))
@@ -158,20 +159,33 @@ struct TodayView: View {
                         .accessibilityHidden(true)
                 }
                 Button { previewChord = PreviewChord(chord: chord) } label: {
-                    Text(Notation.chord(chord.chord))
+                    Text(chipLabel(chord, anyKey: anyKey))
                         .font(Display.chord(30, relativeTo: .title2))
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
-                        .padding(.horizontal, Theme.space2)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .strokeBorder(palette.onAction.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                        )
+                        .padding(.horizontal, Theme.space3)
+                        .background(palette.onFeature.opacity(0.12),
+                                    in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(Notation.chord(chord.chord))
                 .accessibilityHint(Strings.chordPreviewHint)
             }
+            if anyKey {
+                Text(Strings.inAllKeys)
+                    .font(Display.serif(18, italic: true, relativeTo: .body))
+                    .opacity(0.8)
+            }
         }
+    }
+
+    /// Full chord name, or just its quality when the session deals random keys
+    /// (a calibration check would otherwise read as "C, C, C").
+    private func chipLabel(_ chord: ChordWithNotes, anyKey: Bool) -> String {
+        let full = Notation.chord(chord.chord)
+        guard anyKey else { return full }
+        let root = Notation.root(chord.root)
+        return full.hasPrefix(root) ? String(full.dropFirst(root.count)) : full
     }
 
     private var stats: some View {

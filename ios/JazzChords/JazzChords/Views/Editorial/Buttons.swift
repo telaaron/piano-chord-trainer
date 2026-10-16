@@ -22,8 +22,8 @@ struct PrimaryCapsule: View {
             .frame(maxWidth: inverted ? nil : .infinity)
             .frame(minHeight: inverted ? 44 : 56)
             .padding(.horizontal, Theme.space5)
-            .foregroundStyle(inverted ? palette.action : palette.onAction)
-            .background(inverted ? palette.onAction : palette.action, in: Capsule())
+            .foregroundStyle(inverted ? palette.feature : palette.onAction)
+            .background(inverted ? palette.onFeature : palette.action, in: Capsule())
         }
         .buttonStyle(.plain)
     }

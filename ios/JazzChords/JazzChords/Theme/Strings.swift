@@ -332,6 +332,7 @@ enum Strings {
     static var statPerChord: String { pick("per chord", "pro Akkord") }
     static var statSessions: String { pick("sessions", "Sessions") }
     static var forExample: String { pick("e.g.", "z. B.") }
+    static var inAllKeys: String { pick("in all keys", "in allen Tonarten") }
     /// "LEVEL 4 · DEIN WEG" (uppercased by EyebrowText).
     static func progressEyebrow(level: Int) -> String { pick("Level \(level) · Your path", "Level \(level) · Dein Weg") }
 

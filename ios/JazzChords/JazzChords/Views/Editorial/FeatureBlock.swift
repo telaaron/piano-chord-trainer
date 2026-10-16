@@ -20,26 +20,27 @@ struct FeatureBlock<Content: View, Action: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.space3) {
-            EyebrowText(eyebrow, color: palette.onAction)
+            EyebrowText(eyebrow, color: palette.featureAccent)
             content()
             action()
                 .padding(.top, Theme.space1)
         }
-        .foregroundStyle(palette.onAction)
+        .foregroundStyle(palette.onFeature)
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(alignment: .bottomTrailing) {
             if let ghost {
                 Text(ghost)
                     .font(Display.chord(170, relativeTo: .body))
-                    .foregroundStyle(palette.onAction.opacity(0.2))
+                    // Faint enough not to fight the text over it.
+                    .foregroundStyle(palette.onFeature.opacity(0.08))
                     .lineLimit(1)
                     .fixedSize()
                     .offset(x: 8, y: 44)
                     .accessibilityHidden(true)
             }
         }
-        .background(palette.action)
+        .background(palette.feature)
         .clipShape(RoundedRectangle(cornerRadius: Theme.radiusFeature, style: .continuous))
     }
 }

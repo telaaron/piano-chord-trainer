@@ -11,6 +11,9 @@ struct TrackGroup<Content: View>: View {
         VStack(spacing: 0) { content() }
             .background(palette.group)
             .clipShape(RoundedRectangle(cornerRadius: Theme.radiusGroup, style: .continuous))
+            // Fine edge so the group lifts off the night canvas.
+            .overlay(RoundedRectangle(cornerRadius: Theme.radiusGroup, style: .continuous)
+                .strokeBorder(palette.hairline.opacity(0.6), lineWidth: 0.5))
     }
 }
 

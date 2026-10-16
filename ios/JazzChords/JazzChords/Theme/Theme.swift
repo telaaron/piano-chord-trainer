@@ -55,14 +55,24 @@ struct Palette {
     let musicFill: Color
     /// Bed behind the edge-to-edge keyboard.
     let keyBed: Color
+    /// The one feature block per screen. Dark: deep oxblood, so it reads as
+    /// light type on a dark field instead of a glaring coral card.
+    let feature: Color
+    /// Text and the inverted button on `feature`.
+    let onFeature: Color
+    /// Eyebrow on `feature`.
+    let featureAccent: Color
 
     /// Night stage — dark.
     static let dark = Palette(
-        keyWhite: Color(hex: "f5f4fa"), keyBlack: Color(hex: "161329"),
-        canvas: Color(hex: "0E141D"), ink: Color(hex: "F2E8D5"), inkMuted: Color(hex: "9AA6B8"),
-        hairline: Color(hex: "2A3443"), group: Color(hex: "151D29"),
-        action: Color(hex: "E06A5C"), onAction: Color(hex: "0E141D"),
-        music: Color(hex: "E8B04B"), musicFill: Color(hex: "E8B04B"), keyBed: Color(hex: "070A0F"))
+        // Variant E (Aaron, 16.10.): brighter secondary text, visible
+        // hairlines, lifted groups, softer white keys at night.
+        keyWhite: Color(hex: "ECE6DA"), keyBlack: Color(hex: "161329"),
+        canvas: Color(hex: "0E141D"), ink: Color(hex: "F2E8D5"), inkMuted: Color(hex: "B4BCC8"),
+        hairline: Color(hex: "3A4658"), group: Color(hex: "18212E"),
+        action: Color(hex: "F07B6C"), onAction: Color(hex: "0E141D"),
+        music: Color(hex: "E8B04B"), musicFill: Color(hex: "E8B04B"), keyBed: Color(hex: "070A0F"),
+        feature: Color(hex: "8C2A22"), onFeature: Color(hex: "F6EDE0"), featureAccent: Color(hex: "F2C46B"))
 
     /// Warm paper — light.
     static let light = Palette(
@@ -70,7 +80,8 @@ struct Palette {
         canvas: Color(hex: "F6F2EA"), ink: Color(hex: "1A1916"), inkMuted: Color(hex: "736D66"),
         hairline: Color(hex: "CFC7B8"), group: Color(hex: "FFFFFF"),
         action: Color(hex: "B0302A"), onAction: Color(hex: "FFF8EF"),
-        music: Color(hex: "8F5A05"), musicFill: Color(hex: "E2A93B"), keyBed: Color(hex: "1A1916"))
+        music: Color(hex: "8F5A05"), musicFill: Color(hex: "E2A93B"), keyBed: Color(hex: "1A1916"),
+        feature: Color(hex: "B0302A"), onFeature: Color(hex: "FFF8EF"), featureAccent: Color(hex: "FFF8EF"))
 }
 
 /// Environment-aware theme. Inject via `.environment(\.theme, …)` or read the
