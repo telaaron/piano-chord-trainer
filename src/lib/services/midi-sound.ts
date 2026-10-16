@@ -9,83 +9,13 @@
 //   • Uses triggerAttack / triggerRelease (not triggerAttackRelease) for
 //     natural sustain while keys are held.
 //   • Supports sustain pedal (MIDI CC 64).
-//   • Shares the SoundPreset type from audio.ts for consistency.
+//   • Builds its instrument through audio-engine.ts, which shares the piano
+//     samples with chord playback and falls back to a synth if they fail.
 //   • Persists enabled / volume / preset in localStorage.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type * as ToneType from 'tone';
-import type { SoundPreset } from './audio';
-
-// ─── Lazy Tone singleton (shared with audio.ts via ES module cache) ─────────
-let _tone: typeof ToneType | null = null;
-
-async function getTone(): Promise<typeof ToneType> {
-	if (!_tone) {
-		_tone = await import('tone');
-	}
-	return _tone;
-}
-
-// ─── Salamander samples (same CDN URLs as audio.ts) ─────────────────────────
-const SALAMANDER_SAMPLES: Record<string, string> = {
-	C2: 'C2.mp3',     'D#2': 'Ds2.mp3', 'F#2': 'Fs2.mp3', A2: 'A2.mp3',
-	C3: 'C3.mp3',     'D#3': 'Ds3.mp3', 'F#3': 'Fs3.mp3', A3: 'A3.mp3',
-	C4: 'C4.mp3',     'D#4': 'Ds4.mp3', 'F#4': 'Fs4.mp3', A4: 'A4.mp3',
-	C5: 'C5.mp3',     'D#5': 'Ds5.mp3', 'F#5': 'Fs5.mp3', A5: 'A5.mp3',
-	C6: 'C6.mp3',
-};
-const SALAMANDER_BASE_URL = 'https://tonejs.github.io/audio/salamander/';
-
-// ─── Synth configs (mirror of audio.ts presets) ─────────────────────────────
-/* eslint-disable @typescript-eslint/no-explicit-any */
-interface SynthPresetConfig {
-	synthType: 'Synth' | 'FMSynth';
-	config: Record<string, any>;
-}
-
-const SYNTH_CONFIGS: Record<Exclude<SoundPreset, 'grand-piano'>, SynthPresetConfig> = {
-	'electric-piano': {
-		synthType: 'FMSynth',
-		config: {
-			harmonicity: 3.01,
-			modulationIndex: 2,
-			oscillator: { type: 'sine' },
-			modulation: { type: 'sine' },
-			envelope:           { attack: 0.005, decay: 0.8,  sustain: 0.15, release: 1.2 },
-			modulationEnvelope: { attack: 0.002, decay: 0.4,  sustain: 0.2,  release: 0.8 },
-			volume: -8,
-		},
-	},
-	'vibraphone': {
-		synthType: 'FMSynth',
-		config: {
-			harmonicity: 6,
-			modulationIndex: 8,
-			oscillator: { type: 'sine' },
-			modulation: { type: 'square' },
-			envelope:           { attack: 0.001, decay: 1.8,  sustain: 0.02, release: 2.5 },
-			modulationEnvelope: { attack: 0.002, decay: 0.6,  sustain: 0.1,  release: 1.5 },
-			volume: -10,
-		},
-	},
-	'organ': {
-		synthType: 'Synth',
-		config: {
-			oscillator: { type: 'custom', partials: [1, 0.8, 0.6, 0.3, 0.2, 0.1, 0.05, 0.02] },
-			envelope: { attack: 0.01, decay: 0.3, sustain: 0.9, release: 0.1 },
-			volume: -8,
-		},
-	},
-	'synth-pad': {
-		synthType: 'Synth',
-		config: {
-			oscillator: { type: 'fatsawtooth', spread: 20, count: 3 },
-			envelope: { attack: 0.2, decay: 0.5, sustain: 0.6, release: 2.5 },
-			volume: -12,
-		},
-	},
-};
-/* eslint-enable @typescript-eslint/no-explicit-any */
+import { getTone, startAudio, createInstrument, type Instrument, type SoundPreset } from './audio-engine';
 
 // ─── MIDI note → Tone.js note name ─────────────────────────────────────────
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -151,7 +81,7 @@ function saveDevicePrefs(prefs: Record<string, DeviceSoundPref>): void {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export class MidiSoundEngine {
-	private instrument: ToneType.PolySynth | ToneType.Sampler | null = null;
+	private instrument: Instrument | null = null;
 	private reverb: ToneType.Reverb | null = null;
 	private volume: ToneType.Volume | null = null;
 	private _enabled: boolean;
@@ -168,11 +98,6 @@ export class MidiSoundEngine {
 
 	// Track which notes are physically held down (for sustain pedal logic)
 	private _heldNotes = new Set<number>();
-
-	// Samples loading flag
-	private _samplesLoading = false;
-	/** Piano samples failed to load — voice the piano preset with a synth instead of silence. */
-	private _pianoUnavailable = false;
 
 	// Initialization guard
 	private _initPromise: Promise<void> | null = null;
@@ -260,7 +185,7 @@ export class MidiSoundEngine {
 		const vel = velocity / 127;
 
 		// Hot path: instrument ready → fire immediately
-		if (this.instrument && !this._samplesLoading) {
+		if (this.instrument) {
 			this.triggerAttack(noteName, vel);
 			return;
 		}
@@ -370,60 +295,21 @@ export class MidiSoundEngine {
 	}
 
 	private async _doInit(): Promise<void> {
+		await startAudio();
 		const T = await getTone();
-		await T.start();
-		const ctx = T.getContext().rawContext as AudioContext;
-		if (ctx.state === 'suspended') {
-			await ctx.resume();
+		const preset = this._preset;
+		// The engine shares the piano samples with chord playback and hands back
+		// a synth if they are missing, so live playing never goes silent.
+		const { instrument } = await createInstrument(preset, 16);
+		// Preset switched (or engine disposed) while loading — drop this one.
+		if (preset !== this._preset || this.instrument) {
+			instrument.dispose();
+			return;
 		}
-		this.createInstrument();
-		if (this._samplesLoading) {
-			try {
-				await T.loaded();
-			} catch (err) {
-				console.error('[midi-sound] Piano samples unavailable, using synth:', err);
-				this._pianoUnavailable = true;
-				this._samplesLoading = false;
-			}
-		}
-		if (this._pianoUnavailable && this.instrument instanceof T.Sampler) {
-			// The Sampler has no buffers and would stay silent — rebuild as a synth.
-			this.disposeInstrument();
-			this.createInstrument();
-		}
-	}
-
-	private createInstrument(): void {
-		if (this.instrument) return;
-		const T = _tone!;
-
 		// Volume node for independent level control
 		this.volume = new T.Volume(this._volume).toDestination();
 		this.reverb = new T.Reverb({ decay: 2.0, wet: 0.15 }).connect(this.volume);
-
-		const preset = this._preset === 'grand-piano' && this._pianoUnavailable ? 'electric-piano' : this._preset;
-		if (preset === 'grand-piano') {
-			this._samplesLoading = true;
-			this.instrument = new T.Sampler({
-				urls: SALAMANDER_SAMPLES,
-				baseUrl: SALAMANDER_BASE_URL,
-				release: 1,
-				onload: () => { this._samplesLoading = false; },
-				onerror: (err: Error) => {
-					console.error('[midi-sound] Failed to load piano samples:', err);
-					this._samplesLoading = false;
-					this._pianoUnavailable = true;
-				},
-			}).connect(this.reverb);
-		} else {
-			const cfg = SYNTH_CONFIGS[preset as Exclude<SoundPreset, 'grand-piano'>];
-			const SynthClass = cfg.synthType === 'FMSynth' ? T.FMSynth : T.Synth;
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const synth = new T.PolySynth(SynthClass as any, cfg.config);
-			synth.maxPolyphony = 16;
-			this.instrument = synth;
-			this.instrument.connect(this.reverb);
-		}
+		this.instrument = instrument.connect(this.reverb);
 	}
 
 	private disposeInstrument(): void {
@@ -439,7 +325,6 @@ export class MidiSoundEngine {
 			this.volume.dispose();
 			this.volume = null;
 		}
-		this._samplesLoading = false;
 	}
 
 	private persist(): void {

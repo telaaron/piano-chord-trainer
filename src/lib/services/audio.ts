@@ -12,155 +12,53 @@
 // Tone.js (~200 kB) is imported lazily on first use so it never ends up
 // in the homepage bundle and does not block Time-to-Interactive on /train.
 import type * as ToneType from 'tone';
+import {
+	getTone as engineGetTone,
+	startAudio,
+	createInstrument,
+	soundingPreset,
+	isPianoLoading,
+	SYNTH_CONFIGS,
+	type Instrument,
+	type SoundPreset,
+} from './audio-engine';
 
-// ─── Lazy Tone singleton ─────────────────────────────────────────────────────
+// Presets, unlock and status live in the engine; re-exported so callers keep
+// importing them from here.
+export { SOUND_PRESETS, unlockAudio, getAudioStatus, onAudioStatus, type SoundPreset, type AudioStatus } from './audio-engine';
+
+// ─── Tone (owned by the engine; cached here for the synchronous hot paths) ──
 let _tone: typeof ToneType | null = null;
 
 async function getTone(): Promise<typeof ToneType> {
-	if (!_tone) {
-		_tone = await import('tone');
-	}
+	_tone = await engineGetTone();
 	return _tone;
 }
 
-// ─── Sound Presets ──────────────────────────────────────────────────────────
-
-export type SoundPreset =
-	| 'grand-piano'
-	| 'electric-piano'
-	| 'vibraphone'
-	| 'organ'
-	| 'synth-pad';
-
-export const SOUND_PRESETS: Record<SoundPreset, { label: string; description: string }> = {
-	'grand-piano':    { label: 'Grand Piano',    description: 'Salamander samples — realistic piano' },
-	'electric-piano': { label: 'Electric Piano',  description: 'FM synthesis Rhodes tone' },
-	'vibraphone':     { label: 'Vibraphone',      description: 'Mellow bell-like mallet sound' },
-	'organ':          { label: 'Organ',            description: 'Jazz organ with drawbar harmonics' },
-	'synth-pad':      { label: 'Synth Pad',        description: 'Warm sustained pad' },
-};
-
-// ─── Salamander Grand Piano Samples (CDN) ─────────────────────────────────
-// Octaves 2–6 — covers all jazz piano voicing ranges.
-// Tone.Sampler auto-repitches between sampled notes (every minor 3rd).
-const SALAMANDER_SAMPLES: Record<string, string> = {
-	C2: 'C2.mp3',     'D#2': 'Ds2.mp3', 'F#2': 'Fs2.mp3', A2: 'A2.mp3',
-	C3: 'C3.mp3',     'D#3': 'Ds3.mp3', 'F#3': 'Fs3.mp3', A3: 'A3.mp3',
-	C4: 'C4.mp3',     'D#4': 'Ds4.mp3', 'F#4': 'Fs4.mp3', A4: 'A4.mp3',
-	C5: 'C5.mp3',     'D#5': 'Ds5.mp3', 'F#5': 'Fs5.mp3', A5: 'A5.mp3',
-	C6: 'C6.mp3',
-};
-const SALAMANDER_BASE_URL = 'https://tonejs.github.io/audio/salamander/';
-
-// ─── Synth Preset Configs (oscillator-based presets) ────────────────────────
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-interface SynthPresetConfig {
-	synthType: 'Synth' | 'FMSynth';
-	config: Record<string, any>;
-}
-
-const SYNTH_CONFIGS: Record<Exclude<SoundPreset, 'grand-piano'>, SynthPresetConfig> = {
-	'electric-piano': {
-		synthType: 'FMSynth',
-		config: {
-			harmonicity: 3.01,
-			modulationIndex: 2,
-			oscillator: { type: 'sine' },
-			modulation: { type: 'sine' },
-			envelope:           { attack: 0.005, decay: 0.8,  sustain: 0.15, release: 1.2 },
-			modulationEnvelope: { attack: 0.002, decay: 0.4,  sustain: 0.2,  release: 0.8 },
-			volume: -8,
-		},
-	},
-	'vibraphone': {
-		synthType: 'FMSynth',
-		config: {
-			harmonicity: 6,
-			modulationIndex: 8,
-			oscillator: { type: 'sine' },
-			modulation: { type: 'square' },
-			envelope:           { attack: 0.001, decay: 1.8,  sustain: 0.02, release: 2.5 },
-			modulationEnvelope: { attack: 0.002, decay: 0.6,  sustain: 0.1,  release: 1.5 },
-			volume: -10,
-		},
-	},
-	'organ': {
-		synthType: 'Synth',
-		config: {
-			oscillator: { type: 'custom', partials: [1, 0.8, 0.6, 0.3, 0.2, 0.1, 0.05, 0.02] },
-			envelope: { attack: 0.01, decay: 0.3, sustain: 0.9, release: 0.1 },
-			volume: -8,
-		},
-	},
-	'synth-pad': {
-		synthType: 'Synth',
-		config: {
-			oscillator: { type: 'fatsawtooth', spread: 20, count: 3 },
-			envelope: { attack: 0.2, decay: 0.5, sustain: 0.6, release: 2.5 },
-			volume: -12,
-		},
-	},
-};
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
 // ─── Instrument state ────────────────────────────────────────────────────────
-let instrument: ToneType.PolySynth | ToneType.Sampler | null = null;
-/** Which preset `instrument` was built for — lets us spot a stale piano Sampler. */
+let instrument: Instrument | null = null;
+/** Which preset `instrument` actually voices — lets us spot a stale piano Sampler. */
 let instrumentPreset: SoundPreset | null = null;
+/** Resolves once the instrument for the current preset is built. */
+let instrumentBuild: Promise<void> | null = null;
 let currentPreset: SoundPreset = 'grand-piano';
 let reverb: ToneType.Reverb | null = null;
 let started = false;
-let samplesLoading = false;
-let samplesLoadedCallbacks: (() => void)[] = [];
-/**
- * The piano samples could not be fetched (offline, CDN down, blocked by the
- * CSP). A Sampler without buffers plays nothing and throws nothing useful, so
- * once this is set the grand-piano preset is voiced by a synth instead.
- */
-let pianoUnavailable = false;
-
-/** The preset that actually sounds: the piano falls back to a synth when its samples are missing. */
-function soundingPreset(): SoundPreset {
-	return currentPreset === 'grand-piano' && pianoUnavailable ? 'electric-piano' : currentPreset;
-}
 
 // Track currently sounding notes so we can release only those (fast)
 let activeNotes: string[] = [];
 
-// ─── AudioContext bootstrap ─────────────────────────────────────────────────
-/**
- * Ensure AudioContext is running (must be called from a user-interaction handler).
- */
-async function ensureStarted(): Promise<void> {
-	const T = await getTone();
-	await T.start();
-	const ctx = T.getContext().rawContext as AudioContext;
-	if (ctx.state === 'suspended') {
-		await ctx.resume();
-	}
-	started = true;
+/** Is the installed instrument the right one to play right now? */
+function instrumentReady(): boolean {
+	return !!_tone && started && !!instrument && instrumentPreset === soundingPreset(currentPreset);
 }
 
-/**
- * Unlock audio from a click handler — call this FIRST, before any other work.
- *
- * Browsers only honour `AudioContext.resume()` while the user's gesture is
- * still "active". Tone.js is a lazy dynamic import, so the very first
- * `playChord()` spends that activation downloading ~200 kB before it ever gets
- * to `start()` — and the context stays suspended, silently, with no error.
- *
- * Screens whose first sound follows their first click (the To-Go mode) must
- * call this at the top of that handler so the unlock wins the race.
- * Safe to call repeatedly; a no-op once running.
- */
-export async function unlockAudio(): Promise<void> {
-	try {
-		await ensureStarted();
-	} catch {
-		// A blocked context is not fatal — playback simply stays silent until
-		// the next gesture, and the caller shouldn't crash over it.
-	}
+// ─── AudioContext bootstrap ─────────────────────────────────────────────────
+/** Ensure AudioContext is running (must be called from a user-interaction handler). */
+async function ensureStarted(): Promise<void> {
+	await getTone();
+	await startAudio();
+	started = true;
 }
 
 // ─── Instrument factory ─────────────────────────────────────────────────────
@@ -170,49 +68,9 @@ function createReverb(): ToneType.Reverb {
 	return new T.Reverb({ decay: 2.0, wet: 0.15 }).toDestination();
 }
 
-function createSampler(): ToneType.Sampler {
-	const T = _tone!;
-	samplesLoading = true;
-
-	const sampler = new T.Sampler({
-		urls: SALAMANDER_SAMPLES,
-		baseUrl: SALAMANDER_BASE_URL,
-		release: 1,
-		onload: () => {
-			samplesLoading = false;
-			for (const cb of samplesLoadedCallbacks) cb();
-			samplesLoadedCallbacks = [];
-		},
-		onerror: (err: Error) => {
-			console.error('[audio] Failed to load piano samples:', err);
-			samplesLoading = false;
-			pianoUnavailable = true;
-		},
-	});
-
-	return sampler;
-}
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function createPolySynth(): ToneType.PolySynth {
-	const T = _tone!;
-	const cfg = SYNTH_CONFIGS[soundingPreset() as Exclude<SoundPreset, 'grand-piano'>];
-	const SynthClass = cfg.synthType === 'FMSynth' ? T.FMSynth : T.Synth;
-	const synth = new T.PolySynth(SynthClass as any, cfg.config);
-	synth.maxPolyphony = 8;
-	return synth;
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
-function getInstrument(): ToneType.PolySynth | ToneType.Sampler {
-	if (!instrument) {
-		if (!reverb) reverb = createReverb();
-		instrumentPreset = soundingPreset();
-		instrument =
-			instrumentPreset === 'grand-piano' ? createSampler() : createPolySynth();
-		instrument.connect(reverb);
-	}
-	return instrument;
+/** The installed instrument. Only call after prepareInstrument() resolved. */
+function getInstrument(): Instrument {
+	return instrument!;
 }
 
 /**
@@ -230,25 +88,19 @@ function releaseAllVoices(time?: number): void {
 }
 
 // ─── Loading-state API ──────────────────────────────────────────────────────
-/** True while Sampler samples are being fetched from CDN */
+/** True while the piano samples are being fetched */
 export function isSamplesLoading(): boolean {
-	return samplesLoading;
-}
-
-/** Register a one-shot callback that fires once samples are ready */
-export function onSamplesLoaded(cb: () => void): void {
-	if (!samplesLoading) cb();
-	else samplesLoadedCallbacks.push(cb);
+	return isPianoLoading();
 }
 
 // ─── Sound-preset API ───────────────────────────────────────────────────────
-/** Switch sound preset.  Disposes old instrument; next playChord creates new one. */
+/** Switch sound preset.  Disposes old instrument; the next sound builds the new one. */
 export function setSoundPreset(preset: SoundPreset): void {
 	if (preset === currentPreset && instrument) return;
 	currentPreset = preset;
 	disposeAudio();
-	// Pre-create instrument so Sampler can start loading immediately
-	if (_tone && started) getInstrument();
+	// Start building right away so the piano samples are loading before the first chord.
+	if (_tone && started) prepareInstrument().catch(() => {});
 }
 
 /** Current sound preset id */
@@ -292,26 +144,47 @@ function notesToToneNames(notes: string[]): string[] {
 
 /**
  * Cold-path setup shared by every playback entry point: load Tone, start the
- * context, build the instrument and wait for the piano samples. If the samples
- * fail, swap in the synth so the caller still gets a sound instead of silence.
+ * context and build the instrument for the current preset. The engine waits
+ * for the piano samples and hands back a synth if they fail, so the caller
+ * always gets a sound instead of silence.
  */
 async function prepareInstrument(): Promise<void> {
-	const T = await getTone();
 	await ensureStarted();
-	getInstrument();
-	if (soundingPreset() === 'grand-piano' && samplesLoading) {
-		try {
-			await T.loaded();
-		} catch (err) {
-			console.error('[audio] Piano samples unavailable, using synth:', err);
-			pianoUnavailable = true;
-			samplesLoading = false;
-		}
+	// A preset switch during a build drops that build; try again, a bounded number of times.
+	for (let attempt = 0; attempt < 3 && !instrumentReady(); attempt++) {
+		await buildInstrument();
 	}
-	if (instrumentPreset !== soundingPreset()) {
-		// The broken Sampler is still installed — replace it with the synth.
-		disposeAudio();
-		getInstrument();
+}
+
+async function buildInstrument(): Promise<void> {
+	if (!instrumentBuild) {
+		const preset = currentPreset;
+		instrumentBuild = createInstrument(preset, 8)
+			.then(({ instrument: built, voiced }) => {
+				// The preset changed while we were loading — drop this one.
+				if (preset !== currentPreset) {
+					built.dispose();
+					return;
+				}
+				disposeInstrumentOnly();
+				if (!reverb) reverb = createReverb();
+				built.connect(reverb);
+				instrument = built;
+				instrumentPreset = voiced;
+			})
+			.finally(() => {
+				instrumentBuild = null;
+			});
+	}
+	await instrumentBuild;
+}
+
+function disposeInstrumentOnly(): void {
+	releaseAllVoices();
+	if (instrument) {
+		instrument.dispose();
+		instrument = null;
+		instrumentPreset = null;
 	}
 }
 
@@ -355,7 +228,7 @@ export async function playChord(notes: string[], duration: string = '2n'): Promi
 	const toneNotes = notesToToneNames(notes);
 
 	// ── Hot path: everything ready → fire synchronously ──
-	if (_tone && started && instrument && !samplesLoading && instrumentPreset === soundingPreset()) {
+	if (instrumentReady()) {
 		triggerChordSync(toneNotes, duration);
 		return;
 	}
@@ -378,8 +251,7 @@ export async function playChord(notes: string[], duration: string = '2n'): Promi
  */
 export function playChordAtTime(notes: string[], duration: string, time: number): void {
 	if (!_tone || !started || !instrument) return;
-	if (currentPreset === 'grand-piano' && samplesLoading) return;  // skip — can't play yet
-	if (instrumentPreset !== soundingPreset()) return; // stale piano Sampler — the next cold path swaps it
+	if (!instrumentReady()) return; // still loading, or a stale instrument the next cold path swaps
 	const toneNotes = notesToToneNames(notes);
 	triggerChordSync(toneNotes, duration, time);
 }
@@ -389,7 +261,7 @@ export function playChordAtTime(notes: string[], duration: string, time: number)
  */
 export async function playNote(note: string, duration: string = '8n'): Promise<void> {
 	// Hot path
-	if (_tone && started && instrument && !samplesLoading && instrumentPreset === soundingPreset()) {
+	if (instrumentReady()) {
 		const inst = getInstrument();
 		if ('triggerAttackRelease' in inst) {
 			(inst as ToneType.PolySynth).triggerAttackRelease(note, duration);
@@ -445,8 +317,6 @@ export function disposeAudio(): void {
 		reverb.dispose();
 		reverb = null;
 	}
-	samplesLoading = false;
-	samplesLoadedCallbacks = [];
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

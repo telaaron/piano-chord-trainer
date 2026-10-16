@@ -1,0 +1,7 @@
+Piano samples: Salamander Grand Piano V3 by Alexander Holm
+License: CC BY 3.0 — https://creativecommons.org/licenses/by/3.0/
+Source: https://archive.org/details/SalamanderGrandPianoV3
+(via the MP3 conversion in @audio-samples/piano-mp3-velocity8, MIT)
+
+Modified for jazzchords.app: velocity layer 8, notes C2–C6 in minor thirds,
+cut to 6 s with a 1.5 s fade-out, re-encoded at 96 kbit/s.

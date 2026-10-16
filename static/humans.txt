@@ -20,3 +20,5 @@ MIDI Support: Full Recognition & Input
 
 /* THANKS */
 Built with SvelteKit, Vite, and love for jazz piano
+
+Piano samples: Salamander Grand Piano V3 by Alexander Holm (CC BY 3.0), see /audio/piano/CREDITS.txt

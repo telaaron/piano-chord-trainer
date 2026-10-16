@@ -1,14 +1,16 @@
 <script lang="ts">
 	// Sing a scale degree over a reference tone; the mic grades the pitch class.
 	//
-	// The detector runs on ~800 ms cycles, so we accumulate across the whole
-	// attempt rather than reading one snapshot — a held note only has to be
-	// caught once. Accumulation is into a pitch-class SET, which is all the
-	// grader reads and which cannot grow past twelve entries.
+	// The voice detector (YIN, services/voice-input.ts) reports a note once it
+	// has held ~200 ms. We accumulate across the whole attempt rather than
+	// reading one snapshot — a held note only has to be caught once.
+	// Accumulation is into a pitch-class SET, which is all the grader reads and
+	// which cannot grow past twelve entries.
 
 	import { onDestroy } from 'svelte';
 	import { t } from '$lib/i18n';
-	import { AudioInputService, type AudioInputState } from '$lib/services/audio-input';
+	import type { AudioInputState } from '$lib/services/audio-input';
+	import { VoiceInputService } from '$lib/services/voice-input';
 	import { Mic } from 'lucide-svelte';
 
 	interface Props {
@@ -31,7 +33,7 @@
 
 	const NOTE_NAMES = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
 
-	let mic: AudioInputService | null = null;
+	let mic: VoiceInputService | null = null;
 	let micState = $state<AudioInputState>('idle');
 	let listening = $state(false);
 	let level = $state(0);
@@ -54,7 +56,7 @@
 		heardSet = new Set();
 		listening = true;
 		onstart?.();
-		mic = new AudioInputService();
+		mic = new VoiceInputService();
 		mic.onConnection((s) => (micState = s));
 		mic.onNotes((notes) => {
 			if (notes.size === 0) return;
@@ -128,7 +130,6 @@
 			<div>
 				<div class="mb-1 flex items-center justify-between text-[var(--text-xs)] text-[var(--text-muted)]">
 					<span>{t('togo.sing_level')}</span>
-					{#if micState === 'loading-model'}<span>{t('togo.listen')}</span>{/if}
 				</div>
 				<div class="h-2.5 w-full overflow-hidden rounded-full bg-[var(--border)]">
 					<div
