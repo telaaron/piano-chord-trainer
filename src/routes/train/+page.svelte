@@ -1292,6 +1292,8 @@
 		// After the result screen has painted, so it lands on top of a result
 		// rather than interrupting the moment the last chord is graded.
 		setTimeout(() => {
+			// Never stack on the daily-goal question; the offer waits for next time.
+			if (showOnboarding) return;
 			if (offer === 'mail') practiceMailOpen = true;
 			else syncOfferOpen = true;
 		}, 1200);
@@ -2258,7 +2260,9 @@
 
 	/** Open the daily-goal question if this is the moment (see needsOnboarding). */
 	function maybeAskDailyGoal() {
-		if (!habitProfile || showOnboarding) return;
+		// A post-session offer still open goes first; the goal question comes
+		// the next time the player is back on the setup screen.
+		if (!habitProfile || showOnboarding || practiceMailOpen || syncOfferOpen) return;
 		const ask = needsOnboarding({
 			profileDone: habitProfile.onboardingDone,
 			sessionCount: countPracticeSessions(loadHistory().map((h) => h.timestamp)),
