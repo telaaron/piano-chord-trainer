@@ -33,6 +33,19 @@ extension SavedSettings {
         case metronomeBpm
     }
 
+    /// `stored` with only the fields that changed from `old` to `new`, so a view
+    /// holding an older copy never writes back values that sync updated meanwhile.
+    static func patched(stored: SavedSettings, old: SavedSettings, new: SavedSettings) -> SavedSettings {
+        let encoder = JSONEncoder()
+        guard let s = try? JSONDecoder().decode(JSONValue.self, from: encoder.encode(stored)).object,
+              let o = try? JSONDecoder().decode(JSONValue.self, from: encoder.encode(old)).object,
+              let n = try? JSONDecoder().decode(JSONValue.self, from: encoder.encode(new)).object,
+              let data = try? encoder.encode(JSONValue.object(s.merging(n.filter { o[$0.key] != $0.value }) { _, changed in changed })),
+              let result = try? JSONDecoder().decode(SavedSettings.self, from: data)
+        else { return new }
+        return result
+    }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         func field<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T {
@@ -80,6 +93,14 @@ enum Store {
     }
 
     /// The stored JSON as-is, for sync (keeps fields the typed model doesn't know).
+    /// Load for a store that persists the whole value back. `locked` means a
+    /// file exists but doesn't decode (a newer shape, e.g. written by the web):
+    /// the store must not save over it, or the account's data is lost.
+    static func loadGuarded<T: Decodable>(_ type: T.Type, _ key: String) -> (value: T?, locked: Bool) {
+        let value = load(type, key)
+        return (value, value == nil && exists(key))
+    }
+
     static func exists(_ key: String) -> Bool { FileManager.default.fileExists(atPath: url(key).path) }
 
     static func loadRaw(_ key: String) -> JSONValue? { load(JSONValue.self, key) }

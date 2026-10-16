@@ -158,9 +158,15 @@ struct SettingsView: View {
             await ReminderScheduler.shared.refreshAuthorization()
             reminderDenied = ReminderScheduler.shared.isEnabled && ReminderScheduler.shared.authorization == .denied
         }
-        .onChange(of: settings) { _, new in
-            ProgressStore.saveSettings(new)
+        .onChange(of: settings) { old, new in
+            let stored = ProgressStore.loadSettings()
+            let patched = SavedSettings.patched(stored: stored, old: old, new: new)
+            if patched != stored { ProgressStore.saveSettings(patched) }
             AudioEngine.shared.setPreset(SoundPreset(rawValue: new.soundPreset) ?? .grandPiano)
+        }
+        // Sign-in or a pull brought the account's settings: show them.
+        .onChange(of: SyncService.shared.revision) { _, _ in
+            settings = ProgressStore.loadSettings()
         }
         .onChange(of: reminderOn) { _, on in
             Task {

@@ -16,7 +16,7 @@ enum SyncMerge {
     /// Combine this device's data with the account's. `keepLocal: false` is the
     /// "don't bring my device data" choice: the account replaces what it has,
     /// local-only keys stay. `preferLocal: true` is for uploads: the device's
-    /// own edits are the newest, so they win where the account would otherwise.
+    /// own edits are the newest, so they win plain keys and profile preferences.
     static func merge(local: SyncData, cloud: SyncData, keepLocal: Bool = true,
                       preferLocal: Bool = false) -> SyncData {
         var out = local
@@ -24,7 +24,7 @@ enum SyncMerge {
             guard keepLocal, let l = local[key] else { out[key] = c; continue }
             switch key {
             case historyKey: out[key] = mergeHistory(l, c)
-            case profileKey: out[key] = mergeProfile(l, c)
+            case profileKey: out[key] = mergeProfile(l, c, preferLocal: preferLocal)
             case streakKey: out[key] = mergeStreak(l, c)
             case settingsKey: out[key] = preferLocal ? mergeFields(c, l) : mergeFields(l, c)
             default: out[key] = preferLocal ? l : c
@@ -62,10 +62,17 @@ enum SyncMerge {
         return n == n.rounded() && abs(n) < 1e15 ? String(Int64(n)) : String(n)
     }
 
-    private static func mergeProfile(_ local: JSONValue, _ cloud: JSONValue) -> JSONValue {
+    /// Choices the player makes; on upload the device's own choice is the newest.
+    static let profilePreferences = ["dailyGoalMinutes", "preferredTime", "practiceAnchor",
+                                     "notificationsEnabled", "notificationTime"]
+
+    private static func mergeProfile(_ local: JSONValue, _ cloud: JSONValue, preferLocal: Bool) -> JSONValue {
         guard let l = local.object else { return cloud }
         guard let c = cloud.object else { return local }
         var base = (c["totalXP"]?.number ?? 0) > (l["totalXP"]?.number ?? 0) ? c : l
+        if preferLocal {
+            for key in profilePreferences { if let v = l[key] { base[key] = v } }
+        }
         base["onboardingDone"] = .bool((l["onboardingDone"]?.bool ?? false) || (c["onboardingDone"]?.bool ?? false))
         return .object(base)
     }

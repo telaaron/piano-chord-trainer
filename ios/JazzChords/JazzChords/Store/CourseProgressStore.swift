@@ -13,14 +13,23 @@ final class CourseProgressStore {
 
     private var all: [String: CourseProgress]
 
+    /// The file holds a shape this build can't read: never save over it.
+    private var locked = false
+
     private init() {
-        all = Store.load([String: CourseProgress].self, StoreKey.courseProgress) ?? [:]
+        let loaded = Store.loadGuarded([String: CourseProgress].self, StoreKey.courseProgress)
+        all = loaded.value ?? [:]
+        locked = loaded.locked
     }
 
-    private func persist() { Store.save(all, StoreKey.courseProgress) }
+    private func persist() { if !locked { Store.save(all, StoreKey.courseProgress) } }
 
     /// Re-read after sync wrote the account's progress.
-    func reload() { all = Store.load([String: CourseProgress].self, StoreKey.courseProgress) ?? all }
+    func reload() {
+        let loaded = Store.loadGuarded([String: CourseProgress].self, StoreKey.courseProgress)
+        all = loaded.value ?? all
+        locked = loaded.locked
+    }
 
     func progress(for course: Course) -> CourseProgress {
         if let p = all[course.id] { return p }

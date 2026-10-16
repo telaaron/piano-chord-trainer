@@ -23,14 +23,23 @@ final class ToGoStore {
     let deck: [TheoryCard]
 
     private init() {
-        cardStates = Store.load([String: TheoryCardState].self, StoreKey.togoCards) ?? [:]
+        let loaded = Store.loadGuarded([String: TheoryCardState].self, StoreKey.togoCards)
+        cardStates = loaded.value ?? [:]
+        locked = loaded.locked
         deck = buildTheoryDeck(.flats)
     }
 
-    private func persist() { Store.save(cardStates, StoreKey.togoCards) }
+    /// The file holds a shape this build can't read: never save over it.
+    private var locked = false
+
+    private func persist() { if !locked { Store.save(cardStates, StoreKey.togoCards) } }
 
     /// Re-read after sync wrote the account's card states.
-    func reload() { cardStates = Store.load([String: TheoryCardState].self, StoreKey.togoCards) ?? cardStates }
+    func reload() {
+        let loaded = Store.loadGuarded([String: TheoryCardState].self, StoreKey.togoCards)
+        cardStates = loaded.value ?? cardStates
+        locked = loaded.locked
+    }
 
     // ─── Reads ──────────────────────────────────────────────
 

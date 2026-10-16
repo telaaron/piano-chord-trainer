@@ -106,7 +106,10 @@ final class SyncService {
             return
         }
         guard currentUser == user else { return }
-        let merged = SyncMerge.merge(local: SyncKeys.snapshot(read: read), cloud: cloud)
+        // Edits not uploaded yet (a failed upload, or saved while fetching) are
+        // newer than the account's copy: keep them instead of reverting them.
+        let merged = SyncMerge.merge(local: SyncKeys.snapshot(read: read), cloud: cloud,
+                                     preferLocal: isDirty)
         applyToStores(merged)
         lastCloud = cloud
         if SyncKeys.payload(local: merged, lastCloud: cloud) != cloud {

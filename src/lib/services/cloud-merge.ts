@@ -30,12 +30,24 @@ function mergeHistory(local: unknown, cloud: unknown): unknown {
 		.slice(0, MAX_HISTORY);
 }
 
-function mergeProfile(local: unknown, cloud: unknown): unknown {
+/** Choices the player makes; on upload the device's own choice is the newest. */
+const PROFILE_PREFERENCES = [
+	'dailyGoalMinutes',
+	'preferredTime',
+	'practiceAnchor',
+	'notificationsEnabled',
+	'notificationTime',
+];
+
+function mergeProfile(local: unknown, cloud: unknown, preferLocal: boolean): unknown {
 	if (!isObj(local)) return cloud;
 	if (!isObj(cloud)) return local;
 	const l = local as Profile;
 	const c = cloud as Profile;
-	const base = (c.totalXP ?? 0) > (l.totalXP ?? 0) ? cloud : local;
+	const base: Record<string, unknown> = { ...((c.totalXP ?? 0) > (l.totalXP ?? 0) ? cloud : local) };
+	if (preferLocal) {
+		for (const key of PROFILE_PREFERENCES) if (key in local) base[key] = local[key];
+	}
 	return { ...base, onboardingDone: Boolean(l.onboardingDone || c.onboardingDone) };
 }
 
@@ -53,7 +65,7 @@ function mergeStreak(local: unknown, cloud: unknown): unknown {
  * `keepLocal: false` is the explicit "don't bring my device data" choice at
  * login: the account replaces whatever it has, local-only keys stay.
  * `preferLocal: true` is for uploads: this device's edits are the newest, so
- * they win plain keys; history, profile and streak still merge.
+ * they win plain keys and profile preferences; history, XP and streak still merge.
  */
 export function mergeSyncData(
 	local: SyncData,
@@ -69,7 +81,7 @@ export function mergeSyncData(
 		} else if (key === HISTORY_KEY) {
 			out[key] = mergeHistory(l, c);
 		} else if (key === PROFILE_KEY) {
-			out[key] = mergeProfile(l, c);
+			out[key] = mergeProfile(l, c, preferLocal);
 		} else if (key === STREAK_KEY) {
 			out[key] = mergeStreak(l, c);
 		} else {

@@ -17,14 +17,23 @@ final class CoachStore {
     /// The full persisted coach state. Read by the UI for teacher-talk / frontier.
     private(set) var state: CoachState
 
+    /// The file holds a shape this build can't read: never save over it.
+    private var locked = false
+
     private init() {
-        state = Store.load(CoachState.self, StoreKey.coachState) ?? createInitialCoachState()
+        let loaded = Store.loadGuarded(CoachState.self, StoreKey.coachState)
+        state = loaded.value ?? createInitialCoachState()
+        locked = loaded.locked
     }
 
-    private func persist() { Store.save(state, StoreKey.coachState) }
+    private func persist() { if !locked { Store.save(state, StoreKey.coachState) } }
 
     /// Re-read after sync wrote the account's state.
-    func reload() { state = Store.load(CoachState.self, StoreKey.coachState) ?? state }
+    func reload() {
+        let loaded = Store.loadGuarded(CoachState.self, StoreKey.coachState)
+        state = loaded.value ?? state
+        locked = loaded.locked
+    }
 
     // ─── Reads ──────────────────────────────────────────────
 
