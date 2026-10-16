@@ -204,6 +204,7 @@
 			<li><a href="/learn/ii-v-i">The ii-V-I progression explained</a></li>
 			<li><a href="/learn/rootless-voicings">Rootless voicings: A and B forms</a></li>
 			<li><a href="/learn/jazz-piano-voicings">Jazz piano voicings: the complete guide</a></li>
+			<li><a href="/learn/jazz-voicing-practice-apps">Apps to practice jazz voicings, compared</a></li>
 		</ul>
 	</aside>
 </article>

@@ -13,6 +13,7 @@ const STATIC_PAGES: SitemapPage[] = [
 	{ path: '/learn/jazz-piano-voicings', priority: 0.9, freq: 'weekly', updated: '2026-07-26' },
 	{ path: '/learn/ii-v-i', priority: 0.9, freq: 'weekly', updated: '2026-10-16' },
 	{ path: '/learn/ii-v-i-all-keys', priority: 0.9, freq: 'monthly', updated: '2026-10-16' },
+	{ path: '/learn/jazz-voicing-practice-apps', priority: 0.8, freq: 'monthly', updated: '2026-10-16' },
 	{ path: '/learn/rootless-voicings', priority: 0.9, freq: 'weekly', updated: '2026-07-26' },
 	{ path: '/for-educators', priority: 0.8, freq: 'monthly', updated: '2026-07-30' },
 	{ path: '/open-studio', priority: 0.7, freq: 'monthly', updated: '2026-07-30' },
