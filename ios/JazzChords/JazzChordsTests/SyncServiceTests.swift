@@ -125,6 +125,19 @@ final class SyncServiceTests: XCTestCase {
         XCTAssertEqual(files["history"], .array([session("browser", 7)]))
     }
 
+    func testUploadKeepsSessionsAnotherDeviceAddedMeanwhile() async {
+        let sync = makeService()
+        _ = await sync.hydrate(userId: "u1")
+        // The browser uploads a session; this device hasn't pulled since.
+        await remote.set(row: ["chord-trainer-history": .array([session("browser", 7)])], for: "u1")
+        files["history"] = .array([session("phone", 8)])
+        sync.markDirty()
+        await sync.flush()
+        let last = await remote.upserts.last?.1
+        XCTAssertEqual(last?["chord-trainer-history"], .array([session("phone", 8), session("browser", 7)]))
+        XCTAssertEqual(files["history"], .array([session("phone", 8), session("browser", 7)]))
+    }
+
     func testOnlySyncedKeysMarkDirty() {
         XCTAssertTrue(SyncService.isSynced(key: "history"))
         XCTAssertFalse(SyncService.isSynced(key: "plan-history"))
