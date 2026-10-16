@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 //
 // Sound presets:
-//   grand-piano     Tone.Sampler with Salamander grand piano samples (CDN)
+//   grand-piano     Tone.Sampler with Salamander grand piano samples (self-hosted)
 //   electric-piano  PolySynth<FMSynth>  — Rhodes-like FM synthesis
 //   vibraphone      PolySynth<FMSynth>  — mellow bell mallet sound
 //   organ           PolySynth<Synth>    — jazz organ drawbar harmonics
@@ -198,13 +198,19 @@ function disposeInstrumentOnly(): void {
  * @param time      – precise audio-context time (from Transport callback).
  *                    If omitted, uses Tone.now() (= "now").
  */
-function triggerChordSync(toneNotes: string[], duration: string, time?: number): void {
+function triggerChordSync(toneNotes: string[], duration: string, time?: number, velocities?: number[]): void {
 	const inst = getInstrument();
 	const t = time ?? _tone!.now();
 
 	// Release previous notes at exactly the same instant
 	releaseAllVoices(t);
 	activeNotes = toneNotes;
+
+	if (velocities) {
+		// One call per note: Tone takes a single velocity per call.
+		toneNotes.forEach((n, i) => inst.triggerAttackRelease(n, duration, t, velocities[i] ?? 1));
+		return;
+	}
 
 	if ('triggerAttackRelease' in inst) {
 		// PolySynth — takes array directly
@@ -224,18 +230,46 @@ function triggerChordSync(toneNotes: string[], duration: string, time?: number):
  * COLD PATH (first call): Loads Tone.js, starts AudioContext, waits for
  * Sampler samples if needed.  Subsequent calls take the hot path.
  */
-export async function playChord(notes: string[], duration: string = '2n'): Promise<void> {
-	const toneNotes = notesToToneNames(notes);
+export async function playChord(
+	notes: string[],
+	duration: string = '2n',
+	{ forEar = false }: { forEar?: boolean } = {},
+): Promise<void> {
+	let toneNotes = notesToToneNames(notes);
+	let velocities: number[] | undefined;
+	if (forEar) ({ notes: toneNotes, velocities } = earVoicing(toneNotes));
 
 	// ── Hot path: everything ready → fire synchronously ──
 	if (instrumentReady()) {
-		triggerChordSync(toneNotes, duration);
+		triggerChordSync(toneNotes, duration, undefined, velocities);
 		return;
 	}
 
 	// ── Cold path: first call or samples still loading ──
 	await prepareInstrument();
-	triggerChordSync(toneNotes, duration);
+	triggerChordSync(toneNotes, duration, undefined, velocities);
+}
+
+/**
+ * Voicing for ear training: the root doubled an octave below and played
+ * louder than the upper voices.
+ *
+ * Played flat, a close-position chord puts the 7th on top, and the ear hears
+ * the top voice and higher pitches as loudest: rendered at equal velocity, the
+ * maj7 of Cmaj7 measures ~6.5 dB(A) above the root, more on phone speakers. The
+ * listener then has to work down from the 7th to find the root. A bass root
+ * under a softer upper structure is how a jazz bassist and pianist voice it.
+ *
+ * @param toneNotes octave-qualified notes, root first (as notesToToneNames gives)
+ */
+export function earVoicing(toneNotes: string[]): { notes: string[]; velocities: number[] } {
+	const [root, ...upper] = toneNotes;
+	const m = /^([A-G][#b]?)(-?\d+)$/.exec(root);
+	const bass = m ? `${m[1]}${Number(m[2]) - 1}` : root;
+	return {
+		notes: [bass, root, ...upper],
+		velocities: [0.8, 0.9, ...upper.map(() => 0.4)],
+	};
 }
 
 /**
