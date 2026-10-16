@@ -80,6 +80,15 @@ final class SyncMergeTests: XCTestCase {
         XCTAssertEqual(items.count, 1)
     }
 
+    func testSettingsMergePerFieldKeepsIOSOnlyFields() {
+        let key = SyncMerge.settingsKey
+        let local: SyncData = [key: .object(["totalChords": .number(20), "soundPreset": .string("rhodes")])]
+        let cloud: SyncData = [key: .object(["totalChords": .number(36), "midiEnabled": .bool(false)])]
+        XCTAssertEqual(SyncMerge.merge(local: local, cloud: cloud)[key], .object([
+            "totalChords": .number(36), "soundPreset": .string("rhodes"), "midiEnabled": .bool(false),
+        ]))
+    }
+
     func testJSONValueRoundTripsThroughJSON() throws {
         let raw = #"{"a":[1,2.5,"x",true,null],"b":{"c":false}}"#.data(using: .utf8)!
         let value = try JSONDecoder().decode(JSONValue.self, from: raw)
