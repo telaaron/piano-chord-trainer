@@ -20,6 +20,7 @@
 		2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0867EC7118FCB35AE3C9028E /* TodayView.swift */; };
 		3315287D8A2ED6594BF622F8 /* TrackRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BAFB2095FACF8748114BDB1 /* TrackRow.swift */; };
 		3651ED9A3655F85B06830155 /* LeadSheetStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56840CFB4B8DE2498845F64C /* LeadSheetStrip.swift */; };
+		3898D326B8AA7B651DA85F69 /* TrainerCloseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B577A5A44A68066B2D1B2 /* TrainerCloseTests.swift */; };
 		44B8C4456407179C239F8054 /* HabitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */; };
 		4628FC298C745E08E8916FCE /* StatsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFFD22673E4CAA738349DE1 /* StatsRow.swift */; };
 		4B82778E6A2032DE544806F7 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DDA2D43A556F2895D50C30 /* Components.swift */; };
@@ -151,6 +152,7 @@
 		F7FEDEE711344352652D8123 /* MusicEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MusicEngine; path = ../MusicEngine; sourceTree = SOURCE_ROOT; };
 		F9BA5D75F259CC5D39A10793 /* InstrumentSerif-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Regular.ttf"; sourceTree = "<group>"; };
 		F9FAF667A155B74E85E6CCF1 /* FunctionGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGrid.swift; sourceTree = "<group>"; };
+		FB7B577A5A44A68066B2D1B2 /* TrainerCloseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerCloseTests.swift; sourceTree = "<group>"; };
 		FDACE9F657B8CFF1C4FF3805 /* MicInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicInput.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -232,6 +234,7 @@
 				2CB92CE1A7659F62D2811B04 /* KeyboardColorTests.swift */,
 				BCCDF2B612FF243D3FD6C286 /* PaletteTests.swift */,
 				84A9B25B0CC9832C0C3D4428 /* TodayChordPreviewTests.swift */,
+				FB7B577A5A44A68066B2D1B2 /* TrainerCloseTests.swift */,
 				1EFD17EC42CC41BF5829AB3C /* TypographyTests.swift */,
 			);
 			path = JazzChordsTests;
@@ -527,6 +530,7 @@
 				EC65AEEABC2906DA6A9AB3BB /* KeyboardColorTests.swift in Sources */,
 				976D740101D7A3D52D2440C5 /* PaletteTests.swift in Sources */,
 				1A8D3647BAEE51A7EBB667ED /* TodayChordPreviewTests.swift in Sources */,
+				3898D326B8AA7B651DA85F69 /* TrainerCloseTests.swift in Sources */,
 				F4AEDF57E08BFDE5248CFAC1 /* TypographyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
