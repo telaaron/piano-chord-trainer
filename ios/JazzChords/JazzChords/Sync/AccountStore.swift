@@ -145,9 +145,9 @@ final class AccountStore {
 
     private struct DeleteFailed: Error {}
 
-    static let wrongPassword = Strings.pick("E-mail or password is wrong", "E-Mail oder Passwort stimmt nicht")
-    static let offline = Strings.pick("No connection", "Keine Verbindung")
-    static let failed = Strings.pick("Sign-in failed", "Anmeldung fehlgeschlagen")
+    nonisolated static var wrongPassword: String { Strings.pick("E-mail or password is wrong", "E-Mail oder Passwort stimmt nicht") }
+    nonisolated static var offline: String { Strings.pick("No connection", "Keine Verbindung") }
+    nonisolated static var failed: String { Strings.pick("Sign-in failed", "Anmeldung fehlgeschlagen") }
 
     /// `URLError` means the network; anything else gets the action's own message.
     nonisolated static func message(for error: Error, fallback: String) -> String {

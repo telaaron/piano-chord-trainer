@@ -14,7 +14,7 @@ final class SyncService {
 
     static let shared = SyncService(remote: SupabaseUserData(),
                                     read: Store.loadRaw,
-                                    write: Store.saveRaw)
+                                    write: { key, value in Store.saveRaw(value, key) })
 
     private(set) var status: Status = .idle
     /// Bumped whenever account data changed this device's stores; views reload on it.
