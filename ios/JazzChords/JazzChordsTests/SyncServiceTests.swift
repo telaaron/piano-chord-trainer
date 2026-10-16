@@ -138,6 +138,18 @@ final class SyncServiceTests: XCTestCase {
         XCTAssertEqual(files["history"], .array([session("phone", 8), session("browser", 7)]))
     }
 
+    func testLocalSettingChangeSurvivesUpload() async {
+        await remote.set(row: ["chord-trainer-settings": .object(["totalChords": .number(20)])], for: "u1")
+        let sync = makeService()
+        _ = await sync.hydrate(userId: "u1")
+        files["settings"] = .object(["totalChords": .number(36)])
+        sync.markDirty()
+        await sync.flush()
+        let last = await remote.upserts.last?.1
+        XCTAssertEqual(last?["chord-trainer-settings"], .object(["totalChords": .number(36)]))
+        XCTAssertEqual(files["settings"], .object(["totalChords": .number(36)]))
+    }
+
     func testOnlySyncedKeysMarkDirty() {
         XCTAssertTrue(SyncService.isSynced(key: "history"))
         XCTAssertFalse(SyncService.isSynced(key: "plan-history"))

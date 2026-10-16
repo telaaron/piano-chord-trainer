@@ -89,6 +89,18 @@ final class SyncMergeTests: XCTestCase {
         ]))
     }
 
+    func testPreferLocalKeepsDeviceEditsButStillUnionsHistory() {
+        let K = SyncMerge.settingsKey
+        let local: SyncData = [K: .object(["totalChords": .number(36)]), "x": .string("device"),
+                               H: .array([session("a", 2)])]
+        let cloud: SyncData = [K: .object(["totalChords": .number(20), "midiEnabled": .bool(false)]),
+                               "x": .string("account"), H: .array([session("b", 1)])]
+        let merged = SyncMerge.merge(local: local, cloud: cloud, preferLocal: true)
+        XCTAssertEqual(merged[K], .object(["totalChords": .number(36), "midiEnabled": .bool(false)]))
+        XCTAssertEqual(merged["x"], .string("device"))
+        XCTAssertEqual(ids(merged[H]), ["a", "b"])
+    }
+
     func testJSONValueRoundTripsThroughJSON() throws {
         let raw = #"{"a":[1,2.5,"x",true,null],"b":{"c":false}}"#.data(using: .utf8)!
         let value = try JSONDecoder().decode(JSONValue.self, from: raw)
