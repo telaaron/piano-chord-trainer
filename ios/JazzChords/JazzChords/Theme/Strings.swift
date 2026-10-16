@@ -137,21 +137,21 @@ enum Strings {
         "major-minor-3rd": "Major & Minor 3rd",
         "tritone": "The Tritone",
         "perfect-5th": "The Perfect 5th",
-        "dim5-aug5": "Diminished & Augmented 5th",
+        "dim5-aug5": "Flat & Sharp 5th",
         "major-6th": "The Major 6th",
         "minor-7th": "The Minor 7th",
         "major-7th": "The Major 7th",
         "ninths": "The 9th",
         "elevenths-thirteenths": "11th & 13th",
-        "I-maj7": "Degree I — Maj7 (Tonic)",
-        "vi-m7": "Degree vi — m7 (Tonic Sub)",
-        "iii-m7": "Degree iii — m7 (Mediant)",
-        "IV-maj7": "Degree IV — Maj7 (Subdominant)",
-        "ii-m7": "Degree ii — m7 (Subdominant Sub)",
-        "V-7": "Degree V — Dom7 (Dominant)",
-        "vii-m7b5": "Degree vii° — m7♭5 (Dominant Sub)",
+        "I-maj7": "I — Tonic (Maj7)",
+        "vi-m7": "vi — Tonic Sub (m7)",
+        "iii-m7": "iii — Mediant (m7)",
+        "IV-maj7": "IV — Subdominant",
+        "ii-m7": "ii — Subdominant (m7)",
+        "V-7": "V — Dominant (7)",
+        "vii-m7b5": "vii — Dominant Sub",
         "ii-V-I": "The ii-V-I Progression",
-        "turnaround": "The Turnaround (I-vi-ii-V)",
+        "turnaround": "Turnaround I–vi–ii–V",
         "fund-maj7": "Major 7th (Maj7)",
         "fund-dom7": "Dominant 7th (7)",
         "fund-m7": "Minor 7th (m7)",
@@ -187,28 +187,28 @@ enum Strings {
     ]
     private static let lessonTitlesDe: [String: String] = [
         "maj7": "Dur-Septakkord (Maj7)",
-        "dom7": "Dominant-Septakkord (7)",
+        "dom7": "Dominant-Sept (7)",
         "m7": "Moll-Septakkord (m7)",
-        "major-minor-3rd": "Große & kleine Terz",
+        "major-minor-3rd": "Terzen",
         "tritone": "Der Tritonus",
         "perfect-5th": "Die reine Quinte",
-        "dim5-aug5": "Verminderte & übermäßige Quinte",
+        "dim5-aug5": "Quinten: ♭5 & ♯5",
         "major-6th": "Die große Sexte",
         "minor-7th": "Die kleine Septime",
         "major-7th": "Die große Septime",
         "ninths": "Die None (9th)",
-        "elevenths-thirteenths": "Undezime & Tredezime (11th & 13th)",
-        "I-maj7": "Stufe I — Maj7 (Tonika)",
-        "vi-m7": "Stufe vi — m7 (Tonika-Stellvertreter)",
-        "iii-m7": "Stufe iii — m7 (Mediane)",
-        "IV-maj7": "Stufe IV — Maj7 (Subdominante)",
-        "ii-m7": "Stufe ii — m7 (Subdominant-Stellvertreter)",
-        "V-7": "Stufe V — Dom7 (Dominante)",
-        "vii-m7b5": "Stufe vii° — m7♭5 (Dominante-Stellvertreter)",
+        "elevenths-thirteenths": "Undezime & Tredezime",
+        "I-maj7": "I — Tonika (Maj7)",
+        "vi-m7": "vi — Tonika-Ersatz",
+        "iii-m7": "iii — Mediante (m7)",
+        "IV-maj7": "IV — Subdominante",
+        "ii-m7": "ii — Subdominante (m7)",
+        "V-7": "V — Dominante (7)",
+        "vii-m7b5": "vii — Dominant-Ersatz",
         "ii-V-I": "Die ii-V-I Verbindung",
-        "turnaround": "Der Turnaround (I-vi-ii-V)",
+        "turnaround": "Turnaround I–vi–ii–V",
         "fund-maj7": "Dur-Septakkord (Maj7)",
-        "fund-dom7": "Dominant-Septakkord (7)",
+        "fund-dom7": "Dominant-Sept (7)",
         "fund-m7": "Moll-Septakkord (m7)",
         "shell-maj7": "Maj7 Shell",
         "shell-dom7": "Dom7 Shell",
@@ -218,9 +218,9 @@ enum Strings {
         "sixth-m7b5": "Halbvermindert (m7♭5)",
         "sixth-dim7": "Vermindert (dim7)",
         "ninth-maj9": "Dur-Nonenakkord (Maj9)",
-        "ninth-9": "Dominant-Nonenakkord (9)",
+        "ninth-9": "Dominant-None (9)",
         "ninth-m9": "Moll-Nonenakkord (m9)",
-        "ninth-69": "Sext-Nonen-Akkord (6/9)",
+        "ninth-69": "Sext-None (6/9)",
         "full-maj7": "Maj7 Full Voicing",
         "full-dom7": "Dom7 Full Voicing",
         "full-m7": "m7 Full Voicing",
@@ -240,6 +240,11 @@ enum Strings {
         "adv-m11": "Moll 11 (m11)",
         "adv-13": "Dominant 13 (13)",
     ]
+
+    /// Every known lesson title in one language (for the length check).
+    static func allLessonTitles(german: Bool) -> [String: String] {
+        german ? lessonTitlesDe : lessonTitlesEn
+    }
 
     static func lessonTitle(_ id: String) -> String {
         pick(lessonTitlesEn, lessonTitlesDe)[id] ?? humanizedLessonTitle(id)
@@ -327,7 +332,6 @@ enum Strings {
     static var listen: String { pick("Listen", "Anhören") }
     static var keepPracticing: String { pick("Keep practicing", "Weiter üben") }
     static var chordPreviewHint: String { pick("Shows how to play it", "Zeigt den Griff") }
-    static var sideB: String { pick("Side B · Pick it yourself", "Seite B · Selbst wählen") }
     static var statDaysInRow: String { pick("days in a row", "Tage in Folge") }
     static var statPerChord: String { pick("per chord", "pro Akkord") }
     static var statSessions: String { pick("sessions", "Sessions") }
@@ -351,14 +355,6 @@ enum Strings {
     /// "1,8 s" / "1.8 s" — locale decimal separator.
     static func seconds(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(1)).locale(CoachL10n.isGerman ? Locale(identifier: "de_DE") : Locale(identifier: "en_US"))) + " s"
-    }
-
-    /// "DO · 15. OKT / SESSION 7" (uppercased by EyebrowText).
-    static func todayEyebrow(date: Date, session: Int) -> String {
-        let locale = Locale(identifier: CoachL10n.isGerman ? "de_DE" : "en_US")
-        let day = date.formatted(.dateTime.weekday(.abbreviated).locale(locale)).replacingOccurrences(of: ".", with: "")
-        let dm = date.formatted(.dateTime.day().month(.abbreviated).locale(locale))
-        return "\(day) · \(dm) / Session \(session)"
     }
 
     /// "HEUTE DRAN · 5 MIN · 24 AKKORDE".
@@ -388,4 +384,35 @@ enum Strings {
     static func pathEyebrow(lessons: Int) -> String { pick("The path · \(lessons) lessons", "Der Weg · \(lessons) Lektionen") }
     static var ownWay: String { pick("Your own way", "Auf eigene Faust") }
     static func plansEyebrow(_ n: Int) -> String { pick("\(n) plans", "\(n) Pläne") }
+
+    // MARK: Heute for newcomers (spec §1)
+
+    /// "Donnerstag, 16. Oktober".
+    static func todayDate(_ date: Date) -> String {
+        let locale = Locale(identifier: CoachL10n.isGerman ? "de_DE" : "en_US")
+        return date.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(locale))
+    }
+    static var welcome: String { pick("Welcome", "Willkommen") }
+    static var firstStepEyebrow: String { pick("Your first step", "Dein erster Schritt") }
+    static var firstStepTitle: String {
+        pick("A quick check: we listen to what you already know.", "Ein kurzer Check: Wir hören, was du schon kannst.")
+    }
+    static var firstStepChips: [(symbol: String, words: String)] {
+        [("Δ7", pick("Major seventh", "Dur-Septakkord")),
+         ("7", pick("Dominant", "Dominant")),
+         ("–7", pick("Minor seventh", "Moll-Sept"))]
+    }
+    static var startCheck: String { pick("Start check", "Check starten") }
+    static var checkNote: String { pick("3 minutes · no pressure", "3 Minuten · kein Druck") }
+    static var guideTitle: String { pick("How it works", "So funktioniert’s") }
+    static var guideHide: String { pick("Hide", "Ausblenden") }
+    static var guideSteps: [(title: String, body: String)] {
+        [(pick("Take the check.", "Check machen."), pick("Then the coach knows where you stand.", "Der Coach weiß danach, wo du stehst.")),
+         (pick("Five minutes a day.", "Täglich 5 Minuten."), pick("A fitting plan every day.", "Jeden Tag ein passender Plan.")),
+         (pick("Shapes stick.", "Griffe sitzen."), pick("You see which chords you know for sure.", "Du siehst, welche Akkorde du sicher kannst."))]
+    }
+    static var justPlay: String { pick("Or just start playing", "Oder einfach losspielen") }
+    static var warmupLine: String { pick("Easy chords to get going", "Leichte Akkorde zum Einspielen") }
+    static var toGoLine: String { pick("Practise chords in your head, on the go", "Akkorde unterwegs im Kopf üben") }
+    static var weakSpotsLine: String { pick("Your slowest chords, once more", "Deine langsamsten Akkorde, noch einmal") }
 }

@@ -21,12 +21,11 @@ struct LearnView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.space5) {
                 EditorialHeader(eyebrow: Strings.learnEyebrow(lessons: totalLessons),
-                                title: CoachL10n.t("nav.learn")) {
-                    SettingsHeaderButton()
-                }
+                                title: CoachL10n.t("nav.learn"))
                 NavigationLink { CourseDetailView(course: featured) } label: { featureBlock }
                     .buttonStyle(.plain)
                 contents
+                guides
             }
             .padding(.horizontal, isPad ? Theme.space6 : Theme.space4)
             .padding(.top, Theme.space3)
@@ -50,6 +49,24 @@ struct LearnView: View {
                         .frame(maxWidth: 110)
                     Text(Strings.xOfY(done, total))
                         .font(.footnote.weight(.medium))
+                }
+            }
+        }
+    }
+
+    /// The website's guide articles, readable offline (spec §4).
+    private var guides: some View {
+        let list = GuideLibrary.all(german: CoachL10n.isGerman)
+        return VStack(alignment: .leading, spacing: Theme.space2) {
+            EyebrowText(SettingsText.t("Guides", "Guides"))
+                .padding(.leading, Theme.space4)
+            TrackGroup {
+                ForEach(Array(list.enumerated()), id: \.element.id) { index, guide in
+                    NavigationLink { GuideView(guide: guide) } label: {
+                        TrackRow(icon: "book.pages", title: guide.title,
+                                 showsDivider: index < list.count - 1)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }

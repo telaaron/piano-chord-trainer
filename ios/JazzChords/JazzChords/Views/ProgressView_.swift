@@ -18,9 +18,7 @@ struct ProgressView_: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.space5) {
-                EditorialHeader(eyebrow: Strings.progressEyebrow(level: habits.levelInfo.level), title: CoachL10n.t("nav.progress")) {
-                    SettingsHeaderButton()
-                }
+                EditorialHeader(eyebrow: Strings.progressEyebrow(level: habits.levelInfo.level), title: CoachL10n.t("nav.progress"))
                 if history.isEmpty {
                     EmptyStateView(
                         systemImage: "chart.line.uptrend.xyaxis",
