@@ -128,11 +128,18 @@ final class SyncService {
         status = .idle
     }
 
+    /// Read, merge, write: the row is replaced whole, so merge in what other
+    /// devices uploaded since our last look instead of overwriting it.
     private func upload(_ user: String) async {
         isDirty = false
         status = .syncing
-        let payload = SyncKeys.payload(local: SyncKeys.snapshot(read: read), lastCloud: lastCloud)
         do {
+            let cloud = try await remote.fetch(userId: user) ?? [:]
+            guard currentUser == user else { return }
+            let merged = SyncMerge.merge(local: SyncKeys.snapshot(read: read), cloud: cloud,
+                                         preferLocal: true)
+            applyToStores(merged)
+            let payload = SyncKeys.payload(local: merged, lastCloud: cloud)
             try await remote.upsert(userId: user, data: payload)
             guard currentUser == user else { return }
             lastCloud = payload

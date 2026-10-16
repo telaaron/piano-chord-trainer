@@ -15,8 +15,10 @@ enum SyncMerge {
 
     /// Combine this device's data with the account's. `keepLocal: false` is the
     /// "don't bring my device data" choice: the account replaces what it has,
-    /// local-only keys stay.
-    static func merge(local: SyncData, cloud: SyncData, keepLocal: Bool = true) -> SyncData {
+    /// local-only keys stay. `preferLocal: true` is for uploads: the device's
+    /// own edits are the newest, so they win where the account would otherwise.
+    static func merge(local: SyncData, cloud: SyncData, keepLocal: Bool = true,
+                      preferLocal: Bool = false) -> SyncData {
         var out = local
         for (key, c) in cloud {
             guard keepLocal, let l = local[key] else { out[key] = c; continue }
@@ -24,8 +26,8 @@ enum SyncMerge {
             case historyKey: out[key] = mergeHistory(l, c)
             case profileKey: out[key] = mergeProfile(l, c)
             case streakKey: out[key] = mergeStreak(l, c)
-            case settingsKey: out[key] = mergeFields(l, c)
-            default: out[key] = c
+            case settingsKey: out[key] = preferLocal ? mergeFields(c, l) : mergeFields(l, c)
+            default: out[key] = preferLocal ? l : c
             }
         }
         return out
@@ -68,11 +70,11 @@ enum SyncMerge {
         return .object(base)
     }
 
-    /// Account wins field by field, so fields only iOS writes (sound, metronome)
-    /// survive the browser saving its smaller settings object.
-    private static func mergeFields(_ local: JSONValue, _ cloud: JSONValue) -> JSONValue {
-        guard let l = local.object, let c = cloud.object else { return cloud }
-        return .object(l.merging(c) { _, account in account })
+    /// `winner` wins field by field, so fields only iOS writes (sound,
+    /// metronome) survive the browser saving its smaller settings object.
+    private static func mergeFields(_ other: JSONValue, _ winner: JSONValue) -> JSONValue {
+        guard let o = other.object, let w = winner.object else { return winner }
+        return .object(o.merging(w) { _, win in win })
     }
 
     private static func mergeStreak(_ local: JSONValue, _ cloud: JSONValue) -> JSONValue {
