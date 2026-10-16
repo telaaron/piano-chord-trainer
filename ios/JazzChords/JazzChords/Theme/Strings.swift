@@ -327,7 +327,6 @@ enum Strings {
     static var listen: String { pick("Listen", "Anhören") }
     static var keepPracticing: String { pick("Keep practicing", "Weiter üben") }
     static var chordPreviewHint: String { pick("Shows how to play it", "Zeigt den Griff") }
-    static var sideB: String { pick("Side B · Pick it yourself", "Seite B · Selbst wählen") }
     static var statDaysInRow: String { pick("days in a row", "Tage in Folge") }
     static var statPerChord: String { pick("per chord", "pro Akkord") }
     static var statSessions: String { pick("sessions", "Sessions") }
@@ -351,14 +350,6 @@ enum Strings {
     /// "1,8 s" / "1.8 s" — locale decimal separator.
     static func seconds(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(1)).locale(CoachL10n.isGerman ? Locale(identifier: "de_DE") : Locale(identifier: "en_US"))) + " s"
-    }
-
-    /// "DO · 15. OKT / SESSION 7" (uppercased by EyebrowText).
-    static func todayEyebrow(date: Date, session: Int) -> String {
-        let locale = Locale(identifier: CoachL10n.isGerman ? "de_DE" : "en_US")
-        let day = date.formatted(.dateTime.weekday(.abbreviated).locale(locale)).replacingOccurrences(of: ".", with: "")
-        let dm = date.formatted(.dateTime.day().month(.abbreviated).locale(locale))
-        return "\(day) · \(dm) / Session \(session)"
     }
 
     /// "HEUTE DRAN · 5 MIN · 24 AKKORDE".
@@ -388,4 +379,35 @@ enum Strings {
     static func pathEyebrow(lessons: Int) -> String { pick("The path · \(lessons) lessons", "Der Weg · \(lessons) Lektionen") }
     static var ownWay: String { pick("Your own way", "Auf eigene Faust") }
     static func plansEyebrow(_ n: Int) -> String { pick("\(n) plans", "\(n) Pläne") }
+
+    // MARK: Heute for newcomers (spec §1)
+
+    /// "Donnerstag, 16. Oktober".
+    static func todayDate(_ date: Date) -> String {
+        let locale = Locale(identifier: CoachL10n.isGerman ? "de_DE" : "en_US")
+        return date.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(locale))
+    }
+    static var welcome: String { pick("Welcome", "Willkommen") }
+    static var firstStepEyebrow: String { pick("Your first step", "Dein erster Schritt") }
+    static var firstStepTitle: String {
+        pick("A quick check: we listen to what you already know.", "Ein kurzer Check: Wir hören, was du schon kannst.")
+    }
+    static var firstStepChips: [(symbol: String, words: String)] {
+        [("Δ7", pick("Major seventh", "Dur-Septakkord")),
+         ("7", pick("Dominant", "Dominant")),
+         ("–7", pick("Minor seventh", "Moll-Sept"))]
+    }
+    static var startCheck: String { pick("Start check", "Check starten") }
+    static var checkNote: String { pick("3 minutes · no pressure", "3 Minuten · kein Druck") }
+    static var guideTitle: String { pick("How it works", "So funktioniert’s") }
+    static var guideHide: String { pick("Hide", "Ausblenden") }
+    static var guideSteps: [(title: String, body: String)] {
+        [(pick("Take the check.", "Check machen."), pick("Then the coach knows where you stand.", "Der Coach weiß danach, wo du stehst.")),
+         (pick("Five minutes a day.", "Täglich 5 Minuten."), pick("A fitting plan every day.", "Jeden Tag ein passender Plan.")),
+         (pick("Shapes stick.", "Griffe sitzen."), pick("You see which chords you know for sure.", "Du siehst, welche Akkorde du sicher kannst."))]
+    }
+    static var justPlay: String { pick("Or just start playing", "Oder einfach losspielen") }
+    static var warmupLine: String { pick("Easy chords to get going", "Leichte Akkorde zum Einspielen") }
+    static var toGoLine: String { pick("Practise chords in your head, on the go", "Akkorde unterwegs im Kopf üben") }
+    static var weakSpotsLine: String { pick("Your slowest chords, once more", "Deine langsamsten Akkorde, noch einmal") }
 }

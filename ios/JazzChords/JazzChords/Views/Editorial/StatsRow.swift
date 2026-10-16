@@ -79,6 +79,18 @@ struct StatsRow: View {
     }
 }
 
+extension StatsRow {
+    /// Today's stats with real numbers only: a stat without data is left out
+    /// instead of showing "0" or "–" (spec §1).
+    nonisolated static func items(streak: Int, avgMs: Double?, sessions: Int) -> [StatItem] {
+        var out: [StatItem] = []
+        if streak > 0 { out.append(StatItem(value: "\(streak)", label: Strings.statDaysInRow)) }
+        if let avgMs, avgMs > 0 { out.append(StatItem(value: Strings.seconds(avgMs / 1000), label: Strings.statPerChord)) }
+        if sessions > 0 { out.append(StatItem(value: "\(sessions)", label: Strings.statSessions)) }
+        return out
+    }
+}
+
 #Preview("Stats") {
     StatsRow(items: [
         StatItem(value: "4", label: "Tage in Folge"),

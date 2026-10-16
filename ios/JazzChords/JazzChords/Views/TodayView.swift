@@ -1,6 +1,7 @@
-// Today — the daily home in the editorial layout: eyebrow + serif title, the one
-// red feature block (today's coach session with its chords), stats as
-// typography, then "Side B" tracklist for picking a session yourself.
+// Today — the daily home in the editorial layout: date + serif title, the one
+// red feature block (the first-step check for newcomers, else today's coach
+// session with its chords), "So funktioniert's" for newcomers or stats with real
+// numbers, then a plain list to just start playing (spec §1).
 
 import SwiftUI
 import MusicEngine
@@ -21,6 +22,7 @@ struct TodayView: View {
     @State private var startToGo = false
     @State private var refreshToken = 0
     @State private var previewChord: PreviewChord?
+    @State private var guideDismissed = NewcomerGuideStore.dismissed
 
     private var isPad: Bool { hSize == .regular }
 
@@ -36,6 +38,12 @@ struct TodayView: View {
     }
     private func recentPlanIds() -> [String] {
         Store.load([String].self, StoreKey.planHistory) ?? []
+    }
+
+    private var stage: TodayStage {
+        TodayStage.of(sessions: history.count, calibrated: CoachStore.shared.isCalibrated,
+                      firstLaunch: NewcomerGuideStore.firstLaunch, now: Date(),
+                      dismissed: guideDismissed)
     }
 
     private var greeting: String {
@@ -82,9 +90,8 @@ struct TodayView: View {
         VStack(alignment: .leading, spacing: Theme.space5) {
             header
             feature
-            stats
-            sideB
-            motivationLine
+            guideOrStats
+            justPlay
         }
         .padding(.horizontal, Theme.space4)
         .padding(.top, Theme.space3)
@@ -99,12 +106,8 @@ struct TodayView: View {
             header
             feature
             HStack(alignment: .top, spacing: Theme.space6) {
-                sideB.frame(maxWidth: .infinity)
-                VStack(alignment: .leading, spacing: Theme.space5) {
-                    stats
-                    motivationLine
-                }
-                .frame(width: 340)
+                justPlay.frame(maxWidth: .infinity)
+                guideOrStats.frame(width: 340)
             }
         }
         .padding(Theme.space6)
@@ -114,14 +117,70 @@ struct TodayView: View {
     }
 
     private var header: some View {
-        EditorialHeader(eyebrow: Strings.todayEyebrow(date: Date(), session: history.count + 1),
-                        title: CoachL10n.t("nav.today")) {
-            SettingsEntryButton()
+        VStack(alignment: .leading, spacing: 2) {
+            Text(Strings.todayDate(Date()))
+                .font(.subheadline)
+                .foregroundStyle(palette.inkMuted)
+            EditorialHeader(title: stage.title == .welcome ? Strings.welcome : greeting) {
+                SettingsEntryButton()
+            }
         }
     }
 
-    /// The one red block: today's coach session. Tapping a chord previews it.
-    private var feature: some View {
+    /// The one red block: the first-step check for newcomers, else today's
+    /// coach session (tapping a chord previews it).
+    @ViewBuilder private var feature: some View {
+        if stage.showsFirstStep { firstStep } else { sessionFeature }
+    }
+
+    /// Newcomers: one plain invitation to the placement check.
+    private var firstStep: some View {
+        FeatureBlock(eyebrow: Strings.firstStepEyebrow, ghost: "Δ7") {
+            VStack(alignment: .leading, spacing: Theme.space3) {
+                Text(Strings.firstStepTitle)
+                    .font(Display.serif(28, relativeTo: .title2))
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: Theme.space2) {
+                    ForEach(Strings.firstStepChips, id: \.symbol) { chip in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(chip.symbol)
+                                .font(Display.chord(22, relativeTo: .title3))
+                            Text(chip.words)
+                                .font(.caption)
+                                .opacity(0.9)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, Theme.space2)
+                        .background(palette.onFeature.opacity(0.14),
+                                    in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+                // Equal chip heights even when one label wraps.
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        } action: {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Theme.space3) {
+                    PrimaryCapsule(title: Strings.startCheck, systemImage: "play.fill", inverted: true) {
+                        startCoach = true
+                    }
+                    Text(Strings.checkNote).font(.subheadline).opacity(0.9)
+                }
+                VStack(alignment: .leading, spacing: Theme.space2) {
+                    PrimaryCapsule(title: Strings.startCheck, systemImage: "play.fill", inverted: true) {
+                        startCoach = true
+                    }
+                    Text(Strings.checkNote).font(.subheadline).opacity(0.9)
+                }
+            }
+        }
+    }
+
+    private var sessionFeature: some View {
         let plan = coachPlan
         let chords = TodayChordPreview.chords(for: plan)
         let total = plan.blocks.reduce(0) { $0 + $1.targetChords }
@@ -215,61 +274,46 @@ struct TodayView: View {
         return full.hasPrefix(root) ? String(full.dropFirst(root.count)) : full
     }
 
-    private var stats: some View {
-        let s = computeStats(history)
-        return StatsRow(items: [
-            StatItem(value: "\(streak.current)", label: Strings.statDaysInRow),
-            StatItem(value: s.totalSessions > 0 ? Strings.seconds(s.overallAvgMs / 1000) : "—", label: Strings.statPerChord),
-            StatItem(value: "\(s.totalSessions)", label: Strings.statSessions),
-        ])
+    /// Newcomers get the three-step guide; everyone else the stats with real numbers.
+    @ViewBuilder private var guideOrStats: some View {
+        let st = stage
+        if st.showsGuide {
+            NewcomerGuide(done: st.guideDone) {
+                NewcomerGuideStore.dismissed = true
+                withAnimation { guideDismissed = true }
+            }
+        } else {
+            let s = computeStats(history)
+            let items = StatsRow.items(streak: streak.current,
+                                       avgMs: s.totalSessions > 0 ? s.overallAvgMs : nil,
+                                       sessions: s.totalSessions)
+            if !items.isEmpty { StatsRow(items: items) }
+        }
     }
 
-    /// "Side B": pick a session yourself — suggested plan, weak spots, To-Go.
-    private var sideB: some View {
+    /// "Oder einfach losspielen": plain rows to start without the coach.
+    private var justPlay: some View {
         VStack(alignment: .leading, spacing: Theme.space2) {
-            EyebrowText(Strings.sideB)
+            EyebrowText(Strings.justPlay)
                 .padding(.leading, Theme.space4)
             TrackGroup {
                 Button { startSuggested = true } label: {
-                    TrackRow(badge: Strings.voicingBadge(suggested.settings.voicing),
-                             title: planTitle(suggested.id), meta: planMeta(suggested), showsDivider: true)
+                    TrackRow(icon: "flame", title: planTitle(suggested.id), subtitle: Strings.warmupLine,
+                             meta: planMeta(suggested), showsDivider: true)
                 }
                 .buttonStyle(.plain)
                 if let plan = weakDrillPlan {
                     Button { startWeakDrill = true } label: {
-                        TrackRow(badge: plan.focusRoots?.first.map(Notation.root) ?? "?",
-                                 title: CoachL10n.t("results.drill_weak"), meta: weakDrillMeta(plan), showsDivider: true)
+                        TrackRow(icon: "scope", title: CoachL10n.t("results.drill_weak"),
+                                 subtitle: Strings.weakSpotsLine, meta: weakDrillMeta(plan), showsDivider: true)
                     }
                     .buttonStyle(.plain)
                 }
                 Button { startToGo = true } label: {
-                    TrackRow(badge: "♪", title: CoachL10n.t(CoachL10n.ToGo.entry), meta: nil)
+                    TrackRow(icon: "headphones", title: CoachL10n.t(CoachL10n.ToGo.entry), subtitle: Strings.toGoLine)
                 }
                 .buttonStyle(.plain)
             }
-        }
-    }
-
-    /// Week dots and the daily nudge, set as one quiet line instead of a card.
-    private var motivationLine: some View {
-        let m = getDailyMotivation(habits.profile, streak)
-        let dots = weekDots()
-        return HStack(alignment: .firstTextBaseline, spacing: Theme.space3) {
-            HStack(spacing: 4) {
-                ForEach(0..<7, id: \.self) { i in
-                    Circle()
-                        .fill(dots[i] ? palette.music : palette.hairline)
-                        .frame(width: 8, height: 8)
-                }
-            }
-            .accessibilityHidden(true)
-            Label {
-                Text(motivationText(m))
-            } icon: {
-                Image(systemName: motivationIcon(m.type))
-            }
-            .font(.subheadline)
-            .foregroundStyle(palette.inkMuted)
         }
     }
 
@@ -290,37 +334,7 @@ struct TodayView: View {
         return CoachL10n.t("ui.slowest_chords_detail", ["voicing": v, "roots": roots])
     }
 
-    private func motivationIcon(_ t: MotivationType) -> String {
-        switch t {
-        case .streakAtRisk: return "flame.fill"
-        case .notStarted: return "pianokeys"
-        case .justStarted: return "music.note"
-        case .almostThere: return "bolt.fill"
-        case .goalReached: return "checkmark.seal.fill"
-        case .extraCredit: return "star.fill"
-        }
-    }
-
     // MARK: helpers
-
-    private func weekDots() -> [Bool] {
-        var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(identifier: "UTC")!
-        let f = DateFormatter()
-        f.calendar = cal; f.locale = Locale(identifier: "en_US_POSIX")
-        f.timeZone = cal.timeZone; f.dateFormat = "yyyy-MM-dd"
-
-        let today = Date()
-        let weekday = cal.component(.weekday, from: today)
-        let jsDay = weekday - 1
-        let fromMonday = jsDay == 0 ? 6 : jsDay - 1
-        let monday = cal.date(byAdding: .day, value: -fromMonday, to: today)!
-        let goalSet = Set(habits.profile.dailyGoalDates)
-        return (0..<7).map { i in
-            let d = cal.date(byAdding: .day, value: i, to: monday)!
-            return goalSet.contains(f.string(from: d))
-        }
-    }
 
     private func planTitle(_ id: String) -> String { Strings.planName(id) }
     private func planSubtitle(_ plan: PracticePlan) -> String {
@@ -330,19 +344,5 @@ struct TodayView: View {
         let chords = CoachL10n.plural("count.chords", plan.settings.totalChords)
         return "\(v) · \(prog) · \(chords)"
     }
-    /// Motivation copy (the engine returns i18n keys + params).
-    private func motivationText(_ m: DailyMotivation) -> String {
-        func param(_ k: String) -> String { m.messageParams[k] ?? "" }
-        switch m.type {
-        // Whole-sentence plural: German recasts around the count ("Serie von 1 Tag"),
-        // so the count cannot just be spliced into a fixed template.
-        case .streakAtRisk:
-            return CoachL10n.plural("motivation.streak_at_risk", Int(param("days")) ?? 0)
-        case .notStarted: return CoachL10n.t("habit.motivation_not_started", ["minutes": param("minutes")])
-        case .justStarted: return CoachL10n.t("habit.motivation_keep_going", ["remaining": param("remaining")])
-        case .almostThere: return CoachL10n.t("habit.motivation_almost", ["remaining": param("remaining")])
-        case .goalReached: return CoachL10n.t("habit.motivation_goal_reached")
-        case .extraCredit: return CoachL10n.t("habit.motivation_extra", ["practiced": param("practiced")])
-        }
-    }
+
 }
