@@ -8,8 +8,8 @@
 
 	// C major ii-V-I, the worked example.
 	const example = [
-		{ degree: 'ii', chord: 'Dm7', slug: 'cm7', shell: 'D – F – C', note: 'minor 7th' },
-		{ degree: 'V', chord: 'G7', slug: 'c7', shell: 'G – B – F', note: 'dominant 7th' },
+		{ degree: 'ii', chord: 'Dm7', slug: 'dm7', shell: 'D – F – C', note: 'minor 7th' },
+		{ degree: 'V', chord: 'G7', slug: 'g7', shell: 'G – B – F', note: 'dominant 7th' },
 		{ degree: 'I', chord: 'Cmaj7', slug: 'cmaj7', shell: 'C – E – B', note: 'major 7th' },
 	];
 
@@ -117,7 +117,7 @@
 		</div>
 		<ol class="steps">
 			<li>Play the ii-V-I in C with shell voicings until it is effortless.</li>
-			<li>Move around the circle of fourths: C → F → B♭ → E♭ …</li>
+			<li>Move around the circle of fourths: C → F → B♭ → E♭ … (see the <a href="/learn/ii-v-i-all-keys">chart for all 12 keys</a>).</li>
 			<li>Switch to rootless A and B voicings for a professional sound.</li>
 			<li>Use the trainer’s weakness analysis to find your three slowest keys, then drill only those.</li>
 		</ol>
@@ -130,6 +130,7 @@
 	<aside class="related">
 		<p class="plate-mark blue">Related</p>
 		<ul>
+			<li><a href="/learn/ii-v-i-all-keys">ii-V-I in all 12 keys — printable chart</a></li>
 			<li><a href="/learn/jazz-piano-voicings">Jazz piano voicings — the complete guide</a></li>
 			<li><a href="/learn/rootless-voicings">Rootless voicings explained</a></li>
 			<li><a href="/chords/cmaj7">Cmaj7 voicings</a> · <a href="/chords/c7">C7 voicings</a> · <a href="/chords/cm7">Cm7 voicings</a></li>
@@ -345,6 +346,7 @@
 		color: var(--text-muted);
 	}
 	.steps li { margin-bottom: 0.5rem; }
+	.steps a { color: var(--primary); text-decoration: underline; text-underline-offset: 0.15em; }
 	.steps li::marker {
 		font-family: var(--font-mono);
 		font-size: 0.8125rem;
