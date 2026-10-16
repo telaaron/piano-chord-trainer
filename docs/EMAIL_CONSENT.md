@@ -16,7 +16,26 @@ Opt-in only, double opt-in via Brevo, every change logged.
    unsubscribe link in any mail (Brevo blacklists; picked up on next read).
    Account deletion deletes the Brevo contact; `email_consents` cascades.
 
-Current state per user: `v_email_consent_current` (service role).
+Current state per address: `v_email_consent_current` (service role).
+
+## Weekly practice mail opt-in (retention sprint, 16.10.2026)
+
+- Asked once per device after the first finished session (coach or drill),
+  in `PracticeMailSheet`; the order against the account offer is in
+  `src/lib/services/post-session-offer.ts`.
+- Works **without an account**: `POST /api/practice-reminder { email }`
+  appends a `pending` row with `user_id = null`, `source = 'prompt'`, and
+  sends Brevo's double opt-in. The confirm link lands on `/updates/confirmed`
+  (no login needed). No device id is stored with the address: the privacy
+  policy promises the telemetry id is never linked to an email.
+- Abuse limits: one confirmation mail per address per 24 h, 30 anonymous
+  opt-ins per hour overall, a honeypot field.
+- Wording is `v2-2026-10-16` (weekly exercise + occasional news).
+  **Addresses whose latest consent is `v1-2026-10-13` agreed to "a few per
+  month" about features only: exclude them from the weekly mail** (check
+  `v_email_consent_current.text_version` before each send).
+- Anonymous opt-ins are not reconciled to `confirmed` in `email_consents`;
+  Brevo's list (and its DOI timestamp) is the proof of confirmation.
 
 ## Who may be mailed
 

@@ -131,3 +131,23 @@ describe('isShellVoicing — which drills refuse extra notes', () => {
 		}
 	});
 });
+
+// ── Spelling does not depend on the accidental preference ─────────────────────
+// The coach runs on 'flats'; chord tones used to follow it, so beginners saw
+// EMaj7 as E Ab B Eb. The preference names roots, theory spells the tones.
+describe('getChordNotes spelling', () => {
+	it('EMaj7 under flats is E G# B D#', () => {
+		expect(getChordNotes('E', 'Maj7', 'flats')).toEqual(['E', 'G#', 'B', 'D#']);
+	});
+	it('GMaj7 under flats is G B D F#', () => {
+		expect(getChordNotes('G', 'Maj7', 'flats')).toEqual(['G', 'B', 'D', 'F#']);
+	});
+	it('Bb7 under sharps is Bb D F Ab', () => {
+		expect(getChordNotes('Bb', '7', 'sharps')).toEqual(['Bb', 'D', 'F', 'Ab']);
+	});
+	it('the same chord spells the same under every preference', () => {
+		for (const pref of ['flats', 'sharps', 'both'] as const) {
+			expect(getChordNotes('A', 'm7', pref)).toEqual(['A', 'C', 'E', 'G']);
+		}
+	});
+});

@@ -634,7 +634,7 @@ export const en = {
 
   educators: {
     title: 'Jazz Piano Voicing Trainer for Music Schools & Online Platforms | Chord Trainer',
-    meta_desc: 'Embed a professional MIDI voicing trainer into your jazz education platform — Open Studio, Jazz-Academy, Pianote, Learn Jazz Standards, or your own teaching site. White-label, MIDI, progress tracking.',
+    meta_desc: 'Embed a professional MIDI voicing trainer into your jazz education platform — Open Studio, Jazz-Academy, Pianote, Learn Jazz Standards, or your own teaching site. Embeddable, MIDI, drill links for homework.',
     badge: 'For Jazz Education Platforms, Music Schools & Private Teachers',
     hero_h1_gradient: '"Take it through all 12 keys"',
     hero_h1_b: "Now there's a tool for that.",
@@ -656,7 +656,7 @@ export const en = {
     platform_open_studio: 'Async drill companion to live sessions & Harmony Games',
     platform_jazz_academy: 'Complement video theory lessons with hands-on drill',
     platform_learn_jazz: 'Practice the standards your students are learning',
-    platform_private_teachers: 'Assign drills as homework — track student results',
+    platform_private_teachers: 'Send drill links with fixed voicings and keys as homework',
     
     // What to train
     what_students_train: 'What students can train',
@@ -674,12 +674,12 @@ export const en = {
     train_metronome: 'Built-in metronome',
 
     integration_title: 'Integration Options',
-    integration_white_label: 'White-Label Integration',
-    integration_white_label_desc: 'Embed directly into your platform with your branding. Custom colors, logo, and domain. Your students never leave your site.',
+    integration_white_label: 'Embed in your site',
+    integration_white_label_desc: 'Embed the trainer in your site via iFrame, with a matching colour theme. Your students never leave your site.',
     integration_trial: 'Free 30-Day Trial',
-    integration_trial_desc: 'Test with your members at zero risk. Full functionality, MIDI support, progress tracking. See engagement metrics before committing.',
+    integration_trial_desc: 'Test with your students at zero risk. Full functionality and MIDI support.',
     integration_licensing: 'Flexible Licensing',
-    integration_licensing_desc: 'Flat monthly fee or revenue share. Built-in analytics to track member engagement.',
+    integration_licensing_desc: 'Flat monthly fee or revenue share, depending on size.',
     
     how_it_works: 'How Integration Works',
     how_step1: 'Embed via iframe or Widget',
@@ -687,7 +687,7 @@ export const en = {
     how_step2: 'Share Practice Links',
     how_step2_desc: 'Send students direct links to specific drills (e.g. "Week 3 - Rootless A over F Blues"). No login required.',
     how_step3: 'Track Progress',
-    how_step3_desc: 'Students see their own history. Optional LTI integration to pass grades back to your LMS.',
+    how_step3_desc: 'Students see their own history and weak spots. A teacher view with every student\'s progress is in the works.',
     
     see_live_widget: 'See the embed widget live',
     cta_title: "Let's talk",
@@ -1053,7 +1053,7 @@ export const en = {
     p_ios: 'The JazzChords app for iPhone and iPad needs no account and stores your progress only on your device. Only if you agree (when you first open the app, or later under Settings → Anonymous Usage Data) does it send the same <strong>anonymous practice events</strong> as described in 1.4, with a random device ID; without your consent nothing is sent. You can withdraw consent there at any time, which also deletes the device ID. If you use the <strong>microphone</strong>, the sound is analysed on your device only and is never recorded, stored or uploaded. Bluetooth is used only to connect MIDI keyboards. If you turn on the daily reminder, it is scheduled as a local notification on your device; no data is sent for it.',
     
     h_email_updates: '1.7 Email updates',
-    p_email_updates: 'Only if you explicitly agree (checkbox at signup or in your <a href="/account" class="underline">account settings</a>) do we send you emails about new features, courses and the JazzChords app. The subscription only takes effect after you click the confirmation link in a separate email (double opt-in). To be able to prove your consent we store your email address, the wording you agreed to and when you subscribed, confirmed and unsubscribed. Emails are sent via <strong>Brevo</strong> (Sendinblue SAS, Paris, France) as our processor within the EU. The legal basis is your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time via the link in every email or in your account settings. If you delete your account, we also delete the contact at Brevo.',
+    p_email_updates: 'Only if you explicitly agree (checkbox at signup, in your <a href="/account" class="underline">account settings</a>, or after a session in the trainer, there also without an account) do we send you one exercise per week and occasional emails about new features, courses and the JazzChords app. Without an account we store only your email address for this; it is not linked to the telemetry device ID. The subscription only takes effect after you click the confirmation link in a separate email (double opt-in). To be able to prove your consent we store your email address, the wording you agreed to and when you subscribed, confirmed and unsubscribed. Emails are sent via <strong>Brevo</strong> (Sendinblue SAS, Paris, France) as our processor within the EU. The legal basis is your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time via the link in every email or in your account settings. If you delete your account, we also delete the contact at Brevo.',
 
     h_no_collect: '2. Data We Do NOT Collect',
     li_no_account: 'No account required — accounts are optional and only used for cross-device sync',
@@ -1966,6 +1966,25 @@ export const en = {
     faq_trial_a: 'You get 7 days of full Studio access and we do not ask for a card. When the week is up the trial simply ends — there is nothing to cancel and nothing is charged. If you want to carry on, you add a payment method then.',
     faq_guarantee_q: 'What\'s the money-back guarantee?',
     faq_guarantee_a: 'If you\'re not happy for any reason, email info@jazzchords.app within 30 days of your first payment and we refund you in full. We\'re confident in the product, so the risk is ours.',
+  },
+
+  practice_mail: {
+    title: 'Keep going next week?',
+    desc: 'One 5-minute exercise every Monday, straight to your inbox, with a link that starts right there. No account needed.',
+    email_label: 'Email address',
+    email_placeholder: 'you@example.com',
+    cta: 'Yes, remind me',
+    later: 'Not now',
+    sending: 'Sending …',
+    sent_title: 'Almost there.',
+    sent_desc: 'We sent you an email. Click the confirmation link in it and your first exercise arrives on Monday.',
+    already: 'You are already subscribed. See you on Monday.',
+    close: 'Close',
+    error_email: 'That does not look like an email address.',
+    error_generic: 'That did not work. Please try again later.',
+    confirmed_page_title: 'Confirmed.',
+    confirmed_page_desc: 'From Monday you get a 5-minute exercise every week. Unsubscribe with one click in any email.',
+    confirmed_page_cta: 'Practise a round now',
   },
 
   sync_offer: {

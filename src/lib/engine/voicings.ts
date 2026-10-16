@@ -1,7 +1,7 @@
 // Voicing calculation – which notes to play for each voicing type
 
 import type { AccidentalPreference, NotationSystem } from './notes';
-import { noteToSemitone, getNoteName, convertNoteName, ENHARMONIC_MAP, spellChordNotes } from './notes';
+import { noteToSemitone, convertNoteName, ENHARMONIC_MAP, spellChordNotes } from './notes';
 import { CHORD_INTERVALS, CHORD_NOTATIONS, type NotationStyle, type VoicingType } from './chords';
 
 export interface ChordWithNotes {
@@ -22,11 +22,13 @@ export function getChordNotes(root: string, quality: string, pref: AccidentalPre
 	const rootSemi = noteToSemitone(root);
 	const intervals = CHORD_INTERVALS[quality];
 	if (!intervals || rootSemi === -1) return [];
-	// 'both' = let chord theory drive the spelling (no doubled letters, quality-
-	// aware): Cm7 → C Eb G Bb, not C D# G A#. Explicit 'sharps'/'flats' (chosen
-	// by the user in the trainer) keep the simple chromatic spelling.
-	if (pref === 'both') return spellChordNotes(root, intervals);
-	return intervals.map((iv) => getNoteName(rootSemi, iv, pref));
+	// Chord theory drives the spelling of the chord tones (no doubled letters,
+	// quality-aware): Cm7 → C Eb G Bb, EMaj7 → E G# B D#. The preference only
+	// decides how ROOTS are named (pool, chord symbol). It used to spell the
+	// tones too, so the coach — which runs on 'flats' — showed beginners
+	// EMaj7 as E Ab B Eb and GMaj7 as G B D Gb (Jazz Lead, 16.10.2026).
+	void pref;
+	return spellChordNotes(root, intervals);
 }
 
 /**
@@ -36,10 +38,9 @@ export function getChordNotes(root: string, quality: string, pref: AccidentalPre
 function getNinth(root: string, pref: AccidentalPreference): string {
 	const rootSemi = noteToSemitone(root);
 	if (rootSemi === -1) return '';
-	// Spell the 9th as a proper second above the root (e.g. C → D, Eb → F),
-	// quality-aware under 'both'; chromatic otherwise.
-	if (pref === 'both') return spellChordNotes(root, [0, 2])[1];
-	return getNoteName(rootSemi, 14, pref);
+	// Spell the 9th as a proper second above the root (e.g. C → D, Eb → F, E → F#).
+	void pref;
+	return spellChordNotes(root, [0, 2])[1];
 }
 
 /**

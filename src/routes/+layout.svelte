@@ -11,6 +11,7 @@
 	import BrandMark from '$lib/components/BrandMark.svelte';
 	import { browser } from '$app/environment';
 	import { initAnalytics } from '$lib/services/analytics';
+	import { captureCampaign } from '$lib/services/campaign';
 	import { trainFocus } from '$lib/services/train-focus.svelte';
 
 	let { children } = $props();
@@ -53,6 +54,7 @@
 	$effect(() => {
 		if (!browser || isEmbedRoute) return;
 		initAnalytics();
+		captureCampaign(new URL(window.location.href), sessionStorage);
 	});
 
 	$effect(() => {

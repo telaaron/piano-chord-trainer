@@ -87,6 +87,14 @@ export interface CoachParams {
 	weights: CoachWeights;
 	/** How many chords the one-time calibration drill presents. */
 	calibrationChords: number;
+	/**
+	 * Whether players without MIDI or microphone get the calibration drill.
+	 * Off: tapping four notes on a one-octave screen keyboard measures the
+	 * screen, not the player, and only 19 of 72 such devices finished it
+	 * (MIDI: 24 of 35; 60 days to 15.10.2026). They start practising at the
+	 * bottom of the ladder instead. Remote-configurable via coach_config.
+	 */
+	calibrateWithoutInput: boolean;
 	/** Per "too easy / too hard" tap, how far difficultyBias moves. */
 	feedbackBiasStep: number;
 	/** Absolute clamp on difficultyBias (± this value). */
@@ -147,6 +155,7 @@ export const DEFAULT_COACH_PARAMS: CoachParams = {
 		focus: 10.0,
 	},
 	calibrationChords: 12,
+	calibrateWithoutInput: false,
 	feedbackBiasStep: 0.15,
 	feedbackBiasClamp: 0.5,
 	srsLapseDemotes: true,
