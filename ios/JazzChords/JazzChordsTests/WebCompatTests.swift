@@ -45,6 +45,18 @@ final class WebCompatTests: XCTestCase {
         XCTAssertFalse(missing.locked)
     }
 
+    func testSettingsPatchOnlyWritesTheFieldThatChanged() {
+        var stored = SavedSettings()
+        stored.totalChords = 36          // arrived from the account meanwhile
+        var old = SavedSettings()
+        old.totalChords = 20             // what the open sheet still shows
+        var new = old
+        new.metronomeEnabled = true      // the one thing the user changed
+        let result = SavedSettings.patched(stored: stored, old: old, new: new)
+        XCTAssertEqual(result.totalChords, 36)
+        XCTAssertTrue(result.metronomeEnabled)
+    }
+
     func testUnreadableStoredProfileIsNotOverwritten() {
         let decision = HabitStore.initialProfile(stored: nil, fileExists: true) { createDefaultProfile() }
         XCTAssertFalse(decision.save)
