@@ -231,6 +231,8 @@
 				<!-- Index of the back matter -->
 				<nav class="foot-links" aria-label={t('nav.footer_nav')}>
 					<a href="/learn">{t('nav.learn')}</a>
+					<a href="/learn/ii-v-i-all-keys">ii-V-I chart</a>
+					<a href="/de/voicings-linke-hand" lang="de" hreflang="de">Voicings (Deutsch)</a>
 					<a href="/for-educators">{t('nav.educators')}</a>
 					<a href="/pricing">{t('nav_auth.pricing')}</a>
 					<a href="/about">{t('nav.about')}</a>

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { ArrowRight, Play, Printer } from 'lucide-svelte';
-	import { buildIIVITable, type IIVIVoicing } from '$lib/seo/ii-v-i-keys';
+	import IIVIChart from '$lib/components/seo/IIVIChart.svelte';
+	import type { IIVIVoicing } from '$lib/seo/ii-v-i-keys';
 
 	const title = 'ii-V-I in All 12 Keys: Piano Chart with Shell & Rootless Voicings | jazzchords.app';
 	const description =
@@ -13,31 +13,15 @@
 		{ id: 'rootless-ba', label: 'Rootless B → A', hint: 'ii (B) → V (A) → I (B). Same idea, other register.' },
 	];
 
-	// All three tables are tiny and built at prerender time, so the toggle is
-	// instant and every version is in the static HTML.
-	const tables = Object.fromEntries(VOICINGS.map((v) => [v.id, buildIIVITable(v.id)])) as Record<
-		IIVIVoicing,
-		ReturnType<typeof buildIIVITable>
-	>;
-
-	let voicing = $state<IIVIVoicing>('shell');
-	const rows = $derived(tables[voicing]);
-	const hint = $derived(VOICINGS.find((v) => v.id === voicing)!.hint);
-
-	const pretty = (n: string) => n.replace('#', '♯').replace(/^([A-G])b/, '$1♭');
-
-	// Audio loads lazily on first tap so it never blocks prerender or first paint.
-	let playing = $state<string | null>(null);
-	async function playRow(key: string, voiced: string[][]) {
-		if (playing) return;
-		playing = key;
-		const { playChord } = await import('$lib/services/audio');
-		for (const notes of voiced) {
-			await playChord(notes, '2n');
-			await new Promise((r) => setTimeout(r, 850));
-		}
-		playing = null;
-	}
+	const CHART_TEXT = {
+		voicingGroup: 'Voicing',
+		print: 'Print',
+		notesHint: 'Notes are listed bottom to top.',
+		key: 'Key',
+		listen: 'Listen',
+		playAria: (key: string) => `Play ii-V-I in ${key}`,
+		cta: 'Drill these 12 keys with live feedback',
+	};
 
 	const faqSchema = {
 		'@context': 'https://schema.org',
@@ -84,6 +68,9 @@
 	<title>{title}</title>
 	<meta name="description" content={description} />
 	<link rel="canonical" href={canonical} />
+	<link rel="alternate" hreflang="en" href={canonical} />
+	<link rel="alternate" hreflang="de" href="https://jazzchords.app/de/ii-v-i-alle-tonarten" />
+	<link rel="alternate" hreflang="x-default" href={canonical} />
 	<meta property="og:type" content="article" />
 	<meta property="og:url" content={canonical} />
 	<meta property="og:title" content={title} />
@@ -111,68 +98,7 @@
 			<h2 id="chart-h">The chart</h2>
 		</div>
 
-		<div class="toolbar">
-			<div class="seg" role="radiogroup" aria-label="Voicing">
-				{#each VOICINGS as v (v.id)}
-					<button
-						type="button"
-						role="radio"
-						aria-checked={voicing === v.id}
-						class:active={voicing === v.id}
-						onclick={() => (voicing = v.id)}>{v.label}</button
-					>
-				{/each}
-			</div>
-			<button type="button" class="ghost" onclick={() => window.print()}>
-				<Printer size={16} aria-hidden="true" /> Print
-			</button>
-		</div>
-		<p class="hint">{hint} Notes are listed bottom to top.</p>
-
-		<table class="chart">
-			<thead>
-				<tr>
-					<th scope="col">Key</th>
-					<th scope="col"><span class="deg">ii</span></th>
-					<th scope="col"><span class="deg">V</span></th>
-					<th scope="col"><span class="deg">I</span></th>
-					<th scope="col" class="no-print"><span class="sr-only">Listen</span></th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each rows as row (row.key)}
-					<tr>
-						<th scope="row" class="key">{row.key}</th>
-						{#each row.chords as ch (ch.degree)}
-							<td>
-								{#if ch.slug}
-									<a class="chord" href={`/chords/${ch.slug}`}>{ch.name}</a>
-								{:else}
-									<span class="chord">{ch.name}</span>
-								{/if}
-								<span class="notes">{ch.notes.map(pretty).join(' ')}</span>
-							</td>
-						{/each}
-						<td class="no-print">
-							<button
-								type="button"
-								class="play"
-								aria-label={`Play ii-V-I in ${row.key}`}
-								disabled={playing !== null && playing !== row.key}
-								onclick={() => playRow(row.key, row.chords.map((c) => c.notes))}
-							>
-								<Play size={16} aria-hidden="true" />
-							</button>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-
-		<a class="cta no-print" href="/train">
-			Drill these 12 keys with live feedback
-			<ArrowRight size={18} aria-hidden="true" />
-		</a>
+		<IIVIChart voicings={VOICINGS} text={CHART_TEXT} />
 	</section>
 
 	<section aria-labelledby="how-h">
@@ -205,6 +131,7 @@
 			<li><a href="/learn/rootless-voicings">Rootless voicings: A and B forms</a></li>
 			<li><a href="/learn/jazz-piano-voicings">Jazz piano voicings: the complete guide</a></li>
 			<li><a href="/learn/jazz-voicing-practice-apps">Apps to practice jazz voicings, compared</a></li>
+			<li><a href="/de/ii-v-i-alle-tonarten" hreflang="de" lang="de">Diese Tabelle auf Deutsch</a></li>
 		</ul>
 	</aside>
 </article>
@@ -245,48 +172,6 @@
 	}
 	.hint { font-size: 0.875rem !important; line-height: 1.6 !important; color: var(--text-dim) !important; }
 
-	/* ── Toolbar ── */
-	.toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
-	.seg { display: inline-flex; border: 1.5px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
-	.seg button {
-		min-height: var(--tap-min); padding: 0 0.9rem; border: 0; background: transparent; color: var(--text-muted);
-		font-weight: 600; font-size: 0.875rem; cursor: pointer;
-	}
-	.seg button + button { border-left: 1.5px solid var(--border); }
-	.seg button.active { background: var(--primary); color: var(--primary-text); }
-	.ghost {
-		display: inline-flex; align-items: center; gap: 0.4rem; min-height: var(--tap-min); padding: 0 0.9rem;
-		border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text);
-		font-weight: 600; font-size: 0.875rem; cursor: pointer;
-	}
-
-	/* ── Chart ── */
-	.chart { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.75rem; font-variant-numeric: lining-nums; }
-	.chart th, .chart td { padding: 0.6rem 0.4rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
-	.chart thead th { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); }
-	.deg { font-family: var(--font-display); font-style: italic; font-size: 0.95rem; letter-spacing: 0; text-transform: none; color: var(--ink-blue); }
-	.key { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--text); width: 3rem; }
-	.chord { display: block; font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--text); text-decoration: none; }
-	a.chord:hover { color: var(--primary); }
-	.notes { display: block; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.15rem; }
-	.play {
-		display: grid; place-items: center; width: var(--tap-min); height: var(--tap-min);
-		border: 1.5px solid var(--border); border-radius: 999px; background: transparent; color: var(--text); cursor: pointer;
-	}
-	.play:disabled { opacity: 0.4; cursor: default; }
-	@media (max-width: 30rem) {
-		.chart th, .chart td { padding: 0.5rem 0.2rem; }
-		.chord { font-size: 0.95rem; }
-		.notes { font-size: 0.75rem; }
-	}
-
-	.cta {
-		display: inline-flex; align-items: center; gap: 0.5rem; min-height: var(--tap-min); padding: 0 1.4rem;
-		border: 1.5px solid var(--primary); border-radius: var(--radius-sm); background: var(--primary);
-		color: var(--primary-text); font-weight: 600; text-decoration: none;
-	}
-	.cta:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
-
 	.steps { max-width: 64ch; margin: 0 0 1.25rem; padding-left: 1.4rem; font-size: 1.0625rem; line-height: 1.75; color: var(--text-muted); }
 	.steps li { margin-bottom: 0.5rem; }
 
@@ -295,11 +180,8 @@
 	.related li { padding: 0.55rem 0; font-size: 0.9375rem; color: var(--text-muted); border-bottom: 1px solid var(--border); }
 	.related li:last-child { border-bottom: 0; }
 
-	.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-
 	@media print {
-		.no-print, .toolbar { display: none !important; }
+		.no-print { display: none !important; }
 		.lesson { padding: 0; max-width: none; }
-		.chart th, .chart td { padding: 0.35rem 0.3rem; }
 	}
 </style>
