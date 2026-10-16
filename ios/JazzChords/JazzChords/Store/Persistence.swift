@@ -42,7 +42,17 @@ enum Store {
     static func save<T: Encodable>(_ value: T, _ key: String) {
         guard let data = try? JSONEncoder().encode(value) else { return }
         try? data.write(to: url(key), options: .atomic)
+        onSave?(key)
     }
+
+    /// The stored JSON as-is, for sync (keeps fields the typed model doesn't know).
+    static func loadRaw(_ key: String) -> JSONValue? { load(JSONValue.self, key) }
+
+    static func saveRaw(_ value: JSONValue, _ key: String) { save(value, key) }
+
+    /// Called with the key after every save, so cloud sync knows the device changed.
+    /// Set once at launch, before any store saves.
+    nonisolated(unsafe) static var onSave: ((String) -> Void)?
 }
 
 /// Keys (string-stable, independent of the web's localStorage names).
