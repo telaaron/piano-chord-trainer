@@ -4,8 +4,9 @@
 
 	const title = 'Jazz-Voicings für die linke Hand: Shell und Rootless einfach erklärt | jazzchords.app';
 	const description =
-		'Deine linke Hand klingt nach Grundton-Oktaven? So kommst du in zwei Stufen zu Jazz-Voicings: erst Shell (1-3-7), dann Rootless A und B. Mit Tönen zum Nachspielen und Übeplan.';
+		'Deine linke Hand klingt nach Grundton-Oktaven? So kommst du in zwei Stufen zu Jazz-Voicings: erst Shell (1-3-7), dann Rootless A und B, dazu der Charleston-Rhythmus. Mit Tönen zum Nachspielen und Übeplan.';
 	const canonical = 'https://jazzchords.app/de/voicings-linke-hand';
+	const enUrl = 'https://jazzchords.app/learn/jazz-piano-left-hand';
 
 	// Example voicings come from the trainer's engine (II-V-I in C), so the page
 	// shows exactly what the drill will ask for.
@@ -47,6 +48,14 @@
 			},
 			{
 				'@type': 'Question',
+				name: 'Was ist der Charleston-Rhythmus beim Comping?',
+				acceptedAnswer: {
+					'@type': 'Answer',
+					text: 'Ein Begleitmuster mit zwei Anschlägen: ein kurzer Akkord auf Schlag 1, derselbe Akkord auf der „und“ von Schlag 2, danach Pause bis zum nächsten Takt. Er ist meist der erste Comping-Rhythmus, den man lernt, weil er Platz für die Melodie lässt und die linke Hand swingen lässt.',
+				},
+			},
+			{
+				'@type': 'Question',
 				name: 'Wie lange dauert es, Voicings in allen Tonarten zu lernen?',
 				acceptedAnswer: {
 					'@type': 'Answer',
@@ -61,6 +70,9 @@
 	<title>{title}</title>
 	<meta name="description" content={description} />
 	<link rel="canonical" href={canonical} />
+	<link rel="alternate" hreflang="de" href={canonical} />
+	<link rel="alternate" hreflang="en" href={enUrl} />
+	<link rel="alternate" hreflang="x-default" href={enUrl} />
 	<meta property="og:type" content="article" />
 	<meta property="og:url" content={canonical} />
 	<meta property="og:title" content={title} />
@@ -135,9 +147,30 @@
 		</p>
 	</section>
 
-	<section aria-labelledby="practice-h">
+	<section aria-labelledby="time-h">
 		<div class="sec-head">
 			<span class="rehearsal" aria-hidden="true">III</span>
+			<h2 id="time-h">Ins Timing bringen: der Charleston-Rhythmus</h2>
+		</div>
+		<p>
+			Die richtigen Töne auf jedem Schlag klingen trotzdem steif. Fang mit dem
+			Charleston an: ein kurzer Akkord auf Schlag 1, derselbe auf der „und“ von 2,
+			dann Pause bis zum nächsten Takt. Das lässt Platz für die Melodie und bringt die
+			linke Hand zum Swingen.
+		</p>
+		<p class="count" aria-label="Zählweise: Anschlag auf eins, Anschlag auf und von zwei, Pause auf drei und vier">
+			<span class="hit">1</span> + 2 <span class="hit">+</span> 3 + 4 +
+		</p>
+		<p>
+			Übe ihn mit Metronom auf 2 und 4, erst auf einer II-V-I, dann durch die Tonarten.
+			Sitzt der Charleston, probier Antizipationen: den nächsten Akkord schon auf der
+			„und“ von 4, kurz vor dem Taktstrich.
+		</p>
+	</section>
+
+	<section aria-labelledby="practice-h">
+		<div class="sec-head">
+			<span class="rehearsal" aria-hidden="true">IV</span>
 			<h2 id="practice-h">So übst du, ohne dass es zäh wird</h2>
 		</div>
 		<ol class="steps">
@@ -164,7 +197,7 @@
 			<li><a href="/de/jazz-klavier-aufnahmepruefung">Aufnahmeprüfung Jazz-Klavier: Akkorde und Voicings vorbereiten</a></li>
 			<li><a href="/de/leadsheet-spielen-klassik">Leadsheet spielen lernen als klassischer Pianist</a></li>
 			<li><a href="/de/jazz-voicings-app-vergleich">Apps zum Üben von Jazz-Voicings im Vergleich</a></li>
-			<li><a href="/learn/rootless-voicings" hreflang="en">Rootless voicings in depth (English)</a></li>
+			<li><a href="/learn/jazz-piano-left-hand" hreflang="en" lang="en">This page in English</a></li>
 		</ul>
 	</aside>
 </article>
@@ -231,4 +264,6 @@
 		color: var(--primary-text); font-weight: 600; text-decoration: none;
 	}
 	.cta:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+	.count { font-family: var(--font-mono); font-size: 1.1rem !important; letter-spacing: 0.35em; color: var(--text-dim) !important; }
+	.count .hit { color: var(--primary); font-weight: 700; }
 </style>

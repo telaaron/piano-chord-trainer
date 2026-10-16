@@ -20,6 +20,7 @@ const STATIC_PAGES: SitemapPage[] = [
 	{ path: '/de/jazz-voicings-app-vergleich', priority: 0.8, freq: 'monthly', updated: '2026-10-16' },
 	{ path: '/de/jazz-klavier-aufnahmepruefung', priority: 0.8, freq: 'monthly', updated: '2026-10-16' },
 	{ path: '/learn/lead-sheets-for-classical-pianists', priority: 0.8, freq: 'monthly', updated: '2026-10-16' },
+	{ path: '/learn/jazz-piano-left-hand', priority: 0.8, freq: 'monthly', updated: '2026-10-16' },
 	{ path: '/learn/rootless-voicings', priority: 0.9, freq: 'weekly', updated: '2026-07-26' },
 	{ path: '/for-educators', priority: 0.8, freq: 'monthly', updated: '2026-07-30' },
 	{ path: '/open-studio', priority: 0.7, freq: 'monthly', updated: '2026-07-30' },

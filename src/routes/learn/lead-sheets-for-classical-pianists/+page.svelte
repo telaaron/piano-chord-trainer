@@ -138,7 +138,7 @@
 			<li>
 				<strong>Left hand: shells.</strong> Root, third and seventh. Learn the five
 				main qualities on all 12 roots before touching a tune.
-				<a href="/learn/jazz-piano-voicings">Voicing guide</a>
+				<a href="/learn/jazz-piano-left-hand">Left-hand voicings</a>
 			</li>
 			<li>
 				<strong>Recall drills, not reading.</strong> Look at a symbol, play the
