@@ -29,6 +29,9 @@ final class ToGoStore {
 
     private func persist() { Store.save(cardStates, StoreKey.togoCards) }
 
+    /// Re-read after sync wrote the account's card states.
+    func reload() { cardStates = Store.load([String: TheoryCardState].self, StoreKey.togoCards) ?? cardStates }
+
     // ─── Reads ──────────────────────────────────────────────
 
     /// Cards whose review date has arrived.

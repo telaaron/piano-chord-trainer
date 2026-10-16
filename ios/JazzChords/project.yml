@@ -8,6 +8,9 @@ options:
 packages:
   MusicEngine:
     path: ../MusicEngine
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: 2.0.0
 
 targets:
   JazzChords:
@@ -18,13 +21,20 @@ targets:
       - path: JazzChords
     dependencies:
       - package: MusicEngine
+      - package: Supabase
+        product: Supabase
+    entitlements:
+      path: JazzChords/JazzChords.entitlements
+      properties:
+        com.apple.developer.applesignin:
+          - Default
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.jazzchords.trainer
         DEVELOPMENT_TEAM: "FDVWAWJYV5"
         CODE_SIGN_STYLE: Automatic
         MARKETING_VERSION: "1.0.0"
-        CURRENT_PROJECT_VERSION: "3"
+        CURRENT_PROJECT_VERSION: "4"
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_VERSION: "6.0"
         ENABLE_USER_SCRIPT_SANDBOXING: YES

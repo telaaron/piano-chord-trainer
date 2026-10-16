@@ -224,6 +224,13 @@ final class HabitStore {
 
     // MARK: Onboarding
 
+    /// The account finished onboarding elsewhere (web or another device).
+    func markOnboardingDone() {
+        guard !profile.onboardingDone else { return }
+        profile.onboardingDone = true
+        save()
+    }
+
     func completeOnboarding(dailyGoalMinutes: Int, preferredTime: TimeOfDay) {
         var p = profile
         p.dailyGoalMinutes = dailyGoalMinutes
@@ -232,6 +239,7 @@ final class HabitStore {
         // the slot they picked here only sets when it would fire.
         p.notificationTime = ReminderTime.default(for: preferredTime).string
         p.onboardingDone = true
+        Task { await AccountStore.shared.noteOnboardingDone() }
         let history = ProgressStore.loadHistory()
         let streak = ProgressStore.loadStreak()
         p.activeGoals = generateGoals(p, history, streak)

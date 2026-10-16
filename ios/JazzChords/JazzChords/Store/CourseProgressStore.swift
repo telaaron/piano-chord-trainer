@@ -19,6 +19,9 @@ final class CourseProgressStore {
 
     private func persist() { Store.save(all, StoreKey.courseProgress) }
 
+    /// Re-read after sync wrote the account's progress.
+    func reload() { all = Store.load([String: CourseProgress].self, StoreKey.courseProgress) ?? all }
+
     func progress(for course: Course) -> CourseProgress {
         if let p = all[course.id] { return p }
         let fresh = createCourseProgress(course)
