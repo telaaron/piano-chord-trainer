@@ -243,6 +243,41 @@
 
 ---
 
+## iOS-App v1.0 (Oktober 2026)
+
+### Gratis ohne In-App-Kauf (Empfehlung, Freigabe Aaron offen)
+
+**Entscheidung:** iOS v1.0 erscheint kostenlos, `SubscriptionStore.isPro` bleibt `true`, kein StoreKit.
+
+**Gruende:**
+- Erst messen, ob iOS die Retention hebt (D7 Web ≈ 2 %); Monetarisierung ist Roadmap-Schritt 7
+- Kein Kaufweg in der App → kein Konflikt mit Guideline 3.1.1, die App verlinkt nicht auf den Web-Checkout
+- Gate-Aufrufe bleiben im Code, StoreKit 2 kann ohne Umbau nachgezogen werden
+
+### Taegliche Erinnerung als lokale Notification
+
+**Entscheidung:** `ReminderScheduler` plant 7 Tage voraus lokale Notifications (kein Server, kein APNs), keine Erinnerung an einem Tag mit Uebung. Erlaubnis per Pre-Permission-Karte nach dem ersten abgeschlossenen Drill, nicht im Onboarding.
+
+**Gruende:**
+- Einziger Rueckkehr-Anlass ohne E-Mail-Infrastruktur (Masterplan 1.6)
+- Der System-Dialog erscheint nur einmal; ein „Nicht jetzt“ auf der eigenen Karte verbraucht ihn nicht
+- Wer eine Woche nicht oeffnet, bekommt danach keine Erinnerungen mehr (kein Dauer-Nerven)
+- Datumslogik in `MusicEngine/Reminders.swift`, getestet inkl. Sommerzeit
+
+### Anonyme Nutzungsdaten nur mit Zustimmung (iOS)
+
+**Entscheidung (Aaron, 13.10.2026):** In der iOS-App ist Telemetrie standardmaessig aus. Die letzte Onboarding-Seite fragt ohne Vorauswahl; ueberspringen zaehlt als Nein. Aenderbar in den Settings, Widerruf loescht die Geraete-ID.
+
+**Gruende:**
+- Die Geraete-ID wird auf dem Geraet gespeichert und ausgelesen (ePrivacy/§ 25 TDDDG), Zustimmung ist der sichere Weg
+- Weniger Daten als im Web, dafuer sauber fuer App-Review und Datenschutzerklaerung
+
+### Anzeige-Praeferenzen gehoeren dem Nutzer
+
+**Entscheidung:** Notation und Vorzeichen kommen immer aus den Settings; Plaene und Coach-Bloecke ueberschreiben sie nicht mehr.
+
+---
+
 ## Entscheidungen die sich geaendert haben
 
 | Urspruenglich | Jetzt | Warum |
@@ -256,4 +291,13 @@
 
 ---
 
-*Zuletzt aktualisiert: Maerz 2026*
+*Zuletzt aktualisiert: Oktober 2026*
+
+### Akkordwurzel wie im Leadsheet (keine Doppelvorzeichen)
+
+**Entscheidung (Aaron, 13.10.2026):** Bei gemischten Vorzeichen (`both`) schreibt der Trainer die Wurzel so, dass kein Doppelvorzeichen nötig ist: G#m7b5 statt Abm7b5, Eb7 statt D#7 (`preferredRoot` in `notes.ts` / `Notes.swift`). Feste Kreuz-/b-Einstellung bleibt unangetastet.
+
+**Gruende:**
+- So stehen die Akkorde in Jazz-Leadsheets; Abm7b5 hätte E𝄫 als ♭5
+- Doppelvorzeichen generell einzuschalten hätte rund 45 Akkorde ungewohnt benannt
+- Dabei behoben: Der ♯11 in Maj7#11 wird als Quarte geschrieben (DbMaj7#11 → G), nicht als verminderte Quinte

@@ -385,6 +385,20 @@ final class CoachParityTests: XCTestCase {
         }
     }
 
+    func testCalibrationThatPlacedNothingUsesOwnLine() {
+        let before = createInitialCoachState()
+        let plan = buildCoachPlan([], profile(), nil, before, DEFAULT_COACH_PARAMS, now: 0)
+        let timings = ["Maj7", "7", "m7"].flatMap { q in
+            [qTiming("C", q, 9000, false), qTiming("F", q, 9000, false)]
+        }
+        let s = session(timings)
+        let after = applySessionToCoach(before, plan, s, DEFAULT_COACH_PARAMS, now: 1000)
+        XCTAssertEqual(after.unitStates.values.filter { $0.state == .mastered }.count, 0)
+        let cal = teacherFeedback(before, after, s, DEFAULT_COACH_PARAMS).filter { $0.kind == .calibrated }
+        XCTAssertEqual(cal.count, 1)
+        XCTAssertEqual(cal.first?.key, "coach.fb.calibratedNone")
+    }
+
     func testEveryUnitStatementCarriesTier() {
         var before = calibratedState()
         let ladder = buildSkillLadder()

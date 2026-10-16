@@ -1,58 +1,27 @@
-// Liquid Glass surfaces. On iOS 26+ uses the system .glassEffect(); older OSes
-// fall back to a translucent material so the look degrades gracefully. Use for
-// cards, the floating Next control, and grouped surfaces — accents, not every
-// pixel (per HIG: glass floats above content, doesn't replace it).
+// Liquid Glass for controls. On iOS 26+ uses the system .glassEffect(); older
+// OSes fall back to a translucent material so the look degrades gracefully.
 
 import SwiftUI
 
-struct GlassCardModifier: ViewModifier {
+/// Liquid Glass for the controls layer only (toolbar circles, progress capsule,
+/// secondary button, segment). Never on content — see spec §3.3.
+struct GlassControlModifier<S: Shape>: ViewModifier {
     @Environment(\.palette) private var palette
-    var cornerRadius: CGFloat = Theme.radiusLg
-    var tint: Color? = nil
+    let shape: S
 
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
-            content
-                .glassEffect(glass, in: .rect(cornerRadius: cornerRadius))
+            content.glassEffect(.regular.interactive(), in: shape)
         } else {
             content
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(palette.border.opacity(0.6), lineWidth: 0.5)
-                )
-        }
-    }
-
-    @available(iOS 26.0, *)
-    private var glass: Glass {
-        if let tint { return .regular.tint(tint.opacity(0.18)).interactive() }
-        return .regular.interactive()
-    }
-}
-
-/// A rounded glass capsule (for the floating "Next" control).
-struct GlassCapsuleModifier: ViewModifier {
-    @Environment(\.palette) private var palette
-    var tint: Color? = nil
-
-    func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content.glassEffect(tint.map { .regular.tint($0.opacity(0.25)).interactive() } ?? .regular.interactive(), in: .capsule)
-        } else {
-            content
-                .background(.ultraThinMaterial, in: Capsule())
-                .overlay(Capsule().stroke(palette.border.opacity(0.6), lineWidth: 0.5))
+                .background(.ultraThinMaterial, in: shape)
+                .overlay(shape.stroke(palette.hairline.opacity(0.8), lineWidth: 0.5))
         }
     }
 }
 
 extension View {
-    /// Glass card surface (padding applied by caller).
-    func glassCard(cornerRadius: CGFloat = Theme.radiusLg, tint: Color? = nil) -> some View {
-        modifier(GlassCardModifier(cornerRadius: cornerRadius, tint: tint))
-    }
-    func glassCapsule(tint: Color? = nil) -> some View {
-        modifier(GlassCapsuleModifier(tint: tint))
+    func glassControl<S: Shape>(in shape: S) -> some View {
+        modifier(GlassControlModifier(shape: shape))
     }
 }

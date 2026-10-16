@@ -179,6 +179,7 @@ export const COACH_FEEDBACK_KEYS = {
 	placed: 'coach.fb.placed',
 	nextGoal: 'coach.fb.nextGoal',
 	calibrated: 'coach.fb.calibrated',
+	calibratedNone: 'coach.fb.calibratedNone',
 } as const;
 
 // ─── Key tiers ──────────────────────────────────────────────
@@ -1190,7 +1191,9 @@ export function teacherFeedback(
 		const placed = Object.values(after.unitStates).filter((u) => u.state === 'mastered').length;
 		out.push({
 			kind: 'calibrated',
-			key: COACH_FEEDBACK_KEYS.calibrated,
+			// "0 building blocks are already in place" reads as a verdict; a check
+			// that placed nothing gets its own encouraging line.
+			key: placed === 0 ? COACH_FEEDBACK_KEYS.calibratedNone : COACH_FEEDBACK_KEYS.calibrated,
 			params: { placed: String(placed) },
 		});
 	}

@@ -191,9 +191,21 @@ final class HabitStore {
 
         profile = p
         save()
+        // Practiced today → today's reminder is no longer needed.
+        Task { await ReminderScheduler.shared.reschedule() }
 
         return SessionHabitResult(xpEvents: xpEvents, totalXP: totalShown, celebrations: celebrations,
                                   leveledUp: leveledUp, newLevel: leveledUp ? newLevel : nil, completedGoals: completed)
+    }
+
+    // MARK: Reminder
+
+    func setReminder(enabled: Bool, time: String) {
+        var p = profile
+        p.notificationsEnabled = enabled
+        p.notificationTime = time
+        profile = p
+        save()
     }
 
     // MARK: Onboarding
@@ -202,6 +214,9 @@ final class HabitStore {
         var p = profile
         p.dailyGoalMinutes = dailyGoalMinutes
         p.preferredTime = preferredTime
+        // The reminder stays off until the player says yes after their first drill;
+        // the slot they picked here only sets when it would fire.
+        p.notificationTime = ReminderTime.default(for: preferredTime).string
         p.onboardingDone = true
         let history = ProgressStore.loadHistory()
         let streak = ProgressStore.loadStreak()

@@ -15,19 +15,30 @@ struct TrainerView: View {
     /// When true, launch the Auto-Mode (Coach) session on appear instead of a plan.
     var coachSession = false
 
+    /// × in a session started from Heute/Üben/Fortschritt returns there; only
+    /// free practice (opened on the setup screen) goes back to setup.
+    nonisolated static func closeLeavesTrainer(coachSession: Bool, hasPlan: Bool) -> Bool {
+        coachSession || hasPlan
+    }
+
+    private func closeSession() {
+        store.resetToSetup()
+        if Self.closeLeavesTrainer(coachSession: coachSession, hasPlan: plan != nil) { dismiss() }
+    }
+
     var body: some View {
         Group {
             switch store.screen {
             case .setup: TrainerSetupView(store: store, onClose: { dismiss() })
             case .playing:
                 ZStack {
-                    TrainerPlayingView(store: store, onClose: { store.resetToSetup() })
+                    TrainerPlayingView(store: store, onClose: { closeSession() })
                     // Between-block transition overlay (Coach only).
                     if let t = store.coachTransition {
                         CoachTransitionView(transition: t) { store.advanceCoachBlock() }
                     }
                 }
-            case .earTraining: EarTrainingView(store: store, onClose: { store.resetToSetup() })
+            case .earTraining: EarTrainingView(store: store, onClose: { closeSession() })
             case .finished:
                 // Coach sessions land on a teacher-feedback screen; normal drills on stats.
                 if store.coachShowFeedback {
@@ -42,6 +53,7 @@ struct TrainerView: View {
         .screenBackground()
         .onAppear {
             store.loadSettings()
+            store.autoSelectInput()
             if coachSession {
                 store.startCoachSession()
             } else if let plan {
@@ -63,25 +75,25 @@ struct CoachTransitionView: View {
 
     var body: some View {
         ZStack {
-            palette.bg.opacity(0.96).ignoresSafeArea()
+            palette.canvas.opacity(0.96).ignoresSafeArea()
             VStack(spacing: Theme.space5) {
                 Spacer()
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 44, weight: .semibold))
-                    .foregroundStyle(palette.accentGreen)
+                    .foregroundStyle(palette.music)
                     .symbolRenderingMode(.hierarchical)
                 Text(CoachL10n.blockDone(transition.doneKind))
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(palette.textMuted)
+                    .foregroundStyle(palette.inkMuted)
                 Text(CoachL10n.t(transition.nextLabelKey, transition.nextLabelParams))
                     .font(Display.headline(26))
-                    .foregroundStyle(palette.text)
+                    .foregroundStyle(palette.ink)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, Theme.space5)
                 Spacer()
                 Text(CoachL10n.t(CoachL10n.transitionContinue))
                     .font(.callout.weight(.medium))
-                    .foregroundStyle(palette.textDim)
+                    .foregroundStyle(palette.inkMuted)
                     .padding(.bottom, Theme.space5)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -106,7 +118,7 @@ struct CoachFeedbackView: View {
             VStack(alignment: .leading, spacing: Theme.space5) {
                 Text(CoachL10n.t(CoachL10n.feedbackTitle))
                     .font(Display.title(32))
-                    .foregroundStyle(palette.text)
+                    .foregroundStyle(palette.ink)
                     .padding(.top, Theme.space4)
 
                 // Teacher statements (localized).
@@ -115,44 +127,46 @@ struct CoachFeedbackView: View {
                         HStack(alignment: .top, spacing: Theme.space3) {
                             Image(systemName: statementIcon(stmt.kind))
                                 .font(.body.weight(.semibold))
-                                .foregroundStyle(palette.primary)
+                                .foregroundStyle(palette.action)
                                 .symbolRenderingMode(.hierarchical)
                                 .frame(width: 24)
                             Text(CoachL10n.t(stmt.key, stmt.params))
                                 .font(.body)
-                                .foregroundStyle(palette.text)
+                                .foregroundStyle(palette.ink)
                             Spacer(minLength: 0)
                         }
                     }
                 }
                 .padding(Theme.space4)
-                .glassCard()
+                .groupSurface()
 
                 // System-detected verdict — the app never asks "too easy?".
                 if store.coachVerdict == .excellent {
                     Label(CoachL10n.t(CoachL10n.verdictExcellent), systemImage: "checkmark.seal.fill")
                         .font(.subheadline.weight(.medium))
-                        .foregroundStyle(palette.accentGreen)
+                        .foregroundStyle(palette.music)
                         .padding(Theme.space4)
                         .frame(maxWidth: .infinity)
-                        .background(palette.primary.opacity(0.15), in: RoundedRectangle(cornerRadius: Theme.radius))
+                        .background(palette.action.opacity(0.15), in: RoundedRectangle(cornerRadius: Theme.radius))
                 } else if store.coachVerdict == .struggling, !store.coachFeedbackGiven {
                     VStack(alignment: .leading, spacing: Theme.space3) {
                         Text(CoachL10n.t(CoachL10n.verdictStruggling))
                             .font(.subheadline)
-                            .foregroundStyle(palette.textMuted)
+                            .foregroundStyle(palette.inkMuted)
                         Button { store.startEasierAndContinue() } label: {
                             Text(CoachL10n.t(CoachL10n.verdictStartEasier))
                                 .font(.subheadline.weight(.medium))
-                                .foregroundStyle(palette.primary)
+                                .foregroundStyle(palette.action)
                                 .padding(.vertical, Theme.space2).padding(.horizontal, Theme.space3)
-                                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.primary, lineWidth: 2))
+                                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.action, lineWidth: 2))
                         }
                     }
                     .padding(Theme.space4)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.hairline))
                 }
+
+                ReminderOfferCard()
 
                 Spacer(minLength: Theme.space5)
 
@@ -162,8 +176,8 @@ struct CoachFeedbackView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space4)
-                            .background(palette.primary)
-                            .foregroundStyle(palette.primaryText)
+                            .background(palette.action)
+                            .foregroundStyle(palette.onAction)
                             .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                     }
                     Button { onDone() } label: {
@@ -171,7 +185,7 @@ struct CoachFeedbackView: View {
                             .font(.subheadline.weight(.medium))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space3)
-                            .foregroundStyle(palette.textMuted)
+                            .foregroundStyle(palette.inkMuted)
                     }
                 }
             }
@@ -242,24 +256,24 @@ struct TrainerSetupView: View {
                 }
                 if store.inputMode == .microphone {
                     Text(CoachL10n.t("settings.mic_hint"))
-                        .font(.footnote).foregroundStyle(palette.textDim)
+                        .font(.footnote).foregroundStyle(palette.inkMuted)
                 }
 
                 Toggle(CoachL10n.t("ui.audio"), isOn: $store.audioEnabled)
-                    .tint(palette.primary)
-                    .foregroundStyle(palette.text)
+                    .tint(palette.action)
+                    .foregroundStyle(palette.ink)
                 Toggle(CoachL10n.t("settings.ear_training_toggle"), isOn: $store.isEarTraining)
-                    .tint(palette.primary)
-                    .foregroundStyle(palette.text)
+                    .tint(palette.action)
+                    .foregroundStyle(palette.ink)
                 Toggle(CoachL10n.t("settings.in_time_toggle"), isOn: $store.inTimeMode)
-                    .tint(palette.primary)
-                    .foregroundStyle(palette.text)
+                    .tint(palette.action)
+                    .foregroundStyle(palette.ink)
                 if store.inTimeMode {
                     HStack {
-                        Text(CoachL10n.t("ui.tempo")).font(.subheadline).foregroundStyle(palette.textMuted)
+                        Text(CoachL10n.t("ui.tempo")).font(.subheadline).foregroundStyle(palette.inkMuted)
                         Slider(value: Binding(get: { Double(store.metronomeBpm) }, set: { store.metronomeBpm = Int($0) }), in: 40...200, step: 5)
-                            .tint(palette.primary)
-                        Text("\(store.metronomeBpm)").font(.caption.monospacedDigit()).foregroundStyle(palette.text).frame(width: 36)
+                            .tint(palette.action)
+                        Text("\(store.metronomeBpm)").font(.caption.monospacedDigit()).foregroundStyle(palette.ink).frame(width: 36)
                     }
                 }
 
@@ -270,8 +284,8 @@ struct TrainerSetupView: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.space4)
-                        .background(palette.primary)
-                        .foregroundStyle(palette.primaryText)
+                        .background(palette.action)
+                        .foregroundStyle(palette.onAction)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                 }
             }
@@ -288,8 +302,8 @@ struct TrainerSetupView: View {
 
     private func pickerRow<C: View>(_ label: String, @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: Theme.space2) {
-            Text(label).font(.subheadline.weight(.semibold)).foregroundStyle(palette.textMuted)
-            content().tint(palette.primary)
+            Text(label).font(.subheadline.weight(.semibold)).foregroundStyle(palette.inkMuted)
+            content().tint(palette.action)
         }
     }
 }
@@ -327,6 +341,7 @@ struct TrainerPlayingView: View {
                     .frame(maxWidth: .infinity)
                 }
             } else {
+                leadSheet
                 Spacer(minLength: 0)
                 chordBlock
                 Spacer(minLength: 0)
@@ -337,6 +352,7 @@ struct TrainerPlayingView: View {
             }
         }
         .padding(isPad ? Theme.space6 : Theme.space4)
+        .screenBackground()
         // iPad uses the full width for a big keyboard; iPhone keeps a tidy cap.
         .frame(maxWidth: (isLandscape || isPad) ? .infinity : 760)
         .frame(maxWidth: .infinity)
@@ -345,94 +361,127 @@ struct TrainerPlayingView: View {
     }
 
     private var topBar: some View {
-        VStack(spacing: Theme.space2) {
-            HStack {
-                Text("\(store.currentIdx + 1) / \(store.actualTotalChords)")
-                    .font(.callout.monospacedDigit())
-                    .foregroundStyle(palette.textMuted)
-                Spacer()
-                Button { onClose() } label: {
-                    Image(systemName: "xmark.circle.fill").font(isPad ? .title2 : .body)
-                }
-                .foregroundStyle(palette.textDim)
+        HStack(spacing: Theme.space2) {
+            GlassCircleButton(systemImage: "xmark", label: CoachL10n.t("ui.close")) { onClose() }
+            HStack(spacing: Theme.space3) {
+                ProgressView(value: store.progress)
+                    .tint(palette.musicFill)
+                Text("\(store.currentIdx + 1)/\(store.actualTotalChords)")
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(palette.ink)
             }
-            ProgressView(value: store.progress).tint(palette.primary)
+            .padding(.horizontal, Theme.space4)
+            .frame(height: Theme.tapMin)
+            .glassControl(in: Capsule())
+            GlassCircleButton(systemImage: "speaker.wave.2.fill", label: Strings.listen) { store.replayChord() }
         }
+    }
+
+    /// Previous | current | next over a staff — only when playing a progression.
+    @ViewBuilder
+    private var leadSheet: some View {
+        if store.progressionMode != .random, store.currentIdx < store.chords.count {
+            LeadSheetStrip(previous: chordName(at: store.currentIdx - 1),
+                           current: displayedChord,
+                           next: chordName(at: store.currentIdx + 1))
+        }
+    }
+
+    private func chordName(at index: Int) -> String? {
+        guard index >= 0, index < store.chords.count else { return nil }
+        return Notation.chord(store.chords[index], store.notationSystem)
+    }
+
+    /// The function grid has a verdict once a tap-guess is graded or live input
+    /// is sounding.
+    private var gridShowsResult: Bool {
+        store.tapResult != nil || (store.inputActive && !store.heldNotes.isEmpty)
+    }
+
+    private var gridHeld: Set<Int> {
+        FunctionGrid.held(inputActive: store.inputActive, heldNotes: store.heldNotes, tapGuess: store.tapGuess)
     }
 
     private var chordBlock: some View {
         VStack(spacing: Theme.space2) {
-            // Coach: tell the player which voicing to play (they can't be expected
-            // to know from a name like E♭9), with a one-line what-notes hint.
-            if store.coachMode {
-                VStack(spacing: 2) {
-                    Text(CoachL10n.voicing(store.voicing).uppercased())
-                        .font(.caption.weight(.bold)).tracking(1.2)
-                        .foregroundStyle(palette.primary)
-                        .padding(.vertical, 4).padding(.horizontal, Theme.space3)
-                        .overlay(Capsule().stroke(palette.primary, lineWidth: 1))
-                    Text(CoachL10n.voicingSub(store.voicing))
-                        .font(.caption2)
-                        .foregroundStyle(palette.textMuted)
-                        .multilineTextAlignment(.center)
+            Text(CoachL10n.voicing(store.voicing))
+                .font(Display.serif(isPad ? 26 : 22, italic: true, relativeTo: .title3))
+                .foregroundStyle(palette.inkMuted)
+            // Kalam's line box is ~1.6 em, so a 148 pt chord needs ~236 pt of
+            // height. Step down when the screen (iPhone SE, XXL type) is short
+            // instead of squeezing the keyboard.
+            ViewThatFits(in: .vertical) {
+                ForEach([chordFontSize, chordFontSize * 0.75, chordFontSize * 0.55], id: \.self) { size in
+                    Text(displayedChord)
+                        .font(Display.chord(size))
+                        .foregroundStyle(palette.ink)
+                        .contentTransition(.numericText())
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
                 }
-                .padding(.bottom, Theme.space2)
             }
-            Text(displayedChord)
-                .font(Display.chord(chordFontSize))
-                .foregroundStyle(palette.text)
-                .contentTransition(.numericText())
-                .minimumScaleFactor(0.6)
-                .lineLimit(1)
+            // Only once the voicing may be seen — in Verify/Off the grid would
+            // give the answer away before the attempt.
             if store.shouldShowVoicing, let d = store.currentData {
-                if let r = store.tapResult {
-                    // Reveal after a tap-guess: show whether the built chord was right.
-                    Label(CoachL10n.t(r ? "ui.correct" : "ui.not_quite"), systemImage: r ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font((isPad ? Font.body : Font.caption).weight(.semibold))
-                        .foregroundStyle(r ? palette.accentGreen : palette.accentRed)
-                }
-                Text(CoachL10n.voicing(store.voicing).uppercased())
-                    .font((isPad ? Font.body : Font.caption).weight(.semibold)).tracking(1.5)
-                    .foregroundStyle(palette.primary)
-                Text(formatVoicing(d, store.voicing, store.notationSystem))
-                    .font(.system(isPad ? .title3 : .body, design: .monospaced))
-                    .foregroundStyle(palette.textMuted)
+                FunctionGrid(tones: FunctionGrid.tones(
+                    voicingNotes: d.voicing.map(Notation.root),
+                    labels: getVoicingIntervalLabels(d.voicing, d.root, d.type).map(Strings.intervalFunction),
+                    held: gridHeld,
+                    showResult: gridShowsResult))
+                    .frame(maxWidth: 320)
             } else if store.isTapGuessMode {
                 Text(CoachL10n.t("ui.tap_build"))
-                    .font((isPad ? Font.body : Font.caption).weight(.medium))
-                    .foregroundStyle(palette.textDim)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(palette.inkMuted)
+            }
+            if let r = store.tapResult {
+                Text(CoachL10n.t(r ? "ui.correct" : "ui.not_quite"))
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(r ? palette.music : palette.action)
             }
         }
     }
 
     private var chordFontSize: CGFloat {
-        if isLandscape { return isPad ? 72 : 52 }
-        return isPad ? 120 : 68
+        if isLandscape { return isPad ? 96 : 64 }
+        return isPad ? 180 : 148
     }
 
     @ViewBuilder
     private var keyboardBlock: some View {
         if store.shouldShowVoicing || store.inputActive || store.isTapGuessMode {
-            PianoKeyboard(
-                chordData: store.currentData,
-                accidentalPref: store.accidentals,
-                showVoicing: store.shouldShowVoicing,
-                forceOctaves: keyboardOctaves,
-                interactive: store.isTapGuessMode,
-                selectedPitchClasses: store.tapGuess,
-                heldNotes: store.heldNotes,
-                expectedPitchClasses: store.expectedPitchClasses,
-                showInput: store.inputActive,
-                onKeyTap: store.isTapGuessMode ? { store.tapToggle($0) } : nil,
-                maxHeight: isPad ? (isLandscape ? 240 : 320) : 200
-            )
+            VStack(spacing: Theme.space3) {
+                PianoKeyboard(
+                    chordData: store.currentData,
+                    accidentalPref: store.accidentals,
+                    showVoicing: store.shouldShowVoicing,
+                    forceOctaves: keyboardOctaves,
+                    interactive: store.isTapGuessMode,
+                    selectedPitchClasses: store.tapGuess,
+                    heldNotes: store.heldNotes,
+                    expectedPitchClasses: store.expectedPitchClasses,
+                    showInput: store.inputActive,
+                    onKeyTap: store.isTapGuessMode ? { store.tapToggle($0) } : nil,
+                    maxHeight: isPad ? (isLandscape ? 240 : 320) : 200,
+                    showMissing: store.tapResult == false
+                )
+                // Edge to edge on iPhone portrait (the stack is padded).
+                .padding(.horizontal, (isPad || isLandscape) ? 0 : -Theme.space4)
+                // The keyboard is the input; the chord gives way first.
+                .layoutPriority(1)
+                if let next = chordName(at: store.currentIdx + 1) {
+                    (Text(Strings.nextPrefix) + Text(" ") + Text(next).font(Display.chord(19, relativeTo: .body)).foregroundStyle(palette.music))
+                        .font(Display.serif(17, italic: true, relativeTo: .body))
+                        .foregroundStyle(palette.inkMuted)
+                }
+            }
         }
     }
 
     private var inputHint: some View {
         Label(inputStatus, systemImage: store.inputMode == .midi ? "pianokeys.inverse" : "mic.fill")
             .font(.caption)
-            .foregroundStyle(palette.textMuted)
+            .foregroundStyle(palette.inkMuted)
     }
 
     @ViewBuilder
@@ -440,44 +489,24 @@ struct TrainerPlayingView: View {
         if store.inTimeMode {
             // Metronome drives advancement; show a calm in-time indicator.
             HStack(spacing: Theme.space2) {
-                Image(systemName: "metronome.fill").foregroundStyle(palette.primary)
+                Image(systemName: "metronome.fill").foregroundStyle(palette.music)
                 Text(CoachL10n.t("ui.playing_in_time", ["bpm": String(store.metronomeBpm)]))
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(palette.textMuted)
+                    .foregroundStyle(palette.inkMuted)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Theme.space4)
-            .glassCard()
+            .frame(maxWidth: .infinity, minHeight: 56)
+            .glassControl(in: Capsule())
             .onAppear { if !store.timerStarted { store.next() } } // kick off timer + metronome
         } else {
-            VStack(spacing: Theme.space2) {
-                HStack(spacing: Theme.space3) {
-                    Button { store.replayChord() } label: {
-                        Image(systemName: "speaker.wave.2.fill")
-                            .frame(width: Theme.tapMin, height: Theme.tapMin)
-                            .glassCard(cornerRadius: Theme.tapMin / 2)
-                            .foregroundStyle(palette.text)
-                    }
-                    Button {
-                        UISelectionFeedbackGenerator().selectionChanged()
-                        store.next()
-                    } label: {
-                        Text(nextLabel)
-                            .font(.title3.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, Theme.space4)
-                            .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
-                            .foregroundStyle(palette.primaryText)
-                    }
-                }
-                // Dedicated, always-available "show me the chord" help — for
-                // beginners who don't yet recognise a name like E♭9.
+            HStack(spacing: Theme.space3) {
+                // Dedicated "show me the chord" help — for beginners who don't
+                // yet recognise a name like E♭9.
                 if store.isTapGuessMode, store.playPhase != .verifying, !store.tapGuess.isEmpty {
-                    Button { store.revealTapGuess() } label: {
-                        Text(CoachL10n.t("ui.show_me_chord"))
-                            .font(.footnote.weight(.medium))
-                            .foregroundStyle(palette.accentAmber)
-                    }
+                    GlassSecondaryButton(title: Strings.hint) { store.revealTapGuess() }
+                }
+                PrimaryCapsule(title: nextLabel) {
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    store.next()
                 }
             }
         }
@@ -523,78 +552,48 @@ struct TrainerFinishedView: View {
     }
 
     private var content: some View {
-        VStack(spacing: Theme.space5) {
-            Spacer()
-            Text(CoachL10n.t("results.nice_work"))
-                .font(Display.title(34))
-                .foregroundStyle(palette.text)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Theme.space5) {
+                EditorialHeader(eyebrow: CoachL10n.t("results.stat_chords"), title: CoachL10n.t("results.nice_work"))
 
-            if let r = store.lastResult {
-                HStack(spacing: Theme.space3) {
-                    statCard(value: String(format: "%.1fs", r.avgMs / 1000), label: CoachL10n.t("results.stat_avg"))
-                    statCard(value: "\(r.totalChords)", label: CoachL10n.t("results.stat_chords"))
-                    statCard(value: String(format: "%.0fs", r.elapsedMs / 1000), label: CoachL10n.t("results.stat_total"))
+                if let r = store.lastResult {
+                    StatsRow(items: [
+                        StatItem(value: Strings.seconds(r.avgMs / 1000), label: CoachL10n.t("results.stat_avg")),
+                        StatItem(value: "\(r.totalChords)", label: CoachL10n.t("results.stat_chords")),
+                        StatItem(value: String(format: "%.0f s", r.elapsedMs / 1000), label: CoachL10n.t("results.stat_total")),
+                    ])
                 }
-            }
 
-            Spacer()
-
-            VStack(spacing: Theme.space3) {
                 if store.canDrillWeakSpots {
                     // Peak-motivation moment: drill the chords you were slowest at.
-                    Button { store.startWeakDrill() } label: {
-                        Label(CoachL10n.t("results.drill_weak"), systemImage: "target")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, Theme.space4)
-                            .background(palette.primary)
-                            .foregroundStyle(palette.primaryText)
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
-                    }
-                    Button { store.restart() } label: {
-                        Text(CoachL10n.t("results.again_same"))
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, Theme.space4)
-                            .foregroundStyle(palette.text)
-                            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
-                    }
-                } else {
-                    Button { store.restart() } label: {
-                        Text(CoachL10n.t("results.again"))
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, Theme.space4)
-                            .background(palette.primary)
-                            .foregroundStyle(palette.primaryText)
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
+                    FeatureBlock(eyebrow: CoachL10n.t("quickstart.weakspots_title"), ghost: "♯") {
+                        Text(CoachL10n.t("results.drill_weak"))
+                            .font(Display.serif(28, relativeTo: .title2))
+                    } action: {
+                        PrimaryCapsule(title: CoachL10n.t("ui.start"), systemImage: "target", inverted: true) {
+                            store.startWeakDrill()
+                        }
                     }
                 }
-                Button { onClose() } label: {
-                    Text(CoachL10n.t("ui.done"))
-                        .font(.headline)
+
+                ReminderOfferCard()
+
+                VStack(spacing: Theme.space3) {
+                    if store.canDrillWeakSpots {
+                        GlassSecondaryButton(title: CoachL10n.t("results.again_same")) { store.restart() }
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        PrimaryCapsule(title: CoachL10n.t("results.again")) { store.restart() }
+                    }
+                    GlassSecondaryButton(title: CoachL10n.t("ui.done")) { onClose() }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, Theme.space4)
-                        .foregroundStyle(palette.text)
-                        .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(palette.border))
                 }
             }
+            .padding(Theme.space4)
+            .padding(.top, Theme.space6)
+            .readableWidth()
         }
-        .padding(Theme.space4)
+        .screenBackground()
         .navigationBarBackButtonHidden()
-    }
-
-    private func statCard(value: String, label: String) -> some View {
-        VStack(spacing: Theme.space1) {
-            Text(value)
-                .font(Display.headline(26))
-                .foregroundStyle(palette.primary)
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(palette.textDim)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Theme.space4)
-        .glassCard()
     }
 }

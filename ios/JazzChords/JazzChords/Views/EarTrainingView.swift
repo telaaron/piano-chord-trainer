@@ -20,21 +20,21 @@ struct EarTrainingView: View {
                 if store.earRevealed, let d = store.currentData {
                     Text(Notation.chord(d.chord, store.notationSystem))
                         .font(Display.chord(56))
-                        .foregroundStyle(store.earResult == true ? palette.accentGreen : palette.text)
+                        .foregroundStyle(store.earResult == true ? palette.music : palette.ink)
                     Text(CoachL10n.t(store.earResult == true ? "ui.correct" : "ui.not_quite"))
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(store.earResult == true ? palette.accentGreen : palette.accentRed)
+                        .foregroundStyle(store.earResult == true ? palette.music : palette.action)
                 } else {
                     Image(systemName: "ear.fill")
                         .font(.system(size: 44))
-                        .foregroundStyle(palette.primary)
+                        .foregroundStyle(palette.action)
                         .symbolRenderingMode(.hierarchical)
                     Text(CoachL10n.t("ui.what_chord"))
                         .font(Display.headline(20))
-                        .foregroundStyle(palette.text)
+                        .foregroundStyle(palette.ink)
                     Button { store.earPlayChord() } label: {
                         Label(CoachL10n.t("ui.listen_again"), systemImage: "speaker.wave.2.fill")
-                    }.tint(palette.primary)
+                    }.tint(palette.action)
                 }
             }
 
@@ -73,23 +73,22 @@ struct EarTrainingView: View {
             HStack {
                 Text("\(store.currentIdx + 1) / \(store.actualTotalChords)")
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(palette.textMuted)
+                    .foregroundStyle(palette.inkMuted)
                 Spacer()
                 Button { onClose() } label: { Image(systemName: "xmark.circle.fill") }
-                    .foregroundStyle(palette.textDim)
+                    .foregroundStyle(palette.inkMuted)
             }
-            ProgressView(value: store.progress).tint(palette.primary)
+            ProgressView(value: store.progress).tint(palette.action)
         }
     }
 
     private func primaryButton(_ label: String, disabled: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.title3.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Theme.space4)
-                .background(disabled ? palette.bgMuted : palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
-                .foregroundStyle(disabled ? palette.textDim : palette.primaryText)
+                .font(.body.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 56)
+                .background(disabled ? palette.hairline : palette.action, in: Capsule())
+                .foregroundStyle(disabled ? palette.inkMuted : palette.onAction)
         }
         .disabled(disabled)
     }

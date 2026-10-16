@@ -256,6 +256,7 @@ public enum CoachFeedbackKeys {
     public static let placed = "coach.fb.placed"
     public static let nextGoal = "coach.fb.nextGoal"
     public static let calibrated = "coach.fb.calibrated"
+    public static let calibratedNone = "coach.fb.calibratedNone"
 }
 
 // ─── Key tiers ──────────────────────────────────────────────
@@ -1251,7 +1252,9 @@ public func teacherFeedback(
         let placed = after.unitStates.values.filter { $0.state == .mastered }.count
         out.append(TeacherStatement(
             kind: .calibrated,
-            key: CoachFeedbackKeys.calibrated,
+            // "0 building blocks are already in place" reads as a verdict; a check
+            // that placed nothing gets its own encouraging line.
+            key: placed == 0 ? CoachFeedbackKeys.calibratedNone : CoachFeedbackKeys.calibrated,
             params: ["placed": String(placed)]
         ))
     }

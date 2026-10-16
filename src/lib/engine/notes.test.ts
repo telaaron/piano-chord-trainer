@@ -10,6 +10,8 @@ import {
 	convertNoteName,
 	convertChordNotation,
 	spellChordNotes,
+	preferredRoot,
+	needsDoubleAccidental,
 	getPitchedNote,
 	typesetChordName,
 } from './notes';
@@ -39,6 +41,36 @@ describe('spellChordNotes (theory-correct, no doubled letters)', () => {
 				}
 			}
 		}
+	});
+});
+
+describe('preferredRoot (lead-sheet root, no double accidentals)', () => {
+	const pr = (root: string, quality: string) => preferredRoot(root, CHORD_INTERVALS[quality]);
+
+	it('rewrites Abm7b5 as G#m7b5 (its ♭5 would need Ebb)', () => {
+		expect(pr('Ab', 'm7b5')).toBe('G#');
+	});
+	it('rewrites D#7 as Eb7 (its 3rd would need F##)', () => {
+		expect(pr('D#', '7')).toBe('Eb');
+	});
+	it('keeps roots that spell cleanly', () => {
+		expect(pr('C', 'Maj7')).toBe('C');
+		expect(pr('Bb', 'm7b5')).toBe('Bb');
+		expect(pr('F#', '7')).toBe('F#');
+	});
+	it('treats the ♯11 of Maj7#11 as a fourth, so DbMaj7#11 stays (G is its ♯11)', () => {
+		expect(spellChordNotes('Db', CHORD_INTERVALS['Maj7#11'])).toEqual(['Db', 'F', 'Ab', 'C', 'G']);
+		expect(pr('Db', 'Maj7#11')).toBe('Db');
+	});
+	it('leaves no pool root needing a double accidental', () => {
+		const pool = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
+		const bad: string[] = [];
+		for (const root of pool) {
+			for (const [q, iv] of Object.entries(CHORD_INTERVALS)) {
+				if (needsDoubleAccidental(preferredRoot(root, iv), iv)) bad.push(root + q);
+			}
+		}
+		expect(bad).toEqual([]);
 	});
 });
 

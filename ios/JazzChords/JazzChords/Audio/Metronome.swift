@@ -15,17 +15,19 @@ final class Metronome {
 
     private let engine = AVAudioEngine()
     private var source: AVAudioSourceNode!
-    private let sampleRate: Double = 44100
+    private nonisolated let sampleRate: Double = 44100
 
-    private let lock = NSLock()
-    private var running = false
-    private var bpm: Double = 80
-    private var beatsPerBar = 4
-    private var samplesPerBeat = 0
-    private var sampleCounter = 0
-    private var beatIndex = 0           // 0-based count of beats emitted
-    private var clickPhase = 0          // samples into the current click transient (0 = idle)
-    private var clickIsAccent = false
+    // Render state: read and written on the audio thread, always under `lock`,
+    // so it opts out of main-actor isolation.
+    private nonisolated let lock = NSLock()
+    private nonisolated(unsafe) var running = false
+    private nonisolated(unsafe) var bpm: Double = 80
+    private nonisolated(unsafe) var beatsPerBar = 4
+    private nonisolated(unsafe) var samplesPerBeat = 0
+    private nonisolated(unsafe) var sampleCounter = 0
+    private nonisolated(unsafe) var beatIndex = 0           // 0-based count of beats emitted
+    private nonisolated(unsafe) var clickPhase = 0          // samples into the current click transient (0 = idle)
+    private nonisolated(unsafe) var clickIsAccent = false
 
     /// (currentBeat 1...beatsPerBar, audioTimeSeconds)
     var onBeat: ((Int, Double) -> Void)?
@@ -36,40 +38,47 @@ final class Metronome {
 
     private func setup() {
         let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 2)!
-        source = AVAudioSourceNode { [weak self] _, _, frameCount, abl -> OSStatus in
-            guard let self else { return noErr }
+        source = AVAudioSourceNode(renderBlock: Metronome.makeRenderBlock(for: self))
+        engine.attach(source)
+        engine.connect(source, to: engine.mainMixerNode, format: format)
+    }
+
+    /// Built outside the main actor on purpose: a closure written inside this
+    /// @MainActor class inherits main-actor isolation, and Swift 6 traps when the
+    /// audio thread calls it.
+    private nonisolated static func makeRenderBlock(for metronome: Metronome) -> AVAudioSourceNodeRenderBlock {
+        return { [weak metronome] _, _, frameCount, abl -> OSStatus in
+            guard let m = metronome else { return noErr }
             let buffers = UnsafeMutableAudioBufferListPointer(abl)
             let frames = Int(frameCount)
 
-            self.lock.lock()
-            defer { self.lock.unlock() }
+            m.lock.lock()
+            defer { m.lock.unlock() }
 
             for frame in 0..<frames {
-                if self.running {
-                    if self.sampleCounter <= 0 {
+                if m.running {
+                    if m.sampleCounter <= 0 {
                         // Beat boundary — emit a beat + arm a click.
-                        self.beatIndex += 1
-                        let beat = ((self.beatIndex - 1) % self.beatsPerBar) + 1
-                        self.clickIsAccent = (beat == 1)
-                        self.clickPhase = 1
-                        self.sampleCounter = self.samplesPerBeat
+                        m.beatIndex += 1
+                        let beat = ((m.beatIndex - 1) % m.beatsPerBar) + 1
+                        m.clickIsAccent = (beat == 1)
+                        m.clickPhase = 1
+                        m.sampleCounter = m.samplesPerBeat
                         let now = CACurrentMediaTime()
-                        if let cb = self.onBeat {
-                            Task { @MainActor in cb(beat, now) }
-                        }
+                        Task { @MainActor in Metronome.shared.onBeat?(beat, now) }
                     }
-                    self.sampleCounter -= 1
+                    m.sampleCounter -= 1
                 }
 
                 var sample = 0.0
-                if self.clickPhase > 0 {
+                if m.clickPhase > 0 {
                     let dur = 1800 // samples (~40ms) click
-                    let t = Double(self.clickPhase)
-                    let freq = self.clickIsAccent ? 1500.0 : 1000.0
+                    let t = Double(m.clickPhase)
+                    let freq = m.clickIsAccent ? 1500.0 : 1000.0
                     let env = max(0, 1 - t / Double(dur))
-                    sample = sin(2 * Double.pi * freq * t / self.sampleRate) * env * 0.5
-                    self.clickPhase += 1
-                    if self.clickPhase > dur { self.clickPhase = 0 }
+                    sample = sin(2 * Double.pi * freq * t / m.sampleRate) * env * 0.5
+                    m.clickPhase += 1
+                    if m.clickPhase > dur { m.clickPhase = 0 }
                 }
 
                 for buffer in buffers {
@@ -79,8 +88,6 @@ final class Metronome {
             }
             return noErr
         }
-        engine.attach(source)
-        engine.connect(source, to: engine.mainMixerNode, format: format)
     }
 
     func start(bpm: Double, beatsPerBar: Int = 4, onBeat: ((Int, Double) -> Void)? = nil) {

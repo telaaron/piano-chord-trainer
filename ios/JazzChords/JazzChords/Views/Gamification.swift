@@ -10,11 +10,11 @@ struct LevelBadge: View {
     var body: some View {
         Text("\(level)")
             .font(.caption.weight(.bold).monospacedDigit())
-            .foregroundStyle(palette.primaryText)
+            // Level is progress → gold; dark numerals read on the gold fill in both modes.
+            .foregroundStyle(palette.keyBed)
             .frame(width: 26, height: 26)
-            .background(palette.primary)
+            .background(palette.musicFill)
             .clipShape(Circle())
-            .overlay(Circle().stroke(palette.accentAmber.opacity(0.5), lineWidth: 1))
             .accessibilityLabel("\(CoachL10n.t("ui.level")) \(level)")
     }
 }
@@ -35,10 +35,10 @@ struct CelebrationOverlay: View {
                 let e = events[index]
                 VStack(spacing: Theme.space4) {
                     ZStack {
-                        Circle().fill(palette.primary.opacity(0.18)).frame(width: 130, height: 130)
+                        Circle().fill(palette.action.opacity(0.18)).frame(width: 130, height: 130)
                         Image(systemName: AppIcons.celebration(e.type))
                             .font(.system(size: 60, weight: .bold))
-                            .foregroundStyle(palette.primary)
+                            .foregroundStyle(palette.action)
                             .symbolRenderingMode(.hierarchical)
                             .symbolEffect(.bounce, value: index)
                     }

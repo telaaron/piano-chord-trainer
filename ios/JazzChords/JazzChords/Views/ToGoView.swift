@@ -78,11 +78,11 @@ struct ToGoView: View {
                 VStack(alignment: .leading, spacing: Theme.space2) {
                     Text(CoachL10n.t(CoachL10n.ToGo.subtitle))
                         .font(Display.headline(22))
-                        .foregroundStyle(palette.text)
+                        .foregroundStyle(palette.ink)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(CoachL10n.t(CoachL10n.ToGo.intro))
                         .font(.subheadline)
-                        .foregroundStyle(palette.textMuted)
+                        .foregroundStyle(palette.inkMuted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -96,23 +96,23 @@ struct ToGoView: View {
                     VStack(alignment: .leading, spacing: Theme.space1) {
                         Text(CoachL10n.t(CoachL10n.ToGo.start))
                             .font(Display.headline(24))
-                            .foregroundStyle(palette.primaryText)
+                            .foregroundStyle(palette.onAction)
                         Text(CoachL10n.t(CoachL10n.ToGo.startSub))
                             .font(.subheadline)
-                            .foregroundStyle(palette.primaryText.opacity(0.85))
+                            .foregroundStyle(palette.onAction.opacity(0.85))
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.leading)
                     }
                     .padding(Theme.space4)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
+                    .background(palette.action, in: RoundedRectangle(cornerRadius: Theme.radius))
                 }
                 .buttonStyle(.plain)
 
                 VStack(alignment: .leading, spacing: Theme.space3) {
                     Text(CoachL10n.t(CoachL10n.ToGo.pickOne).uppercased())
                         .font(.caption2.weight(.semibold)).tracking(1.5)
-                        .foregroundStyle(palette.textDim)
+                        .foregroundStyle(palette.inkMuted)
                     ForEach(ALL_TOGO_KINDS, id: \.self) { kind in
                         disciplineRow(kind)
                     }
@@ -122,7 +122,7 @@ struct ToGoView: View {
                 Text(CoachL10n.t(CoachL10n.ToGo.earProgress,
                                  ["ear": String(p.earMastered), "total": String(p.total)]))
                     .font(.caption)
-                    .foregroundStyle(palette.textDim)
+                    .foregroundStyle(palette.inkMuted)
             }
             .padding(Theme.space4)
             .readableWidth()
@@ -132,16 +132,16 @@ struct ToGoView: View {
     private func noticeRow(_ text: String, icon: String) -> some View {
         HStack(spacing: Theme.space3) {
             Image(systemName: icon)
-                .foregroundStyle(palette.accentRed)
+                .foregroundStyle(palette.action)
                 .symbolRenderingMode(.hierarchical)
             Text(text)
                 .font(.subheadline)
-                .foregroundStyle(palette.textMuted)
+                .foregroundStyle(palette.inkMuted)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
         .padding(Theme.space4)
-        .glassCard()
+        .groupSurface()
     }
 
     @ViewBuilder
@@ -151,27 +151,27 @@ struct ToGoView: View {
             HStack(spacing: Theme.space3) {
                 Image(systemName: icon(for: kind))
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(available ? palette.primary : palette.textDim)
+                    .foregroundStyle(available ? palette.action : palette.inkMuted)
                     .symbolRenderingMode(.hierarchical)
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(CoachL10n.ToGo.kind(kind))
                         .font(.body.weight(.semibold))
-                        .foregroundStyle(available ? palette.text : palette.textDim)
+                        .foregroundStyle(available ? palette.ink : palette.inkMuted)
                     Text(available ? CoachL10n.ToGo.kindDesc(kind) : unavailableReason(kind))
                         .font(.caption)
-                        .foregroundStyle(palette.textDim)
+                        .foregroundStyle(palette.inkMuted)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(palette.textDim)
+                    .foregroundStyle(palette.inkMuted)
             }
             .padding(Theme.space3)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .glassCard()
+            .groupSurface()
         }
         .buttonStyle(.plain)
         .disabled(!available)
@@ -212,7 +212,7 @@ struct ToGoView: View {
                 VStack(spacing: Theme.space4) {
                     Text(CoachL10n.t(ex.promptKey, ex.promptParams))
                         .font(Display.headline(22))
-                        .foregroundStyle(palette.text)
+                        .foregroundStyle(palette.ink)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -251,15 +251,15 @@ struct ToGoView: View {
                                  ["current": String(index + 1),
                                   "total": String(session?.exercises.count ?? 0)]))
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(palette.textMuted)
+                    .foregroundStyle(palette.inkMuted)
                 Spacer()
                 Button { quit() } label: { Image(systemName: "xmark.circle.fill") }
-                    .foregroundStyle(palette.textDim)
+                    .foregroundStyle(palette.inkMuted)
                     .accessibilityLabel(CoachL10n.t(CoachL10n.ToGo.quit))
             }
             ProgressView(value: Double(index + 1),
                          total: Double(max(1, session?.exercises.count ?? 1)))
-                .tint(palette.primary)
+                .tint(palette.action)
         }
     }
 
@@ -271,17 +271,17 @@ struct ToGoView: View {
             Button { play(ex) } label: {
                 Label(CoachL10n.t(CoachL10n.ToGo.replay), systemImage: "speaker.wave.2.fill")
             }
-            .tint(palette.primary)
+            .tint(palette.action)
         case .drone:
             Label(CoachL10n.t(CoachL10n.ToGo.listen), systemImage: "waveform")
                 .font(.subheadline)
-                .foregroundStyle(palette.textMuted)
+                .foregroundStyle(palette.inkMuted)
         case .pulse:
             if !tapping && !revealed {
                 Button { startPulse(ex) } label: {
                     Label(CoachL10n.t(CoachL10n.ToGo.tapStart), systemImage: "metronome.fill")
                 }
-                .tint(palette.primary)
+                .tint(palette.action)
             }
         case .silent:
             EmptyView()
@@ -293,11 +293,11 @@ struct ToGoView: View {
         VStack(spacing: Theme.space1) {
             Text(lastCorrect ? CoachL10n.t(CoachL10n.ToGo.revealCorrect)
                              : CoachL10n.t(CoachL10n.ToGo.revealWrong))
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(lastCorrect ? palette.accentGreen : palette.accentRed)
+                .font(Display.serif(28, italic: true, relativeTo: .title2))
+                .foregroundStyle(lastCorrect ? palette.music : palette.action)
             Text(CoachL10n.t(CoachL10n.ToGo.answerWas, ["answer": ex.answerLabel]))
                 .font(.subheadline)
-                .foregroundStyle(palette.textMuted)
+                .foregroundStyle(palette.inkMuted)
                 .multilineTextAlignment(.center)
             if let s = tapScore { tapFeedback(s) }
         }
@@ -308,10 +308,10 @@ struct ToGoView: View {
             Text(CoachL10n.t(CoachL10n.ToGo.tapScore,
                              ["hits": String(s.hits), "expected": String(s.expected)]))
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(palette.text)
+                .foregroundStyle(palette.ink)
             Text(timingHint(s))
                 .font(.caption)
-                .foregroundStyle(palette.textMuted)
+                .foregroundStyle(palette.inkMuted)
         }
     }
 
@@ -361,42 +361,42 @@ struct ToGoView: View {
     }
 
     private func choiceBackground(_ ex: ToGoExercise, _ i: Int) -> Color {
-        guard revealed else { return palette.bgMuted }
-        if i == ex.answerIndex { return palette.accentGreen.opacity(0.22) }
-        if i == chosenIndex { return palette.accentRed.opacity(0.22) }
-        return palette.bgMuted
+        guard revealed else { return palette.hairline }
+        if i == ex.answerIndex { return palette.music.opacity(0.22) }
+        if i == chosenIndex { return palette.action.opacity(0.22) }
+        return palette.hairline
     }
 
     private func choiceForeground(_ ex: ToGoExercise, _ i: Int) -> Color {
-        guard revealed else { return palette.text }
-        if i == ex.answerIndex { return palette.accentGreen }
-        if i == chosenIndex { return palette.accentRed }
-        return palette.textDim
+        guard revealed else { return palette.ink }
+        if i == ex.answerIndex { return palette.music }
+        if i == chosenIndex { return palette.action }
+        return palette.inkMuted
     }
 
     private func singInput(_ ex: ToGoExercise) -> some View {
         VStack(spacing: Theme.space3) {
             Text(CoachL10n.t(CoachL10n.ToGo.singHint))
                 .font(.caption)
-                .foregroundStyle(palette.textDim)
+                .foregroundStyle(palette.inkMuted)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
             if mic.state == .denied || mic.state == .unsupported {
                 Text(CoachL10n.t(CoachL10n.ToGo.singDenied))
                     .font(.subheadline)
-                    .foregroundStyle(palette.accentRed)
+                    .foregroundStyle(palette.action)
                     .multilineTextAlignment(.center)
             } else if singing {
                 VStack(spacing: Theme.space2) {
                     Text(CoachL10n.t(CoachL10n.ToGo.singLevel))
-                        .font(.caption).foregroundStyle(palette.textDim)
-                    ProgressView(value: min(1, mic.level)).tint(palette.primary)
+                        .font(.caption).foregroundStyle(palette.inkMuted)
+                    ProgressView(value: min(1, mic.level)).tint(palette.action)
                     Text(heardMidi.isEmpty
                          ? CoachL10n.t(CoachL10n.ToGo.singNothingYet)
                          : "\(CoachL10n.t(CoachL10n.ToGo.singHeard)): \(heardNoteNames)")
                         .font(.caption)
-                        .foregroundStyle(palette.textMuted)
+                        .foregroundStyle(palette.inkMuted)
                 }
             }
 
@@ -422,7 +422,7 @@ struct ToGoView: View {
         VStack(spacing: Theme.space3) {
             Text(CoachL10n.t(CoachL10n.ToGo.tapReady))
                 .font(.caption)
-                .foregroundStyle(palette.textDim)
+                .foregroundStyle(palette.inkMuted)
                 .multilineTextAlignment(.center)
 
             Button {
@@ -433,11 +433,11 @@ struct ToGoView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(tapping ? palette.primary : palette.bgMuted)
+                        .fill(tapping ? palette.action : palette.hairline)
                         .frame(width: 180, height: 180)
                     Text(CoachL10n.t(CoachL10n.ToGo.tapButton))
                         .font(Display.headline(28))
-                        .foregroundStyle(tapping ? palette.primaryText : palette.textDim)
+                        .foregroundStyle(tapping ? palette.onAction : palette.inkMuted)
                 }
             }
             .buttonStyle(.plain)
@@ -446,7 +446,7 @@ struct ToGoView: View {
 
             Text(onBeats.map(String.init).joined(separator: " · "))
                 .font(.caption.monospacedDigit())
-                .foregroundStyle(palette.textDim)
+                .foregroundStyle(palette.inkMuted)
         }
     }
 
@@ -454,7 +454,7 @@ struct ToGoView: View {
         VStack(spacing: Theme.space3) {
             Text(CoachL10n.t(CoachL10n.ToGo.notesHint))
                 .font(.caption)
-                .foregroundStyle(palette.textDim)
+                .foregroundStyle(palette.inkMuted)
                 .multilineTextAlignment(.center)
 
             PianoKeyboard(
@@ -473,7 +473,7 @@ struct ToGoView: View {
             if !revealed {
                 HStack(spacing: Theme.space3) {
                     Button(CoachL10n.t(CoachL10n.ToGo.notesClear)) { tappedPitchClasses = [] }
-                        .tint(palette.textMuted)
+                        .tint(palette.inkMuted)
                     primaryButton(CoachL10n.t(CoachL10n.ToGo.notesCheck),
                                   disabled: tappedPitchClasses.isEmpty) {
                         finishExercise(ex, correct: gradeNotes(ex, Array(tappedPitchClasses)))
@@ -490,17 +490,17 @@ struct ToGoView: View {
             VStack(spacing: Theme.space4) {
                 Text(CoachL10n.t(CoachL10n.ToGo.resultsTitle))
                     .font(Display.title(28))
-                    .foregroundStyle(palette.text)
+                    .foregroundStyle(palette.ink)
 
                 if let s = summary {
                     Text(CoachL10n.t(CoachL10n.ToGo.resultsScore,
                                      ["correct": String(s.correct), "total": String(s.total)]))
                         .font(Display.headline(22))
-                        .foregroundStyle(palette.primary)
+                        .foregroundStyle(palette.action)
 
                     Text(verdictLine(s.ratio))
                         .font(.subheadline)
-                        .foregroundStyle(palette.textMuted)
+                        .foregroundStyle(palette.inkMuted)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -511,7 +511,7 @@ struct ToGoView: View {
                                 String(format: "%.1fs", s.avgMs / 1000))
                     }
                     .padding(Theme.space4)
-                    .glassCard()
+                    .groupSurface()
 
                     VStack(alignment: .leading, spacing: Theme.space2) {
                         SectionHeader(text: CoachL10n.t(CoachL10n.ToGo.resultsBreakdown))
@@ -522,19 +522,19 @@ struct ToGoView: View {
                         }
                     }
                     .padding(Theme.space4)
-                    .glassCard()
+                    .groupSurface()
 
                     let p = store.progress
                     Text(CoachL10n.t(CoachL10n.ToGo.earProgress,
                                      ["ear": String(p.earMastered), "total": String(p.total)]))
                         .font(.caption)
-                        .foregroundStyle(palette.textDim)
+                        .foregroundStyle(palette.inkMuted)
                 }
 
                 VStack(spacing: Theme.space2) {
                     primaryButton(CoachL10n.t(CoachL10n.ToGo.again)) { start(only: nil) }
                     Button(CoachL10n.t(CoachL10n.ToGo.done)) { dismiss() }
-                        .tint(palette.textMuted)
+                        .tint(palette.inkMuted)
                 }
                 .padding(.top, Theme.space2)
             }
@@ -552,9 +552,9 @@ struct ToGoView: View {
 
     private func statRow(_ label: String, _ value: String) -> some View {
         HStack {
-            Text(label).font(.subheadline).foregroundStyle(palette.textMuted)
+            Text(label).font(.subheadline).foregroundStyle(palette.inkMuted)
             Spacer()
-            Text(value).font(.subheadline.weight(.semibold)).foregroundStyle(palette.text)
+            Text(value).font(.subheadline.weight(.semibold)).foregroundStyle(palette.ink)
         }
     }
 
@@ -562,12 +562,11 @@ struct ToGoView: View {
                                action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.title3.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Theme.space4)
-                .background(disabled ? palette.bgMuted : palette.primary,
-                            in: RoundedRectangle(cornerRadius: Theme.radius))
-                .foregroundStyle(disabled ? palette.textDim : palette.primaryText)
+                .font(.body.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 56)
+                .background(disabled ? palette.hairline : palette.action,
+                            in: Capsule())
+                .foregroundStyle(disabled ? palette.inkMuted : palette.onAction)
         }
         .disabled(disabled)
     }

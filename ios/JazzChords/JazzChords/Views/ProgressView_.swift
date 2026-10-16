@@ -1,4 +1,4 @@
-// Progress — live dashboards from saved history: level/XP/streak header, a
+// Progress — editorial header with level eyebrow, streak/speed/sessions stats, a
 // last-N-sessions trend (Swift Charts), weak spots (with a drill action), and
 // personal bests. Empty state until the first session lands.
 
@@ -16,20 +16,31 @@ struct ProgressView_: View {
     private var streak: StreakData { ProgressStore.loadStreak() }
 
     var body: some View {
-        Group {
-            if history.isEmpty {
-                EmptyStateView(
-                    systemImage: "chart.line.uptrend.xyaxis",
-                    title: CoachL10n.t("ui.insights_empty_title"),
-                    message: CoachL10n.t("ui.insights_empty_desc"),
-                    artName: "empty"
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                content
+        ScrollView {
+            VStack(alignment: .leading, spacing: Theme.space5) {
+                EditorialHeader(eyebrow: Strings.progressEyebrow(level: habits.levelInfo.level), title: CoachL10n.t("nav.progress")) {
+                    SettingsHeaderButton()
+                }
+                if history.isEmpty {
+                    EmptyStateView(
+                        systemImage: "chart.line.uptrend.xyaxis",
+                        title: CoachL10n.t("ui.insights_empty_title"),
+                        message: CoachL10n.t("ui.insights_empty_desc"),
+                        artName: "empty"
+                    )
+                    .frame(maxWidth: .infinity)
+                } else {
+                    statsHeader
+                    trendChart
+                    weakSpotsSection
+                    personalBestsSection
+                }
             }
+            .padding(.horizontal, Theme.space4)
+            .padding(.vertical, Theme.space3)
+            .readableWidth(720)
+            .id(refresh)
         }
-        .navigationTitle(CoachL10n.t("nav.progress"))
         .screenBackground()
         .onAppear { habits.reload(); refresh += 1 }
         .refreshable { habits.reload(); refresh += 1 }
@@ -38,42 +49,14 @@ struct ProgressView_: View {
         }
     }
 
-    private var content: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Theme.space5) {
-                statsHeader
-                trendChart
-                weakSpotsSection
-                personalBestsSection
-            }
-            .padding(Theme.space4)
-            .readableWidth(720)
-            .id(refresh)
-        }
-    }
-
     private var stats: ProgressStats { computeStats(history) }
 
     private var statsHeader: some View {
-        HStack(spacing: Theme.space3) {
-            metric("\(habits.levelInfo.level)", CoachL10n.t("ui.stat_level"))
-            metric("\(streak.current)", CoachL10n.t("ui.stat_streak"))
-            metric(String(format: "%.1fs", stats.overallAvgMs / 1000), CoachL10n.t("ui.stat_avg"))
-            metric("\(stats.totalSessions)", CoachL10n.t("ui.stat_sessions"))
-        }
-    }
-
-    private func metric(_ value: String, _ label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.system(.title2, design: .rounded).weight(.bold))
-                .foregroundStyle(palette.primary)
-            Text(label).font(.caption2).foregroundStyle(palette.textDim)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Theme.space3)
-        .background(palette.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
+        StatsRow(items: [
+            StatItem(value: "\(streak.current)", label: Strings.statDaysInRow),
+            StatItem(value: Strings.seconds(stats.overallAvgMs / 1000), label: Strings.statPerChord),
+            StatItem(value: "\(stats.totalSessions)", label: Strings.statSessions),
+        ])
     }
 
     private var trendChart: some View {
@@ -82,11 +65,22 @@ struct ProgressView_: View {
             SectionHeader(text: CoachL10n.t("ui.speed_trend"))
             Chart {
                 ForEach(Array(recent.enumerated()), id: \.offset) { idx, s in
+                    AreaMark(x: .value("Session", idx), y: .value("Avg s", s.avgMs / 1000))
+                        .foregroundStyle(palette.music.opacity(0.14))
+                        .interpolationMethod(.catmullRom)
                     LineMark(x: .value("Session", idx), y: .value("Avg s", s.avgMs / 1000))
-                        .foregroundStyle(palette.primary)
+                        .foregroundStyle(palette.music)
                         .interpolationMethod(.catmullRom)
                     PointMark(x: .value("Session", idx), y: .value("Avg s", s.avgMs / 1000))
-                        .foregroundStyle(palette.primary)
+                        .foregroundStyle(palette.music)
+                        .symbolSize(24)
+                }
+            }
+            .chartXAxis(.hidden)
+            .chartYAxis {
+                AxisMarks { _ in
+                    AxisGridLine().foregroundStyle(palette.hairline)
+                    AxisValueLabel().foregroundStyle(palette.inkMuted)
                 }
             }
             .frame(height: 160)
@@ -100,23 +94,17 @@ struct ProgressView_: View {
         if !spots.isEmpty {
             VStack(alignment: .leading, spacing: Theme.space2) {
                 SectionHeader(text: CoachL10n.t("quickstart.weakspots_title"))
-                ForEach(Array(spots.enumerated()), id: \.offset) { _, spot in
-                    Button { drillSpot = spot } label: {
-                        HStack {
+                TrackGroup {
+                    ForEach(Array(spots.enumerated()), id: \.offset) { idx, spot in
+                        Button { drillSpot = spot } label: {
                             // Root is typeset (D♭, not "Db"); voicing name is localized.
-                            Text("\(Notation.root(spot.root)) \(CoachL10n.voicing(spot.voicing))")
-                                .foregroundStyle(palette.text)
-                            Spacer()
-                            Text(String(format: "%.1fs", spot.avgMs / 1000))
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundStyle(palette.accentRed)
-                            Image(systemName: "play.circle.fill").foregroundStyle(palette.primary)
+                            TrackRow(badge: Notation.root(spot.root),
+                                     title: CoachL10n.voicing(spot.voicing),
+                                     meta: "Ø " + Strings.seconds(spot.avgMs / 1000),
+                                     showsDivider: idx < spots.count - 1)
                         }
-                        .padding(Theme.space3)
-                        .background(palette.bgCard)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
@@ -124,22 +112,18 @@ struct ProgressView_: View {
 
     @ViewBuilder
     private var personalBestsSection: some View {
-        let pbs = stats.personalBests.values.sorted { $0.avgMs < $1.avgMs }.prefix(3)
+        let pbs = Array(stats.personalBests.values.sorted { $0.avgMs < $1.avgMs }.prefix(3))
         if !pbs.isEmpty {
             VStack(alignment: .leading, spacing: Theme.space2) {
                 SectionHeader(text: CoachL10n.t("ui.personal_bests"))
-                ForEach(Array(pbs.enumerated()), id: \.offset) { _, pb in
-                    HStack {
-                        Image(systemName: "trophy.fill").foregroundStyle(palette.accentGold)
-                        Text(CoachL10n.t("ui.avg_suffix", ["seconds": String(format: "%.1f", pb.avgMs / 1000)]))
-                            .foregroundStyle(palette.text)
-                        Spacer()
-                        Text(CoachL10n.plural("count.chords", pb.totalChords))
-                            .font(.caption).foregroundStyle(palette.textDim)
+                TrackGroup {
+                    ForEach(Array(pbs.enumerated()), id: \.offset) { idx, pb in
+                        TrackRow(number: "0\(idx + 1)",
+                                 title: CoachL10n.t("ui.avg_suffix", ["seconds": String(format: "%.1f", pb.avgMs / 1000)]),
+                                 meta: CoachL10n.plural("count.chords", pb.totalChords),
+                                 showsDivider: idx < pbs.count - 1,
+                                 showsChevron: false)
                     }
-                    .padding(Theme.space3)
-                    .background(palette.bgCard)
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
                 }
             }
         }

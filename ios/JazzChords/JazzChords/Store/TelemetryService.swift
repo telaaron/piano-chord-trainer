@@ -27,7 +27,15 @@ final class TelemetryService {
         static let url = "https://chpoqghvlojwyunoplab.supabase.co"
         static let anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNocG9xZ2h2bG9qd3l1bm9wbGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzAyODIsImV4cCI6MjA4ODY0NjI4Mn0.r_1JeIDnRpKiTWn74bCHBFUU7kOu4YSPFY9QRjrdPX0"
         static let cohort = "default"
-        static let version = "ios-dev"
+        /// "ios-1.0.0" in release builds, "ios-dev" in debug, so dev traffic can be filtered out.
+        static let version: String = {
+            #if DEBUG
+            return "ios-dev"
+            #else
+            let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+            return "ios-\(v)"
+            #endif
+        }()
     }
 
     private let flushBatchSize = 10
@@ -37,12 +45,15 @@ final class TelemetryService {
 
     private init() {}
 
-    // ─── Device ID + opt-out (persisted) ────────────────────
+    // ─── Device ID + consent (persisted) ────────────────────
 
     private static let deviceIdKey = "coach-device-id"
-    private static let optOutKey = "coach-telemetry-optout"
+    /// Opt-in: nothing is sent and no device ID exists until the user agrees
+    /// (onboarding or Settings). Missing key = no consent.
+    private static let consentKey = "coach-telemetry-consent"
 
     /// Anonymous, stable, per-install device UUID (persisted in UserDefaults).
+    /// Only created on the first tracked event, i.e. after consent.
     private var deviceId: String {
         if let existing = UserDefaults.standard.string(forKey: Self.deviceIdKey) {
             return existing
@@ -52,21 +63,25 @@ final class TelemetryService {
         return id
     }
 
-    /// Whether telemetry is currently enabled (user has NOT opted out).
+    /// Whether the user has opted in.
     var isEnabled: Bool {
-        !UserDefaults.standard.bool(forKey: Self.optOutKey)
+        UserDefaults.standard.bool(forKey: Self.consentKey)
     }
 
-    /// Opt in (`true`) or out (`false`). Opting out drops anything queued.
+    /// Opt in (`true`) or out (`false`). Opting out drops anything queued and
+    /// forgets the device ID, so a later opt-in starts as a new anonymous device.
     func setEnabled(_ enabled: Bool) {
-        UserDefaults.standard.set(!enabled, forKey: Self.optOutKey)
-        if !enabled { queue.removeAll() }
+        UserDefaults.standard.set(enabled, forKey: Self.consentKey)
+        if !enabled {
+            queue.removeAll()
+            UserDefaults.standard.removeObject(forKey: Self.deviceIdKey)
+        }
     }
 
     // ─── Tracking ───────────────────────────────────────────
 
     /// Queue a coach event. Flushed in batches (at `flushBatchSize`, or on flush()).
-    /// No-op when disabled at build time or by opt-out. Never throws.
+    /// No-op when disabled at build time or without consent. Never throws.
     func track(_ eventType: String, _ payload: [String: Any] = [:]) {
         guard Config.enabled, !Config.url.isEmpty, !Config.anonKey.isEmpty else { return }
         guard isEnabled else { return }

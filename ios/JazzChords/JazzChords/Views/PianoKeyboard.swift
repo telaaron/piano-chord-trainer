@@ -29,6 +29,8 @@ struct PianoKeyboard: View {
     /// Cap the rendered keyboard height (iPad: let it grow much taller than the
     /// aspect ratio alone would allow on a wide screen).
     var maxHeight: CGFloat = 200
+    /// After a wrong attempt: outline voicing keys that were not played.
+    var showMissing: Bool = false
 
     /// Chromatic indices (C3 = 0) currently held via input.
     private var heldKeyIndices: Set<Int> {
@@ -82,25 +84,30 @@ struct PianoKeyboard: View {
                 }
             }
         }
+        .padding(.top, 2)
+        .background(palette.keyBed)
         .aspectRatio(octaves == .three ? 5.4 : 4.0, contentMode: .fit)
         .frame(maxHeight: maxHeight)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.radius))
     }
 
     // MARK: Keys
 
     private func whiteKey(chrIdx: Int, width: CGFloat, height: CGFloat) -> some View {
-        let active = layout.activeIndices.contains(chrIdx)
-        let root = active && isRootKey(chrIdx)
-        let flash = flashPC == chrIdx % 12
-        let selected = interactive && selectedPitchClasses.contains(chrIdx % 12)
+        let r = role(chrIdx, active: layout.activeIndices.contains(chrIdx))
+        let root = layout.activeIndices.contains(chrIdx) && isRootKey(chrIdx)
+        let shape = UnevenRoundedRectangle(bottomLeadingRadius: 6, bottomTrailingRadius: 6)
 
         return ZStack(alignment: .bottom) {
-            Rectangle()
-                .fill(whiteFill(chrIdx, active: active, selected: selected, flash: flash))
-                .overlay(Rectangle().stroke(palette.keyWhiteBorder, lineWidth: 0.5))
+            shape
+                .fill(fill(chrIdx, role: r, isBlack: false))
+                .overlay {
+                    if r == .missing {
+                        shape.strokeBorder(palette.action, lineWidth: 2.5)
+                    }
+                }
+                .padding(.horizontal, 1)
             if root {
-                Circle().fill(.white).frame(width: 8, height: 8).padding(.bottom, 8)
+                Circle().fill(palette.keyBed.opacity(0.55)).frame(width: 7, height: 7).padding(.bottom, 9)
             }
         }
         .frame(width: width, height: height)
@@ -109,16 +116,20 @@ struct PianoKeyboard: View {
     }
 
     private func blackKey(key: BlackKey, height: CGFloat, width: CGFloat) -> some View {
-        let active = layout.activeIndices.contains(key.idx)
-        let root = active && isRootKey(key.idx)
-        let flash = flashPC == key.idx % 12
-        let selected = interactive && selectedPitchClasses.contains(key.idx % 12)
+        let r = role(key.idx, active: layout.activeIndices.contains(key.idx))
+        let root = layout.activeIndices.contains(key.idx) && isRootKey(key.idx)
+        let shape = UnevenRoundedRectangle(bottomLeadingRadius: 4, bottomTrailingRadius: 4)
 
         return ZStack(alignment: .bottom) {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(blackFill(key.idx, active: active, selected: selected, flash: flash))
+            shape
+                .fill(fill(key.idx, role: r, isBlack: true))
+                .overlay {
+                    if r == .missing {
+                        shape.strokeBorder(palette.action, lineWidth: 2.5)
+                    }
+                }
             if root {
-                Circle().fill(.white).frame(width: 6, height: 6).padding(.bottom, 4)
+                Circle().fill(palette.keyBed.opacity(0.55)).frame(width: 6, height: 6).padding(.bottom, 5)
             }
         }
         .frame(width: width, height: height)
@@ -126,27 +137,49 @@ struct PianoKeyboard: View {
         .onTapGesture { tap(key.idx) }
     }
 
-    // MARK: Fills
+    // MARK: Roles & fills
 
-    private func inputColor(_ chrIdx: Int) -> Color? {
-        guard showInput, heldKeyIndices.contains(chrIdx) else { return nil }
-        return expectedPitchClasses.contains(chrIdx % 12) ? palette.accentGreen : palette.accentRed
+    enum KeyRole: Equatable {
+        case idle, voicing, selected, missing
+        case held(correct: Bool)
     }
 
-    private func whiteFill(_ chrIdx: Int, active: Bool, selected: Bool, flash: Bool) -> Color {
-        if let c = inputColor(chrIdx) { return c }
-        if selected { return palette.primary.opacity(0.85) }
-        if flash { return palette.accentGreen.opacity(0.7) }
-        if active { return palette.primary }
-        return palette.keyWhite
+    /// What a key shows. `held` are chromatic indices (C3 = 0), `expected` and
+    /// `played` pitch classes. Live input wins; then the tap-guess selection;
+    /// then a voicing key — marked missing after a wrong attempt only when its
+    /// pitch class was not part of the attempt (`played`).
+    nonisolated static func role(chrIdx: Int, active: Bool, held: Set<Int>, expected: Set<Int>,
+                                 selected: Bool, showInput: Bool, showMissing: Bool,
+                                 played: Set<Int> = []) -> KeyRole {
+        if showInput, held.contains(chrIdx) {
+            return .held(correct: expected.contains(chrIdx % 12))
+        }
+        if selected { return .selected }
+        if active {
+            return showMissing && !played.contains(chrIdx % 12) ? .missing : .voicing
+        }
+        return .idle
     }
 
-    private func blackFill(_ chrIdx: Int, active: Bool, selected: Bool, flash: Bool) -> Color {
-        if let c = inputColor(chrIdx) { return c }
-        if selected { return palette.primary }
-        if flash { return palette.accentGreen }
-        if active { return palette.primary }
-        return palette.keyBlack
+    /// Gold for played, expected and selected keys; red for a wrong held key.
+    nonisolated static func fill(for role: KeyRole, isBlack: Bool, palette: Palette) -> Color {
+        switch role {
+        case .held(correct: false): return palette.action
+        case .held(correct: true), .voicing, .selected: return palette.musicFill
+        case .idle, .missing: return isBlack ? palette.keyBlack : palette.keyWhite
+        }
+    }
+
+    private func role(_ chrIdx: Int, active: Bool) -> KeyRole {
+        Self.role(chrIdx: chrIdx, active: active, held: heldKeyIndices, expected: expectedPitchClasses,
+                  selected: interactive && selectedPitchClasses.contains(chrIdx % 12),
+                  showInput: showInput, showMissing: showMissing,
+                  played: selectedPitchClasses.union(heldKeyIndices.map { $0 % 12 }))
+    }
+
+    private func fill(_ chrIdx: Int, role: KeyRole, isBlack: Bool) -> Color {
+        if flashPC == chrIdx % 12, role == .idle { return palette.musicFill.opacity(0.7) }
+        return Self.fill(for: role, isBlack: isBlack, palette: palette)
     }
 
     private func isRootKey(_ chrIdx: Int) -> Bool {

@@ -1,8 +1,15 @@
 # jazzchords iOS/iPadOS — open backlog (prioritized)
 
 Status: v1 feature-complete (M1–M5 + design pass + iPad). Builds + runs on
-iPhone 17 Pro and iPad Pro. Branch `ios/native`. This file = everything still
-worth doing, highest priority first.
+iPhone 17 Pro and iPad Pro. Release spec for App Store v1.0 lives in the
+project files (`app-store/SPEC.md`, `PLAN.md`); build/release notes in
+`README.md`. This file = everything still worth doing, highest priority first.
+
+Done for v1.0 (Oct 2026): Settings persist and apply · daily reminder
+(local notifications, pre-permission card, Settings toggle) · privacy manifest
+declares anonymous telemetry · export compliance, version 1.0.0, display name,
+localized permission texts · launch colour · connected MIDI keyboard is used
+by default · Swift 6 warnings in MicInput/Notation.
 
 ---
 
@@ -23,7 +30,11 @@ worth doing, highest priority first.
 
 ## P1 — Ship readiness (App Store / TestFlight)
 
-- [ ] **Paid Apple Developer account** ($99/yr) — required for TestFlight + Store.
+- [ ] **Release Xcode** — the Mac only has an Xcode beta; App Store Connect
+      rejects uploads from betas.
+- [ ] **Signing team** — `project.yml` names `3YB2KJCCHV`, but the Mac is
+      signed in to `NHWRVSFTP8` and `5W3D2CH3SS`. Set the paid team, register
+      `app.jazzchords.trainer` there, create an Apple Distribution certificate.
 - [ ] **App Store Connect setup** — app record, bundle id `app.jazzchords.trainer`,
       name, subtitle, category (Music / Education), age rating.
 - [ ] **Archive + upload** — Release config, real distribution signing, upload
@@ -34,7 +45,8 @@ worth doing, highest priority first.
 - [ ] **App icon final polish** — current icon is code-rendered (good); confirm
       it reads at all sizes (Settings/Spotlight/Notification). Consider a dark/
       tinted variant for iOS 18+ icon styles.
-- [ ] **Launch screen** — currently generated/blank; add a branded one.
+- [x] **Launch screen** — brand colour (light/dark) via `LaunchBackground`.
+      A wordmark image is still open.
 - [ ] **Real device matrix** — test on a small iPhone (SE/13 mini) + older iPad;
       check safe areas, Dynamic Type XL, landscape.
 
@@ -80,9 +92,9 @@ worth doing, highest priority first.
       (everything free). To monetize iOS: real product, `Transaction.updates`,
       purchase/restore, and re-gate custom progressions + adaptive drill
       (matching the web's Guideline-3.1.1-safe approach). Decision pending.
-- [ ] **Push notifications** — daily practice reminder / streak-saver (the web
-      habit engine has `scheduleDailyReminder`/`scheduleStreakSaver`; iOS needs
-      UNUserNotificationCenter + a usage prompt + scheduling). Big retention lever.
+- [x] **Daily practice reminder** — local notifications (see README).
+- [ ] **Reminder content** — name the coach's next exercise instead of a
+      generic line; streak-saver evening nudge.
 - [ ] **Home-screen widget** — streak / "today's plan" widget (WidgetKit).
 - [ ] **Cloud sync** — optional Supabase auth + progress backup (web has
       `cloud-sync.ts`); currently iOS is local-only. Needs the API/CORS shipped
@@ -98,9 +110,8 @@ worth doing, highest priority first.
 - [ ] **App size** — audit bundle (art webp, fonts); ensure no stray large assets.
 - [ ] **Accessibility pass** — VoiceOver labels on the keyboard, trainer controls,
       celebration overlay; Dynamic Type on the chord symbol.
-- [ ] **Settings completeness** — input mode, theme override, language, daily-goal
-      edit, notification toggle are referenced in copy but not all wired in
-      Settings yet.
+- [ ] **Settings completeness** — theme override, language and daily-goal edit
+      are still missing (notation, sound, reminder are wired).
 
 ---
 

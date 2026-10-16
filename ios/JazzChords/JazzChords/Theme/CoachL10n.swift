@@ -151,6 +151,7 @@ enum CoachL10n {
 
     /// Greeting for the Today hero, chosen by hour of day.
     static func greeting(hour: Int) -> String {
+        if hour < 5 { return t("settings.greeting_evening") }   // 00:30 is not "morning"
         if hour < 12 { return t("settings.greeting_morning") }
         if hour < 18 { return t("settings.greeting_afternoon") }
         return t("settings.greeting_evening")
@@ -266,6 +267,7 @@ enum CoachL10n {
         "coach.fb.placed": "You already have {quality} in {voicing} {tier} — skipped ahead.",
         "coach.fb.nextGoal": "Next goal: {quality} in {voicing} {tier}.",
         "coach.fb.calibrated": "Check done — {placed} building blocks already in place.",
+        "coach.fb.calibratedNone": "Check done — now we know where to start. Off we go!",
         // Key-stage suffix used in fb.* strings — reads as a parenthetical.
         "coach.tier.easy": "(easy keys)",
         "coach.tier.med": "(more keys)",
@@ -289,7 +291,7 @@ enum CoachL10n {
         "quickstart.coach_hero_sub": "Your coach builds today's session.",
         "quickstart.pick_yourself": "Pick it yourself",
         "settings.privacy": "Anonymous Usage Data",
-        "settings.privacy_desc": "Helps us improve the practice coach — fully anonymous, no personal data, and you can turn it off anytime.",
+        "settings.privacy_desc": "Helps us improve the practice coach — fully anonymous, no personal data, off unless you agree, and you can change it anytime in Settings.",
         "settings.privacy_toggle_label": "Share anonymous usage data",
 
         // ── App chrome (web keys noted where one exists) ──
@@ -344,7 +346,7 @@ enum CoachL10n {
         "settings.instrument": "Instrument",
         "settings.midi": "MIDI",
         "settings.connect_bluetooth": "Connect Bluetooth keyboard",
-        "settings.midi_footer": "Hardware MIDI works in the trainer (set Input → MIDI). Microphone recognition and more settings arrive soon.",
+        "settings.midi_footer": "A connected MIDI keyboard is used automatically. You can switch between MIDI, microphone and the on-screen keyboard in the trainer under Input.",
         "sound.grand-piano": "Grand Piano",
         "sound.electric-piano": "Electric Piano",
         "sound.vibraphone": "Vibraphone",
@@ -437,10 +439,26 @@ enum CoachL10n {
         "habit.onboard_daily": "Daily goal",
         "habit.onboard_time_title": "How long do you want to practice each day?",
         "habit.onboard_when_title": "When do you practice?",
+        "onboarding.usage_title": "Help improve the coach?",
+        "onboarding.usage_yes": "Yes, share anonymously",
+        "onboarding.usage_no": "No, thanks",
         "habit.onboard_morning": "Morning",
         "habit.onboard_afternoon": "Afternoon",
         "habit.onboard_evening": "Evening",
         "habit.onboard_start": "Start practicing",
+        "reminder.title": "Time for your chords",
+        "reminder.body": "Your {minutes} minutes at the piano are waiting.",
+        "reminder.body_streak": "{days} days in a row. A few minutes today keep it going.",
+        "reminder.offer_title": "Same time tomorrow?",
+        "reminder.offer_body": "I'll remind you at {time}, and stay quiet on days you've already practiced.",
+        "reminder.offer_yes": "Remind me",
+        "reminder.offer_no": "Not now",
+        "reminder.offer_enabled": "Reminder on, daily at {time}",
+        "reminder.offer_denied": "Notifications are off. You can turn reminders on later in Settings.",
+        "reminder.settings_title": "Daily reminder",
+        "reminder.settings_toggle": "Remind me to practice",
+        "reminder.settings_time": "Time",
+        "reminder.settings_denied": "Notifications are blocked. Open iOS Settings",
         // Plan level names (web learn.level_*).
         "learn.level_beginner": "Beginner",
         "learn.level_intermediate": "Intermediate",
@@ -570,6 +588,7 @@ enum CoachL10n {
         "coach.fb.placed": "{quality} in {voicing} {tier} kannst du schon — übersprungen.",
         "coach.fb.nextGoal": "Nächstes Ziel: {quality} in {voicing} {tier}.",
         "coach.fb.calibrated": "Check fertig — {placed} Bausteine sitzen schon.",
+        "coach.fb.calibratedNone": "Check fertig — jetzt wissen wir, wo wir anfangen. Los geht’s!",
         "coach.tier.easy": "(leichte Tonarten)",
         "coach.tier.med": "(mehr Tonarten)",
         "coach.tier.all": "(alle 12 Tonarten)",
@@ -591,7 +610,7 @@ enum CoachL10n {
         "quickstart.coach_hero_sub": "Dein Coach stellt die Session zusammen.",
         "quickstart.pick_yourself": "Selbst wählen",
         "settings.privacy": "Anonyme Nutzungsdaten",
-        "settings.privacy_desc": "Hilft uns, den Übungs-Coach zu verbessern — komplett anonym, ohne Personendaten, jederzeit abschaltbar.",
+        "settings.privacy_desc": "Hilft uns, den Übungs-Coach zu verbessern — komplett anonym, ohne Personendaten, nur mit deiner Zustimmung und jederzeit in den Einstellungen änderbar.",
         "settings.privacy_toggle_label": "Anonyme Nutzungsdaten teilen",
 
         // ── App-Chrome (Web-Wording, wo es einen Schlüssel gibt) ──
@@ -645,7 +664,7 @@ enum CoachL10n {
         "settings.instrument": "Instrument",
         "settings.midi": "MIDI",
         "settings.connect_bluetooth": "Bluetooth-Keyboard verbinden",
-        "settings.midi_footer": "Hardware-MIDI funktioniert im Trainer (Eingabe → MIDI). Mikrofon-Erkennung und weitere Einstellungen kommen bald.",
+        "settings.midi_footer": "Ein angeschlossenes MIDI-Keyboard wird automatisch genutzt. Im Trainer wechselst du unter Eingabe zwischen MIDI, Mikrofon und Bildschirm-Klaviatur.",
         "sound.grand-piano": "Flügel",
         "sound.electric-piano": "E-Piano",
         "sound.vibraphone": "Vibraphon",
@@ -738,10 +757,26 @@ enum CoachL10n {
         "habit.onboard_daily": "Tagesziel",
         "habit.onboard_time_title": "Wie lange willst du täglich üben?",
         "habit.onboard_when_title": "Wann übst du?",
+        "onboarding.usage_title": "Hilfst du, den Coach zu verbessern?",
+        "onboarding.usage_yes": "Ja, anonym teilen",
+        "onboarding.usage_no": "Nein, danke",
         "habit.onboard_morning": "Morgens",
         "habit.onboard_afternoon": "Nachmittags",
         "habit.onboard_evening": "Abends",
         "habit.onboard_start": "Üben starten",
+        "reminder.title": "Zeit für deine Akkorde",
+        "reminder.body": "Deine {minutes} Minuten am Klavier warten.",
+        "reminder.body_streak": "{days} Tage in Folge. Ein paar Minuten heute halten die Serie.",
+        "reminder.offer_title": "Morgen zur selben Zeit?",
+        "reminder.offer_body": "Ich erinnere dich um {time} und bleibe still, wenn du schon geübt hast.",
+        "reminder.offer_yes": "Erinnere mich",
+        "reminder.offer_no": "Nicht jetzt",
+        "reminder.offer_enabled": "Erinnerung an, täglich um {time}",
+        "reminder.offer_denied": "Mitteilungen sind aus. Du kannst Erinnerungen später in den Einstellungen einschalten.",
+        "reminder.settings_title": "Tägliche Erinnerung",
+        "reminder.settings_toggle": "Ans Üben erinnern",
+        "reminder.settings_time": "Uhrzeit",
+        "reminder.settings_denied": "Mitteilungen sind blockiert. iOS-Einstellungen öffnen",
         // Level-Namen (Web learn.level_*).
         "learn.level_beginner": "Einsteiger",
         "learn.level_intermediate": "Fortgeschritten",

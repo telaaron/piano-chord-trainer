@@ -19,18 +19,18 @@ struct CustomProgressionView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.space4) {
                 Text(CoachL10n.t("ui.start_typing_suggestion"))
-                    .font(Display.headline(20)).foregroundStyle(palette.text)
+                    .font(Display.headline(20)).foregroundStyle(palette.ink)
 
                 TextField(CoachL10n.t("ui.progression_input_placeholder"), text: $raw, axis: .vertical)
                     .lineLimit(2...4)
                     .padding(Theme.space3)
-                    .glassCard()
+                    .groupSurface()
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
 
                 // Parsed preview chips
                 if !parsed.isEmpty {
-                    FlowChips(items: parsed.map { $0.display }, color: palette.primary)
+                    FlowChips(items: parsed.map { $0.display }, color: palette.action)
                     Button {
                         store.loadSettings()
                         store.startCustom(parsed)
@@ -40,29 +40,29 @@ struct CustomProgressionView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Theme.space4)
-                            .background(palette.primary, in: RoundedRectangle(cornerRadius: Theme.radius))
-                            .foregroundStyle(palette.primaryText)
+                            .background(palette.action, in: RoundedRectangle(cornerRadius: Theme.radius))
+                            .foregroundStyle(palette.onAction)
                     }
                 } else if !raw.isEmpty {
                     Text(CoachL10n.t("ui.no_valid_chords"))
-                        .font(.footnote).foregroundStyle(palette.textDim)
+                        .font(.footnote).foregroundStyle(palette.inkMuted)
                 }
 
                 Text(CoachL10n.t("ui.standards"))
-                    .font(Display.headline(18)).foregroundStyle(palette.text)
+                    .font(Display.headline(18)).foregroundStyle(palette.ink)
                     .padding(.top, Theme.space2)
                 ForEach(PROGRESSION_PRESETS, id: \.name) { preset in
                     Button { raw = preset.raw } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(preset.name).font(.subheadline.weight(.medium)).foregroundStyle(palette.text)
-                                Text(preset.tag).font(.caption).foregroundStyle(palette.textMuted)
+                                Text(preset.name).font(.subheadline.weight(.medium)).foregroundStyle(palette.ink)
+                                Text(preset.tag).font(.caption).foregroundStyle(palette.inkMuted)
                             }
                             Spacer()
-                            Image(systemName: "arrow.up.left.circle").foregroundStyle(palette.textDim)
+                            Image(systemName: "arrow.up.left.circle").foregroundStyle(palette.inkMuted)
                         }
                         .padding(Theme.space3)
-                        .glassCard()
+                        .groupSurface()
                     }
                     .buttonStyle(.plain)
                 }
@@ -100,7 +100,7 @@ struct FlowChips: View {
             ForEach(Array(items.enumerated()), id: \.offset) { _, c in
                 Text(c)
                     .font(.system(.subheadline, design: .monospaced))
-                    .foregroundStyle(palette.text)
+                    .foregroundStyle(palette.ink)
                     .padding(.horizontal, 10).padding(.vertical, 6)
                     .background(color.opacity(0.14), in: Capsule())
             }

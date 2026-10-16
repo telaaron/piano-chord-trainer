@@ -44,7 +44,7 @@ enum Notation {
     /// Rewrite accidentals inside a quality suffix ("m7b5" → "m7♭5").
     private static func typesetQuality(_ q: String) -> String {
         var out = ""
-        var chars = Array(q)
+        let chars = Array(q)
         var i = 0
         while i < chars.count {
             let c = chars[i]

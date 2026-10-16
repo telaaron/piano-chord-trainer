@@ -1,15 +1,9 @@
-// Theme — maps the web app's design tokens (src/app.css) 1:1 to SwiftUI Colors.
+// Theme — the editorial palette (spec §3.1) as semantic roles.
 //
-// The press palette: ink on paper. Dark is a night pressroom (deep slate-navy),
-// light is warm newsprint — NOT white, so it reads as paper rather than a blank
-// screen. Stamp red is the publisher's stamp and the teacher's red pencil;
-// copyist blue is the second ink, for annotation and structure. Amber survives
-// from the old palette but is now reserved for one thing: live/active state.
-//
-// Values are copied verbatim from src/app.css (`:root` = dark,
-// `[data-theme="light"]` = light) so the two platforms cannot drift apart.
-// Where the light block omits a token it inherits `:root`, and that inheritance
-// is reproduced here explicitly — see `stamp`.
+// Dark is a night stage (deep navy), light is warm paper — not white. Three
+// colours carry meaning: red (`action`) = act or error, gold (`music`,
+// `musicFill`, the website's #e8b04b) = music, success, progress, and the
+// night blue `canvas` = the stage. Views use roles, never raw hex.
 
 import SwiftUI
 
@@ -37,71 +31,57 @@ extension Color {
 
 /// One palette = the resolved token values for a single color scheme.
 struct Palette {
-    let bg: Color
-    let bgCard: Color
-    let bgCardHover: Color
-    let bgMuted: Color
-    let border: Color
-    let borderHover: Color
-    let text: Color
-    let textMuted: Color
-    let textDim: Color
-    let primary: Color
-    let primaryHover: Color
-    let primaryText: Color
-    /// Copyist blue — the second ink. Annotation, analysis, structure.
-    let inkBlue: Color
-    /// The publisher's stamp. Reserved for live/active state; constant across
-    /// schemes because the light block inherits it from `:root`.
-    let stamp: Color
-    let stampHover: Color
-    let stampInk: Color
-    let accentGold: Color
-    let accentAmber: Color
-    let accentRed: Color
-    let accentGreen: Color
-    let success: Color
-    let warning: Color
-    let danger: Color
-    let xp: Color
-    // Piano
+    // Piano key faces (the bed and key states use the roles below).
     let keyWhite: Color
-    let keyWhiteActive: Color
-    let keyWhiteBorder: Color
     let keyBlack: Color
-    let keyBlackActive: Color
-    let keyRootDot: Color
+    // ── Editorial roles (spec §3.1).
+    /// Screen background — night blue / paper.
+    let canvas: Color
+    /// Primary text and the rule under titles.
+    let ink: Color
+    /// Secondary text and eyebrows.
+    let inkMuted: Color
+    /// Dividers and staff lines.
+    let hairline: Color
+    /// Inset-grouped list background.
+    let group: Color
+    /// Red: act or error — primary button, feature block, active tab, missing note.
+    let action: Color
+    /// Text on `action`.
+    let onAction: Color
+    /// Gold: music, success, progress — stats, chord badges, "done".
+    let music: Color
+    /// Gold fill for played keys and progress bars.
+    let musicFill: Color
+    /// Bed behind the edge-to-edge keyboard.
+    let keyBed: Color
+    /// The one feature block per screen. Dark: deep oxblood, so it reads as
+    /// light type on a dark field instead of a glaring coral card.
+    let feature: Color
+    /// Text and the inverted button on `feature`.
+    let onFeature: Color
+    /// Eyebrow on `feature`.
+    let featureAccent: Color
 
-    /// Night pressroom — dark. Verbatim from `:root` in app.css.
+    /// Night stage — dark.
     static let dark = Palette(
-        bg: Color(hex: "0e141d"), bgCard: Color(hex: "151d29"), bgCardHover: Color(hex: "1c2735"),
-        bgMuted: Color(hex: "1a2431"), border: Color(hex: "26323f"), borderHover: Color(hex: "38485a"),
-        text: Color(hex: "eef1f4"), textMuted: Color(hex: "a3b0bf"), textDim: Color(hex: "71808f"),
-        primary: Color(hex: "e2685c"), primaryHover: Color(hex: "ee7d71"), primaryText: Color(hex: "14090a"),
-        inkBlue: Color(hex: "7ba7d4"),
-        stamp: Color(hex: "f5a623"), stampHover: Color(hex: "ffb840"), stampInk: Color(hex: "14090a"),
-        accentGold: Color(hex: "e8b04b"), accentAmber: Color(hex: "f5a623"),
-        accentRed: Color(hex: "e2685c"), accentGreen: Color(hex: "3fd09a"),
-        success: Color(hex: "4ade80"), warning: Color(hex: "f59e0b"), danger: Color(hex: "ef4444"),
-        xp: Color(hex: "fb923c"),
-        keyWhite: Color(hex: "f5f4fa"), keyWhiteActive: Color(hex: "e8b04b"), keyWhiteBorder: Color(hex: "c9c6da"),
-        keyBlack: Color(hex: "161329"), keyBlackActive: Color(hex: "f5a623"), keyRootDot: Color(hex: "e8b04b"))
+        // Variant E (Aaron, 16.10.): brighter secondary text, visible
+        // hairlines, lifted groups, softer white keys at night.
+        keyWhite: Color(hex: "ECE6DA"), keyBlack: Color(hex: "161329"),
+        canvas: Color(hex: "0E141D"), ink: Color(hex: "F2E8D5"), inkMuted: Color(hex: "B4BCC8"),
+        hairline: Color(hex: "3A4658"), group: Color(hex: "18212E"),
+        action: Color(hex: "F07B6C"), onAction: Color(hex: "0E141D"),
+        music: Color(hex: "E8B04B"), musicFill: Color(hex: "E8B04B"), keyBed: Color(hex: "070A0F"),
+        feature: Color(hex: "8C2A22"), onFeature: Color(hex: "F6EDE0"), featureAccent: Color(hex: "F2C46B"))
 
-    /// Warm newsprint — light. Verbatim from `[data-theme="light"]` in app.css.
-    /// Note `bg` is paper, not white; the stamp trio is inherited from `:root`.
+    /// Warm paper — light.
     static let light = Palette(
-        bg: Color(hex: "ecefe9"), bgCard: Color(hex: "fbfcf9"), bgCardHover: Color(hex: "f2f4ee"),
-        bgMuted: Color(hex: "e2e6de"), border: Color(hex: "d2d8cd"), borderHover: Color(hex: "b4bdad"),
-        text: Color(hex: "131a26"), textMuted: Color(hex: "4a5563"), textDim: Color(hex: "6b7684"),
-        primary: Color(hex: "b0302a"), primaryHover: Color(hex: "96231e"), primaryText: Color(hex: "ffffff"),
-        inkBlue: Color(hex: "2c5985"),
-        stamp: Color(hex: "f5a623"), stampHover: Color(hex: "ffb840"), stampInk: Color(hex: "14090a"),
-        accentGold: Color(hex: "8f5a05"), accentAmber: Color(hex: "8f5a05"),
-        accentRed: Color(hex: "b0302a"), accentGreen: Color(hex: "18936a"),
-        success: Color(hex: "18936a"), warning: Color(hex: "b87708"), danger: Color(hex: "d23b34"),
-        xp: Color(hex: "8f5a05"),
-        keyWhite: Color(hex: "ffffff"), keyWhiteActive: Color(hex: "d9a441"), keyWhiteBorder: Color(hex: "cdd3c8"),
-        keyBlack: Color(hex: "131a26"), keyBlackActive: Color(hex: "8f5a05"), keyRootDot: Color(hex: "b0302a"))
+        keyWhite: Color(hex: "ffffff"), keyBlack: Color(hex: "131a26"),
+        canvas: Color(hex: "F6F2EA"), ink: Color(hex: "1A1916"), inkMuted: Color(hex: "736D66"),
+        hairline: Color(hex: "CFC7B8"), group: Color(hex: "FFFFFF"),
+        action: Color(hex: "B0302A"), onAction: Color(hex: "FFF8EF"),
+        music: Color(hex: "8F5A05"), musicFill: Color(hex: "E2A93B"), keyBed: Color(hex: "1A1916"),
+        feature: Color(hex: "B0302A"), onFeature: Color(hex: "FFF8EF"), featureAccent: Color(hex: "FFF8EF"))
 }
 
 /// Environment-aware theme. Inject via `.environment(\.theme, …)` or read the
@@ -124,6 +104,10 @@ struct Theme {
     static let radiusSm: CGFloat = 6
     static let radius: CGFloat = 10
     static let radiusLg: CGFloat = 14
+    /// Inset-grouped lists.
+    static let radiusGroup: CGFloat = 22
+    /// The one red feature block per screen.
+    static let radiusFeature: CGFloat = 26
 
     // Minimum touch target (WCAG 2.2 / HIG).
     static let tapMin: CGFloat = 44

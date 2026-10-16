@@ -38,6 +38,33 @@ final class NotesTests: XCTestCase {
         }
     }
 
+    // MARK: preferredRoot (lead-sheet root, no double accidentals)
+
+    private func pr(_ root: String, _ quality: String) -> String {
+        preferredRoot(root, CHORD_INTERVALS[quality]!)
+    }
+
+    func testRewritesAbm7b5AsGSharp() { XCTAssertEqual(pr("Ab", "m7b5"), "G#") }
+    func testRewritesDSharp7AsEb() { XCTAssertEqual(pr("D#", "7"), "Eb") }
+    func testKeepsRootsThatSpellCleanly() {
+        XCTAssertEqual(pr("C", "Maj7"), "C")
+        XCTAssertEqual(pr("Bb", "m7b5"), "Bb")
+        XCTAssertEqual(pr("F#", "7"), "F#")
+    }
+    func testSharp11IsAFourthInMaj7Sharp11() {
+        XCTAssertEqual(sp("Db", "Maj7#11"), ["Db", "F", "Ab", "C", "G"])
+        XCTAssertEqual(pr("Db", "Maj7#11"), "Db")
+    }
+    func testNoPoolRootNeedsDoubleAccidental() {
+        var bad: [String] = []
+        for root in getNotePool(.both) {
+            for (q, iv) in CHORD_INTERVALS where needsDoubleAccidental(preferredRoot(root, iv), iv) {
+                bad.append(root + q)
+            }
+        }
+        XCTAssertEqual(bad, [])
+    }
+
     // MARK: NOTES_SHARPS / NOTES_FLATS
 
     func testHas12SharpsNotes() { XCTAssertEqual(NOTES_SHARPS.count, 12) }

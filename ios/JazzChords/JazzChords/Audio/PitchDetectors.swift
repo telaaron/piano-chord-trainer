@@ -14,7 +14,7 @@ import CoreML
 
 // MARK: FFT detector
 
-final class FFTPitchDetector: PitchDetector {
+final class FFTPitchDetector: PitchDetector, @unchecked Sendable {
     let preferredSampleRate: Double = 22050
 
     private let log2n: vDSP_Length = 14          // 16384-point FFT
@@ -88,7 +88,7 @@ final class FFTPitchDetector: PitchDetector {
 
 /// Wraps the converted Spotify basic-pitch CoreML model. Bundle
 /// `BasicPitch.mlmodelc` and set MicInput.shared.detector to an instance.
-final class CoreMLBasicPitchDetector: PitchDetector {
+final class CoreMLBasicPitchDetector: PitchDetector, @unchecked Sendable {
     let preferredSampleRate: Double = 22050
     private let model: MLModel?
 

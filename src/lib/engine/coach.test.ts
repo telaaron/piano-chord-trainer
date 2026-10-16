@@ -640,6 +640,23 @@ describe('calibration placement', () => {
 		expect(statements.length).toBeLessThanOrEqual(3);
 	});
 
+	it('uses its own line when the check placed nothing (no "0 building blocks")', () => {
+		const before = createInitialCoachState();
+		const plan = buildCoachPlan([], profile(), undefined, before, DEFAULT_COACH_PARAMS, 0);
+		const timings = ['Maj7', '7', 'm7'].flatMap((q) => [
+			qTiming('C', q, 9000, false),
+			qTiming('F', q, 9000, false),
+		]);
+		const after = applySessionToCoach(before, plan, session(timings), DEFAULT_COACH_PARAMS, 1000);
+		expect(Object.values(after.unitStates).filter((u) => u.state === 'mastered')).toHaveLength(0);
+
+		const cal = teacherFeedback(before, after, session(timings), DEFAULT_COACH_PARAMS).filter(
+			(s) => s.kind === 'calibrated',
+		);
+		expect(cal).toHaveLength(1);
+		expect(cal[0].key).toBe('coach.fb.calibratedNone');
+	});
+
 	// The drill must DEAL evenly, not draw at random. Measured over 20k random
 	// draws of 12 chords across 6 qualities, the opening quality came up short of
 	// the two attempts placement needs 38% of the time — so a flawless run was

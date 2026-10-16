@@ -62,6 +62,7 @@ export const en = {
       placed: 'You already have {quality} in {voicing} {tier} — skipped ahead.',
       nextGoal: 'Next goal: {quality} in {voicing} {tier}.',
       calibrated: 'Check done — {placed} building blocks already in place.',
+      calibratedNone: 'Check done — now we know where to start. Off we go!',
     },
     // Key-stage suffix used in fb.* strings — reads as a parenthetical.
     tier: {
@@ -1048,6 +1049,8 @@ export const en = {
     
     h_fonts: '1.6 Fonts',
     p_fonts: 'All fonts (Source Serif 4, Inter) are self-hosted and served directly from <code>jazzchords.app</code>. No request goes to Google or any other third party, so your IP address is never shared with a font provider.',
+    h_ios: '1.8 iOS app',
+    p_ios: 'The JazzChords app for iPhone and iPad needs no account and stores your progress only on your device. Only if you agree (when you first open the app, or later under Settings → Anonymous Usage Data) does it send the same <strong>anonymous practice events</strong> as described in 1.4, with a random device ID; without your consent nothing is sent. You can withdraw consent there at any time, which also deletes the device ID. If you use the <strong>microphone</strong>, the sound is analysed on your device only and is never recorded, stored or uploaded. Bluetooth is used only to connect MIDI keyboards. If you turn on the daily reminder, it is scheduled as a local notification on your device; no data is sent for it.',
     
     h_email_updates: '1.7 Email updates',
     p_email_updates: 'Only if you explicitly agree (checkbox at signup or in your <a href="/account" class="underline">account settings</a>) do we send you emails about new features, courses and the JazzChords app. The subscription only takes effect after you click the confirmation link in a separate email (double opt-in). To be able to prove your consent we store your email address, the wording you agreed to and when you subscribed, confirmed and unsubscribed. Emails are sent via <strong>Brevo</strong> (Sendinblue SAS, Paris, France) as our processor within the EU. The legal basis is your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time via the link in every email or in your account settings. If you delete your account, we also delete the contact at Brevo.',

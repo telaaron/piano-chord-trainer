@@ -106,8 +106,31 @@ final class TrainerStore {
         displayMode = s.displayMode; accidentals = s.accidentals; notationSystem = s.notationSystem
         totalChords = s.totalChords; progressionMode = s.progressionMode
         audioEnabled = s.audioEnabled
-        soundPreset = SoundPreset(rawValue: s.soundPreset) ?? .grandPiano
+        inputMode = InputMode(rawValue: s.inputMode) ?? .none
+        // "synthPad" was the raw value before it matched the web's "synth-pad".
+        soundPreset = SoundPreset(rawValue: s.soundPreset == "synthPad" ? "synth-pad" : s.soundPreset) ?? .grandPiano
         AudioEngine.shared.setPreset(soundPreset)
+    }
+
+    /// Set once the first trainer visit of this launch has looked for a keyboard,
+    /// so a deliberate switch back to touch is not undone on the next visit.
+    private static var didAutoSelectInput = false
+
+    /// First-success default: a connected MIDI keyboard is used right away,
+    /// without a trip to the input picker; a saved MIDI choice with no keyboard
+    /// attached falls back to touch so the drill stays playable. Never overrides
+    /// a mic choice. Call after `loadSettings()`.
+    func autoSelectInput() {
+        guard inputMode != .microphone else { return }
+        MIDIInput.shared.start()
+        // iOS can list a "Network Session" source with no instrument behind it.
+        let keyboard = MIDIInput.shared.devices.contains { !$0.name.hasPrefix("Network Session") }
+        if inputMode == .midi && !keyboard {
+            inputMode = .none
+        } else if inputMode == .none && keyboard && !Self.didAutoSelectInput {
+            inputMode = .midi
+        }
+        Self.didAutoSelectInput = true
     }
 
     private func persistSettings() {
@@ -116,16 +139,17 @@ final class TrainerStore {
         s.displayMode = displayMode; s.accidentals = accidentals; s.notationSystem = notationSystem
         s.totalChords = totalChords; s.progressionMode = progressionMode
         s.audioEnabled = audioEnabled; s.soundPreset = soundPreset.rawValue
+        s.inputMode = inputMode.rawValue
         ProgressStore.saveSettings(s)
     }
 
     // ─── Apply a practice plan ──────────────────────────────
+    /// Notation style and accidentals are the player's display prefs (Settings);
+    /// plans only carry defaults for them, so they never override the prefs.
     func apply(plan: PracticePlan) {
         difficulty = plan.settings.difficulty
-        notation = plan.settings.notation
         voicing = plan.settings.voicing
         displayMode = plan.settings.displayMode
-        accidentals = plan.settings.accidentals
         progressionMode = plan.settings.progressionMode
         totalChords = plan.settings.totalChords
         voiceLeadingEnabled = (plan.id == "voice-leading-flow")
@@ -226,6 +250,12 @@ final class TrainerStore {
             if !filtered.isEmpty { available = filtered }
         }
         let pool = getNotePool(accidentals)
+        // Under mixed accidentals, write the root a lead sheet would: G#m7b5, not
+        // Abm7b5 (whose ♭5 would need Ebb). Fixed flat/sharp settings are honoured.
+        let accidentals = self.accidentals
+        let leadRoot: (String, String) -> String = { root, quality in
+            accidentals == .both ? preferredRoot(root, CHORD_INTERVALS[quality] ?? []) : root
+        }
         var newChords: [String] = []
         var newData: [ChordWithNotes] = []
         var last = ""
@@ -240,16 +270,17 @@ final class TrainerStore {
             var lastDisplay = ""
             for _ in 0..<totalChords {
                 let pick = pickWeightedChord(weighted, lastRoot: lastRoot, lastDisplay: lastDisplay)
+                let root = leadRoot(pick.root, pick.display)
                 let displayQuality = CHORD_NOTATIONS[notation]?[pick.display] ?? pick.display
-                let name = "\(pick.root)\(displayQuality)"
+                let name = "\(root)\(displayQuality)"
                 lastRoot = pick.root; lastDisplay = pick.display
                 newChords.append(name)
-                let notes = getChordNotes(pick.root, pick.display, accidentals)
-                var voicingArr = getVoicingNotes(notes, voicing, pick.root, accidentals)
+                let notes = getChordNotes(root, pick.display, accidentals)
+                var voicingArr = getVoicingNotes(notes, voicing, root, accidentals)
                 if voiceLeadingEnabled, let prev = newData.last {
                     voicingArr = computeVoiceLeadVoicing(prev.voicing, voicingArr, accidentals)
                 }
-                newData.append(ChordWithNotes(chord: name, root: pick.root, type: pick.display, notes: notes, voicing: voicingArr))
+                newData.append(ChordWithNotes(chord: name, root: root, type: pick.display, notes: notes, voicing: voicingArr))
             }
             chords = newChords
             chordsWithNotes = newData
@@ -260,8 +291,8 @@ final class TrainerStore {
             var name = ""
             var attempts = 0
             repeat {
-                let note = pool.randomElement() ?? "C"
                 let ct = available.randomElement() ?? ChordType(name: "maj7", display: "Maj7")
+                let note = leadRoot(pool.randomElement() ?? "C", ct.display)
                 let display = CHORD_NOTATIONS[notation]?[ct.display] ?? ct.display
                 name = "\(note)\(display)"
                 attempts += 1
@@ -469,7 +500,10 @@ final class TrainerStore {
 
         if !timerStarted {
             beginTimer()
-            return
+            // In verify mode the first tap goes on to reveal, so "Show me" never
+            // looks like a dead button. Elsewhere it only starts the clock, so the
+            // first chord isn't skipped (and in-time mode starts its metronome).
+            if inTimeMode || displayMode != .verify { return }
         }
 
         // Verify mode: reveal before advancing. With tap input, grade the built
@@ -815,10 +849,8 @@ final class TrainerStore {
         loadSettings() // notation/notationSystem/accidentals/sound from the user's prefs
         let s = block.settings
         difficulty = s.difficulty
-        notation = s.notation
         voicing = block.focusVoicing.flatMap { VoicingType(rawValue: $0) } ?? s.voicing
         displayMode = s.displayMode
-        accidentals = s.accidentals
         progressionMode = s.progressionMode
         totalChords = block.targetChords > 0 ? block.targetChords : s.totalChords
 

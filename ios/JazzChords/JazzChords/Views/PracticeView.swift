@@ -1,6 +1,6 @@
-// Practice — plan picker. Real PRACTICE_PLANS as rich glass cards: SF icon in a
-// tinted halo, display-face name, level + a voicing/progression mini-line, and a
-// duration pill. Free-practice entry on top. Tapping a card opens the trainer.
+// Practice — plan picker in the editorial layout: the recommended plan as the
+// one red block, then plans grouped by level as tracklists, then free practice
+// and the custom progression builder. Tapping a row opens the trainer.
 
 import SwiftUI
 import MusicEngine
@@ -14,30 +14,32 @@ struct PracticeView: View {
     @State private var freePlay = false
     @State private var customOpen = false
 
-    // iPad (regular width) gets a wider auto-fitting grid; iPhone stays 2-up.
-    private var columns: [GridItem] {
-        hSize == .regular
-            ? [GridItem(.adaptive(minimum: 200), spacing: Theme.space3)]
-            : [GridItem(.flexible(), spacing: Theme.space3), GridItem(.flexible(), spacing: Theme.space3)]
+    private var recommended: PracticePlan {
+        let ids = Store.load([String].self, StoreKey.planHistory) ?? []
+        return suggestPlan(ids, ProgressStore.loadHistory().count)
     }
+
+    private let levels: [PlanLevel] = [.beginner, .intermediate, .advanced]
 
     var body: some View {
         ScrollView {
-            VStack(spacing: Theme.space4) {
-                freePracticeButton
-                customButton
-                LazyVGrid(columns: columns, spacing: Theme.space3) {
-                    ForEach(PRACTICE_PLANS) { plan in
-                        Button { activePlan = plan } label: { PlanCard(plan: plan) }
-                            .buttonStyle(.plain)
-                    }
+            VStack(alignment: .leading, spacing: Theme.space5) {
+                EditorialHeader(eyebrow: Strings.plansEyebrow(PRACTICE_PLANS.count),
+                                title: CoachL10n.t("nav.practice")) {
+                    SettingsHeaderButton()
                 }
+                featured
+                ForEach(levels, id: \.self) { level in
+                    let plans = PRACTICE_PLANS.filter { $0.level == level }
+                    if !plans.isEmpty { levelSection(level, plans) }
+                }
+                ownWay
             }
-            .padding(Theme.space4)
-            .frame(maxWidth: 900)
-            .frame(maxWidth: .infinity)
+            .padding(.horizontal, Theme.space4)
+            .padding(.top, Theme.space3)
+            .padding(.bottom, Theme.space6)
+            .readableWidth(hSize == .regular ? 820 : 640)
         }
-        .navigationTitle(CoachL10n.t("nav.practice"))
         .screenBackground()
         .fullScreenCover(item: $activePlan) { plan in
             NavigationStack { TrainerView(plan: plan) }
@@ -50,93 +52,55 @@ struct PracticeView: View {
         }
     }
 
-    private var customButton: some View {
-        Button { customOpen = true } label: {
-            HStack(spacing: Theme.space3) {
-                Image(systemName: "text.badge.plus").font(.title3).foregroundStyle(palette.primary)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(CoachL10n.t("ui.custom_progression")).font(Display.headline(17)).foregroundStyle(palette.text)
-                    Text(CoachL10n.t("ui.custom_progression_desc")).font(.caption).foregroundStyle(palette.textMuted)
+    private var featured: some View {
+        let plan = recommended
+        return FeatureBlock(eyebrow: CoachL10n.t("settings.suggested"), ghost: Strings.voicingBadge(plan.settings.voicing)) {
+            VStack(alignment: .leading, spacing: Theme.space2) {
+                Text(Strings.planName(plan.id))
+                    .font(Display.serif(30, relativeTo: .title1))
+                Text(Strings.planTagline(plan.id))
+                    .font(Display.serif(18, italic: true, relativeTo: .body))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        } action: {
+            PrimaryCapsule(title: CoachL10n.t("ui.start"), systemImage: "play.fill", inverted: true) {
+                activePlan = plan
+            }
+        }
+    }
+
+    private func levelSection(_ level: PlanLevel, _ plans: [PracticePlan]) -> some View {
+        VStack(alignment: .leading, spacing: Theme.space2) {
+            EyebrowText(Strings.level(level))
+                .padding(.leading, Theme.space4)
+            TrackGroup {
+                ForEach(Array(plans.enumerated()), id: \.element.id) { index, plan in
+                    Button { activePlan = plan } label: {
+                        TrackRow(badge: Strings.voicingBadge(plan.settings.voicing),
+                                 title: Strings.planName(plan.id),
+                                 meta: "\(plan.settings.totalChords)",
+                                 showsDivider: index < plans.count - 1)
+                    }
+                    .buttonStyle(.plain)
                 }
-                Spacer()
-                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.textDim)
             }
-            .padding(Theme.space4)
-            .glassCard()
         }
-        .buttonStyle(.plain)
     }
 
-    private var freePracticeButton: some View {
-        Button { freePlay = true } label: {
-            HStack(spacing: Theme.space3) {
-                Image(systemName: "slider.horizontal.3")
-                    .font(.title3)
-                    .foregroundStyle(palette.primary)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(CoachL10n.t("ui.free_practice")).font(Display.headline(17)).foregroundStyle(palette.text)
-                    Text(CoachL10n.t("ui.free_practice_desc")).font(.caption).foregroundStyle(palette.textMuted)
+    private var ownWay: some View {
+        VStack(alignment: .leading, spacing: Theme.space2) {
+            EyebrowText(Strings.ownWay)
+                .padding(.leading, Theme.space4)
+            TrackGroup {
+                Button { freePlay = true } label: {
+                    TrackRow(badge: "∞", title: CoachL10n.t("ui.free_practice"), showsDivider: true)
                 }
-                Spacer()
-                Image(systemName: "chevron.right").font(.footnote).foregroundStyle(palette.textDim)
+                .buttonStyle(.plain)
+                Button { customOpen = true } label: {
+                    TrackRow(badge: "+", title: CoachL10n.t("ui.custom_progression"))
+                }
+                .buttonStyle(.plain)
             }
-            .padding(Theme.space4)
-            .glassCard()
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-/// A single practice-plan card.
-struct PlanCard: View {
-    @Environment(\.palette) private var palette
-    let plan: PracticePlan
-
-    /// Level dot color — the only chromatic cue beyond the amber accent.
-    private var levelColor: Color {
-        switch plan.level {
-        case .beginner: return palette.accentGreen
-        case .intermediate: return palette.primary
-        case .advanced: return palette.accentRed
         }
     }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Theme.space3) {
-            // Amber icon — single consistent accent across all cards.
-            Image(systemName: AppIcons.plan(plan.id))
-                .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(palette.primary)
-                .symbolRenderingMode(.hierarchical)
-                .frame(height: 28)
-
-            Text(Strings.planName(plan.id))
-                .font(Display.headline(18))
-                .foregroundStyle(palette.text)
-                .lineLimit(1)
-
-            Text(Strings.planTagline(plan.id))
-                .font(.caption)
-                .foregroundStyle(palette.textMuted)
-                .lineLimit(2)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Spacer(minLength: 0)
-
-            HStack(spacing: 6) {
-                Circle().fill(levelColor).frame(width: 6, height: 6)
-                Text(plan.level.rawValue.capitalized)
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(palette.textMuted)
-                Spacer()
-                Image(systemName: "music.note").font(.system(size: 9))
-                Text("\(plan.settings.totalChords)").font(.caption2.weight(.medium))
-            }
-            .foregroundStyle(palette.textDim)
-        }
-        .frame(maxWidth: .infinity, minHeight: 152, alignment: .topLeading)
-        .padding(Theme.space4)
-        .glassCard()
-    }
-
 }
