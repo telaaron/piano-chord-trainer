@@ -577,3 +577,30 @@ h1, h2, h3, .font-display {
 }
 
 
+
+/* ── Print ───────────────────────────────────────────────────────
+   Paper is white whatever theme is on screen: reuse the light ink
+   colours and drop the site chrome, so printed charts (and the PDFs
+   generated from them) stay readable.
+──────────────────────────────────────────────────────────────── */
+@media print {
+	:root,
+	[data-theme] {
+		--bg: #ffffff;
+		--bg-card: #ffffff;
+		--border: #d2d8cd;
+		--text: #131a26;
+		--text-muted: #4a5563;
+		--text-dim: #6b7684;
+		--primary: #b0302a;
+		--ink-blue: #2c5985;
+		color-scheme: light;
+	}
+	body {
+		background: #ffffff !important;
+	}
+	.site-nav,
+	.site-foot {
+		display: none !important;
+	}
+}

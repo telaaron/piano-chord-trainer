@@ -103,6 +103,9 @@
 	<title>{title}</title>
 	<meta name="description" content={description} />
 	<link rel="canonical" href={canonical} />
+	<link rel="alternate" hreflang="en" href={canonical} />
+	<link rel="alternate" hreflang="de" href="https://jazzchords.app/de/jazz-voicings-app-vergleich" />
+	<link rel="alternate" hreflang="x-default" href={canonical} />
 	<meta property="og:type" content="article" />
 	<meta property="og:url" content={canonical} />
 	<meta property="og:title" content={title} />

@@ -78,4 +78,16 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle = sequence(setupSupabase, authGuard);
+// German content pages live under /de/. app.html is written for English, so the
+// server-rendered (and prerendered) HTML gets the right lang and og:locale here.
+const contentLanguage: Handle = async ({ event, resolve }) => {
+	if (!event.url.pathname.startsWith('/de/')) return resolve(event);
+	return resolve(event, {
+		transformPageChunk: ({ html }) =>
+			html
+				.replace('<html lang="en">', '<html lang="de">')
+				.replace('<meta property="og:locale" content="en_US" />', '<meta property="og:locale" content="de_DE" />'),
+	});
+};
+
+export const handle = sequence(setupSupabase, authGuard, contentLanguage);
