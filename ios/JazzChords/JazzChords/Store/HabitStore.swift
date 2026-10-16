@@ -52,7 +52,7 @@ final class HabitStore {
     /// What to start from: the stored profile, or (first run only) a profile
     /// migrated from history. A file that exists but can't be read is left
     /// alone, so a newer shape from the web is never overwritten by a fresh one.
-    static func initialProfile(
+    nonisolated static func initialProfile(
         stored: HabitProfile?, fileExists: Bool, migrate: () -> HabitProfile
     ) -> (profile: HabitProfile, save: Bool) {
         if let stored { return (stored, false) }

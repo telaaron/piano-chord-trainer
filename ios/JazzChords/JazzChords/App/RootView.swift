@@ -38,7 +38,7 @@ struct SettingsEntryButton: View {
     @Environment(AppChrome.self) private var chrome
 
     var body: some View {
-        ProfileCircleButton(email: nil) { chrome.showSettings = true }
+        ProfileCircleButton(email: AccountStore.shared.email) { chrome.showSettings = true }
     }
 }
 
