@@ -63,4 +63,13 @@ final class TodayChordPreviewTests: XCTestCase {
         XCTAssertTrue(TodayChordPreview.isAnyKey(for: plan([calibrate])))
         XCTAssertFalse(TodayChordPreview.isAnyKey(for: plan([focus])))
     }
+
+    // The Heute card lists today's units in order with their chord counts.
+    func testStepsListUnitsInOrder() {
+        let warmup = CoachBlock(kind: .warmup, settings: settings(.random), targetChords: 4, labelKey: "x")
+        let focus = CoachBlock(kind: .focus, settings: settings(.twoFiveOne), targetChords: 8, labelKey: "x")
+        let steps = TodayChordPreview.steps(for: plan([warmup, focus]))
+        XCTAssertEqual(steps.map(\.kind), [.warmup, .focus])
+        XCTAssertEqual(steps.map(\.chords), [4, 8])
+    }
 }
