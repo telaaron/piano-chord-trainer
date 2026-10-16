@@ -112,7 +112,6 @@ export const FEATURE_GATES: Record<string, SubscriptionTier> = {
 	'adaptive-difficulty': 'pro',
 	'custom-progressions': 'pro',
 	'advanced-stats': 'pro',
-	'cloud-sync': 'pro',
 
 	// ─── Lehrpult (tier key 'educator') ───
 	'embed-widget': 'educator',

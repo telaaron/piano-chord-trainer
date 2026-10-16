@@ -37,8 +37,6 @@
 				return { title: t('upgrade.lock_custom_title'), desc: t('upgrade.lock_custom_desc') };
 			case 'advanced-stats':
 				return { title: t('upgrade.lock_stats_title'), desc: t('upgrade.lock_stats_desc') };
-			case 'cloud-sync':
-				return { title: t('upgrade.lock_sync_title'), desc: t('upgrade.lock_sync_desc') };
 			default:
 				return { title: t('upgrade.lock_generic_title'), desc: t('upgrade.lock_generic_desc') };
 		}
@@ -51,7 +49,6 @@
 		{ icon: 'weak-spots', key: 'upgrade.point_adaptive' },
 		{ icon: 'custom-progression', key: 'upgrade.point_custom' },
 		{ icon: 'progress', key: 'upgrade.point_stats' },
-		{ icon: 'midi', key: 'upgrade.point_sync' },
 	];
 
 	async function startTrial() {

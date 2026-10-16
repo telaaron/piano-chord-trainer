@@ -11,7 +11,7 @@ enum Strings {
 
     /// Pick the table matching the app's language — same decision CoachL10n makes,
     /// deliberately not a second one.
-    private static func pick<T>(_ en: T, _ de: T) -> T { CoachL10n.isGerman ? de : en }
+    static func pick<T>(_ en: T, _ de: T) -> T { CoachL10n.isGerman ? de : en }
 
     // MARK: Plans
 

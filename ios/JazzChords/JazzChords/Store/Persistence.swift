@@ -23,6 +23,40 @@ struct SavedSettings: Codable, Equatable {
     var metronomeBpm: Int = 80
 }
 
+// The web writes this same object without the iOS-only fields (and with a
+// string notationSystem), so each field falls back to its default on its own
+// instead of the whole decode failing and resetting everything.
+extension SavedSettings {
+    private enum CodingKeys: String, CodingKey {
+        case difficulty, notation, voicing, displayMode, accidentals, notationSystem, totalChords
+        case progressionMode, inputMode, customDegrees, soundPreset, audioEnabled, metronomeEnabled
+        case metronomeBpm
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        func field<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T {
+            ((try? c.decodeIfPresent(T.self, forKey: key)) ?? nil) ?? fallback
+        }
+        let d = SavedSettings()
+        self.init()
+        difficulty = field(.difficulty, d.difficulty)
+        notation = field(.notation, d.notation)
+        voicing = field(.voicing, d.voicing)
+        displayMode = field(.displayMode, d.displayMode)
+        accidentals = field(.accidentals, d.accidentals)
+        notationSystem = field(.notationSystem, d.notationSystem)
+        totalChords = field(.totalChords, d.totalChords)
+        progressionMode = field(.progressionMode, d.progressionMode)
+        inputMode = field(.inputMode, d.inputMode)
+        customDegrees = field(.customDegrees, d.customDegrees)
+        soundPreset = field(.soundPreset, d.soundPreset)
+        audioEnabled = field(.audioEnabled, d.audioEnabled)
+        metronomeEnabled = field(.metronomeEnabled, d.metronomeEnabled)
+        metronomeBpm = field(.metronomeBpm, d.metronomeBpm)
+    }
+}
+
 /// Tiny JSON-file key/value store under Application Support.
 enum Store {
     private static let dir: URL = {
@@ -42,7 +76,19 @@ enum Store {
     static func save<T: Encodable>(_ value: T, _ key: String) {
         guard let data = try? JSONEncoder().encode(value) else { return }
         try? data.write(to: url(key), options: .atomic)
+        onSave?(key)
     }
+
+    /// The stored JSON as-is, for sync (keeps fields the typed model doesn't know).
+    static func exists(_ key: String) -> Bool { FileManager.default.fileExists(atPath: url(key).path) }
+
+    static func loadRaw(_ key: String) -> JSONValue? { load(JSONValue.self, key) }
+
+    static func saveRaw(_ value: JSONValue, _ key: String) { save(value, key) }
+
+    /// Called with the key after every save, so cloud sync knows the device changed.
+    /// Set once at launch, before any store saves.
+    nonisolated(unsafe) static var onSave: ((String) -> Void)?
 }
 
 /// Keys (string-stable, independent of the web's localStorage names).

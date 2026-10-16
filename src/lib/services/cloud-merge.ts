@@ -52,11 +52,13 @@ function mergeStreak(local: unknown, cloud: unknown): unknown {
  * Combine this device's sync data with the account's.
  * `keepLocal: false` is the explicit "don't bring my device data" choice at
  * login: the account replaces whatever it has, local-only keys stay.
+ * `preferLocal: true` is for uploads: this device's edits are the newest, so
+ * they win plain keys; history, profile and streak still merge.
  */
 export function mergeSyncData(
 	local: SyncData,
 	cloud: SyncData,
-	{ keepLocal = true }: { keepLocal?: boolean } = {},
+	{ keepLocal = true, preferLocal = false }: { keepLocal?: boolean; preferLocal?: boolean } = {},
 ): SyncData {
 	const out: SyncData = { ...local };
 	for (const [key, c] of Object.entries(cloud)) {
@@ -71,7 +73,7 @@ export function mergeSyncData(
 		} else if (key === STREAK_KEY) {
 			out[key] = mergeStreak(l, c);
 		} else {
-			out[key] = c;
+			out[key] = preferLocal ? l : c;
 		}
 	}
 	return out;

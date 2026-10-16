@@ -23,6 +23,9 @@ final class CoachStore {
 
     private func persist() { Store.save(state, StoreKey.coachState) }
 
+    /// Re-read after sync wrote the account's state.
+    func reload() { state = Store.load(CoachState.self, StoreKey.coachState) ?? state }
+
     // ─── Reads ──────────────────────────────────────────────
 
     /// Whether the one-time calibration drill has run.

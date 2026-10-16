@@ -2,8 +2,8 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { brevoConfig, deleteContact } from '$lib/server/brevo';
 
-export const POST: RequestHandler = async ({ locals }) => {
-	const { user } = await locals.safeGetSession();
+export const POST: RequestHandler = async ({ locals, request }) => {
+	const user = (await locals.safeGetSession()).user ?? (await bearerUser(locals, request));
 	if (!user) throw error(401, 'Not authenticated');
 
 	// Delete user data
@@ -28,3 +28,12 @@ export const POST: RequestHandler = async ({ locals }) => {
 
 	return json({ success: true });
 };
+
+/** The iOS app has no cookie session; it sends its access token instead. */
+async function bearerUser(locals: App.Locals, request: Request) {
+	const header = request.headers.get('authorization') ?? '';
+	const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+	if (!token) return null;
+	const { data, error: tokenError } = await locals.supabaseAdmin.auth.getUser(token);
+	return tokenError ? null : data.user;
+}

@@ -13,11 +13,39 @@ struct JazzChordsApp: App {
         WindowGroup {
             RootView()
                 .tint(.init(hex: "f5a623")) // amber accent across the app
+                .task { CloudSync.start() }
         }
         .onChange(of: scenePhase) { _, phase in
             // Keep the week of reminders rolling forward and drop today's once practiced.
             if phase == .active { Task { await ReminderScheduler.shared.reschedule() } }
+            // Pick up what the other devices did meanwhile.
+            if phase == .active { Task { await SyncService.shared.pull() } }
+            // Leaving: send what's waiting instead of waiting out the debounce.
+            if phase == .background { Task { await SyncService.shared.flush() } }
         }
+    }
+}
+
+/// Wires the device stores to the account: saves mark sync dirty, account data
+/// written by sync reloads the stores that cache it.
+@MainActor
+enum CloudSync {
+    static func start() {
+        Store.onSave = { key in
+            guard SyncService.isSynced(key: key) else { return }
+            if Thread.isMainThread {
+                MainActor.assumeIsolated { SyncService.shared.markDirty() }
+            } else {
+                Task { @MainActor in SyncService.shared.markDirty() }
+            }
+        }
+        SyncService.shared.onApplied = {
+            HabitStore.shared.reload()
+            CoachStore.shared.reload()
+            CourseProgressStore.shared.reload()
+            ToGoStore.shared.reload()
+        }
+        AccountStore.shared.start()
     }
 }
 
