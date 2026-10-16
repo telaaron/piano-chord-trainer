@@ -1,24 +1,32 @@
 import type { RequestHandler } from './$types';
 import { CHORD_PAGE_SLUGS } from '$lib/seo/chords';
 
-// Single source of truth for indexable URLs. lastmod is generated at build time
-// so Google sees a fresh signal instead of a hard-coded stale date.
-const STATIC_PAGES: { path: string; priority: number; freq: string }[] = [
-	{ path: '/', priority: 1.0, freq: 'weekly' },
-	{ path: '/learn/jazz-piano-voicings', priority: 0.9, freq: 'weekly' },
-	{ path: '/learn/ii-v-i', priority: 0.9, freq: 'weekly' },
-	{ path: '/learn/rootless-voicings', priority: 0.9, freq: 'weekly' },
-	{ path: '/for-educators', priority: 0.8, freq: 'monthly' },
-	{ path: '/open-studio', priority: 0.7, freq: 'monthly' },
-	{ path: '/pricing', priority: 0.7, freq: 'monthly' },
-	{ path: '/about', priority: 0.5, freq: 'yearly' },
+// Single source of truth for indexable URLs.
+// `updated` is the date the page's CONTENT last changed — bump it in the same
+// commit that edits the page. Google ignores lastmod once it learns the value
+// doesn't track real changes, so never derive it from the build date.
+type SitemapPage = { path: string; priority: number; freq: string; updated: string };
+
+const STATIC_PAGES: SitemapPage[] = [
+	{ path: '/', priority: 1.0, freq: 'weekly', updated: '2026-07-30' },
+	{ path: '/learn', priority: 0.8, freq: 'weekly', updated: '2026-07-26' },
+	{ path: '/learn/jazz-piano-voicings', priority: 0.9, freq: 'weekly', updated: '2026-07-26' },
+	{ path: '/learn/ii-v-i', priority: 0.9, freq: 'weekly', updated: '2026-07-26' },
+	{ path: '/learn/rootless-voicings', priority: 0.9, freq: 'weekly', updated: '2026-07-26' },
+	{ path: '/for-educators', priority: 0.8, freq: 'monthly', updated: '2026-07-30' },
+	{ path: '/open-studio', priority: 0.7, freq: 'monthly', updated: '2026-07-30' },
+	{ path: '/pricing', priority: 0.7, freq: 'monthly', updated: '2026-07-31' },
+	{ path: '/about', priority: 0.5, freq: 'yearly', updated: '2026-07-30' },
 ];
 
-// Content pages — one per chord type (Welle 1).
-const CHORD_PAGES = CHORD_PAGE_SLUGS.map((slug) => ({
+// Content pages — one per chord type (Welle 1). They share one template, so
+// they share one date: bump it when the template or src/lib/seo/chords.ts changes.
+const CHORD_PAGES_UPDATED = '2026-07-26';
+const CHORD_PAGES: SitemapPage[] = CHORD_PAGE_SLUGS.map((slug) => ({
 	path: `/chords/${slug}`,
 	priority: 0.8,
 	freq: 'monthly',
+	updated: CHORD_PAGES_UPDATED,
 }));
 
 const PAGES = [...STATIC_PAGES, ...CHORD_PAGES];
@@ -28,11 +36,10 @@ const BASE = 'https://jazzchords.app';
 export const prerender = true;
 
 export const GET: RequestHandler = async () => {
-	const lastmod = new Date().toISOString().split('T')[0];
 	const urls = PAGES.map(
 		(p) => `  <url>
     <loc>${BASE}${p.path}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <lastmod>${p.updated}</lastmod>
     <changefreq>${p.freq}</changefreq>
     <priority>${p.priority.toFixed(1)}</priority>
   </url>`
