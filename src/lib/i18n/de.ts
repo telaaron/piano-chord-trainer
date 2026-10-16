@@ -1216,6 +1216,10 @@ export const de = {
     celebration_continue: 'Fortfahren',
 
     // Onboarding
+    onboard_ask_title: 'Drei Sessions geschafft. Tagesziel festlegen?',
+    onboard_ask_desc: 'Ein kleines tägliches Ziel hilft, dranzubleiben. Dauert 20 Sekunden.',
+    onboard_ask_yes: 'Tagesziel festlegen',
+    onboard_ask_later: 'Nicht jetzt',
     onboard_time_title: 'Wie viel Zeit hast du täglich?',
     onboard_time_desc: 'Starte klein — du kannst immer mehr machen.',
     onboard_when_title: 'Wann übst du am liebsten?',

@@ -30,10 +30,11 @@
 	import HabitDashboard from '$lib/components/HabitDashboard.svelte';
 	import HabitOnboarding from '$lib/components/HabitOnboarding.svelte';
 	import CelebrationOverlay from '$lib/components/CelebrationOverlay.svelte';
-	import { initAuth, onAuthChange, getAuthState, type AuthState } from '$lib/services/auth';
+	import { initAuth, onAuthChange, getAuthState, whenAuthReady, isAccountOnboarded, markAccountOnboarded, type AuthState } from '$lib/services/auth';
+	import { ensureHydrated } from '$lib/services/cloud-sync';
 	import KeyClock from '$lib/components/KeyClock.svelte';
 	import type { HabitProfile, CelebrationEvent, QuickStartSuggestion, TimeOfDay } from '$lib/engine/habits';
-	import { diffDial, calculateDialXP, sumXP, type DialProgress } from '$lib/engine/habits';
+	import { diffDial, calculateDialXP, sumXP, needsOnboarding, countPracticeSessions, type DialProgress } from '$lib/engine/habits';
 	import { loadHabitProfile, saveHabitProfile, processSessionHabits, scheduleDailyReminder, scheduleStreakSaver } from '$lib/services/habits';
 	import { MidiService, isIOSorIPadOS } from '$lib/services/midi';
 	import type { MidiConnectionState, MidiDevice, ChordMatchResult } from '$lib/services/midi';
@@ -1562,6 +1563,8 @@
 			endCoachMode();
 		}
 		screen = 'setup';
+		// Back on the setup screen, never mid-session or over a post-session offer.
+		maybeAskDailyGoal();
 		currentIdx = 0;
 		chords = [];
 		chordsWithNotes = [];
@@ -2229,6 +2232,48 @@
 		}
 	}
 
+	/**
+	 * Show the habit onboarding at most once per player. Waits for the session
+	 * and, when signed in, for the account's data to land on this device, so a
+	 * returning player on a fresh browser is recognised instead of re-asked.
+	 */
+	async function decideOnboarding() {
+		const { user } = await whenAuthReady();
+		if (user && (await ensureHydrated(user.id))) {
+			// The merge may have brought history, streak and profile from the account.
+			habitProfile = loadHabitProfile();
+			const savedStreak = loadStreak();
+			if (savedStreak) streak = savedStreak;
+			dashStats = computeStats(loadHistory());
+			setupDial = buildKeyDial(loadHistory(), DIAL_THRESHOLD_MS);
+		}
+		if (isAccountOnboarded(user) && !habitProfile.onboardingDone) {
+			habitProfile.onboardingDone = true;
+			saveHabitProfile(habitProfile);
+		}
+		// Backfill: players onboarded before the flag lived on the account.
+		if (user && habitProfile.onboardingDone && !isAccountOnboarded(user)) void markAccountOnboarded();
+		maybeAskDailyGoal();
+	}
+
+	/** Open the daily-goal question if this is the moment (see needsOnboarding). */
+	function maybeAskDailyGoal() {
+		if (!habitProfile || showOnboarding) return;
+		const ask = needsOnboarding({
+			profileDone: habitProfile.onboardingDone,
+			sessionCount: countPracticeSessions(loadHistory().map((h) => h.timestamp)),
+			accountDone: isAccountOnboarded(getAuthState().user),
+		});
+		if (ask) showOnboarding = true;
+	}
+
+	function finishOnboarding() {
+		habitProfile.onboardingDone = true;
+		saveHabitProfile(habitProfile);
+		void markAccountOnboarded();
+		showOnboarding = false;
+	}
+
 	onMount(() => {
 		authState = getAuthState();
 		initAuth();
@@ -2270,9 +2315,7 @@
 
 		// ─── Habit Engine init ───────────────────────────────────
 		habitProfile = loadHabitProfile();
-		if (!habitProfile.onboardingDone) {
-			showOnboarding = true;
-		}
+		void decideOnboarding();
 		// Schedule notifications if user opted in
 		if (habitProfile.notificationsEnabled) {
 			const dailyCleanup = scheduleDailyReminder(habitProfile);
@@ -3789,14 +3832,13 @@
 
 {#if showOnboarding}
 	<HabitOnboarding
+		ondismiss={finishOnboarding}
 		oncomplete={(config) => {
 			habitProfile.dailyGoalMinutes = config.dailyGoalMinutes;
 			habitProfile.preferredTime = config.preferredTime as TimeOfDay;
 			habitProfile.notificationsEnabled = config.notificationsEnabled;
 			habitProfile.notificationTime = config.notificationTime;
-			habitProfile.onboardingDone = true;
-			saveHabitProfile(habitProfile);
-			showOnboarding = false;
+			finishOnboarding();
 			// Reload profile to get generated goals
 			habitProfile = loadHabitProfile();
 			// Schedule notifications if opted in

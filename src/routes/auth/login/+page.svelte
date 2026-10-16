@@ -2,7 +2,7 @@
 	import { t, getLocale } from '$lib/i18n';
 	import { consentText } from '$lib/consent';
 	import { signIn, signUp, resetPassword } from '$lib/services/auth';
-	import { uploadLocalDataToCloud } from '$lib/services/cloud-sync';
+	import { ensureHydrated } from '$lib/services/cloud-sync';
 	import { toastSuccess, toastError } from '$lib/services/toast';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -60,16 +60,18 @@
 			}
 
 			// Login
-			const { error } = await signIn(email, password);
+			const { error, user } = await signIn(email, password);
 			if (error) {
 				errorMsg = error.message;
 				loading = false;
 				return;
 			}
 
-			// Merge local data if opted in
-			if (mergeLocal) {
-				await uploadLocalDataToCloud();
+			// Pull the account's data onto this device; merge this device's data
+			// into it only if opted in. Never a blind upload: that replaced the
+			// account's history with whatever this browser had.
+			if (user) {
+				await ensureHydrated(user.id, { keepLocal: mergeLocal });
 			}
 
 			goto(redirect);

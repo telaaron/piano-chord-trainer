@@ -898,6 +898,10 @@ export function migrateToHabitProfile(
 	// Retroactive XP: 10 per session
 	profile.totalXP = history.length * XP_SESSION_COMPLETE;
 
+	// Someone who has already practised is past the point the onboarding is
+	// for. Asking them for a daily goal again is the "every login" nag.
+	profile.onboardingDone = history.length > 0;
+
 	// Add streak bonus XP retroactively
 	if (streak.best > 0) {
 		profile.totalXP += streak.best * XP_STREAK_DAY;
@@ -913,6 +917,42 @@ export function migrateToHabitProfile(
 		: '';
 
 	return profile;
+}
+
+/**
+ * Practice sessions in a history. History stores one entry per BLOCK (a Coach
+ * session is several), so entries less than 30 minutes apart count as one
+ * sitting — what a player means by "a session".
+ */
+export function countPracticeSessions(timestamps: number[], gapMs = 30 * 60_000): number {
+	const sorted = [...timestamps].sort((a, b) => a - b);
+	let count = 0;
+	let last = -Infinity;
+	for (const t of sorted) {
+		if (t - last >= gapMs) count++;
+		last = t;
+	}
+	return count;
+}
+
+/** Sessions a player completes before the trainer asks for a daily goal. */
+export const ONBOARDING_AFTER_SESSIONS = 3;
+
+/**
+ * Whether the trainer should ask for the daily goal (the habit onboarding).
+ *
+ * Once per player, not per device, and not before they have played: asking
+ * for a routine before the first chord is friction exactly where most new
+ * players drop off. So it waits until the third finished session, and any one
+ * of these means it already happened — this device recorded it, or the
+ * player's account recorded it on another device. Skipping counts as done.
+ */
+export function needsOnboarding(input: {
+	profileDone: boolean;
+	sessionCount: number;
+	accountDone: boolean;
+}): boolean {
+	return !input.profileDone && !input.accountDone && input.sessionCount >= ONBOARDING_AFTER_SESSIONS;
 }
 
 // ─── Daily Progress & Motivation ────────────────────────────

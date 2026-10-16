@@ -3,6 +3,7 @@
 import { getSupabase } from './supabase';
 import { getAuthState } from './auth';
 import { canUse } from './subscription-store.svelte';
+import { mergeSyncData } from './cloud-merge';
 
 // All localStorage keys that should be synced
 const SYNC_KEYS = [
@@ -19,6 +20,76 @@ const SYNC_KEYS = [
 ] as const;
 
 export type SyncKey = typeof SYNC_KEYS[number];
+
+function readLocal(): Record<string, unknown> {
+	const out: Record<string, unknown> = {};
+	for (const key of SYNC_KEYS) {
+		const raw = localStorage.getItem(key);
+		if (raw) {
+			try {
+				out[key] = JSON.parse(raw);
+			} catch {
+				out[key] = raw;
+			}
+		}
+	}
+	return out;
+}
+
+function writeLocal(data: Record<string, unknown>): void {
+	for (const key of SYNC_KEYS) {
+		const v = data[key];
+		if (v === undefined) continue;
+		localStorage.setItem(key, typeof v === 'string' ? v : JSON.stringify(v));
+	}
+}
+
+// ─── Hydration ──────────────────────────────────────────────
+//
+// Uploads replace the account's whole row. Before this existed, a browser that
+// had never pulled the account's data (new device, cleared storage, Safari's
+// 7-day storage purge) uploaded its empty defaults on the first save and wiped
+// the account's history — and, because the habit profile was fresh too, asked
+// for the onboarding again on every such login. So: pull and merge once per
+// user per tab, and refuse to upload until that has happened.
+
+let hydratedFor: string | null = null;
+let hydrating: { userId: string; promise: Promise<boolean> } | null = null;
+
+/**
+ * Pull the account's data and merge it into this device. Idempotent per user
+ * within a tab; concurrent callers share one request. Resolves `true` once the
+ * device holds the merged state (and uploads are allowed), `false` on error.
+ */
+export function ensureHydrated(userId: string, opts: { keepLocal?: boolean } = {}): Promise<boolean> {
+	if (hydratedFor === userId) return Promise.resolve(true);
+	if (hydrating?.userId === userId) return hydrating.promise;
+
+	const promise = (async () => {
+		const { data, error } = await getSupabase()
+			.from('user_data')
+			.select('data')
+			.eq('user_id', userId)
+			.maybeSingle();
+		if (error) return false;
+		// Signed out or switched account while the request was in flight.
+		if (getAuthState().user?.id !== userId) return false;
+
+		const merged = mergeSyncData(readLocal(), (data?.data ?? {}) as Record<string, unknown>, opts);
+		writeLocal(merged);
+		hydratedFor = userId;
+		// Push the union back so the account also holds what only this device had.
+		await syncToCloud();
+		return true;
+	})()
+		.catch(() => false)
+		.finally(() => {
+			if (hydrating?.promise === promise) hydrating = null;
+		});
+
+	hydrating = { userId, promise };
+	return promise;
+}
 
 /**
  * Upload all current localStorage data to Supabase for the logged-in user.
@@ -102,6 +173,8 @@ export async function syncToCloud(): Promise<void> {
 	if (!user) return;
 	// Cloud sync is a Pro feature — free users keep data local only.
 	if (!canUse('cloud-sync')) return;
+	// Never upload a device's state over the account before merging with it.
+	if (hydratedFor !== user.id) return;
 
 	const supabase = getSupabase();
 	const dataPayload: Record<string, unknown> = {};

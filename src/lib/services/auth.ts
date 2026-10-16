@@ -26,6 +26,36 @@ export function onAuthChange(cb: (state: AuthState) => void): () => void {
 	};
 }
 
+/** Resolves with the first settled auth state (session known, or none). */
+export function whenAuthReady(): Promise<AuthState> {
+	return new Promise((resolve) => {
+		let unsub: (() => void) | null = null;
+		let done = false;
+		unsub = onAuthChange((s) => {
+			if (done || s.loading) return;
+			done = true;
+			resolve(s);
+			unsub?.();
+		});
+		if (done) unsub();
+	});
+}
+
+// The habit onboarding is per player, not per browser, so "done" lives on the
+// account. User metadata needs no table or migration, works for free accounts
+// (whose data never syncs) and arrives with the session — no extra request.
+const ONBOARDING_FLAG = 'onboarding_done';
+
+export function isAccountOnboarded(user: User | null): boolean {
+	return user?.user_metadata?.[ONBOARDING_FLAG] === true;
+}
+
+export async function markAccountOnboarded(): Promise<void> {
+	const { user } = currentState;
+	if (!user || isAccountOnboarded(user)) return;
+	await getSupabase().auth.updateUser({ data: { [ONBOARDING_FLAG]: true } });
+}
+
 function notify(state: AuthState) {
 	currentState = state;
 	for (const cb of AUTH_CALLBACKS) cb(state);
@@ -77,10 +107,13 @@ export async function signUp(
 	return { error };
 }
 
-export async function signIn(email: string, password: string): Promise<{ error: AuthError | null }> {
+export async function signIn(
+	email: string,
+	password: string,
+): Promise<{ error: AuthError | null; user: User | null }> {
 	const supabase = getSupabase();
-	const { error } = await supabase.auth.signInWithPassword({ email, password });
-	return { error };
+	const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+	return { error, user: data?.user ?? null };
 }
 
 export async function signInWithProvider(provider: 'google' | 'github'): Promise<{ error: AuthError | null }> {

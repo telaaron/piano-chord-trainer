@@ -12,11 +12,14 @@
 			notificationsEnabled: boolean;
 			notificationTime: string;
 		}) => void;
+		/** "Not now" on the intro. Counts as asked: the question comes once. */
+		ondismiss: () => void;
 	}
 
-	let { oncomplete }: Props = $props();
+	let { oncomplete, ondismiss }: Props = $props();
 
-	let step = $state(1);
+	// Step 0 is the short ask; the four setup steps follow only on a yes.
+	let step = $state(0);
 	let dailyGoalMinutes = $state(5);
 	let preferredTime: TimeOfDay = $state('evening');
 	let enableNotifications = $state(false);
@@ -61,6 +64,18 @@
 	     hard-coded near-black fallback used to win in every theme — which is
 	     what made this panel a dark slab on the light surfaces. -->
 	<div class="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl py-8 px-7 max-w-[400px] w-full" in:fly={{ y: 30, duration: 300 }}>
+		{#if step === 0}
+			<div class="text-center" in:fade={{ duration: 200 }}>
+				<h2 class="text-[1.2rem] font-bold text-[var(--text)] m-0 mb-2">{t('habit.onboard_ask_title')}</h2>
+				<p class="text-[0.8rem] text-[var(--text-muted)] m-0 mb-6">{t('habit.onboard_ask_desc')}</p>
+				<button class="w-full p-3.5 border-none rounded-[var(--radius)] bg-[var(--stamp)] text-[var(--stamp-ink)] text-[0.95rem] font-bold cursor-pointer transition-all duration-200 font-[inherit] hover:bg-[var(--stamp-hover)] inline-flex items-center justify-center gap-1.5" onclick={() => (step = 1)}>
+					{t('habit.onboard_ask_yes')} <ArrowRight size={16} aria-hidden="true" />
+				</button>
+				<button class="w-full mt-2 p-3 border-none bg-transparent text-[var(--text-muted)] text-[0.85rem] cursor-pointer font-[inherit] hover:text-[var(--text)]" onclick={ondismiss}>
+					{t('habit.onboard_ask_later')}
+				</button>
+			</div>
+		{:else}
 		<!-- Progress dots -->
 		<div class="flex justify-center gap-2 mb-6">
 			{#each [1, 2, 3, 4] as s}
@@ -136,6 +151,7 @@
 					{t('habit.onboard_start') || 'Start Practicing'} <ArrowRight size={16} aria-hidden="true" />
 				</button>
 			</div>
+		{/if}
 		{/if}
 	</div>
 </div>
