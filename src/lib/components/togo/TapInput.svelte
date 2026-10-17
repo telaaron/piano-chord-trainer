@@ -105,7 +105,7 @@
 			type="button"
 			onclick={start}
 			disabled={locked}
-			class="min-h-14 w-full rounded-[var(--radius)] bg-[var(--primary)] px-5 font-semibold text-white shadow-[var(--shadow-md)] transition hover:brightness-105 disabled:opacity-50"
+			class="min-h-14 w-full rounded-full bg-[var(--primary)] px-5 font-semibold text-[var(--primary-text)] shadow-[var(--shadow-md)] transition hover:brightness-105 disabled:opacity-50"
 		>
 			{t('togo.tap_start')}
 		</button>
@@ -135,7 +135,7 @@
 			onpointerdown={registerTap}
 			class="aspect-square w-full max-w-[16rem] self-center rounded-full border-4 text-[var(--text-xl)] font-bold uppercase tracking-wide transition-transform duration-75
 			{tapFlash
-				? 'scale-95 border-[var(--primary)] bg-[var(--primary)] text-white'
+				? 'scale-95 border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-text)]'
 				: 'border-[var(--primary)]/50 bg-[var(--bg-card)] text-[var(--text)]'}"
 		>
 			{t('togo.tap_button')}

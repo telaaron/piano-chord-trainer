@@ -103,7 +103,7 @@
 <Glyph
 	{size}
 	class="text-[var(--primary)] {extraClass}"
-	style={glow ? 'filter:drop-shadow(0 0 10px rgba(245,166,35,0.45));' : undefined}
+	style={glow ? 'filter:drop-shadow(0 0 10px rgba(232,176,75,0.45));' : undefined}
 	aria-hidden={label ? undefined : 'true'}
 	aria-label={label}
 />

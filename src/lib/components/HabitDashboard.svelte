@@ -263,7 +263,7 @@
 		flex-direction: column;
 		gap: 1rem;
 		padding-bottom: 1.1rem;
-		border-bottom: 2px solid var(--text);
+		border-bottom: 1px solid var(--border);
 		font-family: 'AccidentalFit', var(--font-sans);
 	}
 
@@ -285,9 +285,9 @@
 		font-weight: 600;
 		letter-spacing: 0.17em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--text-muted);
 	}
-	.eyebrow.blue { color: var(--ink-blue); }
+	.eyebrow.blue { color: var(--text-muted); }
 
 	/* ── Masthead ─────────────────────────────────────────────── */
 
@@ -315,7 +315,7 @@
 		font-size: clamp(1.3rem, 4.6vw, 1.7rem);
 		font-weight: 600;
 		line-height: 1.1;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 	/* The rank is a printed credit line, not a coloured pill. */
@@ -398,11 +398,11 @@
 	/* The figure is the point of the ring — display face, lining figures. */
 	.ring-num {
 		font-family: var(--font-display-mus);
-		font-size: 1.24rem;
-		font-weight: 700;
+		font-size: 1.5rem;
+		font-weight: 400;
 		font-variant-numeric: lining-nums tabular-nums;
 		line-height: 1;
-		color: var(--text);
+		color: var(--accent-gold);
 	}
 	.ring-den {
 		margin-top: 1px;
@@ -469,9 +469,10 @@
 
 	/* Printed tally squares. Sharp corners, ink fill — no glow, no bead. */
 	.dot {
-		width: 0.7rem;
-		height: 0.7rem;
-		border: 1px solid var(--border);
+		width: 0.85rem;
+		height: 0.85rem;
+		border-radius: 999px;
+		border: 1.5px solid var(--border-hover);
 		background: transparent;
 		transition: background-color 0.3s ease, border-color 0.3s ease;
 	}
@@ -489,11 +490,11 @@
 	}
 	.xp-n {
 		font-family: var(--font-display-mus);
-		font-size: 1rem;
-		font-weight: 700;
+		font-size: 1.6rem;
+		font-weight: 400;
 		font-variant-numeric: lining-nums tabular-nums;
 		line-height: 1.1;
-		color: var(--text);
+		color: var(--accent-gold);
 	}
 	.xp-l {
 		font-family: var(--font-mono);
@@ -599,7 +600,7 @@
 		.day-l { font-size: 0.64rem; }
 		.dot { width: 0.85rem; height: 0.85rem; }
 		.week { gap: 0.6rem; }
-		.xp-n { font-size: 1.15rem; }
+		.xp-n { font-size: 1.9rem; }
 		.xp-l { font-size: 0.62rem; }
 		.midi { font-size: 0.7rem; padding: 0.4rem 0.7rem; }
 		.resume { gap: 0.9rem; padding-top: 0.9rem; }

@@ -337,7 +337,7 @@
 		font-size: 1.22rem;
 		font-weight: 600;
 		line-height: 1.2;
-		letter-spacing: -0.015em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 	.rec-btn:hover .rec-name { color: var(--primary); }

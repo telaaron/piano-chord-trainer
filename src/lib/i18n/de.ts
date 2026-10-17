@@ -612,7 +612,7 @@ export const de = {
     sec_faq_eyebrow: 'Fragen, beantwortet',
     sec_fine: 'Fine',
     colophon_left: 'Chord Trainer · jazzchords.app',
-    colophon_right: 'Gesetzt in Source Serif 4 & Inter · Zweifarbendruck',
+    colophon_right: 'Gesetzt in Instrument Serif & Kalam · Gleiche Farben wie die App',
     meta_title: 'Chord Trainer – Flüssig werden in Jazz-Piano-Voicings, alle 12 Tonarten',
     meta_desc: 'Übe Jazz-Piano-Voicings, bis sie automatisch sind — flüssig in allen 12 Tonarten. Sofortiges Feedback, Schwachstellen-Training, geführte Pläne. Kostenlos, keine Anmeldung, Keyboard optional.',
     og_alt: 'Chord Trainer — Jazz-Piano-Voicings in allen 12 Tonarten üben',

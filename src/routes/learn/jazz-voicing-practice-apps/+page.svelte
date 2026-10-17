@@ -197,7 +197,7 @@
 	.plate-mark::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.3; }
 	h1 {
 		font-family: var(--font-display); font-size: clamp(2rem, 5.4vw, 2.9rem); font-weight: 600;
-		line-height: 1.08; letter-spacing: -0.025em; margin: 0; color: var(--text); text-wrap: balance;
+		line-height: 1.08; letter-spacing: -0.005em; margin: 0; color: var(--text); text-wrap: balance;
 	}
 	.lead { font-size: 1.125rem; line-height: 1.65; color: var(--text-muted); max-width: 56ch; margin: 1rem 0 0; }
 	section { padding-top: 2.75rem; margin-top: 2.75rem; border-top: 1px solid var(--border); }
@@ -209,7 +209,7 @@
 	}
 	h2 {
 		font-family: var(--font-display); font-size: clamp(1.4rem, 3.6vw, 1.75rem); font-weight: 600;
-		line-height: 1.2; letter-spacing: -0.02em; margin: 0; color: var(--text);
+		line-height: 1.2; letter-spacing: -0.005em; margin: 0; color: var(--text);
 	}
 	section p, .pick { max-width: 66ch; font-size: 1.0625rem; line-height: 1.75; color: var(--text-muted); margin: 0 0 1rem; }
 	section a:not(.cta) { color: var(--primary); text-decoration: underline; text-underline-offset: 0.15em; }

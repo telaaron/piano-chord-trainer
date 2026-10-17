@@ -292,7 +292,7 @@
 		</div>
 		<a
 			href="/train"
-			class="px-4 py-2 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors text-[var(--text-muted)]"
+			class="px-4 py-2 text-sm rounded-full border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors text-[var(--text-muted)]"
 		>
 			{t('midi_test.back')}
 		</a>
@@ -342,7 +342,7 @@
 				</div>
 				{#if midiState === 'disconnected'}
 					<button
-						class="px-4 py-1.5 rounded-[var(--radius-sm)] bg-[var(--primary)] text-white text-sm font-medium hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
+						class="px-4 py-1.5 rounded-full bg-[var(--primary)] text-[var(--primary-text)] text-sm font-medium hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
 						onclick={() => midi.init()}
 					>{t('midi_test.connect_btn')}</button>
 				{/if}
@@ -436,7 +436,7 @@
 			<div class="flex items-center justify-between">
 				<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t('midi_test.event_log')}</h2>
 				<button
-					class="px-3 py-1 text-xs rounded-[var(--radius-sm)] border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors cursor-pointer text-[var(--text-muted)]"
+					class="px-3 py-1 text-xs rounded-full border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors cursor-pointer text-[var(--text-muted)]"
 					onclick={() => { midiLog = []; midiNoteOnCount = 0; midiNoteOffCount = 0; }}
 				>{t('midi_test.clear_log')}</button>
 			</div>
@@ -476,12 +476,12 @@
 				</div>
 				{#if micState === 'idle' || micState === 'error' || micState === 'denied'}
 					<button
-						class="px-4 py-1.5 rounded-[var(--radius-sm)] bg-[var(--primary)] text-white text-sm font-medium hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
+						class="px-4 py-1.5 rounded-full bg-[var(--primary)] text-[var(--primary-text)] text-sm font-medium hover:bg-[var(--primary-hover)] transition-colors cursor-pointer"
 						onclick={startMic}
 					>{t('mic_test.start_btn')}</button>
 				{:else if micState === 'listening' || micState === 'analyzing' || micState === 'loading-model' || micState === 'requesting'}
 					<button
-						class="px-4 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-sm text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer"
+						class="px-4 py-1.5 rounded-full border border-[var(--border)] text-sm text-[var(--text-muted)] hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors cursor-pointer"
 						onclick={stopMic}
 					>{t('mic_test.stop_btn')}</button>
 				{/if}
@@ -560,7 +560,7 @@
 			<div class="flex items-center justify-between">
 				<h2 class="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t('mic_test.event_log')}</h2>
 				<button
-					class="px-3 py-1 text-xs rounded-[var(--radius-sm)] border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors cursor-pointer text-[var(--text-muted)]"
+					class="px-3 py-1 text-xs rounded-full border border-[var(--border)] hover:border-[var(--border-hover)] transition-colors cursor-pointer text-[var(--text-muted)]"
 					onclick={() => { micLog = []; micDetectionCount = 0; }}
 				>{t('midi_test.clear_log')}</button>
 			</div>

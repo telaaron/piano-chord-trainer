@@ -302,7 +302,7 @@
 		font-family: var(--font-display);
 		font-size: clamp(2.25rem, 6.4vw, 3.25rem);
 		line-height: 1.04;
-		letter-spacing: -0.03em;
+		letter-spacing: -0.005em;
 		margin: 0;
 		font-weight: 600;
 		color: var(--text);
@@ -371,7 +371,7 @@
 		font-family: var(--font-display);
 		font-size: clamp(1.35rem, 3.6vw, 1.7rem);
 		line-height: 1.2;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		margin: 0;
 		font-weight: 600;
 		color: var(--text);
@@ -414,7 +414,7 @@
 		font-weight: 600;
 		font-size: 1.5rem;
 		line-height: 1;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		font-variant-numeric: lining-nums;
 	}
@@ -450,7 +450,7 @@
 		font-size: 1.125rem;
 		margin: 0;
 		font-weight: 600;
-		letter-spacing: -0.01em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 	.play-controls {
@@ -542,7 +542,7 @@
 		font-family: var(--font-display);
 		font-size: 1.0625rem;
 		font-weight: 600;
-		letter-spacing: -0.01em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		cursor: pointer;
 		list-style: none;
@@ -626,7 +626,7 @@
 		font-family: var(--font-display);
 		font-size: 1rem;
 		font-weight: 600;
-		letter-spacing: -0.01em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		grid-column: 1;
 	}

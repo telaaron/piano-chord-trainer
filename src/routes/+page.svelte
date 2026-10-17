@@ -5,11 +5,11 @@
 	import { ArrowRight, Check, Headphones, Keyboard, Mic, Play } from 'lucide-svelte';
 
 	const curriculumSteps = [
-		{ state: 'done', num: 'I', titleKey: 'landing.cur_s1_t', descKey: 'landing.cur_s1_d', chord: 'Cmaj7', notes: 'C · E · B' },
-		{ state: 'done', num: 'II', titleKey: 'landing.cur_s2_t', descKey: 'landing.cur_s2_d', chord: 'C6/9', notes: 'C · E · A · D' },
-		{ state: 'active', num: 'III', titleKey: 'landing.cur_s3_t', descKey: 'landing.cur_s3_d', chord: 'Dm9', notes: 'F · A · C · E' },
-		{ state: 'locked', num: 'IV', titleKey: 'landing.cur_s4_t', descKey: 'landing.cur_s4_d', chord: 'G7/B', notes: 'B · F · G' },
-		{ state: 'locked', num: 'V', titleKey: 'landing.cur_s5_t', descKey: 'landing.cur_s5_d', chord: 'G7♯5♭9', notes: 'B · F · A♭ · E♭' }
+		{ state: 'done', num: '01', titleKey: 'landing.cur_s1_t', descKey: 'landing.cur_s1_d', chord: 'Cmaj7', notes: 'C · E · B' },
+		{ state: 'done', num: '02', titleKey: 'landing.cur_s2_t', descKey: 'landing.cur_s2_d', chord: 'C6/9', notes: 'C · E · A · D' },
+		{ state: 'active', num: '03', titleKey: 'landing.cur_s3_t', descKey: 'landing.cur_s3_d', chord: 'Dm9', notes: 'F · A · C · E' },
+		{ state: 'locked', num: '04', titleKey: 'landing.cur_s4_t', descKey: 'landing.cur_s4_d', chord: 'G7/B', notes: 'B · F · G' },
+		{ state: 'locked', num: '05', titleKey: 'landing.cur_s5_t', descKey: 'landing.cur_s5_d', chord: 'G7♯5♭9', notes: 'B · F · A♭ · E♭' }
 	] as const;
 
 	const sessionBlocks = [
@@ -205,7 +205,7 @@
 						     competing with the button it sits under. -->
 						<span class="cta-badge">{t('landing.cta_badge')}</span>
 					</span>
-					<a href="/learn" class="btn btn-ghost">{t('landing.cta_learn')}</a>
+					<a href="/learn" class="btn btn-glass">{t('landing.cta_learn')}</a>
 					<!-- To-Go's whole promise in four words. It sits with the other
 					     secondary links rather than in the lede, because the hero is
 					     deliberately sparse — one more line of prose would undo the
@@ -610,11 +610,11 @@
 		align-items: center;
 		gap: 0.625rem;
 		font-family: var(--font-mono);
-		font-size: 0.66rem;
-		font-weight: 600;
-		letter-spacing: 0.19em;
+		font-size: 0.7rem;
+		font-weight: 500;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--text-muted);
 	}
 	.eyebrow::after {
 		content: '';
@@ -628,9 +628,10 @@
 	.eyebrow.mid { justify-content: center; }
 	.eyebrow.mid::after { display: none; }
 
-	/* Rehearsal mark — the boxed letter that numbers a section. */
+	/* Rehearsal mark — retired with the app look; the eyebrow numbers the
+	   section on its own. Kept in the markup for the A–F reading order. */
 	.rehearsal {
-		display: inline-grid;
+		display: none !important;
 		place-items: center;
 		flex: none;
 		min-width: 1.7rem;
@@ -677,7 +678,7 @@
 		gap: 0.55rem;
 		min-height: var(--tap-min);
 		padding: 0 1.35rem;
-		border-radius: var(--radius-sm);
+		border-radius: 999px;
 		border: 1.5px solid var(--text);
 		background: var(--text);
 		color: var(--bg);
@@ -703,10 +704,11 @@
 		background: var(--stamp);
 		border-color: var(--stamp);
 		color: var(--stamp-ink);
-		min-height: 3.1rem;
+		min-height: 3.5rem;
 		padding: 0 1.9rem;
-		font-size: 1.02rem;
-		font-weight: 700;
+		font-size: 1.05rem;
+		font-weight: 600;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 8px 20px rgba(160, 40, 30, 0.28);
 	}
 	.btn-stamp:hover {
 		background: var(--stamp-hover);
@@ -716,8 +718,22 @@
 	   so the button's SHAPE goes soft even though its label is at 9.65:1.
 	   An ink edge gives it back its cut, the way a printed block sits on
 	   paper. Dark ground needs none — there it separates at 9.12:1. */
-	:global([data-theme='light']) .btn-stamp {
-		border-color: var(--stamp-ink);
+	/* Glass pill — the app's secondary button. */
+	.btn-glass {
+		background: var(--glass);
+		border-color: transparent;
+		color: var(--text);
+		backdrop-filter: blur(22px) saturate(1.8);
+		-webkit-backdrop-filter: blur(22px) saturate(1.8);
+		box-shadow: inset 0 0 0 0.5px var(--glass-edge), var(--glass-shadow);
+		min-height: 3.5rem;
+		padding: 0 1.5rem;
+		font-size: 1.05rem;
+	}
+	.hero .btn-glass {
+		background: rgba(40, 52, 72, 0.55);
+		color: var(--hall-ink);
+		box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.16), 0 8px 24px rgba(0, 0, 0, 0.3);
 	}
 	/* Secondary actions step back to quiet text with a rule — present for
 	   anyone looking for them, never competing with the start button. */
@@ -835,10 +851,10 @@
 		/* Sized against the LONGER of the two locales (German runs ~15% longer
 		   than English here). At 6vw the German headline took four lines and
 		   pushed the CTA under the fold at 1280×860. */
-		font-size: clamp(2rem, 4.2vw, 3.1rem);
-		font-weight: 600;
-		line-height: 1.08;
-		letter-spacing: -0.026em;
+		font-size: clamp(2.2rem, 4.6vw, 3.5rem);
+		font-weight: 400;
+		line-height: 1;
+		letter-spacing: -0.005em;
 		/* em-based measure: scales with the headline, not the 16px parent —
 		   this is what stops the hero collapsing to one word per line. */
 		max-width: 15em;
@@ -922,8 +938,10 @@
 	   inheriting the light-theme tokens. */
 	.pcard {
 		margin: 2.25rem 0 0;
+		overflow: hidden;
+		border-radius: var(--radius-feature);
 		background: var(--plate-ground);
-		border: 1px solid color-mix(in srgb, var(--accent-amber) 30%, transparent);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		box-shadow: var(--shadow-lg);
 		backdrop-filter: blur(14px) saturate(1.1);
 		-webkit-backdrop-filter: blur(14px) saturate(1.1);
@@ -1002,11 +1020,11 @@
 		margin-top: 0.45rem;
 	}
 	.p-chord {
-		font-family: var(--font-display-mus);
-		font-size: clamp(2.3rem, 8.5vw, 3.1rem);
+		font-family: var(--font-chord);
+		font-size: clamp(2.8rem, 9.5vw, 3.8rem);
 		font-weight: 700;
 		line-height: 1;
-		letter-spacing: -0.02em;
+		letter-spacing: 0;
 		font-variant-numeric: lining-nums;
 		color: var(--hall-ink);
 	}
@@ -1217,7 +1235,7 @@
 		font-size: clamp(1.5rem, 3.9vw, 2.25rem);
 		font-weight: 600;
 		line-height: 1.14;
-		letter-spacing: -0.018em;
+		letter-spacing: -0.005em;
 		max-width: 22ch;
 		text-wrap: balance;
 		color: var(--text);
@@ -1273,11 +1291,12 @@
 	}
 	.cur-row.locked { opacity: 0.55; }
 
+	/* Section numbers as in the app's Lernen list: serif, gold. */
 	.no {
-		font-family: var(--font-mono);
-		font-size: 0.7rem;
-		letter-spacing: 0.08em;
-		color: var(--text-dim);
+		font-family: var(--font-display);
+		font-size: 1.3rem;
+		line-height: 1;
+		color: var(--accent-gold);
 	}
 	.no.roman { min-width: 1.6rem; }
 
@@ -1285,8 +1304,8 @@
 	.ttl {
 		display: block;
 		font-family: var(--font-display-mus);
-		font-size: 1.06rem;
-		font-weight: 600;
+		font-size: 1.4rem;
+		font-weight: 400;
 		color: var(--text);
 	}
 	.dsc {
@@ -1324,15 +1343,18 @@
 	@media (min-width: 760px) {
 		.cur-voicing { grid-column: 3; text-align: right; }
 	}
-	.cur-voicing b { color: var(--primary); font-weight: 600; }
+	.cur-voicing b { font-family: var(--font-chord); font-size: 1.15rem; color: var(--accent-gold); font-weight: 700; }
 	.cur-voicing .sep { margin: 0 0.35rem; opacity: 0.4; }
 
 	/* ── Coach session mock ───────────────────────────────────── */
 
+	/* The app's "Heute" card: the one feature block on this screen. */
 	.mock {
-		border: 1px solid var(--border);
-		border-left: 3px solid var(--primary);
-		background: var(--bg-card);
+		--rule-soft: color-mix(in srgb, var(--on-feature) 16%, transparent);
+		overflow: hidden;
+		border-radius: var(--radius-feature);
+		background: var(--feature);
+		color: var(--on-feature);
 	}
 	.mock-say {
 		margin: 0;
@@ -1341,8 +1363,9 @@
 		font-family: var(--font-display-mus);
 		font-size: 1.02rem;
 		font-style: italic;
-		line-height: 1.4;
-		color: var(--text);
+		font-size: 1.25rem;
+		line-height: 1.3;
+		color: var(--on-feature);
 	}
 	.plan {
 		list-style: none;
@@ -1355,13 +1378,13 @@
 		gap: 0.7rem;
 		padding: 0.5rem 1.1rem;
 		font-size: 0.87rem;
-		color: var(--text-muted);
+		color: color-mix(in srgb, var(--on-feature) 82%, transparent);
 	}
 	.plan-row.next { opacity: 0.55; }
 	/* Live block: amber, the one reserved use. */
 	.plan-row.on {
-		background: color-mix(in srgb, var(--accent-amber) 12%, transparent);
-		color: var(--text);
+		background: color-mix(in srgb, var(--on-feature) 12%, transparent);
+		color: var(--on-feature);
 		font-weight: 600;
 	}
 	.plan-mark {
@@ -1371,10 +1394,10 @@
 		flex: none;
 		width: 1rem;
 		font-size: 0.6rem;
-		color: var(--text-dim);
+		color: color-mix(in srgb, var(--on-feature) 60%, transparent);
 	}
-	.plan-row.on .plan-mark { color: var(--accent-amber); }
-	.plan-row :global(svg) { color: var(--accent-green); }
+	.plan-row.on .plan-mark { color: var(--feature-accent); }
+	.plan-row :global(svg) { color: var(--feature-accent); }
 	.plan-d {
 		min-width: 0;
 		overflow: hidden;
@@ -1386,7 +1409,7 @@
 		flex: none;
 		font-family: var(--font-mono);
 		font-size: 0.68rem;
-		color: var(--text-dim);
+		color: color-mix(in srgb, var(--on-feature) 65%, transparent);
 	}
 	.mock-foot {
 		margin: 0;
@@ -1396,7 +1419,7 @@
 		font-size: 0.66rem;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--feature-accent);
 	}
 
 	/* ── To-Go — the running order of the seven disciplines ───── */
@@ -1445,10 +1468,11 @@
 		gap: 0.6rem;
 		min-height: var(--tap-min);
 		margin-top: 1.75rem;
-		padding: 0 1.35rem;
-		border: 1.5px solid var(--text);
-		border-radius: var(--radius-sm);
-		background: transparent;
+		padding: 0 1.4rem;
+		border: none;
+		border-radius: 999px;
+		background: var(--glass);
+		box-shadow: inset 0 0 0 0.5px var(--glass-edge), var(--glass-shadow);
 		font-size: 0.94rem;
 		font-weight: 600;
 		color: var(--text);
@@ -1487,10 +1511,10 @@
 		gap: 0.85rem;
 		margin: 0;
 		padding: 1.75rem 1.5rem 1.5rem;
-		border: 1px solid var(--border);
+		border: none;
 		/* The object inside is a circle; a hard-cornered box fights it. The
 		   frame rounds to echo the dial and its segment ends. */
-		border-radius: var(--radius-lg);
+		border-radius: var(--radius-group);
 		background: var(--bg-card);
 	}
 
@@ -1578,9 +1602,9 @@
 		display: grid;
 		gap: 0;
 		margin: 0;
-		padding: 0;
-		border-top: 1px solid var(--border);
-		border-bottom: 1px solid var(--border);
+		padding: 0 1.1rem;
+		border-radius: var(--radius-group);
+		background: var(--bg-card);
 	}
 	@media (min-width: 700px) {
 		.modes { grid-template-columns: repeat(3, 1fr); }
@@ -1590,11 +1614,10 @@
 		align-items: center;
 		gap: 0.7rem;
 		padding: 0.95rem 0;
-		font-family: var(--font-display-mus);
 		font-size: 1rem;
 		font-weight: 600;
 		color: var(--text);
-		border-bottom: 1px solid var(--rule-soft);
+		border-bottom: 0.5px solid var(--rule-soft);
 	}
 	.mode:last-child { border-bottom: none; }
 	@media (min-width: 700px) {
@@ -1620,7 +1643,7 @@
 		font-size: clamp(1.3rem, 3.2vw, 1.75rem);
 		font-weight: 600;
 		line-height: 1.16;
-		letter-spacing: -0.015em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 	.habit .sec-lede { margin-top: 0.85rem; }
@@ -1628,25 +1651,26 @@
 	.ledger {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 1px;
+		gap: 0;
 		margin-top: 1.5rem;
-		border: 1px solid var(--border);
-		background: var(--border);
+		padding-top: 1rem;
+		border-top: 1px solid var(--text);
 	}
 	.cell {
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
-		padding: 1rem 0.9rem;
-		background: var(--bg-card);
+		padding: 0 0.9rem;
 	}
+	.cell + .cell { border-left: 1px solid var(--border); }
+	.cell:first-child { padding-left: 0; }
 	.cell .v {
 		font-family: var(--font-display-mus);
-		font-size: clamp(1.5rem, 4.6vw, 2.1rem);
-		font-weight: 600;
+		font-size: clamp(1.8rem, 5vw, 2.6rem);
+		font-weight: 400;
 		line-height: 1;
 		font-variant-numeric: lining-nums;
-		color: var(--text);
+		color: var(--accent-gold);
 	}
 	.cell .v.small { font-size: clamp(1rem, 3vw, 1.3rem); }
 	.cell .l {
@@ -1712,7 +1736,7 @@
 		font-size: clamp(1.6rem, 4.6vw, 2.5rem);
 		font-weight: 600;
 		line-height: 1.12;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		text-wrap: balance;
 		color: var(--text);
 	}

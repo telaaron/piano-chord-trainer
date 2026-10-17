@@ -699,7 +699,7 @@
 		gap: 0.55rem;
 		min-height: var(--tap-min);
 		padding: 0 1.35rem;
-		border-radius: var(--radius-sm);
+		border-radius: 999px;
 		border: 1.5px solid var(--text);
 		background: var(--text);
 		color: var(--bg);
@@ -777,7 +777,7 @@
 		font-size: clamp(1.9rem, 6vw, 2.6rem);
 		font-weight: 600;
 		line-height: 1.1;
-		letter-spacing: -0.022em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 	.h1 :global(svg) { flex: none; color: var(--ink-blue); }
@@ -811,21 +811,28 @@
 		color: var(--text-muted);
 	}
 
+	/* The page's one feature block — the app's oxblood card. */
 	.start {
 		width: 100%;
-		min-height: 3.6rem;
+		min-height: 5.5rem;
 		justify-content: flex-start;
-		gap: 0.9rem;
-		padding: 0.7rem 1.25rem;
+		gap: 1rem;
+		padding: 1.2rem 1.4rem;
+		border: 0;
+		border-radius: var(--radius-feature);
+		background: var(--feature);
+		color: var(--on-feature);
 		text-align: left;
 	}
+	.start:hover { background: var(--feature-hover); }
+	.start :global(svg) { color: var(--feature-accent); }
 	.start-txt { display: block; min-width: 0; }
 	.start-t {
 		display: block;
 		font-family: var(--font-display-mus);
-		font-size: 1.12rem;
-		font-weight: 700;
-		line-height: 1.2;
+		font-size: 1.6rem;
+		font-weight: 400;
+		line-height: 1.1;
 	}
 	.start-s {
 		display: block;
@@ -994,7 +1001,7 @@
 		font-size: clamp(1.45rem, 5.4vw, 1.95rem);
 		font-weight: 600;
 		line-height: 1.22;
-		letter-spacing: -0.015em;
+		letter-spacing: -0.005em;
 		text-wrap: balance;
 		color: var(--text);
 	}

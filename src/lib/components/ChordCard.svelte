@@ -50,7 +50,7 @@
 		</div>
 		<div class="text-sm text-[var(--text-muted)] mt-2">{t('ui.listen_and_play')}</div>
 	{:else}
-		<div class="text-6xl sm:text-8xl font-bold text-gradient animate-pulse-slow">
+		<div class="text-6xl sm:text-8xl font-chord text-gradient animate-pulse-slow">
 			{display}
 		</div>
 		{#if vlMode === 'find-inversion' && voicingTypeHint}

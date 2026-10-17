@@ -60,7 +60,7 @@
 
 	{#if state === 'disconnected'}
 		<button
-			class="px-3 py-1 rounded-[var(--radius-sm)] border border-[var(--border)] text-xs hover:border-[var(--border-hover)] transition-colors cursor-pointer"
+			class="px-3 py-1 rounded-full border border-[var(--border)] text-xs hover:border-[var(--border-hover)] transition-colors cursor-pointer"
 			onclick={onConnect}
 		>
 			{t('midi.connect')}
@@ -97,7 +97,7 @@
 	{#if state === 'connected' && devices.length > 1}
 		<select
 			value={selectedDeviceId}
-			class="px-2 py-1 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+			class="px-2 py-1 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
 			onchange={(e) => onSelectDevice((e.target as HTMLSelectElement).value)}
 		>
 			{#each devices as device}

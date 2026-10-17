@@ -382,7 +382,7 @@
 		font-size: clamp(1.85rem, 4.2vw, 2.9rem);
 		font-weight: 600;
 		line-height: 1.1;
-		letter-spacing: -0.025em;
+		letter-spacing: -0.005em;
 		max-width: 17em;
 		text-wrap: balance;
 		color: var(--text);
@@ -434,7 +434,7 @@
 		font-size: clamp(1.35rem, 3.2vw, 1.9rem);
 		font-weight: 600;
 		line-height: 1.15;
-		letter-spacing: -0.018em;
+		letter-spacing: -0.005em;
 		max-width: 24ch;
 		text-wrap: balance;
 		color: var(--text);

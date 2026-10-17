@@ -2429,7 +2429,7 @@
 					     Settings sit with it; the site nav above carries brand, theme
 					     and language. -->
 					<header class="setup-mast">
-						<p class="setup-mark"><span aria-hidden="true">II</span>{t('nav.train')}</p>
+						<p class="setup-mark">{t('nav.train')}</p>
 						<div class="setup-mast-row">
 							<div class="min-w-0">
 								<h1 id="start-heading" class="setup-h1">{t('settings.start_practicing')}</h1>
@@ -2640,7 +2640,7 @@
 				</div>
 				<div class="overflow-y-auto p-5 pb-[max(20px,env(safe-area-inset-bottom))] flex-1 space-y-6">
 					<button
-						class="w-full h-12 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+						class="w-full h-12 rounded-full bg-[var(--primary)] text-[var(--primary-text)] text-base font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
 						onclick={() => { settingsOpen = false; settingsOpenedFromScreen = null; startGame(); }}
 					>{#if settingsOpenedFromScreen}<RotateCcw size={18} aria-hidden="true" /> {t('settings.restart_with_settings')}{:else}<Play size={18} aria-hidden="true" /> {t('settings.start_training')}{/if}</button>
 					<fieldset>
@@ -2995,7 +2995,7 @@
 			<!-- Page-level top bar -->
 				<div class="flex items-center justify-between gap-3 mb-6">
 					<button
-						class="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] px-3.5 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--text)] hover:text-[var(--text)]"
+						class="glass inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-medium text-[var(--text)] transition-colors hover:text-[var(--primary)]"
 						onclick={resetToSetup}
 						title={t('ui.back_setup')}
 					>
@@ -3027,7 +3027,7 @@
 							</div>
 						{/if}
 						<button
-							class="grid h-9 w-9 place-items-center rounded-full border border-[var(--border)] text-[var(--text-muted)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+							class="glass grid h-11 w-11 place-items-center rounded-full text-[var(--text)] transition-colors hover:text-[var(--primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
 							onclick={openSettingsFromGame}
 							title="{t('settings.custom_settings')} (S)"
 							aria-label="{t('settings.custom_settings')}"
@@ -3035,7 +3035,7 @@
 							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
 						</button>
 						<button
-							class="grid h-9 w-9 place-items-center rounded-full border text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] {showExerciseInfo ? 'border-[var(--primary)] bg-[var(--primary-muted)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)]'}"
+							class="glass grid h-11 w-11 place-items-center rounded-full border text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] {showExerciseInfo ? 'border-transparent text-[var(--primary)]' : 'border-transparent text-[var(--text)] hover:border-[var(--primary)] hover:text-[var(--primary)]'}"
 							onclick={() => (showExerciseInfo = !showExerciseInfo)}
 							title={t('explain.title')}
 							aria-label={t('explain.title')}
@@ -3198,12 +3198,12 @@
 							{/if}
 							{#if timerStarted}
 								<button
-									class="flex items-center gap-1 text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
+									class="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
 									onclick={togglePause}
 									title={`${t('ui.pause')} (P)`}
 								>{#if paused}<Play size={14} aria-hidden="true" /> {t('ui.resume')}{:else}<Pause size={14} aria-hidden="true" /> {t('ui.pause')}{/if}</button>
 								<button
-									class="flex items-center gap-1 text-xs px-2 py-0.5 rounded border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+									class="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
 									onclick={restartGame}
 									title={t('ui.restart')}
 								><RotateCcw size={14} aria-hidden="true" /> {t('ui.restart')}</button>
@@ -3219,7 +3219,7 @@
 					</div>
 					<div class="h-1.5 bg-[var(--bg-muted)] rounded-full overflow-hidden">
 						<div
-							class="h-full bg-[var(--primary)] transition-all duration-300 rounded-full"
+							class="h-full bg-[var(--accent-gold)] transition-all duration-300 rounded-full"
 							style="width: {progress}%"
 						></div>
 					</div>
@@ -3236,7 +3236,7 @@
 				{#if !timerStarted}
 					<div class="text-center py-4">
 						<button
-							class="px-8 py-3 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-semibold text-lg hover:bg-[var(--primary-hover)] transition-colors cursor-pointer shadow-lg inline-flex items-center justify-center gap-2"
+							class="px-8 py-3 rounded-full bg-[var(--primary)] text-[var(--primary-text)] font-semibold text-lg hover:bg-[var(--primary-hover)] transition-colors cursor-pointer shadow-lg inline-flex items-center justify-center gap-2"
 							onclick={beginTimer}
 						>
 							<Play size={20} aria-hidden="true" /> Start
@@ -3250,7 +3250,7 @@
 					<div class="text-center py-8">
 						<div class="text-2xl font-bold text-[var(--text-muted)] mb-4 inline-flex items-center justify-center gap-2"><Pause size={22} aria-hidden="true" /> Paused</div>
 						<button
-							class="px-6 py-2 rounded-[var(--radius)] bg-[var(--primary)] text-[var(--primary-text)] font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
+							class="px-6 py-2 rounded-full bg-[var(--primary)] text-[var(--primary-text)] font-semibold hover:bg-[var(--primary-hover)] transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
 							onclick={togglePause}
 						>
 							<Play size={18} aria-hidden="true" /> Resume
@@ -3332,13 +3332,13 @@
 						<div class="mt-4 text-center flex items-center justify-center gap-2">
 							<!-- svelte-ignore a11y_click_events_have_key_events -->
 							<button
-								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
+								class="px-4 py-1.5 text-sm rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
 								onclick={(e) => { e.stopPropagation(); replayChord(); }}
 							>
 								<Music size={16} aria-hidden="true" /> Listen
 							</button>
 							<button
-								class="px-2.5 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+								class="px-2.5 py-1.5 text-sm rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
 								onclick={(e) => { e.stopPropagation(); showExplain = true; }}
 								title={t('explain.title')}
 							>
@@ -3348,7 +3348,7 @@
 					{:else if currentData}
 						<div class="mt-4 text-center">
 							<button
-								class="px-2.5 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
+								class="px-2.5 py-1.5 text-sm rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors cursor-pointer"
 								onclick={(e) => { e.stopPropagation(); showExplain = true; }}
 								title={t('explain.title')}
 							>
@@ -3495,7 +3495,7 @@
 			<div in:fly={{ y: 20, duration: 300, delay: 50 }}>
 			<div class="flex items-center justify-between mb-6">
 				<button
-					class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
+					class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
 					onclick={resetToSetup}
 					title={`${t('ui.back_setup')} (ESC)`}
 				>
@@ -3639,7 +3639,7 @@
 											{#if earGuessResult === 'correct'}<Check size={16} aria-hidden="true" /> {t('ui.correct')}{:else if earGuessResult === 'wrong'}<X size={16} aria-hidden="true" /> {t('ui.ear_try_again')}{:else}<CornerDownLeft size={16} aria-hidden="true" /> {t('ui.ear_check')}{/if}
 										</button>
 										<button
-											class="px-3 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
+											class="px-3 py-1.5 text-sm rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer"
 											onclick={(e) => { e.stopPropagation(); clearEarGuess(); }}
 										>
 											{t('ui.ear_clear')}
@@ -3667,7 +3667,7 @@
 						<!-- Listen again button -->
 						<div class="mt-4 text-center">
 							<button
-								class="px-4 py-1.5 text-sm rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-amber)] hover:text-[var(--accent-amber)] transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
+								class="px-4 py-1.5 text-sm rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent-amber)] hover:text-[var(--accent-amber)] transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
 								onclick={(e) => { e.stopPropagation(); replayChord(); }}
 							>
 								<Music size={16} aria-hidden="true" /> {t('ui.listen_again')}
@@ -3696,7 +3696,7 @@
 			<!-- Back button -->
 			<div class="mb-4">
 				<button
-					class="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
+					class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text)] hover:text-[var(--text)] transition-colors cursor-pointer text-sm font-medium"
 					onclick={resetToSetup}
 				>
 					<ArrowLeft size={16} aria-hidden="true" /> {t('ui.back_setup')}
@@ -3897,14 +3897,12 @@
 	}
 	.sess-mark {
 		flex: none;
-		padding: 0.12rem 0.4rem;
-		border: 1px solid var(--primary);
 		font-family: var(--font-mono);
-		font-size: 0.6rem;
-		font-weight: 700;
+		font-size: 0.66rem;
+		font-weight: 500;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--text-muted);
 	}
 	.sess-kind {
 		min-width: 0;
@@ -3919,9 +3917,10 @@
 	/* The quality is a chord symbol — mono, and it keeps its ♭ ♯ ° ø. */
 	.sess-q {
 		flex: none;
-		font-family: var(--font-mono);
-		font-size: 0.78rem;
-		color: var(--ink-blue);
+		font-family: var(--font-chord);
+		font-weight: 700;
+		font-size: 1.05rem;
+		color: var(--accent-gold);
 	}
 	.sess-v {
 		flex: none;
@@ -3943,10 +3942,10 @@
 		display: flex;
 		align-items: center;
 		gap: 1.5rem;
-		padding: 1rem 1.1rem;
-		border: 1px solid var(--border);
-		border-left: 3px solid var(--primary);
-		background: var(--bg-card);
+		padding: 0.75rem 1.4rem;
+		border-radius: 999px;
+		background: var(--glass);
+		box-shadow: inset 0 0 0 0.5px var(--glass-edge), var(--glass-shadow);
 	}
 	.sess-prog {
 		flex: 1;
@@ -3965,11 +3964,11 @@
 	   a gradient — a gradient on a 5rem glyph costs contrast at exactly the
 	   moment a player is reading it from a metre away at the piano. */
 	.train-page :global(.card .text-gradient) {
-		font-family: var(--font-display-mus);
-		font-size: clamp(3.4rem, 13vw, 6rem);
+		font-family: var(--font-chord);
+		font-size: clamp(3.8rem, 15vw, 7rem);
 		font-weight: 700;
 		line-height: 1.02;
-		letter-spacing: -0.03em;
+		letter-spacing: 0;
 		font-variant-numeric: lining-nums;
 		/* Beat the .text-gradient background-clip rule from app.css: on this
 		   screen the chord is read, not admired. */
@@ -3986,9 +3985,7 @@
 	/* Ambient page wash — token-based so it flips with the theme. Drill only:
 	   the start screen sits on the plain site ground like /learn and /togo. */
 	.train-page.train-focus {
-		background:
-			radial-gradient(ellipse 80% 40% at 50% 0%, color-mix(in srgb, var(--primary) 6%, transparent) 0%, transparent 70%),
-			linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 88%, var(--primary)) 35%, var(--bg) 100%);
+		background: var(--bg);
 	}
 
 	/* Touch devices (iPad): maximum screen real-estate */
@@ -4026,18 +4023,11 @@
 		gap: 0.625rem;
 		margin: 0 0 0.75rem;
 		font-family: var(--font-mono);
-		font-size: 0.625rem;
-		font-weight: 600;
-		letter-spacing: 0.19em;
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary);
-	}
-	.setup-mark::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.3;
+		color: var(--text-muted);
 	}
 	.setup-mast-row {
 		display: flex;
@@ -4049,10 +4039,10 @@
 	.setup-h1 {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: clamp(2rem, 6vw, 2.85rem);
-		font-weight: 600;
-		line-height: 1.08;
-		letter-spacing: -0.025em;
+		font-size: clamp(2.4rem, 7vw, 3.4rem);
+		font-weight: 400;
+		line-height: 1;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 	.setup-lede {
@@ -4072,22 +4062,22 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.45rem;
-		min-height: 2.25rem;
-		padding: 0 0.85rem;
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
-		background: transparent;
+		min-height: 2.5rem;
+		padding: 0 1rem;
+		border: 0;
+		border-radius: 999px;
+		background: var(--glass);
+		box-shadow: inset 0 0 0 0.5px var(--glass-edge), var(--glass-shadow);
 		font-family: inherit;
-		font-size: 0.85rem;
+		font-size: 0.88rem;
 		font-weight: 500;
-		color: var(--text-muted);
+		color: var(--text);
 		text-decoration: none;
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s;
 	}
 	.setup-tool:hover {
-		color: var(--text);
-		border-color: var(--border-hover);
+		color: var(--primary);
 	}
 	.setup-tool:focus-visible {
 		outline: 2px solid var(--primary);
@@ -4108,7 +4098,7 @@
 		font-family: var(--font-display-mus);
 		font-size: 1.32rem;
 		font-weight: 600;
-		letter-spacing: -0.018em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 	.head-tally {
@@ -4188,7 +4178,8 @@
 
 	/* ③ Advanced setup — a ruled drawer. */
 	.drawer {
-		border: 1px solid var(--border);
+		border-radius: var(--radius-group);
+		overflow: hidden;
 		background: var(--bg-card);
 	}
 	.drawer-btn {
@@ -4198,7 +4189,7 @@
 		gap: 0.75rem;
 		width: 100%;
 		min-height: var(--tap-min);
-		padding: 0.75rem 1rem;
+		padding: 0.85rem 1.1rem;
 		border: 0;
 		background: transparent;
 		font-family: inherit;
@@ -4215,15 +4206,16 @@
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
 		font-weight: 600;
-		letter-spacing: 0.17em;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--text-muted);
 	}
 	/* The current setup, printed as plates. Squared, hairline, mono — the same
 	   mark /togo uses for a parameter that has been set. */
 	.chip {
-		padding: 0.16rem 0.5rem;
-		border: 1px solid var(--border);
+		padding: 0.2rem 0.6rem;
+		border-radius: 999px;
+		background: var(--bg-muted);
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
 		letter-spacing: 0.1em;
@@ -4279,7 +4271,7 @@
 		font-size: 1.4rem;
 		font-weight: 600;
 		line-height: 1.15;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 	@media (min-width: 640px) {
@@ -4462,7 +4454,7 @@
 		font-size: 1.28rem;
 		font-weight: 600;
 		line-height: 1.25;
-		letter-spacing: -0.015em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 	.slip-cue {

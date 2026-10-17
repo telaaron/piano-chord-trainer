@@ -181,7 +181,7 @@
 		font-size: clamp(2rem, 5.4vw, 2.9rem);
 		font-weight: 600;
 		line-height: 1.08;
-		letter-spacing: -0.025em;
+		letter-spacing: -0.005em;
 		margin: 0;
 		max-width: 18ch;
 		color: var(--text);
@@ -249,7 +249,7 @@
 		font-size: clamp(1.4rem, 3.6vw, 1.75rem);
 		font-weight: 600;
 		line-height: 1.2;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		margin: 0;
 		color: var(--text);
 	}
@@ -299,7 +299,7 @@
 		font-family: var(--font-display);
 		font-size: 1.1875rem;
 		font-weight: 600;
-		letter-spacing: -0.01em;
+		letter-spacing: -0.005em;
 		text-decoration: none;
 		color: var(--text);
 		font-variant-numeric: lining-nums;

@@ -133,12 +133,12 @@
 
 				<!-- Center links (desktop) — a printed table of contents -->
 				<div class="nav-links">
-					<a href="/learn" class="nav-link" class:active={page.url.pathname.startsWith('/learn')}><span class="nav-num" aria-hidden="true">I</span>{t('nav.learn')}</a>
-					<a href="/train" class="nav-link" class:active={page.url.pathname.startsWith('/train')}><span class="nav-num" aria-hidden="true">II</span>{t('nav.train')}</a>
-					<a href="/togo" class="nav-link" class:active={page.url.pathname.startsWith('/togo')}><span class="nav-num" aria-hidden="true">III</span>{t('nav.togo')}</a>
-					<a href="/for-educators" class="nav-link" class:active={page.url.pathname === '/for-educators'}><span class="nav-num" aria-hidden="true">IV</span>{t('nav.educators_short')}</a>
+					<a href="/learn" class="nav-link" class:active={page.url.pathname.startsWith('/learn')}>{t('nav.learn')}</a>
+					<a href="/train" class="nav-link" class:active={page.url.pathname.startsWith('/train')}>{t('nav.train')}</a>
+					<a href="/togo" class="nav-link" class:active={page.url.pathname.startsWith('/togo')}>{t('nav.togo')}</a>
+					<a href="/for-educators" class="nav-link" class:active={page.url.pathname === '/for-educators'}>{t('nav.educators_short')}</a>
 					{#if isAdmin}
-						<a href="/admin" class="nav-link" class:active={page.url.pathname === '/admin'} title="Admin Dashboard"><span class="nav-num" aria-hidden="true">V</span>Admin</a>
+						<a href="/admin" class="nav-link" class:active={page.url.pathname === '/admin'} title="Admin Dashboard">Admin</a>
 					{/if}
 				</div>
 
@@ -178,13 +178,13 @@
 			<!-- Mobile dropdown -->
 			{#if mobileMenuOpen}
 				<div class="nav-mobile">
-					<a href="/learn" class="nav-mobile-link" class:active={page.url.pathname.startsWith('/learn')}><span class="nav-num" aria-hidden="true">I</span>{t('nav.learn')}</a>
-					<a href="/train" class="nav-mobile-link" class:active={page.url.pathname.startsWith('/train')}><span class="nav-num" aria-hidden="true">II</span>{t('nav.train')}</a>
-					<a href="/togo" class="nav-mobile-link" class:active={page.url.pathname.startsWith('/togo')}><span class="nav-num" aria-hidden="true">III</span>{t('nav.togo')}</a>
-					<a href="/for-educators" class="nav-mobile-link" class:active={page.url.pathname === '/for-educators'}><span class="nav-num" aria-hidden="true">IV</span>{t('nav.educators')}</a>
-					<a href="/pricing" class="nav-mobile-link" class:active={page.url.pathname === '/pricing'}><span class="nav-num" aria-hidden="true">V</span>{t('nav_auth.pricing')}</a>
+					<a href="/learn" class="nav-mobile-link" class:active={page.url.pathname.startsWith('/learn')}>{t('nav.learn')}</a>
+					<a href="/train" class="nav-mobile-link" class:active={page.url.pathname.startsWith('/train')}>{t('nav.train')}</a>
+					<a href="/togo" class="nav-mobile-link" class:active={page.url.pathname.startsWith('/togo')}>{t('nav.togo')}</a>
+					<a href="/for-educators" class="nav-mobile-link" class:active={page.url.pathname === '/for-educators'}>{t('nav.educators')}</a>
+					<a href="/pricing" class="nav-mobile-link" class:active={page.url.pathname === '/pricing'}>{t('nav_auth.pricing')}</a>
 					{#if isAdmin}
-						<a href="/admin" class="nav-mobile-link" class:active={page.url.pathname === '/admin'}><span class="nav-num" aria-hidden="true">VI</span>Admin</a>
+						<a href="/admin" class="nav-mobile-link" class:active={page.url.pathname === '/admin'}>Admin</a>
 					{/if}
 				</div>
 			{/if}
@@ -298,7 +298,7 @@
 	.nav-inner {
 		max-width: 1180px;
 		margin: 0 auto;
-		min-height: 64px;
+		min-height: 72px;
 		padding: 0 clamp(1rem, 5vw, 2rem);
 		display: flex;
 		align-items: center;
@@ -317,22 +317,25 @@
 		flex-shrink: 0;
 		color: var(--text);
 	}
+	/* The app icon, small: red keys on the night-blue tile (K2). */
 	.brand-mark {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 22px;
-		height: 22px;
+		width: 34px;
+		height: 34px;
 		flex: none;
-		color: var(--primary);
-		transition: color 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+		border-radius: 9px;
+		color: #e8665a;
+		background: radial-gradient(circle at 30% 25%, #22324a, #0a0f17);
+		box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+		transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 	.brand-mark :global(svg) {
 		display: block;
 		overflow: visible;
 	}
 	.brand:hover .brand-mark {
-		color: var(--ink-blue);
 		transform: rotate(-3deg);
 	}
 	.brand-word {
@@ -343,15 +346,15 @@
 	}
 	.brand-name {
 		font-family: var(--font-display);
-		font-size: 1.22rem;
-		font-weight: 600;
-		letter-spacing: -0.022em;
+		font-size: 1.55rem;
+		font-weight: 400;
+		letter-spacing: -0.005em;
 		line-height: 1.05;
 		color: var(--text);
 	}
 	.brand-tld {
 		color: var(--primary);
-		font-weight: 600;
+		font-style: italic;
 	}
 	/* The strapline under the wordmark, set as a plate line */
 	.brand-sub {
@@ -378,14 +381,18 @@
 	}
 
 	/* ── Index (centre links) ──
-	   A printed table of contents: roman numeral, then the entry.
-	   Current page is marked with a stamp-red rule beneath, not a pill. */
+	   A glass pill like the app's tab bar; the current page gets a lifted
+	   segment in the action red. */
 	.nav-links {
 		display: none;
-		align-items: stretch;
-		gap: 0;
-		flex: 1;
-		justify-content: center;
+		align-items: center;
+		gap: 2px;
+		padding: 4px;
+		border-radius: 999px;
+		background: var(--glass);
+		backdrop-filter: blur(22px) saturate(1.8);
+		-webkit-backdrop-filter: blur(22px) saturate(1.8);
+		box-shadow: inset 0 0 0 0.5px var(--glass-edge), var(--glass-shadow);
 	}
 	@media (min-width: 768px) {
 		.nav-links {
@@ -395,35 +402,22 @@
 	.nav-link {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.45rem;
-		padding: 0.55rem 0.95rem;
-		font-size: 0.9rem;
+		height: 36px;
+		padding: 0 1rem;
+		border-radius: 999px;
+		font-size: 0.92rem;
 		font-weight: 500;
-		color: var(--text-muted);
+		color: var(--text);
 		text-decoration: none;
-		border-bottom: 2px solid transparent;
-		transition: color 0.15s ease, border-color 0.15s ease;
-	}
-	.nav-num {
-		font-family: var(--font-mono);
-		font-size: 0.6rem;
-		letter-spacing: 0.1em;
-		color: var(--text-dim);
-		transition: color 0.15s ease;
+		transition: color 0.15s ease, background 0.15s ease;
 	}
 	.nav-link:hover {
-		color: var(--text);
-	}
-	.nav-link:hover .nav-num {
-		color: var(--ink-blue);
+		background: var(--glass-selected);
 	}
 	.nav-link.active {
-		color: var(--text);
-		font-weight: 600;
-		border-bottom-color: var(--primary);
-	}
-	.nav-link.active .nav-num {
 		color: var(--primary);
+		font-weight: 600;
+		background: var(--glass-selected);
 	}
 
 	/* ── Right cluster ── */
@@ -434,100 +428,81 @@
 		flex-shrink: 0;
 	}
 
-	/* Segmented controls — hairline-divided cells, square corners */
+	/* Header buttons — glass circles, as in the app */
 	.nav-seg {
 		display: inline-flex;
 		align-items: center;
-		border: 1px solid var(--border);
-		border-radius: 2px;
-		overflow: hidden;
-		background: transparent;
+		gap: 0.5rem;
 	}
-	.seg-btn {
+	.seg-btn,
+	.nav-burger {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		min-width: 36px;
-		height: 34px;
-		padding: 0 0.5rem;
-		color: var(--text-muted);
-		background: transparent;
+		width: 40px;
+		height: 40px;
+		padding: 0;
 		border: none;
-		cursor: pointer;
-		transition: color 0.15s ease, background 0.15s ease;
-	}
-	.seg-btn:hover {
+		border-radius: 999px;
 		color: var(--text);
-		background: var(--bg-card);
+		background: var(--glass);
+		backdrop-filter: blur(22px) saturate(1.8);
+		-webkit-backdrop-filter: blur(22px) saturate(1.8);
+		box-shadow: inset 0 0 0 0.5px var(--glass-edge), var(--glass-shadow);
+		cursor: pointer;
+		transition: background 0.15s ease;
 	}
-	.seg-btn + .seg-btn {
-		border-left: 1px solid var(--border);
+	.seg-btn:hover,
+	.nav-burger:hover {
+		background: color-mix(in srgb, var(--glass) 70%, var(--text) 8%);
 	}
 	.seg-lang {
 		font-family: var(--font-mono);
-		font-size: 0.68rem;
+		font-size: 0.7rem;
 		font-weight: 600;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.08em;
 	}
 
 	.nav-account {
 		display: inline-flex;
 		align-items: center;
-		height: 34px;
-		padding: 0 0.85rem;
-		border-radius: 2px;
-		font-size: 0.85rem;
-		font-weight: 500;
-		color: var(--text-muted);
+		height: 40px;
+		padding: 0 1.1rem;
+		border-radius: 999px;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--text);
 		text-decoration: none;
-		border: 1px solid var(--border);
-		transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+		background: var(--glass);
+		backdrop-filter: blur(22px) saturate(1.8);
+		-webkit-backdrop-filter: blur(22px) saturate(1.8);
+		box-shadow: inset 0 0 0 0.5px var(--glass-edge), var(--glass-shadow);
+		transition: color 0.15s ease;
 	}
 	.nav-account:hover,
 	.nav-account.active {
-		color: var(--text);
-		border-color: var(--text-muted);
-		background: var(--bg-card);
+		color: var(--primary);
 	}
 
-	/* The one loud ink in the masthead */
+	/* The one loud ink in the masthead — a red pill */
 	.nav-cta {
 		display: inline-flex;
 		align-items: center;
-		height: 34px;
-		padding: 0 1rem;
-		border-radius: 2px;
-		font-size: 0.85rem;
+		height: 40px;
+		padding: 0 1.15rem;
+		border-radius: 999px;
+		font-size: 0.9rem;
 		font-weight: 600;
 		color: var(--primary-text);
 		background: var(--primary);
-		border: 1px solid var(--primary);
 		text-decoration: none;
-		transition: background 0.15s ease, border-color 0.15s ease;
+		transition: background 0.15s ease;
 	}
 	.nav-cta:hover {
 		background: var(--primary-hover);
-		border-color: var(--primary-hover);
 	}
 
 	/* ── Mobile ── */
-	.nav-burger {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 36px;
-		height: 34px;
-		border-radius: 2px;
-		color: var(--text-muted);
-		background: transparent;
-		border: 1px solid var(--border);
-		cursor: pointer;
-		transition: color 0.15s ease, background 0.15s ease;
-	}
-	.nav-burger:hover {
-		color: var(--text);
-		background: var(--bg-card);
-	}
 	@media (min-width: 768px) {
 		.nav-burger {
 			display: none;
@@ -537,9 +512,10 @@
 	.nav-mobile {
 		display: flex;
 		flex-direction: column;
-		border-top: 1px solid var(--border);
-		background: color-mix(in srgb, var(--bg) 98%, transparent);
-		padding: 0 clamp(1rem, 5vw, 2rem) 0.5rem;
+		margin: 0 clamp(1rem, 5vw, 2rem) 0.75rem;
+		border-radius: var(--radius-group);
+		background: var(--bg-card);
+		overflow: hidden;
 	}
 	@media (min-width: 768px) {
 		.nav-mobile {
@@ -549,31 +525,23 @@
 	.nav-mobile-link {
 		display: flex;
 		align-items: center;
-		gap: 0.8rem;
 		min-height: var(--tap-min);
-		padding: 0.7rem 0.1rem;
-		font-size: 0.95rem;
+		padding: 0.8rem 1.1rem;
+		font-size: 1.02rem;
 		font-weight: 500;
-		color: var(--text-muted);
+		color: var(--text);
 		text-decoration: none;
-		border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+		border-bottom: 0.5px solid var(--border);
 	}
 	.nav-mobile-link:last-child {
 		border-bottom: none;
 	}
-	.nav-mobile-link .nav-num {
-		width: 1.6rem;
-		flex: none;
-	}
 	.nav-mobile-link:hover {
-		color: var(--text);
+		background: var(--bg-card-hover);
 	}
 	.nav-mobile-link.active {
-		color: var(--text);
-		font-weight: 600;
-	}
-	.nav-mobile-link.active .nav-num {
 		color: var(--primary);
+		font-weight: 600;
 	}
 
 	/* ── Sync banner — an errata slip pasted under the masthead ── */
@@ -625,7 +593,7 @@
 		display: inline-flex;
 		align-items: center;
 		padding: 0.3rem 0.7rem;
-		border-radius: 2px;
+		border-radius: 999px;
 		background: var(--primary);
 		border: 1px solid var(--primary);
 		color: var(--primary-text);
@@ -669,13 +637,13 @@
 		gap: 0.7rem;
 	}
 	.foot-mark {
-		color: var(--text-dim);
+		opacity: 0.85;
 	}
 	.foot-name {
 		font-family: var(--font-display);
 		font-size: 1.05rem;
 		font-weight: 600;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		line-height: 1.15;
 	}

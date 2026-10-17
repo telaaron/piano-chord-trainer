@@ -266,7 +266,7 @@
 		font-size: 1.85rem;
 		font-weight: 600;
 		line-height: 1.12;
-		letter-spacing: -0.025em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		margin: 0;
 	}
@@ -307,7 +307,7 @@
 		width: 100%;
 		min-height: var(--tap-min);
 		padding: 0.6rem 0.75rem;
-		border-radius: 2px;
+		border-radius: var(--radius);
 		background: var(--bg);
 		border: 1px solid var(--border);
 		color: var(--text);
@@ -350,7 +350,7 @@
 	.auth-submit {
 		width: 100%;
 		min-height: var(--tap-min);
-		border-radius: 2px;
+		border-radius: 999px;
 		border: 1px solid var(--primary);
 		background: var(--primary);
 		color: var(--primary-text);

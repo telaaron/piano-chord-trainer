@@ -5,51 +5,39 @@
    no IP handed to Google, and the privacy page has one less thing to
    disclose. Latin subsets only — 153 KB for the whole family.
 ──────────────────────────────────────────────────────────────── */
+/* Instrument Serif ships one weight. Declaring it across 100–900 tells the
+   browser this file IS every weight, so the many `font-weight: 600/700`
+   headings render the drawn face instead of a smeared synthetic bold. */
 @font-face {
-	font-family: 'Source Serif 4';
-	src: url('/fonts/source-serif-4-latin-400-normal.woff2') format('woff2');
-	font-weight: 400;
+	font-family: 'Instrument Serif';
+	src: url('/fonts/instrument-serif-latin-400-normal.woff2') format('woff2');
+	font-weight: 100 900;
 	font-style: normal;
+	/* Instrument Serif runs small and narrow next to the old serif; scaling
+	   it here keeps every existing heading size readable without touching
+	   ~160 call sites. */
+	size-adjust: 114%;
 	font-display: swap;
 }
 @font-face {
-	font-family: 'Source Serif 4';
-	src: url('/fonts/source-serif-4-latin-400-italic.woff2') format('woff2');
-	font-weight: 400;
+	font-family: 'Instrument Serif';
+	src: url('/fonts/instrument-serif-latin-400-italic.woff2') format('woff2');
+	font-weight: 100 900;
 	font-style: italic;
+	size-adjust: 114%;
 	font-display: swap;
 }
+/* Kalam — the Real Book hand. Chord symbols only, same as the iOS app. */
 @font-face {
-	font-family: 'Source Serif 4';
-	src: url('/fonts/source-serif-4-latin-600-normal.woff2') format('woff2');
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Source Serif 4';
-	src: url('/fonts/source-serif-4-latin-600-italic.woff2') format('woff2');
-	font-weight: 600;
-	font-style: italic;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Source Serif 4';
-	src: url('/fonts/source-serif-4-latin-700-normal.woff2') format('woff2');
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: 'Inter Variable';
-	src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+	font-family: 'Kalam';
+	src: url('/fonts/kalam-latin-700-normal.woff2') format('woff2');
 	font-weight: 100 900;
 	font-style: normal;
 	font-display: swap;
 }
 
 /* Accidentals ♭ ♯ ° ø — the app's most-printed characters, and neither
-   Source Serif 4 nor Inter contains them. Measured at 40px: the flat came
+   Instrument Serif nor Kalam contains them. Measured at 40px: the flat came
    back 40px wide (a blank em box) against 26px for a capital B, so every
    chord symbol printed as "B ♭ maj7" with a hole in it. Scoped by
    unicode-range to exactly those four codepoints, this borrows a real
@@ -67,77 +55,82 @@
 }
 
 :root {
-	/* Editorial pairing: a serif that carries the voice, a sans that gets
-	   out of the way. The serif is display-only — never body copy.
-	   AccidentalFit leads every stack so ♭ ♯ ° ø resolve to a real glyph
-	   wherever a chord symbol is printed; it claims nothing else. */
-	--font-sans: 'AccidentalFit', 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
-	--font-display: 'AccidentalFit', 'Source Serif 4', 'Iowan Old Style', Palatino, Georgia, serif;
-	--font-mono: 'AccidentalFit', 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+	/* Same faces as the iOS app (ios/…/Theme/Typography.swift): Instrument
+	   Serif for titles, Kalam for chord symbols, the system face (SF on Apple)
+	   for UI. AccidentalFit leads every stack so ♭ ♯ ° ø resolve to a real
+	   glyph wherever a chord symbol is printed; it claims nothing else. */
+	--font-sans: 'AccidentalFit', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
+	--font-display: 'AccidentalFit', 'Instrument Serif', 'Iowan Old Style', Palatino, Georgia, serif;
+	--font-chord: 'AccidentalFit', 'Kalam', 'Instrument Serif', cursive;
+	--font-mono: 'AccidentalFit', ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
 
-	/* Two-colour press job. The base is cold diazo stock rather than warm
-	   cream, so it reads as a printed plate and not as another warm AI page.
-	   Stamp red is the publisher's stamp and the teacher's red pencil;
-	   copyist blue is for annotation and structure. Amber survives from the
-	   old palette but is now reserved for one thing: live/active state. */
+	/* The iOS palette (Theme.swift, dark = variant E), as web tokens. Three
+	   colours carry meaning: red = act or error, gold = music, success,
+	   progress, night blue = the stage. */
 	--bg: #0e141d;
-	--bg-card: #151d29;
-	--bg-card-hover: #1c2735;
+	--bg-card: #18212e;
+	--bg-card-hover: #1f2a39;
 	--bg-muted: #1a2431;
-	--border: #26323f;
-	--border-hover: #38485a;
+	--border: #2e3a4b;
+	--border-hover: #3a4658;
 
-	--text: #eef1f4;
-	--text-muted: #a3b0bf;
-	--text-dim: #71808f;
+	--text: #f2e8d5;
+	--text-muted: #b4bcc8;
+	--text-dim: #8794a5;
 
-	--primary: #e2685c;
-	--primary-hover: #ee7d71;
-	--primary-muted: rgba(226, 104, 92, 0.15);
-	--primary-text: #14090a;
+	--primary: #f07b6c;
+	--primary-hover: #f58f81;
+	--primary-muted: rgba(240, 123, 108, 0.15);
+	--primary-text: #0e141d;
 
-	/* Copyist blue — the second ink. Annotation, analysis, structure. */
-	--ink-blue: #7ba7d4;
-	--ink-blue-muted: rgba(123, 167, 212, 0.14);
+	/* The second ink — annotation and structure, cooled to the app's grey-blue. */
+	--ink-blue: #a9b8cb;
+	--ink-blue-muted: rgba(169, 184, 203, 0.14);
 
 	--accent-gold: #e8b04b;
-	--accent-amber: #f5a623;
-	--accent-red: #e2685c;
-	--accent-green: #3fd09a;
+	--accent-amber: #e8b04b;
+	--accent-red: #f07b6c;
+	--accent-green: #e8b04b;
 
-	/* The stamp button — the one "press this" action per screen.
-	   Deliberately NOT --accent-amber: that token darkens to ochre on the light
-	   theme so amber TEXT can hold 4.5:1, but this is a filled button carrying
-	   near-black, so it wants the bright amber in BOTH themes — the invitation
-	   to press should not change character with the theme. Measured 9.65:1
-	   either way. These three lived as literals in four files before; the
-	   reasoning belongs in one place. */
-	--stamp: #f5a623;
-	--stamp-hover: #ffb840;
-	--stamp-ink: #14090a;
+	/* The one "press this" action per screen — red, like the app. */
+	--stamp: #f07b6c;
+	--stamp-hover: #f58f81;
+	--stamp-ink: #0e141d;
 
-	/* Semantic status — single source of truth (was hard-coded #fb923c etc. in components) */
-	--success: #4ade80;
-	--success-muted: rgba(74, 222, 128, 0.15);
-	--warning: #f59e0b;
-	--warning-muted: rgba(245, 158, 11, 0.15);
-	--danger: #ef4444;
-	--danger-muted: rgba(239, 68, 68, 0.14);
-	--info: #38bdf8;
-	--info-muted: rgba(56, 189, 248, 0.15);
+	/* The one feature block per screen: deep oxblood, light type on it. */
+	--feature: #8c2a22;
+	--feature-hover: #9a3128;
+	--on-feature: #f6ede0;
+	--feature-accent: #f2c46b;
 
-	/* XP / gamification accent (was scattered #fb923c) */
-	--xp: #fb923c;
-	--xp-muted: rgba(251, 146, 60, 0.15);
+	/* Glass — controls only (nav, header buttons, progress). */
+	--glass: rgba(40, 52, 72, 0.55);
+	--glass-edge: rgba(255, 255, 255, 0.14);
+	--glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+	--glass-selected: rgba(255, 255, 255, 0.1);
 
-	--wood-dark: #211d40;
-	--wood-light: #2d2952;
-	--velvet-red: #e0436b;
+	/* Semantic status. Success is gold in the app, not green. */
+	--success: #e8b04b;
+	--success-muted: rgba(232, 176, 75, 0.15);
+	--warning: #f2c46b;
+	--warning-muted: rgba(242, 196, 107, 0.15);
+	--danger: #f07b6c;
+	--danger-muted: rgba(240, 123, 108, 0.14);
+	--info: #a9b8cb;
+	--info-muted: rgba(169, 184, 203, 0.15);
 
-	--glow-warm: rgba(245, 166, 35, 0.2);
+	/* XP / gamification — progress, so gold */
+	--xp: #e8b04b;
+	--xp-muted: rgba(232, 176, 75, 0.15);
+
+	--wood-dark: #18212e;
+	--wood-light: #2e3a4b;
+	--velvet-red: #f07b6c;
+
+	--glow-warm: rgba(232, 176, 75, 0.18);
 	--shadow-deep: rgba(0, 0, 0, 0.8);
 
-	/* ── Spacing scale (4px base) ─────────────────────────── */
+/* ── Spacing scale (4px base) ─────────────────────────── */
 	--space-1: 0.25rem;
 	--space-2: 0.5rem;
 	--space-3: 0.75rem;
@@ -167,16 +160,19 @@
 	--tap-min: 2.75rem;
 	
 	/* Piano colors */
-	--key-white: #f5f4fa;
+	--key-white: #ece6da;
 	--key-white-active: var(--accent-gold);
-	--key-white-border: #c9c6da;
+	--key-white-border: #c9c1b2;
 	--key-black: #161329;
 	--key-black-active: var(--accent-amber);
 	--key-root-dot: var(--accent-gold);
 
-	--radius: 0.625rem;
-	--radius-sm: 0.375rem;
-	--radius-lg: 0.875rem;
+	--radius: 0.875rem;
+	--radius-sm: 0.5rem;
+	--radius-lg: 1.375rem;
+	/* Inset-grouped lists and the feature block, as in the app */
+	--radius-group: 1.375rem;
+	--radius-feature: 1.625rem;
 }
 
 /* ─── Light Theme ─────────────────────────────────────────────────
@@ -185,48 +181,63 @@
    Applied via data-theme="light" on <html>.
 ──────────────────────────────────────────────────────────────── */
 [data-theme="light"] {
-	--bg: #ecefe9;
-	--bg-card: #fbfcf9;
-	--bg-card-hover: #f2f4ee;
-	--bg-muted: #e2e6de;
-	--border: #d2d8cd;
-	--border-hover: #b4bdad;
+	/* Warm paper — the app's light palette (Theme.swift Palette.light). */
+	--bg: #f6f2ea;
+	--bg-card: #ffffff;
+	--bg-card-hover: #fbf8f2;
+	--bg-muted: #ece6da;
+	--border: #ddd5c6;
+	--border-hover: #cfc7b8;
 
-	--text: #131a26;
-	--text-muted: #4a5563;
-	--text-dim: #6b7684;
+	--text: #1a1916;
+	--text-muted: #5f5952;
+	--text-dim: #736d66;
 
 	--primary: #b0302a;
 	--primary-hover: #96231e;
-	--primary-muted: rgba(176, 48, 42, 0.12);
-	--primary-text: #ffffff;
+	--primary-muted: rgba(176, 48, 42, 0.1);
+	--primary-text: #fff8ef;
 
-	--ink-blue: #2c5985;
-	--ink-blue-muted: rgba(44, 89, 133, 0.12);
+	--ink-blue: #4a5768;
+	--ink-blue-muted: rgba(74, 87, 104, 0.1);
 
 	--accent-gold: #8f5a05;
 	--accent-amber: #8f5a05;
 	--accent-red: #b0302a;
-	--accent-green: #18936a;
+	--accent-green: #8f5a05;
 
-	--success: #18936a;
-	--success-muted: rgba(24, 147, 106, 0.14);
-	--warning: #b87708;
-	--warning-muted: rgba(184, 119, 8, 0.14);
-	--danger: #d23b34;
-	--danger-muted: rgba(210, 59, 52, 0.12);
-	--info: #3357c4;
-	--info-muted: rgba(51, 87, 196, 0.14);
+	--stamp: #b0302a;
+	--stamp-hover: #96231e;
+	--stamp-ink: #fff8ef;
+
+	--feature: #b0302a;
+	--feature-hover: #9c2923;
+	--on-feature: #fff8ef;
+	--feature-accent: #fff8ef;
+
+	--glass: rgba(255, 255, 255, 0.62);
+	--glass-edge: rgba(0, 0, 0, 0.08);
+	--glass-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+	--glass-selected: rgba(0, 0, 0, 0.06);
+
+	--success: #8f5a05;
+	--success-muted: rgba(143, 90, 5, 0.12);
+	--warning: #8f5a05;
+	--warning-muted: rgba(143, 90, 5, 0.12);
+	--danger: #b0302a;
+	--danger-muted: rgba(176, 48, 42, 0.1);
+	--info: #4a5768;
+	--info-muted: rgba(74, 87, 104, 0.12);
 
 	--xp: #8f5a05;
-	--xp-muted: rgba(143, 90, 5, 0.14);
+	--xp-muted: rgba(143, 90, 5, 0.12);
 
-	--wood-dark: #e2e6de;
-	--wood-light: #b4bdad;
+	--wood-dark: #ece6da;
+	--wood-light: #cfc7b8;
 	--velvet-red: #b0302a;
 
-	--glow-warm: rgba(143, 90, 5, 0.16);
-	--shadow-deep: rgba(19, 26, 38, 0.18);
+	--glow-warm: rgba(143, 90, 5, 0.14);
+	--shadow-deep: rgba(26, 25, 22, 0.16);
 
 	--shadow-sm: 0 1px 2px rgba(19, 26, 38, 0.10);
 	--shadow-md: 0 1px 2px rgba(19, 26, 38, 0.08), 0 8px 24px rgba(19, 26, 38, 0.10);
@@ -234,8 +245,8 @@
 
 	/* Piano — keep playable contrast on light */
 	--key-white: #ffffff;
-	--key-white-active: #d9a441;
-	--key-white-border: #cdd3c8;
+	--key-white-active: #e2a93b;
+	--key-white-border: #cfc7b8;
 	--key-black: #131a26;
 	--key-black-active: #8f5a05;
 	--key-root-dot: #b0302a;
@@ -244,30 +255,10 @@
 }
 
 /* Surfaces that hardcode dark rgba — give them light equivalents */
-[data-theme="light"] .card {
-	background: rgba(255, 255, 255, 0.7);
-	border-color: rgba(221, 217, 238, 0.8);
-}
-[data-theme="light"] .card-hover:hover {
-	border-color: rgba(199, 127, 18, 0.35);
-	background: rgba(238, 236, 248, 0.9);
-}
-[data-theme="light"] .surface-glass {
-	background: rgba(255, 255, 255, 0.82);
-	border: 1px solid rgba(194, 188, 224, 0.45);
-	box-shadow: var(--shadow-md);
-}
 /* Weekday dots: low contrast on paper — darken the empty/border state */
 [data-theme="light"] .day-dot {
 	background: rgba(90, 84, 120, 0.10) !important;
 	border-color: rgba(90, 84, 120, 0.32) !important;
-}
-[data-theme="light"] .pill-input {
-	background: rgba(255, 255, 255, 0.9);
-	border-color: rgba(194, 188, 224, 0.7);
-}
-[data-theme="light"] .pill-input:focus {
-	background: #ffffff;
 }
 /* The secondary button is transparent with a rule in both themes now, so it
    needs no light-theme override — the tokens already carry the difference. */
@@ -301,41 +292,102 @@ body {
 	min-height: 100dvh;
 }
 
-/* Headings use the display face (Space Grotesk) for a distinct, modern voice;
-   body text stays on Inter for readability. */
+/* Headings use the display serif, as in the app; body text stays on the
+   system face. Instrument Serif has one weight (see @font-face). */
 h1, h2, h3, .font-display {
 	font-family: var(--font-display);
-	letter-spacing: -0.02em;
+	font-weight: 400;
+	letter-spacing: -0.005em;
+}
+
+/* Chord symbols in the Real Book hand — the app's Kalam. */
+.font-chord {
+	font-family: var(--font-chord);
+	font-weight: 700;
+	letter-spacing: 0;
+}
+
+/* Small monospaced eyebrow above titles and sections. */
+.eyebrow {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	font-weight: 500;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+
+/* Glass — controls only: nav, header buttons, progress. */
+.glass {
+	background: var(--glass);
+	backdrop-filter: blur(22px) saturate(1.8);
+	-webkit-backdrop-filter: blur(22px) saturate(1.8);
+	box-shadow: inset 0 0 0 0.5px var(--glass-edge), var(--glass-shadow);
+}
+
+/* The one feature block per screen — oxblood (dark) / red (light). */
+.feature-block {
+	position: relative;
+	overflow: hidden;
+	background: var(--feature);
+	color: var(--on-feature);
+	border-radius: var(--radius-feature);
+}
+.feature-block .feature-eyebrow {
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--feature-accent);
+}
+/* The big ghost chord behind a feature block */
+.feature-ghost {
+	position: absolute;
+	right: -0.5rem;
+	bottom: -0.35em;
+	font-family: var(--font-chord);
+	font-weight: 700;
+	line-height: 1;
+	color: color-mix(in srgb, var(--on-feature) 9%, transparent);
+	pointer-events: none;
+	user-select: none;
+}
+
+/* Inset-grouped list, as in the app's Settings and "Heute" */
+.group-list {
+	background: var(--bg-card);
+	border-radius: var(--radius-group);
+	overflow: hidden;
 }
 
 /* Utility classes */
 .card {
-	background: rgba(22, 19, 42, 0.6);
-	border: 1px solid rgba(45, 41, 82, 0.4);
+	background: var(--bg-card);
+	border: 1px solid transparent;
 	border-radius: var(--radius-lg);
 	backdrop-filter: blur(8px);
 }
 
 .card-hover:hover {
-	border-color: rgba(245, 166, 35, 0.3);
-	background: rgba(34, 26, 21, 0.8);
+	border-color: var(--border-hover);
+	background: var(--bg-card-hover);
 }
 
 /* Reusable modern surface + controls for consistent glass/pill language */
 .surface-glass {
-	background: rgba(24, 19, 16, 0.62);
-	border: 1px solid rgba(141, 110, 99, 0.34);
-	backdrop-filter: blur(14px);
+	background: var(--bg-card);
+	border: 1px solid transparent;
 	box-shadow: var(--shadow-md);
-	border-radius: 1rem;
+	border-radius: var(--radius-lg);
 }
 
 .pill-input {
 	width: 100%;
 	padding: 0.55rem 0.85rem;
 	border-radius: 999px;
-	background: rgba(10, 9, 8, 0.78);
-	border: 1px solid rgba(45, 41, 82, 0.55);
+	background: var(--bg-muted);
+	border: 1px solid var(--border);
 	color: var(--text);
 	transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
@@ -343,21 +395,19 @@ h1, h2, h3, .font-display {
 .pill-input:focus {
 	outline: none;
 	border-color: var(--primary);
-	box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.2);
-	background: rgba(10, 9, 8, 0.9);
+	box-shadow: 0 0 0 3px var(--primary-muted);
+	background: var(--bg-card);
 }
 
 /* Shared action buttons, used in ~18 places across Results, the progression
-   editor and the drill. The class name still says "pill" for the call sites'
-   sake, but the shape is a printed block now: 2px corners, one flat pull of
-   ink, a real 1px rule. The gradient and the near-black translucent fill were
-   the last of the old look still reachable from converted screens. */
+   editor and the drill. Pills again, like the app's buttons. */
 .pill-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	padding: 0.6rem 1rem;
-	border-radius: 2px;
+	min-height: 2.75rem;
+	padding: 0.6rem 1.25rem;
+	border-radius: 999px;
 	font-weight: 600;
 	transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
@@ -392,8 +442,8 @@ h1, h2, h3, .font-display {
 	border-radius: 0.85rem;
 	backdrop-filter: blur(8px);
 	padding: 0.75rem;
-	border: 1px solid rgba(245, 166, 35, 0.25);
-	background: rgba(245, 166, 35, 0.08);
+	border: 1px solid color-mix(in srgb, var(--accent-gold) 28%, transparent);
+	background: color-mix(in srgb, var(--accent-gold) 8%, transparent);
 }
 
 .status-danger {
@@ -407,24 +457,13 @@ h1, h2, h3, .font-display {
 
 /* Warm ambient background for sections */
 .warm-section {
-	background: linear-gradient(180deg, var(--bg) 0%, #110e0a 50%, var(--bg) 100%);
+	background: var(--bg);
 }
 
-/* Gradient-filled display text (the big chord name).
-   Start from a solid colour so the text is always readable, and only switch on
-   the clip-to-text trick where the browser actually supports it. Without this
-   guard a failed webfont or an unsupported clip paints the raw gradient as a
-   solid block — the chord name became an orange rectangle. */
+/* The big chord name. Solid ink, as in the app — the gradient cost
+   contrast on exactly the glyph a player reads from the piano. */
 .text-gradient {
-	color: var(--primary);
-}
-@supports (background-clip: text) or (-webkit-background-clip: text) {
-	.text-gradient {
-		background: linear-gradient(135deg, var(--primary), var(--accent-amber));
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-	}
+	color: var(--text);
 }
 
 /* Prose-style for legal pages */

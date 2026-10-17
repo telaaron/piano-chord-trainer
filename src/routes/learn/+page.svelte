@@ -18,7 +18,6 @@
 	}
 
 	/** Roman numerals for the section marks — the plate's rehearsal letters. */
-	const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
 	// Load progress for all courses
 	let progressMap = $state<Record<string, CourseProgress>>({});
@@ -110,7 +109,7 @@
 
 		<section class="course" aria-labelledby="course-{course.id}">
 			<div class="course-head">
-				<span class="rehearsal" aria-hidden="true">{ROMAN[ci] ?? ci + 1}</span>
+				<span class="rehearsal" aria-hidden="true">{String(ci + 1).padStart(2, '0')}</span>
 				<div class="course-titles">
 					<h2 id="course-{course.id}">
 						<CourseIcon size={19} class="course-icon" aria-hidden="true" />
@@ -211,28 +210,22 @@
 	.plate-mark {
 		font-family: var(--font-mono);
 		font-size: 0.625rem;
-		letter-spacing: 0.19em;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary);
-		font-weight: 600;
+		color: var(--text-muted);
+		font-weight: 500;
 		margin: 0 0 0.75rem;
 		display: flex;
 		align-items: center;
 		gap: 0.625rem;
 	}
-	.plate-mark::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.3;
-	}
+
 	.masthead h1 {
 		font-family: var(--font-display);
-		font-size: clamp(2rem, 6vw, 2.85rem);
-		font-weight: 600;
-		line-height: 1.08;
-		letter-spacing: -0.025em;
+		font-size: clamp(2.4rem, 7vw, 3.4rem);
+		font-weight: 400;
+		line-height: 1;
+		letter-spacing: -0.005em;
 		margin: 0;
 		color: var(--text);
 	}
@@ -244,44 +237,42 @@
 		color: var(--text-muted);
 	}
 
-	/* ── Resume strip: amber = live, the only place it appears here ── */
+	/* ── Resume: the page's one feature block, as in the app's Lernen ── */
 	.resume {
 		display: flex;
 		align-items: center;
-		gap: 0.875rem;
-		padding: 0.9rem 1rem;
+		gap: 1rem;
+		padding: 1.4rem 1.4rem;
 		margin-bottom: 2.75rem;
 		text-decoration: none;
-		color: var(--text);
-		border: 1px solid var(--border);
-		border-left: 3px solid var(--accent-amber);
-		border-radius: var(--radius-sm);
-		background: var(--bg-card);
-		transition: border-color 0.15s, background 0.15s;
+		color: var(--on-feature);
+		border-radius: var(--radius-feature);
+		background: var(--feature);
+		transition: background 0.15s;
 	}
 	.resume:hover {
-		border-color: var(--border-hover);
-		border-left-color: var(--accent-amber);
-		background: var(--bg-card-hover);
+		background: var(--feature-hover);
 	}
-	.resume :global(svg:first-child) { color: var(--accent-amber); flex: none; }
+	.resume :global(svg:first-child) { color: var(--feature-accent); flex: none; }
 	.resume-body { flex: 1; min-width: 0; }
 	.resume-title {
 		display: block;
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: var(--text);
+		font-family: var(--font-display);
+		font-size: 1.6rem;
+		font-weight: 400;
+		line-height: 1.1;
+		color: var(--on-feature);
 	}
 	.resume-sub {
 		display: block;
-		margin-top: 0.1rem;
-		font-size: 0.8125rem;
-		color: var(--text-muted);
+		margin-top: 0.25rem;
+		font-size: 0.875rem;
+		color: color-mix(in srgb, var(--on-feature) 82%, transparent);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	.resume :global(.resume-go) { color: var(--text-dim); flex: none; }
+	.resume :global(.resume-go) { color: var(--on-feature); flex: none; }
 
 	/* ── Course section ── */
 	.course {
@@ -299,20 +290,14 @@
 		align-items: flex-start;
 		gap: 1rem;
 	}
+	/* Course number — serif, gold, as in the app's Lernen list */
 	.rehearsal {
-		display: grid;
-		place-items: center;
 		flex: none;
-		min-width: 1.75rem;
-		height: 1.75rem;
-		padding: 0 0.35rem;
-		margin-top: 0.15rem;
-		border: 1.5px solid var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.6875rem;
-		font-weight: 700;
-		letter-spacing: 0.03em;
-		color: var(--text);
+		min-width: 2.2rem;
+		font-family: var(--font-display);
+		font-size: 1.7rem;
+		line-height: 1.1;
+		color: var(--accent-gold);
 	}
 	.course-titles { flex: 1; min-width: 0; }
 	.course-titles h2 {
@@ -320,13 +305,13 @@
 		align-items: center;
 		gap: 0.55rem;
 		font-family: var(--font-display);
-		font-size: 1.5rem;
-		font-weight: 600;
-		line-height: 1.2;
-		letter-spacing: -0.02em;
+		font-size: 2rem;
+		font-weight: 400;
+		line-height: 1.1;
+		letter-spacing: -0.005em;
 		margin: 0;
 	}
-	.course-titles h2 :global(.course-icon) { color: var(--primary); flex: none; }
+	.course-titles h2 :global(.course-icon) { color: var(--accent-gold); flex: none; }
 	.course-titles h2 a {
 		color: var(--text);
 		text-decoration: none;
@@ -358,7 +343,7 @@
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 	}
-	.level { color: var(--ink-blue); }
+	.level { color: var(--text-muted); }
 	.course-meta .rule {
 		flex: 1;
 		height: 1px;
@@ -380,16 +365,16 @@
 		font-size: 0.625rem;
 		letter-spacing: 0.13em;
 		text-transform: uppercase;
-		color: var(--ink-blue);
+		color: var(--text-muted);
 		flex: none;
 	}
 	.module-head h3 {
 		flex: 1;
 		min-width: 0;
 		font-family: var(--font-display);
-		font-size: 1rem;
-		font-weight: 600;
-		letter-spacing: -0.01em;
+		font-size: 1.3rem;
+		font-weight: 400;
+		letter-spacing: -0.005em;
 		margin: 0;
 		color: var(--text);
 	}
@@ -403,7 +388,8 @@
 	.module-pct.done { color: var(--accent-green); }
 
 	.meter {
-		height: 2px;
+		height: 4px;
+		border-radius: 2px;
 		background: var(--border);
 		overflow: hidden;
 		margin-bottom: 0.75rem;
@@ -411,37 +397,37 @@
 	.meter span {
 		display: block;
 		height: 100%;
-		background: var(--primary);
+		background: var(--accent-gold);
 		transition: width 0.5s ease;
 	}
 	.meter.done span { background: var(--accent-green); }
 
-	/* ── Contents list: the printed table of contents ── */
+	/* ── Contents list: an inset-grouped list, as in the app ── */
 	.contents {
+		display: block;
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		border-top: 1px solid var(--border);
+		border-radius: var(--radius-group);
+		background: var(--bg-card);
+		overflow: hidden;
 	}
-	.contents li { border-bottom: 1px solid var(--border); }
+	.contents li { border-bottom: 0.5px solid var(--border); }
+	.contents li:last-child { border-bottom: 0; }
 	.entry {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding: 0.7rem 0.25rem;
+		min-height: var(--tap-min);
+		padding: 0.8rem 1.1rem;
 		text-decoration: none;
-		transition: background 0.12s, padding 0.12s;
+		transition: background 0.12s;
 	}
 	.entry:hover {
-		background: var(--bg-card);
-		padding-left: 0.6rem;
-		padding-right: 0.6rem;
+		background: var(--bg-card-hover);
 	}
 	.entry.is-next {
 		background: var(--primary-muted);
-		padding-left: 0.6rem;
-		padding-right: 0.6rem;
-		box-shadow: inset 2px 0 0 var(--primary);
 	}
 	.mk { flex: none; font-size: 0.8125rem; line-height: 1; }
 	.mk-none { color: var(--text-dim); }
@@ -478,10 +464,10 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.5rem;
-		min-height: var(--tap-min);
-		padding: 0 1.25rem;
+		min-height: 3rem;
+		padding: 0 1.5rem;
 		border: 1.5px solid var(--primary);
-		border-radius: var(--radius-sm);
+		border-radius: 999px;
 		background: var(--primary);
 		color: var(--primary-text);
 		font-size: 0.9375rem;

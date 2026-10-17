@@ -182,7 +182,7 @@
 				<div class="text-xs font-medium text-[var(--text-muted)]">Preview ({parsedChords.length} chords · {totalBeats} beats · ~{Math.round(passDuration)}s per pass)</div>
 				<div class="flex flex-wrap gap-2">
 					{#each parsedChords as chord, i}
-						<div class="bg-[var(--bg)]/72 px-2.5 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] text-sm font-mono backdrop-blur-sm">
+						<div class="bg-[var(--bg)]/72 px-2.5 py-1.5 rounded-full border border-[var(--border)] text-sm font-mono backdrop-blur-sm">
 							{chord.display}
 							{#if chord.beats !== 4}
 								<span class="text-xs text-[var(--text-dim)] ml-1">({chord.beats})</span>

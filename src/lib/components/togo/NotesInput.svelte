@@ -65,7 +65,7 @@
 			type="button"
 			onclick={submit}
 			disabled={locked || selected.size === 0}
-			class="min-h-[var(--tap-min)] flex-[2] rounded-[var(--radius)] bg-[var(--primary)] px-4 font-semibold text-white shadow-[var(--shadow-md)] transition hover:brightness-105 disabled:opacity-50"
+			class="min-h-[var(--tap-min)] flex-[2] rounded-full bg-[var(--primary)] px-4 font-semibold text-[var(--primary-text)] shadow-[var(--shadow-md)] transition hover:brightness-105 disabled:opacity-50"
 		>
 			{t('togo.notes_check')}
 		</button>

@@ -114,7 +114,7 @@
 			type="button"
 			onclick={startListening}
 			disabled={locked}
-			class="flex min-h-14 w-full items-center justify-center gap-2 rounded-[var(--radius)] bg-[var(--primary)] px-5 font-semibold text-white shadow-[var(--shadow-md)] transition hover:brightness-105 disabled:opacity-50"
+			class="flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] px-5 font-semibold text-[var(--primary-text)] shadow-[var(--shadow-md)] transition hover:brightness-105 disabled:opacity-50"
 		>
 			<Mic size={20} aria-hidden="true" />
 			{t('togo.sing_start')}
@@ -152,7 +152,7 @@
 			type="button"
 			onclick={submit}
 			disabled={locked}
-			class="min-h-14 w-full rounded-[var(--radius)] bg-[var(--primary)] px-5 font-semibold text-white shadow-[var(--shadow-md)] transition hover:brightness-105 disabled:opacity-50"
+			class="min-h-14 w-full rounded-full bg-[var(--primary)] px-5 font-semibold text-[var(--primary-text)] shadow-[var(--shadow-md)] transition hover:brightness-105 disabled:opacity-50"
 		>
 			{t('togo.sing_check')}
 		</button>

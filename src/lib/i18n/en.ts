@@ -611,7 +611,7 @@ export const en = {
     sec_faq_eyebrow: 'Questions, answered',
     sec_fine: 'Fine',
     colophon_left: 'Chord Trainer · jazzchords.app',
-    colophon_right: 'Set in Source Serif 4 & Inter · Two-colour press',
+    colophon_right: 'Set in Instrument Serif & Kalam · Same ink as the app',
     meta_title: 'Chord Trainer – Become Fluent in Jazz Piano Voicings, All 12 Keys',
     meta_desc: 'Drill jazz piano voicings until they are automatic — fluent in all 12 keys. Instant feedback, weak-spot targeting, guided plans. Free, no signup, keyboard optional.',
     og_alt: 'Chord Trainer — practice jazz piano voicings in all 12 keys',

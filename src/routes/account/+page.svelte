@@ -449,7 +449,7 @@
 		font-size: clamp(1.9rem, 5.5vw, 2.5rem);
 		font-weight: 600;
 		line-height: 1.1;
-		letter-spacing: -0.025em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		margin: 0;
 	}
@@ -476,7 +476,7 @@
 		font-family: var(--font-display);
 		font-size: 1.15rem;
 		font-weight: 600;
-		letter-spacing: -0.015em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		padding-bottom: 0.7rem;
 		border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);

@@ -106,22 +106,18 @@
 		return out;
 	});
 
-	// The alternatives are printed as a running order, the way /togo sets its
-	// seven disciplines. Roman numerals: these are movements of one programme,
-	// not a ranked list.
-	const ROMAN = ['I', 'II', 'III', 'IV', 'V'] as const;
 </script>
 
 <section aria-label={t('quickstart.section_label')} class="qs">
 	{#if onstartcoach}
-		<!-- The one filled action on the whole screen, in the site's primary
-		     ink — the same filled button /learn uses for its next step, so the
-		     trainer's start reads as part of the same site. -->
-		<button type="button" onclick={onstartcoach} class="stamp">
-			<Play size={22} fill="currentColor" aria-hidden="true" />
-			<span class="stamp-txt">
-				<span class="stamp-t">{t('quickstart.coach_hero_title')}</span>
-				<span class="stamp-s">{coachAnnouncement || t('quickstart.coach_hero_sub')}</span>
+		<!-- The one feature block on the screen — the app's "Heute" card:
+		     today's plan in the serif, the start as a light pill on it. -->
+		<button type="button" onclick={onstartcoach} class="stamp feature-block">
+			<span class="feature-ghost stamp-ghost" aria-hidden="true">Δ7</span>
+			<span class="stamp-s">{coachAnnouncement || t('quickstart.coach_hero_sub')}</span>
+			<span class="stamp-go">
+				<Play size={14} fill="currentColor" aria-hidden="true" />
+				{t('quickstart.coach_hero_title')}
 			</span>
 		</button>
 
@@ -129,11 +125,10 @@
 		<p class="eyebrow blue rule-head">{t('quickstart.pick_yourself')}</p>
 	{/if}
 
-	<ol class="contents ruled">
+	<ol class="contents group-list">
 		{#each cards as card, i (card.key)}
 			<li class="row">
 				<button type="button" onclick={card.run} aria-label={t(card.titleKey)} class="row-btn">
-					<span class="no roman">{ROMAN[i] ?? String(i + 1)}</span>
 					<span class="row-icon" aria-hidden="true"><Icon name={card.icon} size={26} /></span>
 					<span class="row-txt">
 						<span class="ttl">{t(card.titleKey)}</span>
@@ -182,7 +177,7 @@
 		font-weight: 600;
 		letter-spacing: 0.19em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--text-muted);
 	}
 	.eyebrow::after {
 		content: '';
@@ -192,8 +187,9 @@
 		background: currentColor;
 		opacity: 0.32;
 	}
-	.eyebrow.blue { color: var(--ink-blue); }
-	.rule-head { margin: 1.75rem 0 0.25rem; }
+	.eyebrow.blue { color: var(--text-muted); }
+	.eyebrow::after { display: none; }
+	.rule-head { margin: 1.9rem 0 0.55rem 1.1rem; }
 
 	.plate {
 		font-family: var(--font-mono);
@@ -207,26 +203,21 @@
 
 	.stamp {
 		display: flex;
-		align-items: center;
-		gap: 0.9rem;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 1.1rem;
 		width: 100%;
-		min-height: 3.85rem;
-		padding: 0.75rem 1.25rem;
-		/* The primary filled button, as /learn's .btn-stamp sets it: the
-		   tokens carry their own text colour per theme. */
-		border: 1.5px solid var(--primary);
-		border-radius: var(--radius-sm);
-		background: var(--primary);
-		color: var(--primary-text);
+		min-height: 11rem;
+		padding: 1.4rem 1.4rem 1.3rem;
+		border: 0;
 		font-family: inherit;
 		text-align: left;
 		cursor: pointer;
-		transition: transform 0.12s ease-out, background-color 0.12s, border-color 0.12s;
+		transition: transform 0.12s ease-out, background-color 0.12s;
 	}
 	.stamp:hover {
 		transform: translateY(-1px);
-		background: var(--primary-hover);
-		border-color: var(--primary-hover);
+		background: var(--feature-hover);
 	}
 	.stamp:active { transform: none; }
 	.stamp:focus-visible {
@@ -235,46 +226,52 @@
 	}
 	.stamp :global(svg) { flex: none; }
 
-	.stamp-txt { display: block; min-width: 0; }
-	.stamp-t {
-		display: block;
-		font-family: var(--font-display-mus);
-		font-size: 1.16rem;
-		font-weight: 700;
-		line-height: 1.2;
-		letter-spacing: -0.012em;
-	}
+	.stamp-ghost { font-size: 11rem; }
 	.stamp-s {
+		position: relative;
 		display: block;
-		margin-top: 0.14rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 0.79rem;
-		font-weight: 500;
-		line-height: 1.35;
-		opacity: 0.82;
+		max-width: 30ch;
+		font-family: var(--font-display-mus);
+		font-size: clamp(1.35rem, 3.6vw, 1.7rem);
+		font-style: italic;
+		line-height: 1.15;
+	}
+	.stamp-go {
+		position: relative;
+		margin-top: auto;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 2.9rem;
+		padding: 0 1.3rem;
+		border-radius: 999px;
+		background: var(--on-feature);
+		color: var(--feature);
+		font-size: 1rem;
+		font-weight: 600;
 	}
 
 	/* ── The alternatives, as a printed running order ─────────── */
 
+	/* Tailwind's `contents` utility is display: contents — restore a box so
+	   the inset-grouped background and corners show. */
 	.contents {
+		display: block;
 		list-style: none;
 		margin: 0;
 		padding: 0;
 	}
-	.contents.ruled { border-top: 1px solid var(--border); }
-
-	.row { border-bottom: 1px solid var(--rule-soft); }
+	.row { border-bottom: 0.5px solid var(--rule-soft); }
+	.row:last-child { border-bottom: 0; }
 
 	.row-btn {
 		display: grid;
-		grid-template-columns: auto auto minmax(0, 1fr) auto;
-		gap: 0.85rem;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		gap: 0.95rem;
 		align-items: center;
 		width: 100%;
 		min-height: var(--tap-min);
-		padding: 0.8rem 0.25rem;
+		padding: 0.85rem 1.1rem;
 		border: 0;
 		background: transparent;
 		font-family: inherit;
@@ -282,26 +279,19 @@
 		cursor: pointer;
 		transition: background-color 0.12s;
 	}
-	.row-btn:hover { background: var(--bg-card); }
+	.row-btn:hover { background: var(--bg-card-hover); }
 	.row-btn:focus-visible {
 		outline: 2px solid var(--primary);
 		outline-offset: -2px;
 	}
 
-	.no {
-		font-family: var(--font-mono);
-		font-size: 0.7rem;
-		letter-spacing: 0.08em;
-		color: var(--text-dim);
-	}
-	.no.roman { min-width: 1.6rem; }
 
 	.row-icon { display: flex; flex: none; }
+	.row-icon :global(svg) { color: var(--accent-gold); }
 
 	.row-txt { min-width: 0; }
 	.ttl {
 		display: block;
-		font-family: var(--font-display-mus);
 		font-size: 1.04rem;
 		font-weight: 600;
 		line-height: 1.25;

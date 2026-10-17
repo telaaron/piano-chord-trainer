@@ -978,7 +978,7 @@
 		font-size: clamp(1.75rem, 5.2vw, 2.4rem);
 		font-weight: 600;
 		line-height: 1.12;
-		letter-spacing: -0.025em;
+		letter-spacing: -0.005em;
 		margin: 0;
 		max-width: 22ch;
 		color: var(--text);
@@ -1092,7 +1092,7 @@
 		font-size: clamp(1.6rem, 5.5vw, 2.05rem);
 		font-weight: 600;
 		line-height: 1.05;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		font-variant-numeric: lining-nums;
 	}
@@ -1184,7 +1184,7 @@
 		font-size: clamp(2.1rem, 8vw, 3rem);
 		font-weight: 600;
 		line-height: 1.02;
-		letter-spacing: -0.03em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		font-variant-numeric: lining-nums;
 	}
@@ -1239,7 +1239,7 @@
 		font-family: var(--font-display);
 		font-size: clamp(1.5rem, 5vw, 1.95rem);
 		font-weight: 600;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		margin: 0;
 		color: var(--text);
 	}
@@ -1293,7 +1293,7 @@
 		font-size: clamp(2.4rem, 9vw, 3.25rem);
 		font-weight: 600;
 		line-height: 1;
-		letter-spacing: -0.03em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 		font-variant-numeric: tabular-nums lining-nums;
 	}
@@ -1312,7 +1312,7 @@
 		font-family: var(--font-display);
 		font-size: 1.1875rem;
 		font-weight: 600;
-		letter-spacing: -0.015em;
+		letter-spacing: -0.005em;
 		color: var(--text-muted);
 	}
 	.verdict-line.green { color: var(--accent-green); }

@@ -559,7 +559,7 @@
 		font-size: clamp(1.9rem, 6vw, 2.5rem);
 		font-weight: 600;
 		line-height: 1.12;
-		letter-spacing: -0.022em;
+		letter-spacing: -0.005em;
 		color: var(--text);
 	}
 

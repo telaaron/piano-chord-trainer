@@ -51,7 +51,7 @@
 
 	{#if state === 'idle'}
 		<button
-			class="px-3 py-1 rounded-[var(--radius-sm)] border border-[var(--border)] text-xs hover:border-[var(--border-hover)] transition-colors cursor-pointer"
+			class="px-3 py-1 rounded-full border border-[var(--border)] text-xs hover:border-[var(--border-hover)] transition-colors cursor-pointer"
 			onclick={onConnect}
 		>
 			{t('mic.enable')}

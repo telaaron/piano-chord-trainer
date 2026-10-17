@@ -23,7 +23,7 @@
 	// and sat on that dark scrim, which is what made these unreadable.
 	const TYPE_CONFIG: Record<string, { icon: typeof LucideIcon; bg: string; glow: string }> = {
 		'level-up': { icon: PartyPopper, bg: 'linear-gradient(135deg, rgba(251,146,60,0.15) 0%, rgba(245,158,11,0.1) 100%), var(--bg-card)', glow: 'rgba(251,146,60,0.4)' },
-		'goal-complete': { icon: Target, bg: 'linear-gradient(135deg, rgba(74,222,128,0.12) 0%, rgba(34,197,94,0.08) 100%), var(--bg-card)', glow: 'rgba(74,222,128,0.35)' },
+		'goal-complete': { icon: Target, bg: 'linear-gradient(135deg, rgba(232,176,75,0.12) 0%, rgba(232,176,75,0.06) 100%), var(--bg-card)', glow: 'rgba(232,176,75,0.35)' },
 		'streak-milestone': { icon: Flame, bg: 'linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(251,146,60,0.08) 100%), var(--bg-card)', glow: 'rgba(239,68,68,0.35)' },
 		'personal-best': { icon: Trophy, bg: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(251,146,60,0.08) 100%), var(--bg-card)', glow: 'rgba(245,158,11,0.4)' },
 		'xp-gain': { icon: Zap, bg: 'linear-gradient(135deg, rgba(251,146,60,0.1) 0%, rgba(245,158,11,0.05) 100%), var(--bg-card)', glow: 'rgba(251,146,60,0.25)' },
@@ -41,7 +41,7 @@
 		}
 
 		// Generate confetti pieces
-		const colors = ['#fb923c', '#f59e0b', '#4ade80', '#a78bfa', '#f472b6', '#38bdf8'];
+		const colors = ['#e8b04b', '#f2c46b', '#f07b6c', '#f2e8d5', '#8c2a22', '#a9b8cb'];
 		confettiPieces = Array.from({ length: 30 }, () => ({
 			x: Math.random() * 100,
 			y: -10 - Math.random() * 20,

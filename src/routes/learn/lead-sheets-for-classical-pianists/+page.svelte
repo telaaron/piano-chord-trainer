@@ -193,7 +193,7 @@
 
 	h1 {
 		font-family: var(--font-display); font-size: clamp(2rem, 5.4vw, 2.9rem); font-weight: 600;
-		line-height: 1.08; letter-spacing: -0.025em; margin: 0; color: var(--text); text-wrap: balance;
+		line-height: 1.08; letter-spacing: -0.005em; margin: 0; color: var(--text); text-wrap: balance;
 	}
 	.lead { font-size: 1.125rem; line-height: 1.65; color: var(--text-muted); max-width: 54ch; margin: 1rem 0 0; }
 
@@ -206,7 +206,7 @@
 	}
 	h2 {
 		font-family: var(--font-display); font-size: clamp(1.4rem, 3.6vw, 1.75rem); font-weight: 600;
-		line-height: 1.2; letter-spacing: -0.02em; margin: 0; color: var(--text);
+		line-height: 1.2; letter-spacing: -0.005em; margin: 0; color: var(--text);
 	}
 	section p { max-width: 66ch; font-size: 1.0625rem; line-height: 1.75; color: var(--text-muted); margin: 0 0 1rem; }
 	section p a, .related a {

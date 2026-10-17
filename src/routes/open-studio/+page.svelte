@@ -490,7 +490,7 @@
 		font-size: clamp(2.1rem, 6vw, 3.6rem);
 		font-weight: 600;
 		line-height: 1.08;
-		letter-spacing: -0.028em;
+		letter-spacing: -0.005em;
 		margin-bottom: 1.5rem;
 		text-wrap: balance;
 	}
@@ -511,7 +511,7 @@
 		font-size: clamp(1.5rem, 4vw, 2.15rem);
 		font-weight: 600;
 		line-height: 1.15;
-		letter-spacing: -0.022em;
+		letter-spacing: -0.005em;
 		text-align: center;
 		margin-bottom: 1rem;
 	}
@@ -536,7 +536,7 @@
 		font-family: var(--font-display);
 		font-size: 1.35rem;
 		font-weight: 600;
-		letter-spacing: -0.018em;
+		letter-spacing: -0.005em;
 		color: var(--ink-blue);
 		margin-bottom: 1rem;
 	}
@@ -545,7 +545,7 @@
 		font-family: var(--font-display);
 		font-size: 1.05rem;
 		font-weight: 600;
-		letter-spacing: -0.015em;
+		letter-spacing: -0.005em;
 		margin-bottom: 0.5rem;
 	}
 
@@ -671,7 +671,7 @@
 		font-size: 2rem;
 		font-weight: 600;
 		line-height: 1.05;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.005em;
 		color: var(--primary);
 		margin-bottom: 0.5rem;
 	}

@@ -6,7 +6,7 @@
 
 		<!-- SEO -->
 		<meta name="author" content="Aaron Technologies OÜ" />
-		<meta name="theme-color" content="#f5a623" />
+		<meta name="theme-color" content="#0e141d" />
 		<meta name="application-name" content="Chord Trainer" />
 
 		<!-- Site-wide Open Graph only. Page-specific tags (description, canonical,
@@ -27,12 +27,10 @@
 		<meta name="twitter:image:alt" content="Chord Trainer – Jazz Piano Voicing Speed Training" />
 
 		<!-- Type is self-hosted (see app.css) — no font origin to preconnect to.
-		     Preload only the two cuts above the fold: the display serif that sets
-		     the headline and the variable sans that sets everything else. -->
+		     Preload only the display serif that sets the headline; UI text uses
+		     the system face and needs no download. -->
 		<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous"
-			href="%sveltekit.assets%/fonts/source-serif-4-latin-700-normal.woff2" />
-		<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous"
-			href="%sveltekit.assets%/fonts/inter-latin-wght-normal.woff2" />
+			href="%sveltekit.assets%/fonts/instrument-serif-latin-400-normal.woff2" />
 
 		<!-- Preload LCP hero image — AVIF for supporting browsers, WebP fallback -->
 		<link rel="preload" as="image"

@@ -358,7 +358,7 @@
 						<!-- All 4 voicings -->
 						<div class="grid grid-cols-2 gap-2 text-xs">
 							{#each (['root', 'shell', 'half-shell', 'full'] as const) as v}
-								<div class="bg-[var(--bg-muted)]/50 p-2 rounded-[var(--radius-sm)] border border-[var(--border)]/40">
+								<div class="bg-[var(--bg-muted)]/50 p-2 rounded-xl border border-[var(--border)]/40">
 									<div class="text-[var(--text-dim)] mb-0.5">{VOICING_LABELS[v]}</div>
 									<div class="font-mono font-semibold">{formatVoicing(cd, v, notationSystem)}</div>
 								</div>
