@@ -316,9 +316,9 @@
 					{ title: t('open_studio.practice_qualities'), desc: t('open_studio.practice_qualities_desc') },
 				] as item}
 					<div class="panel p-5 flex items-start gap-3">
-						<CheckCircle size={18} class="text-[var(--primary)] flex-shrink-0 mt-0.5" />
+						<CheckCircle size={18} class="text-[var(--accent-gold)] flex-shrink-0 mt-0.5" />
 						<div>
-							<h3 class="font-semibold text-sm">{item.title}</h3>
+							<h3 class="text-[1.25rem] leading-tight">{item.title}</h3>
 							<p class="text-xs text-[var(--text-muted)] mt-0.5">{item.desc}</p>
 						</div>
 					</div>
@@ -487,8 +487,8 @@
 
 	.os-h1 {
 		font-family: var(--font-display);
-		font-size: clamp(2.1rem, 6vw, 3.6rem);
-		font-weight: 600;
+		font-size: clamp(2.6rem, 7vw, 4.4rem);
+		font-weight: 400;
 		line-height: 1.08;
 		letter-spacing: -0.005em;
 		margin-bottom: 1.5rem;
@@ -502,14 +502,14 @@
 		background: none;
 		-webkit-background-clip: border-box;
 		background-clip: border-box;
-		-webkit-text-fill-color: var(--primary);
-		color: var(--primary);
+		-webkit-text-fill-color: var(--text);
+		color: var(--text);
 	}
 
 	.sec-h {
 		font-family: var(--font-display);
-		font-size: clamp(1.5rem, 4vw, 2.15rem);
-		font-weight: 600;
+		font-size: clamp(1.9rem, 4.6vw, 2.8rem);
+		font-weight: 400;
 		line-height: 1.15;
 		letter-spacing: -0.005em;
 		text-align: center;
@@ -521,30 +521,34 @@
 
 	/* ── Panels ── */
 	.panel {
-		border: 1px solid var(--border);
+		border: 0;
 		background: var(--bg-card);
-		border-radius: 2px;
+		border-radius: var(--radius-group);
 	}
 	.panel-mark {
-		border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 45%, transparent);
 	}
 	/* The opportunity note is annotation, so it takes the copyist's blue */
 	.panel-note {
-		border-left: 3px solid var(--ink-blue);
+		background: var(--feature);
+		color: var(--on-feature);
+		border-radius: var(--radius-feature);
 	}
+	.panel-note :global(p),
+	.panel-note :global(strong) { color: inherit; }
 	.panel-h {
 		font-family: var(--font-display);
-		font-size: 1.35rem;
-		font-weight: 600;
+		font-size: 1.9rem;
+		font-weight: 400;
 		letter-spacing: -0.005em;
-		color: var(--ink-blue);
+		color: inherit;
 		margin-bottom: 1rem;
 	}
 	.panel :global(.panel-h3),
 	.panel-h3 {
 		font-family: var(--font-display);
-		font-size: 1.05rem;
-		font-weight: 600;
+		font-size: 1.4rem;
+		font-weight: 400;
 		letter-spacing: -0.005em;
 		margin-bottom: 0.5rem;
 	}
@@ -557,7 +561,7 @@
 		align-items: center;
 		justify-content: center;
 		margin: 0 auto 1rem;
-		border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+		border-radius: 0.8rem;
 		background: var(--primary-muted);
 	}
 
@@ -604,8 +608,9 @@
 		font-weight: 600;
 		letter-spacing: 0.15em;
 		text-transform: uppercase;
-		padding: 0.25rem 0.5rem;
+		padding: 0.25rem 0.6rem;
 		border: 1px solid var(--border);
+		border-radius: 999px;
 		color: var(--text-dim);
 	}
 	.tag {
@@ -625,14 +630,18 @@
 	}
 
 	.compare {
-		border: 1px solid var(--border);
+		border: 0;
 		background: var(--bg);
-		border-radius: 2px;
+		border-radius: var(--radius-group);
 	}
 	.compare-mark {
-		border-color: color-mix(in srgb, var(--primary) 40%, transparent);
-		background: var(--primary-muted);
+		background: var(--feature);
+		color: var(--on-feature);
 	}
+	.compare-mark .tag-stamp { border-color: var(--feature-accent); color: var(--feature-accent); }
+	.compare-mark :global(h3) { color: var(--feature-accent) !important; }
+	.compare-mark :global(li),
+	.compare-mark :global(p) { color: color-mix(in srgb, var(--on-feature) 88%, transparent) !important; }
 
 	/* ── Benefits: a hairline register, no wash ── */
 	.benefits {
@@ -640,7 +649,8 @@
 		grid-template-columns: repeat(3, 1fr);
 		gap: 1px;
 		background: var(--border);
-		border: 1px solid var(--border);
+		overflow: hidden;
+		border-radius: var(--radius-group);
 		margin-top: 1.5rem;
 	}
 	@media (max-width: 768px) {
@@ -661,18 +671,18 @@
 
 	.mock-frame {
 		overflow: hidden;
-		border: 1px solid var(--border);
+		border: 0.5px solid var(--border);
 		box-shadow: var(--shadow-lg);
-		border-radius: 2px;
+		border-radius: var(--radius-group);
 	}
 
 	.terms-figure {
 		font-family: var(--font-display);
-		font-size: 2rem;
-		font-weight: 600;
+		font-size: 2.6rem;
+		font-weight: 400;
 		line-height: 1.05;
 		letter-spacing: -0.005em;
-		color: var(--primary);
+		color: var(--accent-gold);
 		margin-bottom: 0.5rem;
 	}
 

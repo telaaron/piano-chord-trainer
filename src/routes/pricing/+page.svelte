@@ -451,8 +451,8 @@
 	.head-h1 {
 		margin: 1.1rem 0 0;
 		font-family: var(--font-display);
-		font-size: clamp(1.95rem, 4.4vw, 3rem);
-		font-weight: 600;
+		font-size: clamp(2.4rem, 5.4vw, 3.8rem);
+		font-weight: 400;
 		line-height: 1.1;
 		letter-spacing: -0.005em;
 		max-width: 16em;
@@ -471,7 +471,7 @@
 	.beta {
 		margin: 1.6rem 0 0;
 		padding: 0.85rem 1.1rem;
-		border-left: 3px solid var(--accent-amber);
+		border-radius: var(--radius-group);
 		background: color-mix(in srgb, var(--accent-amber) 10%, transparent);
 		font-size: 0.92rem;
 		line-height: 1.6;
@@ -503,8 +503,8 @@
 	.sec-h2 {
 		margin: 0.7rem 0 0;
 		font-family: var(--font-display);
-		font-size: clamp(1.4rem, 3.4vw, 2rem);
-		font-weight: 600;
+		font-size: clamp(1.8rem, 4vw, 2.6rem);
+		font-weight: 400;
 		line-height: 1.15;
 		letter-spacing: -0.005em;
 		max-width: 24ch;
@@ -526,8 +526,7 @@
 
 	.tiers {
 		display: grid;
-		gap: 0;
-		border: 1px solid var(--border);
+		gap: 0.75rem;
 	}
 	@media (min-width: 720px) {
 		.tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -540,24 +539,37 @@
 		display: flex;
 		flex-direction: column;
 		padding: 1.5rem 1.35rem 1.6rem;
+		border-radius: var(--radius-group);
 		background: var(--bg-card);
-		border-bottom: 1px solid var(--rule-soft);
 	}
-	.tier:last-child { border-bottom: none; }
-	@media (min-width: 720px) {
-		.tier { border-right: 1px solid var(--rule-soft); }
-		.tier:nth-child(2n) { border-right: none; }
-		.tier:nth-last-child(-n + 2) { border-bottom: none; }
-	}
-	@media (min-width: 1040px) {
-		.tier { border-bottom: none; border-right: 1px solid var(--rule-soft); }
-		.tier:nth-child(2n) { border-right: 1px solid var(--rule-soft); }
-		.tier:last-child { border-right: none; }
-	}
-	/* The recommended entry carries the stamp on its edge. */
+	/* The recommended entry is the app's oxblood feature block. */
 	.tier.featured {
-		background: var(--bg-card-hover);
-		box-shadow: inset 3px 0 0 var(--primary);
+		position: relative;
+		overflow: hidden;
+		border-radius: var(--radius-feature);
+		background: var(--feature);
+		color: var(--on-feature);
+	}
+	.tier.featured .tier-name,
+	.tier.featured .amount .now { color: var(--on-feature); }
+	.tier.featured .no,
+	.tier.featured .amount .per,
+	.tier.featured .amount .was,
+	.tier.featured .amount-note,
+	.tier.featured .trial-note,
+	.tier.featured .feats li { color: color-mix(in srgb, var(--on-feature) 82%, transparent); }
+	.tier.featured .feats { border-top-color: color-mix(in srgb, var(--on-feature) 22%, transparent); }
+	.tier.featured .feats :global(svg) { color: var(--feature-accent); }
+	.tier.featured .tag { border-color: var(--feature-accent); color: var(--feature-accent); }
+	.tier.featured .btn-stamp {
+		background: var(--on-feature);
+		border-color: var(--on-feature);
+		color: var(--feature);
+	}
+	.tier.featured .btn-stamp:hover:not(:disabled) {
+		background: var(--on-feature);
+		border-color: var(--on-feature);
+		filter: brightness(0.95);
 	}
 	.tier.muted { opacity: 0.55; }
 
@@ -576,8 +588,9 @@
 	.tier-name {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: 1.15rem;
-		font-weight: 600;
+		font-size: 1.6rem;
+		font-weight: 400;
+		line-height: 1;
 		color: var(--text);
 	}
 	.tag {
@@ -614,8 +627,8 @@
 		font-variant-numeric: lining-nums;
 	}
 	.amount .now {
-		font-size: clamp(1.9rem, 4.4vw, 2.4rem);
-		font-weight: 600;
+		font-size: clamp(2.4rem, 5vw, 3rem);
+		font-weight: 400;
 		line-height: 1;
 		color: var(--text);
 	}
@@ -671,18 +684,21 @@
 	/* Billing period. Set as two printed options on a rule, not a toggle switch. */
 	.billing {
 		display: flex;
-		justify-content: center;
-		gap: 0.5rem;
-		margin: 0 0 1.75rem;
-		flex-wrap: wrap;
+		width: fit-content;
+		gap: 2px;
+		margin: 0 auto 1.75rem;
+		padding: 4px;
+		border-radius: 999px;
+		background: var(--glass);
+		box-shadow: inset 0 0 0 0.5px var(--glass-edge);
 	}
 	.bill-opt {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.45rem;
-		padding: 0.4rem 0.9rem;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
+		padding: 0.45rem 1rem;
+		border: 0;
+		border-radius: 999px;
 		background: transparent;
 		font-size: 0.82rem;
 		font-weight: 500;
@@ -690,15 +706,13 @@
 		cursor: pointer;
 		transition: border-color 0.15s, color 0.15s, background 0.15s;
 	}
-	.bill-opt:hover {
-		color: var(--text);
-		border-color: var(--text-dim);
-	}
+	.bill-opt:hover { color: var(--text); }
 	.bill-opt.on {
-		background: var(--bg-muted);
-		border-color: var(--text);
-		color: var(--text);
+		background: var(--text);
+		color: var(--bg);
+		font-weight: 600;
 	}
+	.bill-opt.on .save { color: inherit; opacity: 0.7; }
 	.bill-opt .save {
 		font-size: 0.7rem;
 		font-weight: 600;
@@ -734,8 +748,9 @@
 
 	.ledger {
 		display: grid;
-		gap: 1px;
-		border: 1px solid var(--border);
+		gap: 0.5px;
+		overflow: hidden;
+		border-radius: var(--radius-group);
 		background: var(--border);
 	}
 	@media (min-width: 640px) {
@@ -751,12 +766,12 @@
 		padding: 1.25rem 1.1rem;
 		background: var(--bg-card);
 	}
-	.cell :global(svg) { color: var(--ink-blue); }
+	.cell :global(svg) { color: var(--accent-gold); }
 	.cell-t {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: 1.35rem;
+		font-weight: 400;
 		color: var(--text);
 	}
 	.cell-d {
@@ -782,8 +797,8 @@
 		cursor: pointer;
 		list-style: none;
 		font-family: var(--font-display);
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: 1.3rem;
+		font-weight: 400;
 		color: var(--text);
 	}
 	.faq summary::-webkit-details-marker { display: none; }
@@ -811,7 +826,7 @@
 
 	.fine {
 		padding: 3rem 0 4rem;
-		border-top: 2px solid var(--text);
+		border-top: 0.5px solid var(--rule-soft);
 		text-align: center;
 	}
 	.fine-p {
