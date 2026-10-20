@@ -19,7 +19,7 @@
 	}
 
 	/** Roman numerals for the module section marks. */
-	const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+	const ROMAN = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
 
 	const courseId = $derived(page.params.courseId ?? '');
 	const course = $derived(getCourse(courseId));
@@ -220,29 +220,25 @@
 	.plate-mark {
 		font-family: var(--font-mono);
 		font-size: 0.625rem;
-		letter-spacing: 0.19em;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary);
-		font-weight: 600;
+		color: var(--text-muted);
+		font-weight: 500;
 		margin: 0 0 0.75rem;
 		display: flex;
 		align-items: center;
 		gap: 0.625rem;
 	}
 	.plate-mark::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.3;
+		display: none;
 	}
 	.masthead h1 {
 		display: flex;
 		align-items: center;
 		gap: 0.7rem;
 		font-family: var(--font-display);
-		font-size: clamp(1.8rem, 5.2vw, 2.5rem);
-		font-weight: 600;
+		font-size: clamp(2.4rem, 6.5vw, 3.6rem);
+		font-weight: 400;
 		line-height: 1.1;
 		letter-spacing: -0.005em;
 		margin: 0;
@@ -285,26 +281,24 @@
 
 	/* ── Meter ── */
 	.meter {
-		height: 2px;
+		height: 4px;
+		border-radius: 2px;
 		background: var(--border);
 		overflow: hidden;
 		margin-bottom: 0.9rem;
 	}
-	.meter-lg { height: 3px; margin-bottom: 0; }
+	.meter-lg { height: 4px; margin-bottom: 0; }
 	.meter span {
 		display: block;
 		height: 100%;
-		background: var(--primary);
+		border-radius: 2px;
+		background: var(--accent-gold);
 		transition: width 0.5s ease;
 	}
 	.meter.done span { background: var(--accent-green); }
 
 	/* ── Module section ── */
-	.module {
-		padding-top: 2rem;
-		margin-top: 2rem;
-		border-top: 1px solid var(--border);
-	}
+	.module { margin-top: 2.75rem; }
 	.module:first-of-type {
 		padding-top: 0;
 		margin-top: 0;
@@ -317,24 +311,20 @@
 		margin-bottom: 0.9rem;
 	}
 	.rehearsal {
-		display: grid;
-		place-items: center;
+		display: inline-block;
 		flex: none;
-		min-width: 1.75rem;
-		height: 1.75rem;
-		padding: 0 0.35rem;
-		border: 1.5px solid var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.6875rem;
-		font-weight: 700;
-		letter-spacing: 0.03em;
-		color: var(--text);
+		min-width: 2rem;
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--accent-gold);
 	}
 	.module-titles { flex: 1; min-width: 0; }
 	.module-titles h2 {
 		font-family: var(--font-display);
-		font-size: 1.3125rem;
-		font-weight: 600;
+		font-size: 1.75rem;
+		font-weight: 400;
 		line-height: 1.25;
 		letter-spacing: -0.005em;
 		margin: 0;
@@ -346,28 +336,22 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		border-top: 1px solid var(--border);
+		display: block;
+		overflow: hidden;
+		border-radius: var(--radius-group);
+		background: var(--bg-card);
 	}
-	.contents li { border-bottom: 1px solid var(--border); }
+	.contents li + li { border-top: 0.5px solid var(--border); }
 	.entry {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding: 0.75rem 0.25rem;
+		padding: 0.8rem 1.1rem;
 		text-decoration: none;
-		transition: background 0.12s, padding 0.12s;
+		transition: background 0.12s;
 	}
-	.entry:hover {
-		background: var(--bg-card);
-		padding-left: 0.6rem;
-		padding-right: 0.6rem;
-	}
-	.entry.is-next {
-		background: var(--primary-muted);
-		padding-left: 0.6rem;
-		padding-right: 0.6rem;
-		box-shadow: inset 2px 0 0 var(--primary);
-	}
+	.entry:hover { background: var(--glass-selected); }
+	.entry.is-next { background: var(--primary-muted); }
 	.entry-no {
 		flex: none;
 		font-family: var(--font-mono);
@@ -407,11 +391,7 @@
 	.entry-flag.mastered { color: var(--accent-gold); }
 
 	/* ── Foot ── */
-	.plate-foot {
-		margin-top: 2.5rem;
-		padding-top: 1.5rem;
-		border-top: 1px solid var(--border);
-	}
+	.plate-foot { margin-top: 2.5rem; }
 	.btn-stamp {
 		display: inline-flex;
 		align-items: center;
@@ -420,7 +400,7 @@
 		min-height: var(--tap-min);
 		padding: 0 1.5rem;
 		border: 1.5px solid var(--primary);
-		border-radius: var(--radius-sm);
+		border-radius: 999px;
 		background: var(--primary);
 		color: var(--primary-text);
 		font-size: 0.9375rem;

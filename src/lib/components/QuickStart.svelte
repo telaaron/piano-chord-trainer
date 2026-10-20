@@ -174,21 +174,18 @@
 		margin: 0;
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
-		font-weight: 600;
-		letter-spacing: 0.19em;
+		font-weight: 500;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--text-muted);
 	}
 	.eyebrow::after {
-		content: '';
-		flex: 1;
-		min-width: 1rem;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.32;
+		display: none;
 	}
 	.eyebrow.blue { color: var(--text-muted); }
-	.eyebrow::after { display: none; }
+	.eyebrow::after {
+		display: none;
+	}
 	.rule-head { margin: 1.9rem 0 0.55rem 1.1rem; }
 
 	.plate {

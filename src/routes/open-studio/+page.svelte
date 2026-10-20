@@ -570,7 +570,7 @@
 		gap: 0.5rem;
 		min-height: var(--tap-min);
 		padding: 0 1.75rem;
-		border-radius: 2px;
+		border-radius: 999px;
 		font-size: 0.95rem;
 		font-weight: 600;
 		text-decoration: none;

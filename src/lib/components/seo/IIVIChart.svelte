@@ -188,7 +188,7 @@
 
 	.cta {
 		display: inline-flex; align-items: center; gap: 0.5rem; min-height: var(--tap-min); padding: 0 1.4rem;
-		border: 1.5px solid var(--primary); border-radius: var(--radius-sm); background: var(--primary);
+		border: 1.5px solid var(--primary); border-radius: 999px; background: var(--primary);
 		color: var(--primary-text); font-weight: 600; text-decoration: none;
 	}
 	.cta:hover { background: var(--primary-hover); border-color: var(--primary-hover); }

@@ -633,7 +633,7 @@
 		justify-content: center;
 		min-height: var(--tap-min);
 		padding: 0 1.1rem;
-		border-radius: 2px;
+		border-radius: 999px;
 		font-size: 0.9rem;
 		font-weight: 600;
 		text-decoration: none;

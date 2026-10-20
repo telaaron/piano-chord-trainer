@@ -282,8 +282,8 @@
 		margin: 0;
 		font-family: var(--font-mono);
 		font-size: 0.62rem;
-		font-weight: 600;
-		letter-spacing: 0.17em;
+		font-weight: 500;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--text-muted);
 	}

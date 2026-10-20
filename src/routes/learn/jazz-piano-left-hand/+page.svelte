@@ -78,7 +78,7 @@
 
 	<section aria-labelledby="why-h">
 		<div class="sec-head">
-			<span class="rehearsal" aria-hidden="true">I</span>
+			<span class="rehearsal" aria-hidden="true">01</span>
 			<h2 id="why-h">Why the third and seventh are enough</h2>
 		</div>
 		<p>
@@ -91,7 +91,7 @@
 
 	<section aria-labelledby="levels-h">
 		<div class="sec-head">
-			<span class="rehearsal" aria-hidden="true">II</span>
+			<span class="rehearsal" aria-hidden="true">02</span>
 			<h2 id="levels-h">Two levels, shown on ii-V-I in C</h2>
 		</div>
 		{#each EXAMPLES as ex (ex.id)}
@@ -131,7 +131,7 @@
 
 	<section aria-labelledby="time-h">
 		<div class="sec-head">
-			<span class="rehearsal" aria-hidden="true">III</span>
+			<span class="rehearsal" aria-hidden="true">03</span>
 			<h2 id="time-h">Put it in time: the Charleston rhythm</h2>
 		</div>
 		<p>
@@ -151,7 +151,7 @@
 
 	<section aria-labelledby="practice-h">
 		<div class="sec-head">
-			<span class="rehearsal" aria-hidden="true">IV</span>
+			<span class="rehearsal" aria-hidden="true">04</span>
 			<h2 id="practice-h">Practise without the drudgery</h2>
 		</div>
 		<ol class="steps">
@@ -189,11 +189,13 @@
 	.masthead { padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
 	.plate-mark {
 		display: flex; align-items: center; gap: 0.625rem; margin: 0 0 0.75rem;
-		font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.19em;
-		text-transform: uppercase; font-weight: 600; color: var(--primary);
+		font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.1em;
+		text-transform: uppercase; font-weight: 500; color: var(--text-muted);
 	}
-	.plate-mark::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.3; }
-	.plate-mark.blue { color: var(--ink-blue); }
+	.plate-mark::after {
+		display: none;
+	}
+	.plate-mark.blue { color: var(--text-muted); }
 
 	h1 {
 		font-family: var(--font-display); font-size: clamp(2rem, 5.4vw, 2.9rem); font-weight: 600;
@@ -205,8 +207,14 @@
 	section:first-of-type { border-top: 0; margin-top: 0; }
 	.sec-head { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1.1rem; }
 	.rehearsal {
-		display: grid; place-items: center; flex: none; min-width: 1.65rem; height: 1.65rem; padding: 0 0.35rem;
-		border: 1.5px solid var(--text); font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700; color: var(--text);
+		display: inline-block;
+		flex: none;
+		min-width: 2rem;
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--accent-gold);
 	}
 	h2 {
 		font-family: var(--font-display); font-size: clamp(1.4rem, 3.6vw, 1.75rem); font-weight: 600;
@@ -240,7 +248,7 @@
 	.vt .notes { font-family: var(--font-mono); font-size: 0.875rem; color: var(--text-muted); }
 	.cta {
 		display: inline-flex; align-items: center; gap: 0.5rem; min-height: var(--tap-min); padding: 0 1.4rem;
-		border: 1.5px solid var(--primary); border-radius: var(--radius-sm); background: var(--primary);
+		border: 1.5px solid var(--primary); border-radius: 999px; background: var(--primary);
 		color: var(--primary-text); font-weight: 600; text-decoration: none;
 	}
 	.cta:hover { background: var(--primary-hover); border-color: var(--primary-hover); }

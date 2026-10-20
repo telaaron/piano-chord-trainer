@@ -51,7 +51,7 @@
 	const plans = $derived([
 		{
 			id: 'free',
-			num: 'I',
+			num: '01',
 			key: 'pricing.free',
 			price: '0',
 			period: '',
@@ -71,7 +71,7 @@
 		},
 		{
 			id: 'pro',
-			num: 'II',
+			num: '02',
 			key: 'pricing.studio',
 			price: billing === 'yearly' ? '59' : '7.99',
 			period: billing === 'yearly' ? 'pricing.per_year' : 'pricing.per_month',
@@ -92,7 +92,7 @@
 		},
 		{
 			id: 'educator',
-			num: 'III',
+			num: '03',
 			key: 'pricing.lehrpult',
 			price: billing === 'yearly' ? '290' : '29',
 			period: billing === 'yearly' ? 'pricing.per_year' : 'pricing.per_month',
@@ -115,7 +115,7 @@
 		},
 		{
 			id: 'institution',
-			num: 'IV',
+			num: '04',
 			key: 'pricing.institut',
 			// Institutions are invoiced, so this is a starting point, not a checkout price.
 			price: 'pricing.institut_from',
@@ -180,7 +180,7 @@
 			     needs its section mark, not a restated headline. The eyebrow
 			     names what follows rather than repeating the page title. -->
 			<div class="sec-head">
-				<span class="rehearsal">A</span>
+				<span class="rehearsal">01</span>
 				<div class="sec-col">
 					<p class="eyebrow blue">{t('pricing.plans_eyebrow')}</p>
 				</div>
@@ -287,7 +287,7 @@
 		<!-- ═══ B · Risk reversal, as a ledger ═══ -->
 		<section class="sec">
 			<div class="sec-head">
-				<span class="rehearsal">B</span>
+				<span class="rehearsal">02</span>
 				<div class="sec-col">
 					<h2 class="sec-h2 no-eyebrow">{t('pricing.offer_title')}</h2>
 					<p class="sec-lede">{t('pricing.offer_subtitle')}</p>
@@ -308,7 +308,7 @@
 		<!-- ═══ C · FAQ ═══ -->
 		<section class="sec">
 			<div class="sec-head">
-				<span class="rehearsal">C</span>
+				<span class="rehearsal">03</span>
 				<div class="sec-col">
 					<p class="eyebrow blue">{t('pricing.faq_heading')}</p>
 				</div>
@@ -363,35 +363,27 @@
 		margin: 0;
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
-		font-weight: 600;
-		letter-spacing: 0.19em;
+		font-weight: 500;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--text-muted);
 	}
 	.eyebrow::after {
-		content: '';
-		flex: 1;
-		min-width: 1rem;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.32;
+		display: none;
 	}
-	.eyebrow.blue { color: var(--ink-blue); }
+	.eyebrow.blue { color: var(--text-muted); }
 	.eyebrow.mid { justify-content: center; }
 	.eyebrow.mid::after { display: none; }
 
 	.rehearsal {
-		display: inline-grid;
-		place-items: center;
+		display: inline-block;
 		flex: none;
-		min-width: 1.7rem;
-		height: 1.7rem;
-		padding: 0 0.4rem;
-		border: 1.5px solid var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.78rem;
-		font-weight: 700;
-		color: var(--text);
+		min-width: 2rem;
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--accent-gold);
 	}
 
 	.plate {
@@ -412,7 +404,7 @@
 		gap: 0.5rem;
 		min-height: var(--tap-min);
 		padding: 0 1.25rem;
-		border-radius: var(--radius-sm);
+		border-radius: 999px;
 		border: 1.5px solid var(--text);
 		background: var(--text);
 		color: var(--bg);

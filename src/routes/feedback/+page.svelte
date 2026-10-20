@@ -173,18 +173,13 @@
 		margin: 0;
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
-		font-weight: 600;
-		letter-spacing: 0.19em;
+		font-weight: 500;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--text-muted);
 	}
 	.eyebrow::after {
-		content: '';
-		flex: 1;
-		min-width: 1rem;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.32;
+		display: none;
 	}
 
 	.head { margin-bottom: 2rem; }
@@ -298,7 +293,7 @@
 		gap: 0.55rem;
 		min-height: var(--tap-min);
 		padding: 0 1.35rem;
-		border-radius: var(--radius-sm);
+		border-radius: 999px;
 		border: 1.5px solid var(--text);
 		background: var(--text);
 		color: var(--bg);

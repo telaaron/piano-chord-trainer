@@ -96,7 +96,7 @@
 
 	<section aria-labelledby="chart-h">
 		<div class="sec-head">
-			<span class="rehearsal" aria-hidden="true">I</span>
+			<span class="rehearsal" aria-hidden="true">01</span>
 			<h2 id="chart-h">The chart</h2>
 		</div>
 
@@ -105,7 +105,7 @@
 
 	<section aria-labelledby="how-h">
 		<div class="sec-head">
-			<span class="rehearsal" aria-hidden="true">II</span>
+			<span class="rehearsal" aria-hidden="true">02</span>
 			<h2 id="how-h">How to practice it in all 12 keys</h2>
 		</div>
 		<ol class="steps">
@@ -146,11 +146,13 @@
 	.masthead { padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
 	.plate-mark {
 		display: flex; align-items: center; gap: 0.625rem; margin: 0 0 0.75rem;
-		font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.19em;
-		text-transform: uppercase; font-weight: 600; color: var(--primary);
+		font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.1em;
+		text-transform: uppercase; font-weight: 500; color: var(--text-muted);
 	}
-	.plate-mark::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.3; }
-	.plate-mark.blue { color: var(--ink-blue); }
+	.plate-mark::after {
+		display: none;
+	}
+	.plate-mark.blue { color: var(--text-muted); }
 
 	h1 {
 		font-family: var(--font-display); font-size: clamp(2rem, 5.4vw, 2.9rem); font-weight: 600;
@@ -162,8 +164,14 @@
 	section:first-of-type { border-top: 0; margin-top: 0; }
 	.sec-head { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1.1rem; }
 	.rehearsal {
-		display: grid; place-items: center; flex: none; min-width: 1.65rem; height: 1.65rem; padding: 0 0.35rem;
-		border: 1.5px solid var(--text); font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 700; color: var(--text);
+		display: inline-block;
+		flex: none;
+		min-width: 2rem;
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--accent-gold);
 	}
 	h2 {
 		font-family: var(--font-display); font-size: clamp(1.4rem, 3.6vw, 1.75rem); font-weight: 600;

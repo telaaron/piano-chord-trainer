@@ -16,7 +16,7 @@
 	import { Check, Zap, Volume2, Star, ArrowLeft, ArrowRight } from 'lucide-svelte';
 
 	/** Roman numerals for the step marks — the plate's rehearsal letters. */
-	const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+	const ROMAN = ['01', '02', '03', '04', '05', '06', '07', '08'];
 
 	// ─── Route params ─────────────────────────────────────────────
 	const courseId = $derived(page.params.courseId ?? '');
@@ -953,10 +953,10 @@
 		margin: 0 0 0.7rem;
 		font-family: var(--font-mono);
 		font-size: 0.625rem;
-		letter-spacing: 0.19em;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		font-weight: 600;
-		color: var(--primary);
+		font-weight: 500;
+		color: var(--text-muted);
 	}
 	.mark-course {
 		color: var(--text-dim);
@@ -967,11 +967,7 @@
 		white-space: nowrap;
 	}
 	.plate-mark::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		min-width: 1rem;
-		background: var(--border);
+		display: none;
 	}
 	.masthead h1 {
 		font-family: var(--font-display);
@@ -1404,7 +1400,7 @@
 		gap: 0.5rem;
 		min-height: var(--tap-min);
 		padding: 0 1.25rem;
-		border-radius: var(--radius-sm);
+		border-radius: 999px;
 		font-family: inherit;
 		font-size: 0.9375rem;
 		font-weight: 600;

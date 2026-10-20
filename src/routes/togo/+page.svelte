@@ -354,7 +354,7 @@
 	// The seven disciplines are printed as a numbered running order, the way
 	// the rest of the app sets a contents list. Roman numerals rather than
 	// digits: these are movements of one programme, not a ranked list.
-	const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'] as const;
+	const ROMAN = ['01', '02', '03', '04', '05', '06', '07'] as const;
 
 	/**
 	 * The rehearsal mark for the round in play. Eight rounds, letters A–H —
@@ -652,20 +652,15 @@
 		margin: 0;
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
-		font-weight: 600;
-		letter-spacing: 0.19em;
+		font-weight: 500;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--text-muted);
 	}
 	.eyebrow::after {
-		content: '';
-		flex: 1;
-		min-width: 1rem;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.32;
+		display: none;
 	}
-	.eyebrow.blue { color: var(--ink-blue); }
+	.eyebrow.blue { color: var(--text-muted); }
 	.rule-head { margin: 2.25rem 0 0.25rem; }
 
 	.plate {
@@ -677,17 +672,14 @@
 	}
 
 	.rehearsal {
-		display: inline-grid;
-		place-items: center;
+		display: inline-block;
 		flex: none;
-		min-width: 1.45rem;
-		height: 1.45rem;
-		padding: 0 0.35rem;
-		border: 1.5px solid var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		font-weight: 700;
-		color: var(--text);
+		min-width: 2rem;
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--accent-gold);
 	}
 
 	/* ── Buttons ──────────────────────────────────────────────── */

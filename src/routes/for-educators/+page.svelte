@@ -41,9 +41,9 @@
 	];
 
 	const steps = [
-		{ num: 'I', titleKey: 'educators.how_step1', descKey: 'educators.how_step1_desc' },
-		{ num: 'II', titleKey: 'educators.how_step2', descKey: 'educators.how_step2_desc' },
-		{ num: 'III', titleKey: 'educators.how_step3', descKey: 'educators.how_step3_desc' },
+		{ num: '01', titleKey: 'educators.how_step1', descKey: 'educators.how_step1_desc' },
+		{ num: '02', titleKey: 'educators.how_step2', descKey: 'educators.how_step2_desc' },
+		{ num: '03', titleKey: 'educators.how_step3', descKey: 'educators.how_step3_desc' },
 	];
 </script>
 
@@ -132,7 +132,7 @@
 		<!-- ═══ A · Platforms ═══ -->
 		<section class="sec">
 			<div class="sec-head">
-				<span class="rehearsal">A</span>
+				<span class="rehearsal">01</span>
 				<div class="sec-col">
 					<p class="eyebrow blue">{t('educators.platforms_title')}</p>
 				</div>
@@ -162,7 +162,7 @@
 		<!-- ═══ B · The problem, as a marked-up note ═══ -->
 		<section class="sec">
 			<div class="sec-head">
-				<span class="rehearsal">B</span>
+				<span class="rehearsal">02</span>
 				<div class="sec-col">
 					<p class="eyebrow">{t('educators.problem_title')}</p>
 				</div>
@@ -173,7 +173,7 @@
 		<!-- ═══ C · The solution, as a numbered contents list ═══ -->
 		<section class="sec">
 			<div class="sec-head">
-				<span class="rehearsal">C</span>
+				<span class="rehearsal">03</span>
 				<div class="sec-col">
 					<h2 class="sec-h2 lead">{t('educators.solution_title')}</h2>
 				</div>
@@ -194,7 +194,7 @@
 		<!-- ═══ D · What students train ═══ -->
 		<section class="sec">
 			<div class="sec-head">
-				<span class="rehearsal">D</span>
+				<span class="rehearsal">04</span>
 				<div class="sec-col">
 					<h2 class="sec-h2 lead">{t('educators.what_students_train')}</h2>
 				</div>
@@ -209,7 +209,7 @@
 		<!-- ═══ E · Integration ═══ -->
 		<section class="sec">
 			<div class="sec-head">
-				<span class="rehearsal">E</span>
+				<span class="rehearsal">05</span>
 				<div class="sec-col">
 					<h2 class="sec-h2 lead">{t('educators.integration_title')}</h2>
 				</div>
@@ -227,7 +227,7 @@
 		<!-- ═══ F · How integration works ═══ -->
 		<section class="sec">
 			<div class="sec-head">
-				<span class="rehearsal">F</span>
+				<span class="rehearsal">06</span>
 				<div class="sec-col">
 					<h2 class="sec-h2 lead">{t('educators.how_it_works')}</h2>
 				</div>
@@ -297,35 +297,27 @@
 		margin: 0;
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
-		font-weight: 600;
-		letter-spacing: 0.19em;
+		font-weight: 500;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--text-muted);
 	}
 	.eyebrow::after {
-		content: '';
-		flex: 1;
-		min-width: 1rem;
-		height: 1px;
-		background: currentColor;
-		opacity: 0.32;
+		display: none;
 	}
-	.eyebrow.blue { color: var(--ink-blue); }
+	.eyebrow.blue { color: var(--text-muted); }
 	.eyebrow.mid { justify-content: center; }
 	.eyebrow.mid::after { display: none; }
 
 	.rehearsal {
-		display: inline-grid;
-		place-items: center;
+		display: inline-block;
 		flex: none;
-		min-width: 1.7rem;
-		height: 1.7rem;
-		padding: 0 0.4rem;
-		border: 1.5px solid var(--text);
-		font-family: var(--font-mono);
-		font-size: 0.78rem;
-		font-weight: 700;
-		color: var(--text);
+		min-width: 2rem;
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--accent-gold);
 	}
 
 	/* ── Buttons ──────────────────────────────────────────────── */
@@ -337,7 +329,7 @@
 		gap: 0.55rem;
 		min-height: var(--tap-min);
 		padding: 0 1.35rem;
-		border-radius: var(--radius-sm);
+		border-radius: 999px;
 		border: 1.5px solid var(--text);
 		background: var(--text);
 		color: var(--bg);
