@@ -499,8 +499,8 @@
 </div>
 
 <style>
-	/* The owner's screen, on the same plate as /togo: hairlines, 2px rules,
-	   printed mono labels, the display serif for figures. No glass cards. */
+	/* The owner's screen in the app look: rounded group cards, gold serif
+	   figures, mono labels. */
 
 	.edi {
 		--rule-soft: color-mix(in srgb, var(--border) 62%, transparent);
@@ -551,8 +551,8 @@
 	.h1 {
 		margin: 0.85rem 0 0;
 		font-family: var(--font-display-mus);
-		font-size: clamp(1.9rem, 6vw, 2.5rem);
-		font-weight: 600;
+		font-size: clamp(2.4rem, 7vw, 3.4rem);
+		font-weight: 400;
 		line-height: 1.12;
 		letter-spacing: -0.005em;
 		color: var(--text);
@@ -560,16 +560,17 @@
 
 	.notice {
 		margin: 0;
-		padding-left: 0.9rem;
-		border-left: 2px solid var(--ink-blue);
+		padding: 0.9rem 1.1rem;
+		border-radius: var(--radius-group);
+		background: var(--bg-card);
 		font-family: var(--font-display-mus);
-		font-size: 1rem;
+		font-size: 1.15rem;
 		font-style: italic;
 		line-height: 1.55;
 		color: var(--text-muted);
 	}
 	.notice.bad {
-		border-left-color: var(--danger);
+		background: color-mix(in srgb, var(--danger) 12%, transparent);
 		color: var(--danger);
 	}
 
@@ -579,9 +580,10 @@
 	.ledger {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
-		gap: 1px;
-		border: 1px solid var(--border);
-		background: var(--border);
+		gap: 0;
+		overflow: hidden;
+		border-radius: var(--radius-group);
+		background: var(--bg-card);
 	}
 	@media (min-width: 720px) {
 		.ledger { grid-template-columns: repeat(4, 1fr); }
@@ -595,11 +597,11 @@
 	}
 	.cell .v {
 		font-family: var(--font-display-mus);
-		font-size: clamp(1.7rem, 5vw, 2.2rem);
-		font-weight: 600;
+		font-size: clamp(2.1rem, 6vw, 2.8rem);
+		font-weight: 400;
 		line-height: 1;
 		font-variant-numeric: lining-nums tabular-nums;
-		color: var(--text);
+		color: var(--accent-gold);
 	}
 	.cell .v.small { font-size: clamp(1.35rem, 4vw, 1.7rem); }
 	.cell .l {
@@ -617,21 +619,19 @@
 	/* ── Plates ───────────────────────────────────────────────── */
 
 	.plate-frame {
-		border: 1px solid var(--border);
-		border-left: 3px solid var(--primary);
+		overflow: hidden;
+		border-radius: var(--radius-group);
 		background: var(--bg-card);
-		box-shadow: var(--shadow-sm);
 	}
 
 	.plate-head {
 		display: flex;
 		align-items: center;
 		gap: 0.55rem;
-		padding: 0.65rem 0.9rem;
-		border-bottom: 1px solid var(--rule-soft);
-		background: var(--bg-muted);
+		padding: 0.85rem 1.1rem;
+		border-bottom: 0.5px solid var(--border);
 	}
-	.plate-head :global(svg) { flex: none; color: var(--ink-blue); }
+	.plate-head :global(svg) { flex: none; color: var(--accent-gold); }
 	.plate-title {
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
@@ -685,7 +685,7 @@
 		width: 100%;
 		padding: 0.72rem 0.85rem;
 		border: 1px solid var(--border-hover);
-		border-radius: var(--radius-sm);
+		border-radius: var(--radius);
 		background: var(--bg);
 		color: var(--text);
 		font-family: inherit;
@@ -761,8 +761,8 @@
 		padding: 0;
 		overflow-y: auto;
 		list-style: none;
-		border: 1px solid var(--border-hover);
-		border-radius: var(--radius-sm);
+		border: 0.5px solid var(--border-hover);
+		border-radius: var(--radius);
 		background: var(--bg-card);
 		box-shadow: var(--shadow-md);
 	}
@@ -797,9 +797,9 @@
 	}
 	.opt-tier {
 		flex: none;
-		padding: 0.15rem 0.45rem;
+		padding: 0.15rem 0.55rem;
 		border: 1px solid var(--border-hover);
-		border-radius: 2px;
+		border-radius: 999px;
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
 		letter-spacing: 0.1em;
@@ -807,8 +807,8 @@
 		color: var(--text-dim);
 	}
 	.opt-tier.paid {
-		border-color: var(--accent-amber);
-		color: var(--accent-amber);
+		border-color: var(--accent-gold);
+		color: var(--accent-gold);
 	}
 	.option-empty {
 		padding: 0.85rem;
@@ -831,13 +831,15 @@
 		align-items: center;
 		gap: 0.5rem;
 		margin: 0.8rem 0 0;
-		padding-left: 0.75rem;
-		border-left: 2px solid var(--accent-green);
+		padding: 0.55rem 0.85rem;
+		border-radius: var(--radius);
+		background: color-mix(in srgb, var(--accent-gold) 10%, transparent);
 		font-size: 0.9rem;
 		color: var(--text-muted);
 	}
 	.resolved :global(svg) { flex: none; color: var(--accent-green); }
-	.resolved.new { border-left-color: var(--ink-blue); }
+	.resolved.new { background: var(--bg-muted); }
+	.resolved.new :global(svg) { color: var(--text-muted); }
 	.res-mail {
 		min-width: 0;
 		overflow-wrap: anywhere;
@@ -915,15 +917,16 @@
 
 	.grant-msg {
 		margin: 1.1rem 0 0;
-		padding-left: 0.8rem;
-		border-left: 2px solid var(--danger);
+		padding: 0.6rem 0.9rem;
+		border-radius: var(--radius);
+		background: color-mix(in srgb, var(--danger) 12%, transparent);
 		font-size: 0.9rem;
 		line-height: 1.5;
 		color: var(--danger);
 	}
 	.grant-msg.ok {
-		border-left-color: var(--accent-green);
-		color: var(--accent-green);
+		background: color-mix(in srgb, var(--accent-gold) 12%, transparent);
+		color: var(--accent-gold);
 	}
 
 	/* ── Chart ────────────────────────────────────────────────── */
@@ -934,7 +937,7 @@
 		gap: 2px;
 		height: 8rem;
 		padding-bottom: 1px;
-		border-bottom: 2px solid var(--text);
+		border-bottom: 0.5px solid var(--border-hover);
 	}
 	.bar-slot {
 		display: flex;
@@ -947,7 +950,8 @@
 	.bar {
 		width: 100%;
 		min-height: 3px;
-		background: var(--primary);
+		border-radius: 3px 3px 0 0;
+		background: var(--accent-gold);
 	}
 	/* An empty day is a hairline on the baseline, not a stub pretending to be
 	   a value — the distinction is the whole point of the rebuild. */
@@ -973,7 +977,7 @@
 		text-align: center;
 		text-transform: uppercase;
 		letter-spacing: 0.12em;
-		color: var(--ink-blue);
+		color: var(--text-muted);
 	}
 
 	/* ── Directory table ──────────────────────────────────────── */
@@ -989,10 +993,10 @@
 	}
 	thead th {
 		padding: 0.7rem 0.85rem;
-		border-bottom: 2px solid var(--text);
+		border-bottom: 0.5px solid var(--border-hover);
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
-		font-weight: 700;
+		font-weight: 600;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 		text-align: left;
@@ -1018,9 +1022,9 @@
 
 	.tag {
 		display: inline-block;
-		padding: 0.15rem 0.45rem;
+		padding: 0.15rem 0.55rem;
 		border: 1px solid var(--border-hover);
-		border-radius: 2px;
+		border-radius: 999px;
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
 		letter-spacing: 0.1em;
@@ -1032,8 +1036,8 @@
 		color: var(--primary);
 	}
 	.tag.paid {
-		border-color: var(--accent-amber);
-		color: var(--accent-amber);
+		border-color: var(--accent-gold);
+		color: var(--accent-gold);
 	}
 
 	@media (prefers-reduced-motion: reduce) {

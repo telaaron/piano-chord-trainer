@@ -371,8 +371,8 @@
 	.head-h1 {
 		margin: 1.1rem 0 0;
 		font-family: var(--font-display);
-		font-size: clamp(1.85rem, 4.2vw, 2.9rem);
-		font-weight: 600;
+		font-size: clamp(2.3rem, 5.2vw, 3.7rem);
+		font-weight: 400;
 		line-height: 1.1;
 		letter-spacing: -0.005em;
 		max-width: 17em;
@@ -423,8 +423,8 @@
 	.sec-h2 {
 		margin: 0.7rem 0 0;
 		font-family: var(--font-display);
-		font-size: clamp(1.35rem, 3.2vw, 1.9rem);
-		font-weight: 600;
+		font-size: clamp(1.8rem, 4vw, 2.6rem);
+		font-weight: 400;
 		line-height: 1.15;
 		letter-spacing: -0.005em;
 		max-width: 24ch;
@@ -441,7 +441,8 @@
 		gap: 1px;
 		margin: 0;
 		padding: 0;
-		border: 1px solid var(--border);
+		overflow: hidden;
+		border-radius: var(--radius-group);
 		background: var(--border);
 	}
 	@media (min-width: 620px) {
@@ -463,8 +464,8 @@
 	.plat a:hover { background: var(--bg-card-hover); }
 	.plat-n {
 		font-family: var(--font-display);
-		font-size: 0.98rem;
-		font-weight: 600;
+		font-size: 1.3rem;
+		font-weight: 400;
 		color: var(--text);
 	}
 	.plat a .plat-n { color: var(--primary); }
@@ -478,18 +479,19 @@
 
 	.problem {
 		margin: 0;
-		padding-left: 1.1rem;
-		border-left: 2px solid var(--ink-blue);
+		padding: 1.5rem 1.6rem;
+		border-radius: var(--radius-feature);
+		background: var(--feature);
 		max-width: 64ch;
 		font-family: var(--font-display);
 		font-size: clamp(1.05rem, 2.2vw, 1.28rem);
 		font-style: italic;
 		line-height: 1.55;
-		color: var(--text-muted);
+		color: color-mix(in srgb, var(--on-feature) 85%, transparent);
 	}
 	.problem :global(strong) {
 		font-style: normal;
-		color: var(--text);
+		color: var(--on-feature);
 	}
 
 	/* ── Numbered contents ────────────────────────────────────── */
@@ -498,29 +500,38 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		border-top: 1px solid var(--border);
+		display: block;
+		overflow: hidden;
+		border-radius: var(--radius-group);
+		background: var(--bg-card);
 	}
 	.row {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
 		gap: 0.9rem;
 		align-items: baseline;
-		padding: 0.95rem 0;
-		border-bottom: 1px solid var(--rule-soft);
+		padding: 1rem 1.2rem;
 	}
+	.row + .row { border-top: 0.5px solid var(--border); }
 	.no {
 		font-family: var(--font-mono);
 		font-size: 0.7rem;
 		letter-spacing: 0.08em;
 		color: var(--text-dim);
 	}
-	.no.roman { min-width: 1.6rem; }
+	.no.roman {
+		min-width: 2rem;
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		letter-spacing: 0;
+		color: var(--accent-gold);
+	}
 	.row-txt { min-width: 0; }
 	.ttl {
 		display: block;
 		font-family: var(--font-display);
-		font-size: 1.04rem;
-		font-weight: 600;
+		font-size: 1.4rem;
+		font-weight: 400;
 		color: var(--text);
 	}
 	.dsc {
@@ -563,8 +574,9 @@
 
 	.ledger {
 		display: grid;
-		gap: 1px;
-		border: 1px solid var(--border);
+		gap: 0.5px;
+		overflow: hidden;
+		border-radius: var(--radius-group);
 		background: var(--border);
 	}
 	@media (min-width: 760px) {
@@ -580,8 +592,8 @@
 	.cell-t {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: 1rem;
-		font-weight: 600;
+		font-size: 1.35rem;
+		font-weight: 400;
 		color: var(--text);
 	}
 	.cell-d {
@@ -615,7 +627,7 @@
 
 	.fine {
 		padding: 3rem 0 4rem;
-		border-top: 2px solid var(--text);
+		border-top: 0.5px solid var(--rule-soft);
 		text-align: center;
 	}
 	.fine-p {
