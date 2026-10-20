@@ -296,11 +296,11 @@
 	/* The chord symbol is the headline — set it as one */
 	.hero h1 {
 		font-family: var(--font-display);
-		font-size: clamp(2.25rem, 6.4vw, 3.25rem);
+		font-size: clamp(2.6rem, 7.4vw, 4rem);
 		line-height: 1.04;
 		letter-spacing: -0.005em;
 		margin: 0;
-		font-weight: 600;
+		font-weight: 400;
 		color: var(--text);
 		font-variant-numeric: lining-nums;
 		text-wrap: balance;
@@ -362,11 +362,11 @@
 	}
 	h2 {
 		font-family: var(--font-display);
-		font-size: clamp(1.35rem, 3.6vw, 1.7rem);
-		line-height: 1.2;
+		font-size: clamp(1.8rem, 4.4vw, 2.4rem);
+		line-height: 1.15;
 		letter-spacing: -0.005em;
 		margin: 0;
-		font-weight: 600;
+		font-weight: 400;
 		color: var(--text);
 	}
 	section p {
@@ -389,8 +389,11 @@
 		list-style: none;
 		padding: 0;
 		margin: 0;
-		border-top: 1px solid var(--border);
-		border-bottom: 1px solid var(--border);
+		width: fit-content;
+		max-width: 100%;
+		overflow: hidden;
+		border-radius: var(--radius-group);
+		background: var(--bg-card);
 	}
 	.note-list li {
 		display: flex;
@@ -398,14 +401,14 @@
 		align-items: center;
 		gap: 0.2rem;
 		min-width: 4rem;
-		padding: 0.9rem 0.85rem;
-		border-right: 1px solid var(--border);
+		padding: 0.9rem 1.1rem;
+		border-right: 0.5px solid var(--border);
 	}
 	.note-list li:last-child { border-right: 0; }
 	.note-list .note {
-		font-family: var(--font-display);
-		font-weight: 600;
-		font-size: 1.5rem;
+		font-family: var(--font-chord);
+		font-weight: 700;
+		font-size: 1.6rem;
 		line-height: 1;
 		letter-spacing: -0.005em;
 		color: var(--text);
@@ -416,7 +419,7 @@
 		font-size: 0.5875rem;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: var(--ink-blue);
+		color: var(--accent-gold);
 	}
 
 	/* ── Voicing plates ── */
@@ -440,9 +443,9 @@
 	}
 	.voicing-head h3 {
 		font-family: var(--font-display);
-		font-size: 1.125rem;
+		font-size: 1.5rem;
 		margin: 0;
-		font-weight: 600;
+		font-weight: 400;
 		letter-spacing: -0.005em;
 		color: var(--text);
 	}
@@ -463,10 +466,11 @@
 		text-transform: uppercase;
 		font-weight: 600;
 		color: var(--text-muted);
-		background: transparent;
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
-		padding: 0 0.85rem;
+		background: var(--glass);
+		border: 0;
+		box-shadow: inset 0 0 0 0.5px var(--glass-edge);
+		border-radius: 999px;
+		padding: 0 1rem;
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s, background 0.15s;
 	}
@@ -476,8 +480,8 @@
 	}
 	/* Sounding right now — the one amber on this page */
 	.play-btn.active {
-		color: var(--accent-amber);
-		border-color: var(--accent-amber);
+		color: var(--accent-gold);
+		box-shadow: inset 0 0 0 1px var(--accent-gold);
 		background: var(--warning-muted);
 	}
 	.keyboard {
@@ -491,9 +495,9 @@
 		margin: 0;
 	}
 	.vn-notes {
-		font-family: var(--font-display);
-		font-weight: 600;
-		font-size: 1.0625rem;
+		font-family: var(--font-chord);
+		font-weight: 700;
+		font-size: 1.15rem;
 		color: var(--text);
 		font-variant-numeric: lining-nums;
 	}
@@ -637,10 +641,11 @@
 	.prog { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; margin: 0 0 1.25rem; }
 	.prog li {
 		display: flex; align-items: baseline; gap: 0.45rem; padding: 0.45rem 0.8rem;
-		border: 1px solid var(--border); border-radius: var(--radius-sm);
+		border-radius: 999px; background: var(--bg-card);
 	}
-	.prog li.self { border-color: var(--primary); }
-	.prog .degree { font-family: var(--font-display); font-style: italic; font-weight: 700; color: var(--ink-blue); }
-	.prog .chord { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--text); text-decoration: none; }
+	.prog li.self { background: var(--feature); }
+	.prog li.self .chord, .prog li.self .degree { color: var(--on-feature); }
+	.prog .degree { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 1.1rem; color: var(--accent-gold); }
+	.prog .chord { font-family: var(--font-chord); font-weight: 700; font-size: 1.15rem; color: var(--text); text-decoration: none; }
 	.prog a.chord:hover { color: var(--primary); }
 </style>

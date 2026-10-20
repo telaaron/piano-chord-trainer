@@ -151,18 +151,17 @@
 
 	/* ── Toolbar ── */
 	.toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
-	.seg { display: inline-flex; border: 1.5px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+	.seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: var(--glass); box-shadow: inset 0 0 0 0.5px var(--glass-edge); }
 	.seg button {
-		min-height: var(--tap-min); padding: 0 0.9rem; border: 0; background: transparent; color: var(--text-muted);
+		min-height: 2.25rem; padding: 0 0.95rem; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted);
 		font-weight: 600; font-size: 0.875rem; cursor: pointer;
 	}
-	.seg button + button { border-left: 1.5px solid var(--border); }
-	.seg button.active { background: var(--primary); color: var(--primary-text); }
+	.seg button.active { background: var(--text); color: var(--bg); }
 	.actions { display: flex; gap: 0.5rem; }
 	.ghost {
 		text-decoration: none;
 		display: inline-flex; align-items: center; gap: 0.4rem; min-height: var(--tap-min); padding: 0 0.9rem;
-		border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text);
+		border: 0; border-radius: 999px; background: var(--glass); box-shadow: inset 0 0 0 0.5px var(--glass-edge); color: var(--text);
 		font-weight: 600; font-size: 0.875rem; cursor: pointer;
 	}
 
@@ -170,9 +169,9 @@
 	.chart { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.75rem; font-variant-numeric: lining-nums; }
 	.chart th, .chart td { padding: 0.6rem 0.4rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
 	.chart thead th { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); }
-	.deg { font-family: var(--font-display); font-style: italic; font-size: 0.95rem; letter-spacing: 0; text-transform: none; color: var(--ink-blue); }
-	.key { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--text); width: 3rem; }
-	.chord { display: block; font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--text); text-decoration: none; }
+	.deg { font-family: var(--font-display); font-style: italic; font-size: 1.15rem; letter-spacing: 0; text-transform: none; color: var(--accent-gold); }
+	.key { font-family: var(--font-display); font-size: 1.5rem; font-weight: 400; color: var(--text); width: 3rem; }
+	.chord { display: block; font-family: var(--font-chord); font-size: 1.2rem; font-weight: 700; color: var(--text); text-decoration: none; }
 	a.chord:hover { color: var(--primary); }
 	.notes { display: block; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.15rem; }
 	.play {

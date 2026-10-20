@@ -1063,10 +1063,9 @@
 
 	/* ── Specimen: the chord under examination ── */
 	.specimen {
-		border: 1px solid var(--border);
-		border-top: 2px solid var(--primary);
+		border-radius: var(--radius-group);
 		background: var(--bg-card);
-		padding: 1.1rem 1.15rem 1rem;
+		padding: 1.15rem 1.3rem 1.1rem;
 		margin-bottom: 1.75rem;
 	}
 	.specimen-head {
@@ -1084,9 +1083,9 @@
 		min-width: 0;
 	}
 	.chordsym {
-		font-family: var(--font-display);
-		font-size: clamp(1.6rem, 5.5vw, 2.05rem);
-		font-weight: 600;
+		font-family: var(--font-chord);
+		font-size: clamp(1.8rem, 6vw, 2.4rem);
+		font-weight: 700;
 		line-height: 1.05;
 		letter-spacing: -0.005em;
 		color: var(--text);
@@ -1097,12 +1096,13 @@
 		font-size: 0.5875rem;
 		letter-spacing: 0.13em;
 		text-transform: uppercase;
-		padding: 0.22rem 0.45rem;
+		padding: 0.22rem 0.6rem;
 		border: 1px solid currentColor;
+		border-radius: 999px;
 		white-space: nowrap;
 	}
 	.tag-stamp { color: var(--primary); }
-	.tag-blue { color: var(--ink-blue); }
+	.tag-blue { color: var(--accent-gold); }
 
 	/* Analysis row — copyist blue does the labelling */
 	.analysis {
@@ -1112,13 +1112,13 @@
 		gap: 0.15rem 1.25rem;
 		margin: 1rem 0 0;
 		padding-top: 0.85rem;
-		border-top: 1px dashed var(--border);
+		border-top: 0.5px solid var(--border);
 	}
 	.an-cell { display: flex; flex-direction: column; gap: 0.1rem; }
 	.an-cell dt {
-		font-family: var(--font-display);
-		font-size: 1rem;
-		font-weight: 600;
+		font-family: var(--font-chord);
+		font-size: 1.1rem;
+		font-weight: 700;
 		color: var(--text);
 		font-variant-numeric: lining-nums;
 	}
