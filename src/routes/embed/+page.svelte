@@ -486,8 +486,8 @@
 			</div>
 
 			<!-- Progress bar -->
-\t\t\t<div class="h-0.75 bg-(--wood-dark) shrink-0" role="progressbar" aria-valuemin={0} aria-valuenow={currentIdx} aria-valuemax={totalChords} aria-label="Progress">
-				<div class="h-full bg-linear-to-r from-(--primary) to-(--accent-amber) transition-[width] duration-400 ease-in-out" style="width: {progressPct}%"></div>
+			<div class="h-0.75 bg-(--wood-dark) shrink-0" role="progressbar" aria-valuemin={0} aria-valuenow={currentIdx} aria-valuemax={totalChords} aria-label="Progress">
+				<div class="h-full rounded-r-full bg-(--accent-gold) transition-[width] duration-400 ease-in-out" style="width: {progressPct}%"></div>
 			</div>
 
 			<!-- Chord display -->
@@ -502,7 +502,7 @@
 					<div class="chord-display text-center py-4 px-2 rounded-lg transition-[background] duration-150"
 						class:chord-correct={midiMatchResult?.correct}
 						class:chord-wrong={midiMatchResult && !midiMatchResult.correct && midiActiveNotes.size > 0}>
-						<div class="chord-name text-[clamp(3rem,12vw,5.5rem)] font-extrabold leading-none text-(--text) tracking-[-0.02em] transition-[color] duration-150 max-[480px]:text-[clamp(2.5rem,16vw,4rem)]" aria-live="polite">
+						<div class="chord-name font-chord text-[clamp(3.8rem,15vw,7rem)] font-bold leading-none text-(--text) transition-[color] duration-150 max-[480px]:text-[clamp(3.4rem,20vw,5.5rem)]" aria-live="polite">
 							{currentData?.chord ?? ''}
 						</div>
 						{#if currentData?.voicing && currentData.voicing.length > 0}
