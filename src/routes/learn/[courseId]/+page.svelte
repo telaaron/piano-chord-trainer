@@ -232,10 +232,12 @@
 	.plate-mark::after {
 		display: none;
 	}
+	/* Icon sits above the title so a wrapping title never centres it between lines. */
 	.masthead h1 {
 		display: flex;
-		align-items: center;
-		gap: 0.7rem;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
 		font-family: var(--font-display);
 		font-size: clamp(2.4rem, 6.5vw, 3.6rem);
 		font-weight: 400;

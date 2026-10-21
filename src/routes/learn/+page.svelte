@@ -300,10 +300,12 @@
 		color: var(--accent-gold);
 	}
 	.course-titles { flex: 1; min-width: 0; }
+	/* Icon sits above the title so a wrapping title never centres it between lines. */
 	.course-titles h2 {
 		display: flex;
-		align-items: center;
-		gap: 0.55rem;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.4rem;
 		font-family: var(--font-display);
 		font-size: 2rem;
 		font-weight: 400;
