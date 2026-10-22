@@ -26,6 +26,7 @@ vi.mock('$lib/server/brevo', () => ({
 const { POST } = await import('./+server');
 
 type Row = {
+	id?: string;
 	user_id: string | null;
 	email: string;
 	status: string;
@@ -52,9 +53,10 @@ function makeLocals(rows: Row[], user: { id: string; email: string } | null = nu
 				};
 				return q;
 			},
-			insert: async (row: Omit<Row, 'created_at'>) => {
-				rows.push({ ...row, created_at: new Date().toISOString() });
-				return { error: null };
+			insert: (row: Omit<Row, 'created_at'>) => {
+				const id = `row-${rows.length + 1}`;
+				rows.push({ ...row, id, created_at: new Date().toISOString() });
+				return { select: () => ({ single: async () => ({ data: { id }, error: null }) }) };
 			},
 		}),
 	};
@@ -89,7 +91,7 @@ describe('/api/practice-reminder', () => {
 		expect(rows[0].consent_text).toMatch(/pro Woche/);
 		expect(rows[0].text_version).toMatch(/^v2/);
 		expect(brevo.sent).toEqual([
-			{ email: 'anna@example.com', redirect: 'https://jazzchords.app/updates/confirmed' },
+			{ email: 'anna@example.com', redirect: 'https://jazzchords.app/updates/confirmed?c=row-1' },
 		]);
 	});
 
