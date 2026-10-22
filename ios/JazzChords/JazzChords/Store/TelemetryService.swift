@@ -24,8 +24,8 @@ final class TelemetryService {
     // at build time, set `enabled = false` or blank the URL/anonKey.
     private enum Config {
         static let enabled = true
-        static let url = "https://chpoqghvlojwyunoplab.supabase.co"
-        static let anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNocG9xZ2h2bG9qd3l1bm9wbGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzAyODIsImV4cCI6MjA4ODY0NjI4Mn0.r_1JeIDnRpKiTWn74bCHBFUU7kOu4YSPFY9QRjrdPX0"
+        static let url = SupabaseConfig.url.absoluteString
+        static let anonKey = SupabaseConfig.anonKey
         static let cohort = "default"
         /// "ios-1.0.0" in release builds, "ios-dev" in debug, so dev traffic can be filtered out.
         static let version: String = {

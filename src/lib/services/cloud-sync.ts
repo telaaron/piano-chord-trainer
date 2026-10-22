@@ -2,7 +2,6 @@
 // Implements merge-on-login: local data is merged into cloud on first sign-in.
 import { getSupabase } from './supabase';
 import { getAuthState } from './auth';
-import { canUse } from './subscription-store.svelte';
 import { mergeSyncData } from './cloud-merge';
 
 // All localStorage keys that should be synced
@@ -171,24 +170,22 @@ export async function downloadCloudData(): Promise<{ merged: boolean; error: Err
 export async function syncToCloud(): Promise<void> {
 	const { user } = getAuthState();
 	if (!user) return;
-	// Cloud sync is a Pro feature — free users keep data local only.
-	if (!canUse('cloud-sync')) return;
 	// Never upload a device's state over the account before merging with it.
 	if (hydratedFor !== user.id) return;
 
+	// The row is replaced whole: merge in what other devices (iPhone, iPad,
+	// another tab) uploaded since this tab hydrated instead of overwriting it.
 	const supabase = getSupabase();
-	const dataPayload: Record<string, unknown> = {};
-
-	for (const key of SYNC_KEYS) {
-		const raw = localStorage.getItem(key);
-		if (raw) {
-			try {
-				dataPayload[key] = JSON.parse(raw);
-			} catch {
-				dataPayload[key] = raw;
-			}
-		}
-	}
+	const { data, error } = await supabase
+		.from('user_data')
+		.select('data')
+		.eq('user_id', user.id)
+		.maybeSingle();
+	if (error || getAuthState().user?.id !== user.id) return;
+	const dataPayload = mergeSyncData(readLocal(), (data?.data ?? {}) as Record<string, unknown>, {
+		preferLocal: true,
+	});
+	writeLocal(dataPayload);
 
 	await supabase.from('user_data').upsert(
 		{

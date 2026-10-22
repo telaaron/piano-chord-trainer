@@ -10,7 +10,10 @@
 		0058405D38BADB52F20169A1 /* ReminderScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4158EA884A0F284C0C36D8D /* ReminderScheduler.swift */; };
 		041450E2866996B225A35323 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12BE9B7FC3E12658EBF8BA6 /* Typography.swift */; };
 		04C58489DBA3E4BFFD5351E4 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7702795829A5ABB75729E310 /* Glass.swift */; };
+		07A51D406989061E0BB2C597 /* rootless-voicings.en.md in Resources */ = {isa = PBXBuildFile; fileRef = C61A4B6D79C36D4589DFC4E2 /* rootless-voicings.en.md */; };
 		0CA036CCCDD858D91EBC3A5C /* InstrumentSerif-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 78C2EE358E9CFA654D2F2E21 /* InstrumentSerif-OFL.txt */; };
+		161B9463E850482ACC420B96 /* RemoteUserData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C47D72183D504C3DF91D1F5E /* RemoteUserData.swift */; };
+		191799803E2266907E32EE08 /* AccountCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE203DBA5B8B6289D6BA26C /* AccountCard.swift */; };
 		1A8D3647BAEE51A7EBB667ED /* TodayChordPreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A9B25B0CC9832C0C3D4428 /* TodayChordPreviewTests.swift */; };
 		1C06890EB8B750DA6C3EB7A8 /* CourseProgressStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */; };
 		1EC940AA3236C56C0FF91A77 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1685C6DE212DD795F90740BA /* InfoPlist.strings */; };
@@ -21,39 +24,65 @@
 		3315287D8A2ED6594BF622F8 /* TrackRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BAFB2095FACF8748114BDB1 /* TrackRow.swift */; };
 		3651ED9A3655F85B06830155 /* LeadSheetStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56840CFB4B8DE2498845F64C /* LeadSheetStrip.swift */; };
 		3898D326B8AA7B651DA85F69 /* TrainerCloseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B577A5A44A68066B2D1B2 /* TrainerCloseTests.swift */; };
+		3B46059593CF4BEA0C33870F /* left-hand.de.md in Resources */ = {isa = PBXBuildFile; fileRef = 89AF12490AA2503B64F4CBCB /* left-hand.de.md */; };
+		410B0B10078B8538594AE1BF /* WebCompatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F4CF935D45BABEF52BF883 /* WebCompatTests.swift */; };
 		44B8C4456407179C239F8054 /* HabitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */; };
 		4628FC298C745E08E8916FCE /* StatsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAFFD22673E4CAA738349DE1 /* StatsRow.swift */; };
+		4A4D3A64EA9F4CB613C83914 /* PlanPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F0F016C63DADC1A6C315FF /* PlanPresentation.swift */; };
+		4B0E7160E302029C2F9A2365 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 68DBF9A8606BBB7164153C45 /* Supabase */; };
 		4B82778E6A2032DE544806F7 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DDA2D43A556F2895D50C30 /* Components.swift */; };
 		4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C685670A09A9D9D041427E06 /* JazzChordsApp.swift */; };
+		4D4841FBDDC6BBCC74CBCF62 /* TodayStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AEC21371CDD5FA7DDD1229C /* TodayStage.swift */; };
 		56DD437D723F0218EB5129F6 /* PitchDetectors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6FA6254D4E1B61B168536F /* PitchDetectors.swift */; };
+		5AF7FC0A4E42AC44947C1FE9 /* PlanPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCBFBBBC45BC4F5E9163C3D9 /* PlanPresentationTests.swift */; };
+		5B05BB5F4A68FB3EF097DF47 /* GuideLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6FF5EC39A4A693335EC360 /* GuideLibraryTests.swift */; };
 		62E3FEB9985F1D74611F2DBD /* ToGoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EFD7EAE22BAE80FA1C77AC /* ToGoView.swift */; };
 		644B66D66331A179320C49E2 /* MusicEngine in Frameworks */ = {isa = PBXBuildFile; productRef = 4CC84F324CEA516CFA5C2507 /* MusicEngine */; };
+		6457AC0C9DA97723238864A9 /* SyncKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 245012F8F5AF11BC8CA3FB9B /* SyncKeys.swift */; };
+		652925640B42787CAD52C7BE /* IconTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71DD337D360F891AE5B4A848 /* IconTile.swift */; };
 		6B64265B5A140913765B6A97 /* FunctionGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FAF667A155B74E85E6CCF1 /* FunctionGrid.swift */; };
 		71523E5340773CC9E1C1AA6D /* TodayChordPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E072C8F69C6A85F6C6D20C /* TodayChordPreview.swift */; };
+		730784F3178FD2DB553EC401 /* SyncMergeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38D5B75BCAC04677D08F3DBF /* SyncMergeTests.swift */; };
 		73958CB8AA9D3C6F55222E75 /* CoachL10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2E18B5103F0E39D4D93E21 /* CoachL10n.swift */; };
+		73EDCC5F16737B1628DC8A68 /* SyncKeysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6A02DFBB561E304EB748F3 /* SyncKeysTests.swift */; };
 		77B3FD4665E06E306016962E /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = F8A2FABE259987DFF890E10C /* Localizable.stringsdict */; };
+		77E987F096D30B8DF6C8A482 /* GuideLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD13A548333405F155CB7F1D /* GuideLibrary.swift */; };
 		7E83C7E5820447C31FAACDA9 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F32C4DA0908BF4BB3691E1 /* SubscriptionStore.swift */; };
 		80415604BDCF56D50030180C /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3205430E7105BBD412ED8C3D /* Theme.swift */; };
+		844E40E8321CCE005C52084F /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 275922AF1BD1690156C54F2E /* AccountStore.swift */; };
+		8722C7B55E745BB33E730B1F /* SupabaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B9836D4CE020A34CBBDC09 /* SupabaseConfig.swift */; };
 		8774210EDD993F08AE929408 /* MusicEngine in Frameworks */ = {isa = PBXBuildFile; productRef = D2CF4D40587BFAB58F9DFAA2 /* MusicEngine */; };
+		87AE80F33654870540137B47 /* SyncServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72417C65C0EA15664E731F42 /* SyncServiceTests.swift */; };
+		87C44006919360213683B095 /* GuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAC37362DF9F36E2E650C442 /* GuideView.swift */; };
 		88D58423DACC1568F0D058F3 /* MIDIInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364C8A44BBA14E3CF00848DF /* MIDIInput.swift */; };
 		8B783711BA8940D4A03FBE89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EA814142A1EAB3935C084DB7 /* Assets.xcassets */; };
+		8CEBB1BF13E27BE175EF80B4 /* TodayStageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524866769797FA9637FCDA99 /* TodayStageTests.swift */; };
 		8F862844F36AA90408308D72 /* Gamification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905F024385A02CD6F8F28136 /* Gamification.swift */; };
 		92A76D9E6EE519F76C662164 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558859E350F645BD0FB4B81E /* Persistence.swift */; };
 		94FB28CC1E73FE89320A76DC /* LessonPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */; };
 		976D740101D7A3D52D2440C5 /* PaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCCDF2B612FF243D3FD6C286 /* PaletteTests.swift */; };
 		9A7DCD5EF00F0352F62707ED /* PianoKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */; };
+		9BC8D610E701B303003ECD86 /* left-hand.en.md in Resources */ = {isa = PBXBuildFile; fileRef = 4D961DE9D7B6AA96199278AD /* left-hand.en.md */; };
 		9BD73F877ED7093B33A938E2 /* EarTrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2090908BA45B8DDA83185B8A /* EarTrainingView.swift */; };
+		9DD7A4D29C3973BAEDE8DE33 /* ii-v-i.de.md in Resources */ = {isa = PBXBuildFile; fileRef = 41A810FD92E1131184AF9300 /* ii-v-i.de.md */; };
+		9FD890367B5E7D70BD61B783 /* jazz-piano-voicings.en.md in Resources */ = {isa = PBXBuildFile; fileRef = 77B2F8C8783BC4352A37B253 /* jazz-piano-voicings.en.md */; };
 		A062354894811309A09CFBE8 /* TrainerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B56736703494CD04E7B1D17 /* TrainerStore.swift */; };
+		A2C7380A77029A834A6076D3 /* SyncMerge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 561D509585622C46AE76ABD3 /* SyncMerge.swift */; };
 		A598779862BD07A7F8256A34 /* ToGoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F902F87AD6DDC753DF1D3F2 /* ToGoStore.swift */; };
+		A66022D5F8A2E767052B1EC4 /* SettingsText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1F9196830D96EF5841F1C9 /* SettingsText.swift */; };
 		A6999155E26580513FD8D700 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD8D24429AD88D4ED75C2AE /* RootView.swift */; };
 		A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */; };
 		AD5A7B000FC5B7CA7F366F1F /* CoachStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C852F0D60A3A9FBF128789 /* CoachStore.swift */; };
 		AEA93FB098E753D331685C28 /* Kalam-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = E039ED39986DDDA333F4D6C2 /* Kalam-OFL.txt */; };
+		AFCF20D6231AD3563923A35F /* NewcomerGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA216ECDCA4AC52D6F7849E5 /* NewcomerGuide.swift */; };
 		B0219DF12B3E321CF940F1D5 /* CustomProgressionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887C32789B9783323292BC6B /* CustomProgressionView.swift */; };
 		B10E5BD29AA3FB6F57933192 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C022B402A4004283821D49C9 /* OnboardingView.swift */; };
 		B26A2176443B9D4E4FB4AB3C /* EditorialHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 309CCD83613729E0A47D1E86 /* EditorialHeader.swift */; };
+		B29020E467C858E72753247A /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C0D1066EE52401DCD4D9CCC /* JSONValue.swift */; };
 		B3BD0950C1E780EFD7CC8693 /* InstrumentSerif-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F9BA5D75F259CC5D39A10793 /* InstrumentSerif-Regular.ttf */; };
+		B46E6F9EC21C8AFFC4A45F82 /* ii-v-i.en.md in Resources */ = {isa = PBXBuildFile; fileRef = FDDE4262A8F7B600D4AF435C /* ii-v-i.en.md */; };
 		BC1E914F9CC499A172CCE224 /* TelemetryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EB1C9D8B9F62A7944F811D /* TelemetryService.swift */; };
+		BD69BFDA39B772B37F555D00 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F3FDB23BBB6FA30DD48344 /* SyncService.swift */; };
 		BDBD98EEEFF2A6C6926B0919 /* FunctionGridTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F1DA987CF16DFB8EA1F37F /* FunctionGridTests.swift */; };
 		BF3E706C3D4C6FC323CE8299 /* hero2.webp in Resources */ = {isa = PBXBuildFile; fileRef = 32B429969FAC364D67B4C639 /* hero2.webp */; };
 		C3193AA23C8409A7CF9D0D10 /* AppIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C3E965AC4FC3825ACC4C530 /* AppIcons.swift */; };
@@ -62,12 +91,15 @@
 		D550AB6E3B5C7E16F2A7D126 /* MicInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDACE9F657B8CFF1C4FF3805 /* MicInput.swift */; };
 		D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A447E61D3336037E3D5865BD /* LearnView.swift */; };
 		DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C107A882B6475FA011F238FB /* AudioEngine.swift */; };
+		DF73BD9106185692CE3F20E5 /* AppearanceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBA37598589687AA565FE267 /* AppearanceStore.swift */; };
 		E16FCE516E972D3D81845C2A /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A963344F508D5DDC45CBE9E /* Buttons.swift */; };
 		E352E9914FC497422B8FE8E4 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EED3F6CD3AAF7D0157D6B50D /* Strings.swift */; };
 		E81A861F821A6985049BA872 /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C8027FEE0BDC4EAB32E5794C /* InstrumentSerif-Italic.ttf */; };
 		E87A40B20B1CB3CCE05E44B2 /* FeatureBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99E07430A95EC540FE80B6D5 /* FeatureBlock.swift */; };
+		E894DDD608898208202FBF29 /* EmailSignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91A7DE936999E13A3180E501 /* EmailSignInView.swift */; };
 		EC65AEEABC2906DA6A9AB3BB /* KeyboardColorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB92CE1A7659F62D2811B04 /* KeyboardColorTests.swift */; };
 		ED8216D853408C458EDD0F00 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2AE191D85096C087E5C4054 /* SettingsView.swift */; };
+		F25D082A6719B96ADA5D038E /* AppearanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD69152E280CB154A9429B1D /* AppearanceTests.swift */; };
 		F4AEDF57E08BFDE5248CFAC1 /* TypographyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFD17EC42CC41BF5829AB3C /* TypographyTests.swift */; };
 		F662935F15E14DE990D05F1A /* TrainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCB9663547D5A0E3BF66245 /* TrainerView.swift */; };
 		F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */; };
@@ -86,11 +118,15 @@
 
 /* Begin PBXFileReference section */
 		0867EC7118FCB35AE3C9028E /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		0CE203DBA5B8B6289D6BA26C /* AccountCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCard.swift; sourceTree = "<group>"; };
+		0D1F9196830D96EF5841F1C9 /* SettingsText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsText.swift; sourceTree = "<group>"; };
 		0DD8D24429AD88D4ED75C2AE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		1EFD17EC42CC41BF5829AB3C /* TypographyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypographyTests.swift; sourceTree = "<group>"; };
 		2090908BA45B8DDA83185B8A /* EarTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EarTrainingView.swift; sourceTree = "<group>"; };
+		245012F8F5AF11BC8CA3FB9B /* SyncKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncKeys.swift; sourceTree = "<group>"; };
 		25A39B04AD33C68F2EEC1EB2 /* CourseProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseProgressStore.swift; sourceTree = "<group>"; };
 		25C852F0D60A3A9FBF128789 /* CoachStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachStore.swift; sourceTree = "<group>"; };
+		275922AF1BD1690156C54F2E /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStore.swift; sourceTree = "<group>"; };
 		2CB92CE1A7659F62D2811B04 /* KeyboardColorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardColorTests.swift; sourceTree = "<group>"; };
 		2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboard.swift; sourceTree = "<group>"; };
 		2F902F87AD6DDC753DF1D3F2 /* ToGoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToGoStore.swift; sourceTree = "<group>"; };
@@ -100,41 +136,61 @@
 		35E072C8F69C6A85F6C6D20C /* TodayChordPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayChordPreview.swift; sourceTree = "<group>"; };
 		364C8A44BBA14E3CF00848DF /* MIDIInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MIDIInput.swift; sourceTree = "<group>"; };
 		369DE4A76420DD27F9178626 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		38D5B75BCAC04677D08F3DBF /* SyncMergeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMergeTests.swift; sourceTree = "<group>"; };
+		3B56D3A817A6DFF024125CC6 /* JazzChords.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = JazzChords.entitlements; sourceTree = "<group>"; };
 		3B6FA6254D4E1B61B168536F /* PitchDetectors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetectors.swift; sourceTree = "<group>"; };
 		3C3E965AC4FC3825ACC4C530 /* AppIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcons.swift; sourceTree = "<group>"; };
 		400D2A0AC948C26D2FFCDAE2 /* Kalam-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Kalam-Bold.ttf"; sourceTree = "<group>"; };
 		4189F08D835A7328D8B2A4A2 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		41A810FD92E1131184AF9300 /* ii-v-i.de.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "ii-v-i.de.md"; sourceTree = "<group>"; };
 		44DDA2D43A556F2895D50C30 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		47EB1C9D8B9F62A7944F811D /* TelemetryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryService.swift; sourceTree = "<group>"; };
 		4907AC852B390E7A32B11B4C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		4A963344F508D5DDC45CBE9E /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
+		4D961DE9D7B6AA96199278AD /* left-hand.en.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "left-hand.en.md"; sourceTree = "<group>"; };
+		524866769797FA9637FCDA99 /* TodayStageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayStageTests.swift; sourceTree = "<group>"; };
 		54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
 		558859E350F645BD0FB4B81E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		561D509585622C46AE76ABD3 /* SyncMerge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMerge.swift; sourceTree = "<group>"; };
 		56840CFB4B8DE2498845F64C /* LeadSheetStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeadSheetStrip.swift; sourceTree = "<group>"; };
 		5A6FFC23232BA8E2500B99EF /* JazzChords.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = JazzChords.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5C0D1066EE52401DCD4D9CCC /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
+		61F0F016C63DADC1A6C315FF /* PlanPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanPresentation.swift; sourceTree = "<group>"; };
 		62FDFB5CD48307EEAA9C55B2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		64EFD7EAE22BAE80FA1C77AC /* ToGoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToGoView.swift; sourceTree = "<group>"; };
 		6BAFB2095FACF8748114BDB1 /* TrackRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackRow.swift; sourceTree = "<group>"; };
+		71DD337D360F891AE5B4A848 /* IconTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconTile.swift; sourceTree = "<group>"; };
+		72417C65C0EA15664E731F42 /* SyncServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncServiceTests.swift; sourceTree = "<group>"; };
 		7702795829A5ABB75729E310 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glass.swift; sourceTree = "<group>"; };
+		77B2F8C8783BC4352A37B253 /* jazz-piano-voicings.en.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "jazz-piano-voicings.en.md"; sourceTree = "<group>"; };
 		78C2EE358E9CFA654D2F2E21 /* InstrumentSerif-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "InstrumentSerif-OFL.txt"; sourceTree = "<group>"; };
 		795F7DDC99A8BAAB0B8335A5 /* HabitStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitStore.swift; sourceTree = "<group>"; };
 		7B56736703494CD04E7B1D17 /* TrainerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerStore.swift; sourceTree = "<group>"; };
 		84A9B25B0CC9832C0C3D4428 /* TodayChordPreviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayChordPreviewTests.swift; sourceTree = "<group>"; };
+		84F4CF935D45BABEF52BF883 /* WebCompatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCompatTests.swift; sourceTree = "<group>"; };
 		887C32789B9783323292BC6B /* CustomProgressionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomProgressionView.swift; sourceTree = "<group>"; };
+		89AF12490AA2503B64F4CBCB /* left-hand.de.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "left-hand.de.md"; sourceTree = "<group>"; };
+		8AEC21371CDD5FA7DDD1229C /* TodayStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayStage.swift; sourceTree = "<group>"; };
 		8E2E18B5103F0E39D4D93E21 /* CoachL10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachL10n.swift; sourceTree = "<group>"; };
 		905F024385A02CD6F8F28136 /* Gamification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gamification.swift; sourceTree = "<group>"; };
 		91353C5634DD3FED6F818B0A /* ReminderOfferCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderOfferCard.swift; sourceTree = "<group>"; };
+		91A7DE936999E13A3180E501 /* EmailSignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailSignInView.swift; sourceTree = "<group>"; };
 		99E07430A95EC540FE80B6D5 /* FeatureBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBlock.swift; sourceTree = "<group>"; };
+		9E6FF5EC39A4A693335EC360 /* GuideLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuideLibraryTests.swift; sourceTree = "<group>"; };
 		9FC2B860DE316E7E340620B8 /* Metronome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metronome.swift; sourceTree = "<group>"; };
 		A0514651239161E6F062BEBE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A12BE9B7FC3E12658EBF8BA6 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		A447E61D3336037E3D5865BD /* LearnView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnView.swift; sourceTree = "<group>"; };
+		AD69152E280CB154A9429B1D /* AppearanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceTests.swift; sourceTree = "<group>"; };
 		AFCB9663547D5A0E3BF66245 /* TrainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerView.swift; sourceTree = "<group>"; };
+		B2B9836D4CE020A34CBBDC09 /* SupabaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfig.swift; sourceTree = "<group>"; };
 		B7F1DA987CF16DFB8EA1F37F /* FunctionGridTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGridTests.swift; sourceTree = "<group>"; };
 		BCCDF2B612FF243D3FD6C286 /* PaletteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteTests.swift; sourceTree = "<group>"; };
 		C022B402A4004283821D49C9 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		C107A882B6475FA011F238FB /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
 		C4158EA884A0F284C0C36D8D /* ReminderScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderScheduler.swift; sourceTree = "<group>"; };
+		C47D72183D504C3DF91D1F5E /* RemoteUserData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteUserData.swift; sourceTree = "<group>"; };
+		C61A4B6D79C36D4589DFC4E2 /* rootless-voicings.en.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "rootless-voicings.en.md"; sourceTree = "<group>"; };
 		C685670A09A9D9D041427E06 /* JazzChordsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JazzChordsApp.swift; sourceTree = "<group>"; };
 		C8027FEE0BDC4EAB32E5794C /* InstrumentSerif-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Italic.ttf"; sourceTree = "<group>"; };
 		C8EAA6B5EEC9920BF5E32B10 /* JazzChordsTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = JazzChordsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,18 +198,26 @@
 		CEA73CE363D55D87924D64F4 /* empty.webp */ = {isa = PBXFileReference; path = empty.webp; sourceTree = "<group>"; };
 		D7F32C4DA0908BF4BB3691E1 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
 		DAFFD22673E4CAA738349DE1 /* StatsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsRow.swift; sourceTree = "<group>"; };
+		DBA37598589687AA565FE267 /* AppearanceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceStore.swift; sourceTree = "<group>"; };
+		DD13A548333405F155CB7F1D /* GuideLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuideLibrary.swift; sourceTree = "<group>"; };
+		DD6A02DFBB561E304EB748F3 /* SyncKeysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncKeysTests.swift; sourceTree = "<group>"; };
 		E039ED39986DDDA333F4D6C2 /* Kalam-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Kalam-OFL.txt"; sourceTree = "<group>"; };
+		E1F3FDB23BBB6FA30DD48344 /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
 		E3C53F75A1AB2D782B54B280 /* Notation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notation.swift; sourceTree = "<group>"; };
 		E71CABA6FA5E417C7D166B90 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		EA814142A1EAB3935C084DB7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EAC37362DF9F36E2E650C442 /* GuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuideView.swift; sourceTree = "<group>"; };
 		EED3F6CD3AAF7D0157D6B50D /* Strings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
 		F2AE191D85096C087E5C4054 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonPlayerView.swift; sourceTree = "<group>"; };
 		F7FEDEE711344352652D8123 /* MusicEngine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = MusicEngine; path = ../MusicEngine; sourceTree = SOURCE_ROOT; };
 		F9BA5D75F259CC5D39A10793 /* InstrumentSerif-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Regular.ttf"; sourceTree = "<group>"; };
 		F9FAF667A155B74E85E6CCF1 /* FunctionGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGrid.swift; sourceTree = "<group>"; };
+		FA216ECDCA4AC52D6F7849E5 /* NewcomerGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewcomerGuide.swift; sourceTree = "<group>"; };
 		FB7B577A5A44A68066B2D1B2 /* TrainerCloseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerCloseTests.swift; sourceTree = "<group>"; };
+		FCBFBBBC45BC4F5E9163C3D9 /* PlanPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanPresentationTests.swift; sourceTree = "<group>"; };
 		FDACE9F657B8CFF1C4FF3805 /* MicInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicInput.swift; sourceTree = "<group>"; };
+		FDDE4262A8F7B600D4AF435C /* ii-v-i.en.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "ii-v-i.en.md"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -162,6 +226,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				644B66D66331A179320C49E2 /* MusicEngine in Frameworks */,
+				4B0E7160E302029C2F9A2365 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -176,14 +241,41 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0C7635CD985B81498E852E8B /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				0CE203DBA5B8B6289D6BA26C /* AccountCard.swift */,
+				DBA37598589687AA565FE267 /* AppearanceStore.swift */,
+				91A7DE936999E13A3180E501 /* EmailSignInView.swift */,
+				0D1F9196830D96EF5841F1C9 /* SettingsText.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		0E59311BFB4B80A32ACECD72 /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				275922AF1BD1690156C54F2E /* AccountStore.swift */,
+				5C0D1066EE52401DCD4D9CCC /* JSONValue.swift */,
+				C47D72183D504C3DF91D1F5E /* RemoteUserData.swift */,
+				B2B9836D4CE020A34CBBDC09 /* SupabaseConfig.swift */,
+				245012F8F5AF11BC8CA3FB9B /* SyncKeys.swift */,
+				561D509585622C46AE76ABD3 /* SyncMerge.swift */,
+				E1F3FDB23BBB6FA30DD48344 /* SyncService.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
 		16EE6E81F745CA2F351B35F8 /* JazzChords */ = {
 			isa = PBXGroup;
 			children = (
 				369DE4A76420DD27F9178626 /* Info.plist */,
+				3B56D3A817A6DFF024125CC6 /* JazzChords.entitlements */,
 				A365A17123F59E42DF34E6CF /* App */,
 				433D98590D8E055795DAF72A /* Audio */,
 				9DFBB2EAF145FD67EFE58FCA /* Resources */,
 				2C99DD2E23C7FCA38EFF5F6F /* Store */,
+				0E59311BFB4B80A32ACECD72 /* Sync */,
 				6B3B96934DC968D3D152BFAC /* Theme */,
 				91CFA51D27D81C11A888DEE7 /* Views */,
 			);
@@ -215,6 +307,19 @@
 			path = Store;
 			sourceTree = "<group>";
 		};
+		3DB79C874BFBBF6D24CD68D9 /* Guides */ = {
+			isa = PBXGroup;
+			children = (
+				41A810FD92E1131184AF9300 /* ii-v-i.de.md */,
+				FDDE4262A8F7B600D4AF435C /* ii-v-i.en.md */,
+				77B2F8C8783BC4352A37B253 /* jazz-piano-voicings.en.md */,
+				89AF12490AA2503B64F4CBCB /* left-hand.de.md */,
+				4D961DE9D7B6AA96199278AD /* left-hand.en.md */,
+				C61A4B6D79C36D4589DFC4E2 /* rootless-voicings.en.md */,
+			);
+			path = Guides;
+			sourceTree = "<group>";
+		};
 		433D98590D8E055795DAF72A /* Audio */ = {
 			isa = PBXGroup;
 			children = (
@@ -230,12 +335,20 @@
 		475BCBCA6DA7B6B0D15400B6 /* JazzChordsTests */ = {
 			isa = PBXGroup;
 			children = (
+				AD69152E280CB154A9429B1D /* AppearanceTests.swift */,
 				B7F1DA987CF16DFB8EA1F37F /* FunctionGridTests.swift */,
+				9E6FF5EC39A4A693335EC360 /* GuideLibraryTests.swift */,
 				2CB92CE1A7659F62D2811B04 /* KeyboardColorTests.swift */,
 				BCCDF2B612FF243D3FD6C286 /* PaletteTests.swift */,
+				FCBFBBBC45BC4F5E9163C3D9 /* PlanPresentationTests.swift */,
+				DD6A02DFBB561E304EB748F3 /* SyncKeysTests.swift */,
+				38D5B75BCAC04677D08F3DBF /* SyncMergeTests.swift */,
+				72417C65C0EA15664E731F42 /* SyncServiceTests.swift */,
 				84A9B25B0CC9832C0C3D4428 /* TodayChordPreviewTests.swift */,
+				524866769797FA9637FCDA99 /* TodayStageTests.swift */,
 				FB7B577A5A44A68066B2D1B2 /* TrainerCloseTests.swift */,
 				1EFD17EC42CC41BF5829AB3C /* TypographyTests.swift */,
+				84F4CF935D45BABEF52BF883 /* WebCompatTests.swift */,
 			);
 			path = JazzChordsTests;
 			sourceTree = "<group>";
@@ -277,6 +390,7 @@
 				309CCD83613729E0A47D1E86 /* EditorialHeader.swift */,
 				99E07430A95EC540FE80B6D5 /* FeatureBlock.swift */,
 				F9FAF667A155B74E85E6CCF1 /* FunctionGrid.swift */,
+				71DD337D360F891AE5B4A848 /* IconTile.swift */,
 				56840CFB4B8DE2498845F64C /* LeadSheetStrip.swift */,
 				DAFFD22673E4CAA738349DE1 /* StatsRow.swift */,
 				6BAFB2095FACF8748114BDB1 /* TrackRow.swift */,
@@ -303,19 +417,25 @@
 				2090908BA45B8DDA83185B8A /* EarTrainingView.swift */,
 				905F024385A02CD6F8F28136 /* Gamification.swift */,
 				7702795829A5ABB75729E310 /* Glass.swift */,
+				DD13A548333405F155CB7F1D /* GuideLibrary.swift */,
+				EAC37362DF9F36E2E650C442 /* GuideView.swift */,
 				A447E61D3336037E3D5865BD /* LearnView.swift */,
 				F49CCEAB4ABDEE063F34A7A3 /* LessonPlayerView.swift */,
+				FA216ECDCA4AC52D6F7849E5 /* NewcomerGuide.swift */,
 				C022B402A4004283821D49C9 /* OnboardingView.swift */,
 				2F7F25705BD53104D4AC335C /* PianoKeyboard.swift */,
+				61F0F016C63DADC1A6C315FF /* PlanPresentation.swift */,
 				54717B1DDBDAA0F4A8CB29C6 /* PracticeView.swift */,
 				CD62E7DE3E07CE80A8E3C677 /* ProgressView_.swift */,
 				91353C5634DD3FED6F818B0A /* ReminderOfferCard.swift */,
 				F2AE191D85096C087E5C4054 /* SettingsView.swift */,
 				35E072C8F69C6A85F6C6D20C /* TodayChordPreview.swift */,
+				8AEC21371CDD5FA7DDD1229C /* TodayStage.swift */,
 				0867EC7118FCB35AE3C9028E /* TodayView.swift */,
 				64EFD7EAE22BAE80FA1C77AC /* ToGoView.swift */,
 				AFCB9663547D5A0E3BF66245 /* TrainerView.swift */,
 				87448A7338A919E59BD27286 /* Editorial */,
+				0C7635CD985B81498E852E8B /* Settings */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -327,6 +447,7 @@
 				A0514651239161E6F062BEBE /* PrivacyInfo.xcprivacy */,
 				841D636F2248E39F63DB2E2E /* Art */,
 				8F19B4D6E633926A39077232 /* Fonts */,
+				3DB79C874BFBBF6D24CD68D9 /* Guides */,
 				1685C6DE212DD795F90740BA /* InfoPlist.strings */,
 				F8A2FABE259987DFF890E10C /* Localizable.stringsdict */,
 			);
@@ -399,6 +520,7 @@
 			name = JazzChords;
 			packageProductDependencies = (
 				4CC84F324CEA516CFA5C2507 /* MusicEngine */,
+				68DBF9A8606BBB7164153C45 /* Supabase */,
 			);
 			productName = JazzChords;
 			productReference = 5A6FFC23232BA8E2500B99EF /* JazzChords.app */;
@@ -434,6 +556,7 @@
 			mainGroup = B81378DCEBCC2DE1C32A9FAF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				EEC566E4D5EC8C2B33FF962B /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				DC2679E7A1B6F407724C1C95 /* XCLocalSwiftPackageReference "../MusicEngine" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -463,6 +586,12 @@
 				D1E6E5A82F1AA2524B779E2B /* PrivacyInfo.xcprivacy in Resources */,
 				23E6837096744F2101283969 /* empty.webp in Resources */,
 				BF3E706C3D4C6FC323CE8299 /* hero2.webp in Resources */,
+				9DD7A4D29C3973BAEDE8DE33 /* ii-v-i.de.md in Resources */,
+				B46E6F9EC21C8AFFC4A45F82 /* ii-v-i.en.md in Resources */,
+				9FD890367B5E7D70BD61B783 /* jazz-piano-voicings.en.md in Resources */,
+				3B46059593CF4BEA0C33870F /* left-hand.de.md in Resources */,
+				9BC8D610E701B303003ECD86 /* left-hand.en.md in Resources */,
+				07A51D406989061E0BB2C597 /* rootless-voicings.en.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -473,7 +602,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				191799803E2266907E32EE08 /* AccountCard.swift in Sources */,
+				844E40E8321CCE005C52084F /* AccountStore.swift in Sources */,
 				C3193AA23C8409A7CF9D0D10 /* AppIcons.swift in Sources */,
+				DF73BD9106185692CE3F20E5 /* AppearanceStore.swift in Sources */,
 				DD397501BA7493EC394C6D2D /* AudioEngine.swift in Sources */,
 				E16FCE516E972D3D81845C2A /* Buttons.swift in Sources */,
 				73958CB8AA9D3C6F55222E75 /* CoachL10n.swift in Sources */,
@@ -483,11 +615,16 @@
 				B0219DF12B3E321CF940F1D5 /* CustomProgressionView.swift in Sources */,
 				9BD73F877ED7093B33A938E2 /* EarTrainingView.swift in Sources */,
 				B26A2176443B9D4E4FB4AB3C /* EditorialHeader.swift in Sources */,
+				E894DDD608898208202FBF29 /* EmailSignInView.swift in Sources */,
 				E87A40B20B1CB3CCE05E44B2 /* FeatureBlock.swift in Sources */,
 				6B64265B5A140913765B6A97 /* FunctionGrid.swift in Sources */,
 				8F862844F36AA90408308D72 /* Gamification.swift in Sources */,
 				04C58489DBA3E4BFFD5351E4 /* Glass.swift in Sources */,
+				77E987F096D30B8DF6C8A482 /* GuideLibrary.swift in Sources */,
+				87C44006919360213683B095 /* GuideView.swift in Sources */,
 				44B8C4456407179C239F8054 /* HabitStore.swift in Sources */,
+				652925640B42787CAD52C7BE /* IconTile.swift in Sources */,
+				B29020E467C858E72753247A /* JSONValue.swift in Sources */,
 				4BEDDAAD63E2B62E2720B429 /* JazzChordsApp.swift in Sources */,
 				3651ED9A3655F85B06830155 /* LeadSheetStrip.swift in Sources */,
 				D799B5D282BD138BF018ECF9 /* LearnView.swift in Sources */,
@@ -495,25 +632,34 @@
 				88D58423DACC1568F0D058F3 /* MIDIInput.swift in Sources */,
 				CF3AB4879000DF328D238148 /* Metronome.swift in Sources */,
 				D550AB6E3B5C7E16F2A7D126 /* MicInput.swift in Sources */,
+				AFCF20D6231AD3563923A35F /* NewcomerGuide.swift in Sources */,
 				21D4BDA670AEFD9E1A87107A /* Notation.swift in Sources */,
 				B10E5BD29AA3FB6F57933192 /* OnboardingView.swift in Sources */,
 				92A76D9E6EE519F76C662164 /* Persistence.swift in Sources */,
 				9A7DCD5EF00F0352F62707ED /* PianoKeyboard.swift in Sources */,
 				56DD437D723F0218EB5129F6 /* PitchDetectors.swift in Sources */,
+				4A4D3A64EA9F4CB613C83914 /* PlanPresentation.swift in Sources */,
 				F6EAE635A98CC73651B35F0D /* PracticeView.swift in Sources */,
 				A9043E1CE9AE95E00FE75C25 /* ProgressView_.swift in Sources */,
 				2B1E87FEAFB68A202FB728D7 /* ReminderOfferCard.swift in Sources */,
 				0058405D38BADB52F20169A1 /* ReminderScheduler.swift in Sources */,
+				161B9463E850482ACC420B96 /* RemoteUserData.swift in Sources */,
 				A6999155E26580513FD8D700 /* RootView.swift in Sources */,
+				A66022D5F8A2E767052B1EC4 /* SettingsText.swift in Sources */,
 				ED8216D853408C458EDD0F00 /* SettingsView.swift in Sources */,
 				4628FC298C745E08E8916FCE /* StatsRow.swift in Sources */,
 				E352E9914FC497422B8FE8E4 /* Strings.swift in Sources */,
 				7E83C7E5820447C31FAACDA9 /* SubscriptionStore.swift in Sources */,
+				8722C7B55E745BB33E730B1F /* SupabaseConfig.swift in Sources */,
+				6457AC0C9DA97723238864A9 /* SyncKeys.swift in Sources */,
+				A2C7380A77029A834A6076D3 /* SyncMerge.swift in Sources */,
+				BD69BFDA39B772B37F555D00 /* SyncService.swift in Sources */,
 				BC1E914F9CC499A172CCE224 /* TelemetryService.swift in Sources */,
 				80415604BDCF56D50030180C /* Theme.swift in Sources */,
 				A598779862BD07A7F8256A34 /* ToGoStore.swift in Sources */,
 				62E3FEB9985F1D74611F2DBD /* ToGoView.swift in Sources */,
 				71523E5340773CC9E1C1AA6D /* TodayChordPreview.swift in Sources */,
+				4D4841FBDDC6BBCC74CBCF62 /* TodayStage.swift in Sources */,
 				2D8228413E715D2CA5BD23A5 /* TodayView.swift in Sources */,
 				3315287D8A2ED6594BF622F8 /* TrackRow.swift in Sources */,
 				A062354894811309A09CFBE8 /* TrainerStore.swift in Sources */,
@@ -526,12 +672,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F25D082A6719B96ADA5D038E /* AppearanceTests.swift in Sources */,
 				BDBD98EEEFF2A6C6926B0919 /* FunctionGridTests.swift in Sources */,
+				5B05BB5F4A68FB3EF097DF47 /* GuideLibraryTests.swift in Sources */,
 				EC65AEEABC2906DA6A9AB3BB /* KeyboardColorTests.swift in Sources */,
 				976D740101D7A3D52D2440C5 /* PaletteTests.swift in Sources */,
+				5AF7FC0A4E42AC44947C1FE9 /* PlanPresentationTests.swift in Sources */,
+				73EDCC5F16737B1628DC8A68 /* SyncKeysTests.swift in Sources */,
+				730784F3178FD2DB553EC401 /* SyncMergeTests.swift in Sources */,
+				87AE80F33654870540137B47 /* SyncServiceTests.swift in Sources */,
 				1A8D3647BAEE51A7EBB667ED /* TodayChordPreviewTests.swift in Sources */,
+				8CEBB1BF13E27BE175EF80B4 /* TodayStageTests.swift in Sources */,
 				3898D326B8AA7B651DA85F69 /* TrainerCloseTests.swift in Sources */,
 				F4AEDF57E08BFDE5248CFAC1 /* TypographyTests.swift in Sources */,
+				410B0B10078B8538594AE1BF /* WebCompatTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -592,9 +746,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = JazzChords/JazzChords.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = FDVWAWJYV5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				INFOPLIST_FILE = JazzChords/Info.plist;
@@ -755,9 +910,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = JazzChords/JazzChords.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = FDVWAWJYV5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				INFOPLIST_FILE = JazzChords/Info.plist;
@@ -813,10 +969,26 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		EEC566E4D5EC8C2B33FF962B /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		4CC84F324CEA516CFA5C2507 /* MusicEngine */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MusicEngine;
+		};
+		68DBF9A8606BBB7164153C45 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EEC566E4D5EC8C2B33FF962B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
 		};
 		D2CF4D40587BFAB58F9DFAA2 /* MusicEngine */ = {
 			isa = XCSwiftPackageProductDependency;

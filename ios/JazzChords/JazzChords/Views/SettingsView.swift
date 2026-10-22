@@ -1,138 +1,377 @@
-// Settings — notation, sound, MIDI, reminder, privacy. Notation and sound live in
+// Settings — the one central place for account and preferences (row F, spec §2),
+// reached from the profile circle on Heute. Notation and sound live in
 // SavedSettings (the trainer's persisted prefs): every change is written through
 // at once, and the sound preset is applied to the audio engine immediately.
+// All storage keys are unchanged; only the presentation is new.
 
 import SwiftUI
+import AuthenticationServices
 import MusicEngine
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.palette) private var palette
+    @Environment(\.openURL) private var openURL
+
+    @State private var accounts = AccountStore.shared
+    @State private var sync = SyncService.shared
+    /// Raw nonce of the Apple request in flight (its SHA-256 goes to Apple).
+    @State private var appleNonce: String?
 
     @State private var settings = ProgressStore.loadSettings()
+    @State private var appearance = AppearanceStore.shared
     @State private var showBluetooth = false
+    @State private var showEmailSignIn = false
     @State private var telemetryEnabled = TelemetryService.shared.isEnabled
     @State private var reminderOn = ReminderScheduler.shared.isEnabled
     @State private var reminderTime = Self.date(from: ReminderScheduler.shared.time)
     @State private var reminderDenied = false
 
-
     var body: some View {
-        Form {
-            Section(CoachL10n.t("settings.notation")) {
-                Picker(CoachL10n.t("settings.notation_system"), selection: $settings.notationSystem) {
-                    Text(CoachL10n.t("settings.notation_system_international")).tag(NotationSystem.international)
-                    Text(CoachL10n.t("settings.notation_system_german")).tag(NotationSystem.german)
-                }
-                Picker(CoachL10n.t("settings.chord_notation_title"), selection: $settings.notation) {
-                    Text(CoachL10n.t("settings.notation_standard")).tag(NotationStyle.standard)
-                    Text(CoachL10n.t("settings.notation_symbols")).tag(NotationStyle.symbols)
-                    Text(CoachL10n.t("settings.notation_short")).tag(NotationStyle.short)
-                }
-                Picker(CoachL10n.t("settings.accidentals"), selection: $settings.accidentals) {
-                    Text(CoachL10n.t("settings.accidentals_both")).tag(AccidentalPreference.both)
-                    Text(CoachL10n.t("settings.accidentals_sharps")).tag(AccidentalPreference.sharps)
-                    Text(CoachL10n.t("settings.accidentals_flats")).tag(AccidentalPreference.flats)
-                }
-            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: Theme.space5) {
+                EditorialHeader(title: SettingsText.title)
 
-            Section(CoachL10n.t("settings.sound")) {
-                Picker(CoachL10n.t("settings.instrument"), selection: $settings.soundPreset) {
-                    ForEach(SoundPreset.allCases, id: \.rawValue) { p in
-                        Text(presetLabel(p.rawValue)).tag(p.rawValue)
+                VStack(alignment: .leading, spacing: Theme.space2) {
+                    AccountCard(model: accountModel)
+                    if let message = accounts.error ?? accounts.info {
+                        Text(message)
+                            .font(.footnote)
+                            .foregroundStyle(accounts.error != nil ? palette.action : palette.inkMuted)
+                            .padding(.horizontal, Theme.space4)
                     }
                 }
-            }
 
-            Section(CoachL10n.t("settings.midi")) {
-                Button {
-                    MIDIInput.shared.start()
-                    showBluetooth = true
-                } label: {
-                    Label(CoachL10n.t("settings.connect_bluetooth"), systemImage: "pianokeys")
-                }
-                if !MIDIInput.shared.devices.isEmpty {
-                    ForEach(MIDIInput.shared.devices) { d in
-                        Label(d.name, systemImage: "pianokeys.inverse")
-                            .foregroundStyle(.secondary)
+                section(SettingsText.practice) {
+                    menuRow(icon: "textformat", title: SettingsText.chordNotation,
+                            value: notationLabel(settings.notation)) {
+                        Picker(SettingsText.chordNotation, selection: $settings.notation) {
+                            Text(CoachL10n.t("settings.notation_standard")).tag(NotationStyle.standard)
+                            Text(CoachL10n.t("settings.notation_symbols")).tag(NotationStyle.symbols)
+                            Text(CoachL10n.t("settings.notation_short")).tag(NotationStyle.short)
+                        }
                     }
-                }
-            }
-
-            Section {
-                Toggle(CoachL10n.t("reminder.settings_toggle"), isOn: $reminderOn)
-                    .onChange(of: reminderOn) { _, on in
-                        Task {
-                            if on {
-                                let granted = await ReminderScheduler.shared.enable(at: Self.reminderTime(from: reminderTime), source: "settings")
-                                reminderDenied = !granted
-                                if !granted { reminderOn = false }
-                                // Switched off again while the permission answer was pending.
-                                else if !reminderOn { await ReminderScheduler.shared.disable() }
-                            } else if ReminderScheduler.shared.isEnabled {
-                                await ReminderScheduler.shared.disable()
+                    divider
+                    menuRow(icon: "character.book.closed", title: SettingsText.notationSystem,
+                            value: settings.notationSystem == .german
+                                ? CoachL10n.t("settings.notation_system_german")
+                                : CoachL10n.t("settings.notation_system_international")) {
+                        Picker(SettingsText.notationSystem, selection: $settings.notationSystem) {
+                            Text(CoachL10n.t("settings.notation_system_international")).tag(NotationSystem.international)
+                            Text(CoachL10n.t("settings.notation_system_german")).tag(NotationSystem.german)
+                        }
+                    }
+                    divider
+                    menuRow(icon: "number", title: SettingsText.accidentals,
+                            value: accidentalsLabel(settings.accidentals)) {
+                        Picker(SettingsText.accidentals, selection: $settings.accidentals) {
+                            Text(CoachL10n.t("settings.accidentals_both")).tag(AccidentalPreference.both)
+                            Text(CoachL10n.t("settings.accidentals_sharps")).tag(AccidentalPreference.sharps)
+                            Text(CoachL10n.t("settings.accidentals_flats")).tag(AccidentalPreference.flats)
+                        }
+                    }
+                    divider
+                    menuRow(icon: "speaker.wave.2", title: SettingsText.sound,
+                            value: presetLabel(settings.soundPreset)) {
+                        Picker(SettingsText.sound, selection: $settings.soundPreset) {
+                            ForEach(SoundPreset.allCases, id: \.rawValue) { p in
+                                Text(presetLabel(p.rawValue)).tag(p.rawValue)
                             }
                         }
                     }
-                if reminderOn {
-                    DatePicker(CoachL10n.t("reminder.settings_time"), selection: $reminderTime,
-                               displayedComponents: .hourAndMinute)
-                        .onChange(of: reminderTime) { _, d in
-                            Task { await ReminderScheduler.shared.setTime(Self.reminderTime(from: d)) }
-                        }
-                }
-                if reminderDenied {
-                    Button(CoachL10n.t("reminder.settings_denied")) {
-                        if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
-                            UIApplication.shared.open(url)
+                    divider
+                    Button {
+                        MIDIInput.shared.start()
+                        showBluetooth = true
+                    } label: {
+                        row(icon: "pianokeys", title: SettingsText.connectKeyboard) {
+                            valueText(MIDIInput.shared.devices.first?.name ?? SettingsText.bluetooth)
+                            chevron
                         }
                     }
-                    .font(.footnote)
+                    .buttonStyle(.plain)
                 }
-            } header: {
-                Text(CoachL10n.t("reminder.settings_title"))
-            }
 
-            Section(CoachL10n.t(CoachL10n.privacyTitle)) {
-                Toggle(CoachL10n.t(CoachL10n.privacyToggle), isOn: $telemetryEnabled)
-                    .onChange(of: telemetryEnabled) { _, on in
-                        TelemetryService.shared.setEnabled(on)
+                section(SettingsText.reminder) {
+                    row(icon: "bell", tint: .red, title: SettingsText.reminderToggle) {
+                        Toggle(SettingsText.reminderToggle, isOn: $reminderOn)
+                            .labelsHidden()
+                            .tint(palette.action)
                     }
-                Text(CoachL10n.t(CoachL10n.privacyDesc))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
+                    if reminderOn {
+                        divider
+                        row(icon: nil, title: SettingsText.reminderTime) {
+                            DatePicker(SettingsText.reminderTime, selection: $reminderTime,
+                                       displayedComponents: .hourAndMinute)
+                                .labelsHidden()
+                        }
+                    }
+                } footer: {
+                    if reminderDenied {
+                        Button(CoachL10n.t("reminder.settings_denied")) {
+                            if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                                openURL(url)
+                            }
+                        }
+                        .font(.footnote)
+                        .tint(palette.action)
+                    }
+                }
 
-            Section {
-                Text(CoachL10n.t("settings.midi_footer"))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                section(SettingsText.appearance) {
+                    Picker(SettingsText.appearance, selection: $appearance.appearance) {
+                        ForEach(Appearance.allCases) { a in Text(a.label).tag(a) }
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(Theme.space3)
+                }
+
+                section(SettingsText.privacy) {
+                    row(icon: "lock.shield", tint: .slate, title: SettingsText.telemetryToggle) {
+                        Toggle(SettingsText.telemetryToggle, isOn: $telemetryEnabled)
+                            .labelsHidden()
+                            .tint(palette.action)
+                    }
+                } footer: {
+                    Text(SettingsText.telemetryNote)
+                }
+
+                section(SettingsText.about) {
+                    linkRow(SettingsText.help, "https://jazzchords.app/feedback")
+                    divider
+                    linkRow(SettingsText.privacyPolicy, "https://jazzchords.app/privacy")
+                    divider
+                    linkRow(SettingsText.imprint, "https://jazzchords.app/impressum")
+                } footer: {
+                    Text(SettingsText.footer)
+                        .font(Display.serif(16, italic: true, relativeTo: .footnote))
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, Theme.space3)
+                }
             }
+            .padding(.horizontal, Theme.space5 - 4)
+            .padding(.bottom, Theme.space6)
         }
-        .scrollContentBackground(.hidden)
         .background(palette.canvas)
         .task {
             // Notifications may have been revoked in iOS Settings since reminders were turned on.
             await ReminderScheduler.shared.refreshAuthorization()
             reminderDenied = ReminderScheduler.shared.isEnabled && ReminderScheduler.shared.authorization == .denied
         }
-        .onChange(of: settings) { _, new in
-            ProgressStore.saveSettings(new)
+        .onChange(of: settings) { old, new in
+            let stored = ProgressStore.loadSettings()
+            let patched = SavedSettings.patched(stored: stored, old: old, new: new)
+            if patched != stored { ProgressStore.saveSettings(patched) }
             AudioEngine.shared.setPreset(SoundPreset(rawValue: new.soundPreset) ?? .grandPiano)
         }
-        // Manual UIKit present (.formSheet) — CABTMIDICentralViewController crashes
-        // if loaded at a zero-frame, which a SwiftUI sheet causes.
-        .background(BluetoothMIDIPresenter(isPresented: $showBluetooth))
-        .navigationTitle(CoachL10n.t("settings.open_settings"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(CoachL10n.t("ui.done")) { dismiss() }
-                    .fontWeight(.semibold)
-                    .tint(palette.ink)
+        // Sign-in or a pull brought the account's settings: show them.
+        .onChange(of: SyncService.shared.revision) { _, _ in
+            settings = ProgressStore.loadSettings()
+        }
+        .onChange(of: reminderOn) { _, on in
+            Task {
+                if on {
+                    let granted = await ReminderScheduler.shared.enable(at: Self.reminderTime(from: reminderTime), source: "settings")
+                    reminderDenied = !granted
+                    if !granted { reminderOn = false }
+                    // Switched off again while the permission answer was pending.
+                    else if !reminderOn { await ReminderScheduler.shared.disable() }
+                } else if ReminderScheduler.shared.isEnabled {
+                    await ReminderScheduler.shared.disable()
+                }
             }
         }
+        .onChange(of: reminderTime) { _, d in
+            Task { await ReminderScheduler.shared.setTime(Self.reminderTime(from: d)) }
+        }
+        .onChange(of: telemetryEnabled) { _, on in
+            TelemetryService.shared.setEnabled(on)
+        }
+        // Manual UIKit present — CABTMIDICentralViewController crashes inside a SwiftUI sheet.
+        .background(BluetoothMIDIPresenter(isPresented: $showBluetooth))
+        .sheet(isPresented: $showEmailSignIn) {
+            NavigationStack { EmailSignInView(submit: emailSubmit) }
+                .environment(\.palette, palette)
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            HStack {
+                Spacer()
+                Button(SettingsText.done) { dismiss() }
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(palette.ink)
+                    .padding(.horizontal, Theme.space4)
+                    .frame(minHeight: 44)
+                    .glassControl(in: Capsule())
+            }
+            .padding(.horizontal, Theme.space5 - 4)
+            .padding(.top, Theme.space3)
+        }
     }
+
+    // MARK: Account wiring (AccountStore + SyncService)
+
+    private var accountModel: AccountCardModel {
+        var m = AccountCardModel()
+        if let email = accounts.email, accounts.isSignedIn {
+            m.state = .signedIn(email: email, sync: syncLine)
+        }
+        m.configureAppleRequest = { request in
+            let nonce = AccountStore.makeNonce()
+            appleNonce = nonce
+            request.requestedScopes = [.email]
+            request.nonce = AccountStore.sha256(nonce)
+        }
+        m.completeApple = { result in
+            guard case .success(let auth) = result,
+                  let credential = auth.credential as? ASAuthorizationAppleIDCredential,
+                  let tokenData = credential.identityToken,
+                  let idToken = String(data: tokenData, encoding: .utf8),
+                  let nonce = appleNonce else { return }
+            Task { await accounts.signInWithApple(idToken: idToken, nonce: nonce) }
+        }
+        m.openEmailSignIn = { showEmailSignIn = true }
+        m.signOut = { Task { await accounts.signOut() } }
+        m.deleteAccount = { Task { await accounts.deleteAccount() } }
+        return m
+    }
+
+    private var syncLine: SyncStatusLine {
+        switch sync.status {
+        case .idle: return .never
+        case .syncing: return .syncing
+        case .synced(let date): return .synced(date)
+        case .offline, .failed: return .offline
+        }
+    }
+
+    /// E-mail sign-in / sign-up; returns the message to show, or nil when done.
+    private func emailSubmit(_ email: String, _ password: String, _ create: Bool) async -> String? {
+        if create {
+            await accounts.signUp(email: email, password: password)
+        } else {
+            await accounts.signIn(email: email, password: password)
+        }
+        if let error = accounts.error { return error }
+        // Sign-up may need e-mail confirmation first: keep the sheet open and say so.
+        if !accounts.isSignedIn, let info = accounts.info { return info }
+        return nil
+    }
+
+    // MARK: Building blocks
+
+    private var divider: some View {
+        Rectangle().fill(palette.hairline).frame(height: 0.5).padding(.leading, 58)
+    }
+
+    private var chevron: some View {
+        Image(systemName: "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(palette.inkMuted)
+    }
+
+    private func valueText(_ s: String) -> some View {
+        Text(s).font(.body).foregroundStyle(palette.inkMuted).lineLimit(1)
+    }
+
+    private func section<Content: View, Footer: View>(
+        _ title: String,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) -> some View {
+        let rows = content()
+        return VStack(alignment: .leading, spacing: Theme.space2) {
+            Text(title)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(palette.inkMuted)
+                .padding(.leading, Theme.space4)
+                .accessibilityAddTraits(.isHeader)
+            TrackGroup { rows }
+            footer()
+                .font(.footnote)
+                .foregroundStyle(palette.inkMuted)
+                .padding(.horizontal, Theme.space4)
+        }
+    }
+
+    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        section(title, content: content) { EmptyView() }
+    }
+
+    private func row<Trailing: View>(icon: String?, tint: IconTile.Tint = .gold, title: String,
+                                     @ViewBuilder trailing: () -> Trailing) -> some View {
+        HStack(spacing: Theme.space3) {
+            if let icon {
+                IconTile(systemImage: icon, tint: tint)
+            } else {
+                Color.clear.frame(width: 30, height: 1)
+            }
+            Text(title)
+                .font(.body)
+                .foregroundStyle(palette.ink)
+                .fixedSize(horizontal: false, vertical: true)
+                .layoutPriority(1)
+            Spacer(minLength: Theme.space2)
+            trailing()
+        }
+        .padding(.horizontal, Theme.space4)
+        .frame(minHeight: 52)
+        .contentShape(Rectangle())
+    }
+
+    private func menuRow<P: View>(icon: String, title: String, value: String,
+                                  @ViewBuilder picker: () -> P) -> some View {
+        Menu {
+            picker()
+        } label: {
+            row(icon: icon, title: title) {
+                valueText(value)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(palette.inkMuted)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func linkRow(_ title: String, _ url: String) -> some View {
+        Button {
+            if let u = URL(string: url) { openURL(u) }
+        } label: {
+            HStack {
+                Text(title).font(.body).foregroundStyle(palette.ink)
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(palette.inkMuted)
+            }
+            .padding(.horizontal, Theme.space4)
+            .frame(minHeight: 48)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: Labels
+
+    private func notationLabel(_ n: NotationStyle) -> String {
+        switch n {
+        case .standard: return CoachL10n.t("settings.notation_standard")
+        case .symbols: return CoachL10n.t("settings.notation_symbols")
+        case .short: return CoachL10n.t("settings.notation_short")
+        }
+    }
+
+    private func accidentalsLabel(_ a: AccidentalPreference) -> String {
+        switch a {
+        case .both: return CoachL10n.t("settings.accidentals_both")
+        case .sharps: return CoachL10n.t("settings.accidentals_sharps")
+        case .flats: return CoachL10n.t("settings.accidentals_flats")
+        }
+    }
+
+    /// Instrument names are translated ("Flügel"), not id-humanized.
+    private func presetLabel(_ id: String) -> String { CoachL10n.t("sound.\(id)") }
 
     private static func date(from t: ReminderTime) -> Date {
         Calendar.current.date(bySettingHour: t.hour, minute: t.minute, second: 0, of: Date()) ?? Date()
@@ -142,7 +381,4 @@ struct SettingsView: View {
         let c = Calendar.current.dateComponents([.hour, .minute], from: d)
         return ReminderTime(hour: c.hour ?? 19, minute: c.minute ?? 0) ?? .default(for: .evening)
     }
-
-    /// Instrument names are translated ("Flügel"), not id-humanized.
-    private func presetLabel(_ id: String) -> String { CoachL10n.t("sound.\(id)") }
 }
